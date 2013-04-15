@@ -167,16 +167,17 @@ export ometa AbstractSQLRules2SQL {
 					|	:table
 						'*'
 						-> ('"' + table + '".*')
-					|	(	Field
-						|	ReferencedField
-						):field
-						(	anything:as
-							-> (field + ' AS "' + as + '"')
-						|	-> field
-						)
 					):field
 					{fields.push(field)}
 				]
+			|	(	Field
+				|	ReferencedField
+				):field
+				(	anything:as
+					-> (field + ' AS "' + as + '"')
+				|	-> field
+				):field
+				{fields.push(field)}
 			|	'*'
 				{fields.push('*')}
 			|	Null

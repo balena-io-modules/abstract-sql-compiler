@@ -98,7 +98,7 @@ test '/pilot(1)', 'POST', (result) ->
 		''')
 
 
-test.skip '/pilot(1)/$links/licence', (result) ->
+test '/pilot(1)/$links/licence', (result) ->
 	it 'should select the list of licence ids, for generating the links', ->
 		expect(result.query).to.equal('''
 			SELECT "pilot"."licence"
@@ -108,11 +108,11 @@ test.skip '/pilot(1)/$links/licence', (result) ->
 	itShouldNotHaveAnyBindings(result)
 
 
-test.skip '/pilot(1)/pilot__can_fly__plane/$links/plane', (result) ->
+test '/pilot(1)/pilot__can_fly__plane/$links/plane', (result) ->
 	it 'should select the list of plane ids, for generating the links', ->
 		expect(result.query).to.equal('''
 			SELECT "pilot-can_fly-plane"."plane"
-			FROM "plane",
+			FROM "pilot",
 				"pilot-can_fly-plane"
 			WHERE "pilot"."id" = "pilot-can_fly-plane"."pilot"
 			AND "pilot"."id" = 1
