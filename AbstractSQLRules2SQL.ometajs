@@ -156,9 +156,8 @@ export ometa AbstractSQLRules2SQL {
 	
 	Select =
 		'Select'
-		{[]}:fields
 		[	end
-			{fields.push('1')}
+			{['1']}fields
 		|
 			(	[
 					(	'Count'
@@ -168,24 +167,22 @@ export ometa AbstractSQLRules2SQL {
 						'*'
 						-> ('"' + table + '".*')
 					):field
-					{fields.push(field)}
 				]
+				-> field
 			|	(	Field
 				|	ReferencedField
 				):field
 				(	anything:as
 					-> (field + ' AS "' + as + '"')
 				|	-> field
-				):field
-				{fields.push(field)}
+				)
 			|	'*'
-				{fields.push('*')}
 			|	Null
-				{fields.push('NULL')}
+				-> 'NULL'
 			|	anything:field
 				// TODO: Should escape "
-				{fields.push('"' + field + '"')}
-			)*
+				-> ('"' + field + '"')
+			)*:fields
 		]
 		-> fields,
 	
