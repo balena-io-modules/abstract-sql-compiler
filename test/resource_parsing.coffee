@@ -73,29 +73,40 @@ test '/plane(1)/pilot__can_fly__plane/pilot', (result) ->
 		''')
 	itShouldNotHaveAnyBindings(result)
 
-
-test '/pilot(1)', 'PUT', (result) ->
-	it 'should insert/update the pilot with id 1', ->
-		expect(result[0].query).to.equal('''
-			INSERT INTO "pilot" ("id", "is experienced", "name", "age", "favourite colour", "licence")
-			VALUES (?, ?, ?, ?, ?, ?)
-		''')
-		expect(result[1].query).to.equal('''
-			UPDATE "pilot"
-			SET "id" = ?,
-				"is experienced" = ?,
-				"name" = ?,
-				"age" = ?,
-				"favourite colour" = ?,
-				"licence" = ?
-			WHERE "pilot"."id" = 1
-		''')	
-test '/pilot(1)', 'POST', (result) ->
-	it 'should insert/update the pilot with id 1', ->
-		expect(result.query).to.equal('''
-			INSERT INTO "pilot" ("id", "is experienced", "name", "age", "favourite colour", "licence")
-			VALUES (?, ?, ?, ?, ?, ?)
-		''')
+do ->
+	bindings = [
+		['pilot', 'id']
+		['pilot', 'is experienced']
+		['pilot', 'name']
+		['pilot', 'age']
+		['pilot', 'favourite colour']
+		['pilot', 'licence']
+	]
+	test '/pilot(1)', 'PUT', (result) ->
+		it 'should insert/update the pilot with id 1', ->
+			expect(result[0].query).to.equal('''
+				INSERT INTO "pilot" ("id", "is experienced", "name", "age", "favourite colour", "licence")
+				VALUES (?, ?, ?, ?, ?, ?)
+			''')
+			expect(result[0].bindings).to.deep.equal(bindings)
+			expect(result[1].query).to.equal('''
+				UPDATE "pilot"
+				SET "id" = ?,
+					"is experienced" = ?,
+					"name" = ?,
+					"age" = ?,
+					"favourite colour" = ?,
+					"licence" = ?
+				WHERE "pilot"."id" = 1
+			''')	
+			expect(result[1].bindings).to.deep.equal(bindings)
+	test '/pilot(1)', 'POST', (result) ->
+		it 'should insert/update the pilot with id 1', ->
+			expect(result.query).to.equal('''
+				INSERT INTO "pilot" ("id", "is experienced", "name", "age", "favourite colour", "licence")
+				VALUES (?, ?, ?, ?, ?, ?)
+			''')
+			expect(result.bindings).to.deep.equal(bindings)
 
 
 test '/pilot(1)/$links/licence', (result) ->
