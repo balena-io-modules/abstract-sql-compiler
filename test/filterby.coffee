@@ -53,12 +53,13 @@ operandTest = (lhs, op, rhs = 'name') ->
 
 notTest = (expression) ->
 	odata = 'not ' + if expression.odata? then '(' + expression.odata + ')' else expression
-	sql = 'NOT ' + (expression.sql ? operandToSQL(expression))
-	test.skip '/pilot?$filter=' + odata, (result) ->
-		expect(result.query).to.equal '''
-			SELECT "pilot".*
-			FROM "pilot"
-			WHERE ''' + sql
+	sql = 'NOT (\n\t' + (expression.sql ? operandToSQL(expression)) + '\n)'
+	test '/pilot?$filter=' + odata, (result) ->
+		it 'should select from pilot where "' + odata + '"', ->
+			expect(result.query).to.equal '''
+				SELECT "pilot".*
+				FROM "pilot"
+				WHERE ''' + sql
 
 methodTest = (args...) ->
 	{odata, abstractsql} = createMethodCall.apply(null, args)
@@ -94,8 +95,8 @@ do ->
 	right = createExpression('age', 'lt', 10)
 	operandTest(left, 'and', right)
 	# operandTest(left, 'or', right)
-	# notTest('is_experienced')
-	# notTest(left)
+	notTest('is_experienced')
+	notTest(left)
 
 # do ->
 	# mathOps = [
