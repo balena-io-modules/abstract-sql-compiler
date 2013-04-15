@@ -36,10 +36,33 @@ createExpression = (lhs, op, rhs) ->
 		odata: (lhs.odata ? lhs) + ' ' + op + ' ' + (rhs.odata ? rhs)
 		sql: (lhs.sql ? operandToSQL(lhs)) + sqlOps[op] + ' ' + (rhs.sql ? operandToSQL(rhs))
 	}
+createMethodCall = (method, args...) ->
+	return {
+		odata: method + '(' + (arg.odata ? arg for arg in args).join(',') + ')'
+		sql: method + '(' + (arg.sql ? operandToSQL(arg) for arg in args).join(', ') + ')'
+	}
 
 operandTest = (lhs, op, rhs = 'name') ->
 	{odata, sql} = createExpression(lhs, op, rhs)
 	test '/pilot?$filter=' + odata, (result) ->
+		it 'should select from pilot where "' + odata + '"', ->
+			expect(result.query).to.equal '''
+				SELECT "pilot".*
+				FROM "pilot"
+				WHERE ''' + sql
+
+notTest = (expression) ->
+	odata = 'not ' + if expression.odata? then '(' + expression.odata + ')' else expression
+	sql = 'NOT ' + (expression.sql ? operandToSQL(expression))
+	test.skip '/pilot?$filter=' + odata, (result) ->
+		expect(result.query).to.equal '''
+			SELECT "pilot".*
+			FROM "pilot"
+			WHERE ''' + sql
+
+methodTest = (args...) ->
+	{odata, abstractsql} = createMethodCall.apply(null, args)
+	test.skip '/pilot?$filter=' + odata, (result) ->
 		it 'should select from pilot where "' + odata + '"', ->
 			expect(result.query).to.equal '''
 				SELECT "pilot".*
@@ -70,6 +93,20 @@ do ->
 	left = createExpression('age', 'gt', 2)
 	right = createExpression('age', 'lt', 10)
 	operandTest(left, 'and', right)
+	# operandTest(left, 'or', right)
+	# notTest('is_experienced')
+	# notTest(left)
+
+# do ->
+	# mathOps = [
+		# 'add'
+		# 'sub'
+		# 'mul'
+		# 'div'
+	# ]
+	# for mathOp in mathOps
+		# mathOp = createExpression('age', mathOp, 2)
+		# operandTest(mathOp, 'gt', 10)
 
 do ->
 	{odata, sql} = createExpression('pilot__can_fly__plane/id', 'eq', 10)
@@ -108,3 +145,23 @@ do ->
 				WHERE "pilot"."id" = "pilot-can_fly-plane"."pilot"
 				AND "plane"."id" = "pilot-can_fly-plane"."plane"
 				AND ''' + sql
+
+methodTest('substringof', "'Pete'", 'name')
+methodTest('startswith', 'name', "'P'")
+methodTest('endswith', 'name', "'ete'")
+# operandTest(createMethodCall('length', 'name'), 'eq', 4)
+# operandTest(createMethodCall('indexof', 'name', "'Pe'"), 'eq', 0)
+# operandTest(createMethodCall('replace', 'name', "'ete'", "'at'"), 'eq', "'Pat'")
+# operandTest(createMethodCall('substring', 'name', 1), 'eq', "'ete'")
+# operandTest(createMethodCall('substring', 'name', 1, 2), 'eq', "'et'")
+# operandTest(createMethodCall('tolower', 'name'), 'eq', "'pete'")
+# operandTest(createMethodCall('toupper', 'name'), 'eq', "'PETE'")
+
+# do ->
+	# concat = createMethodCall('concat', 'name', "'%20'")
+	# operandTest(concat, 'eq', "'Pete%20'")
+	# operandTest(createMethodCall('trim', concat), 'eq', "'Pete'")
+
+# operandTest(createMethodCall('round', 'age'), 'eq', 25)
+# operandTest(createMethodCall('floor', 'age'), 'eq', 25)
+# operandTest(createMethodCall('ceiling', 'age'), 'eq', 25)
