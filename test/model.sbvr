@@ -1,0 +1,30 @@
+Term:       name
+	Concept Type: Short Text (Type)
+
+Term:       age
+	Concept Type: Integer (Type)
+
+Term:       favourite colour
+	Concept Type: Color (Type)
+
+Term:       licence
+
+Term:       plane
+
+Term:       pilot
+
+Fact type:  pilot is experienced
+
+Fact type:  pilot has name
+	Necessity: each pilot has exactly one name
+
+Fact type:  pilot has age
+	Necessity: each pilot has exactly one age
+
+Fact type:  pilot has favourite colour
+	Necessity: each pilot has exactly one favourite colour
+
+Fact type:  pilot can fly plane
+
+Fact type:  pilot has licence
+	Necessity: each pilot has exactly one licence

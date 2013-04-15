@@ -11,5 +11,10 @@
 	"dependencies": {
 		"lodash": "1.1.x",
 		"ometa-js": "1.x"
+	},
+	"devDependencies": {
+		"odata-to-abstract-sql": "git+ssh://git@bitbucket.org:rulemotion/odata-to-abstract-sql.git",
+		"odata-parser": "git+ssh://git@bitbucket.org:rulemotion/odata-parser.git",
+		"chai": "latest"
 	}
 }
