@@ -15,7 +15,6 @@
 		root.AbstractSQLCompiler = factory(AbstractSQLOptimiser, AbstractSQLRules2SQL);
 	}
 }(this, function (AbstractSQLOptimiser, AbstractSQLRules2SQL) {
-	console.log(AbstractSQLOptimiser)
 	AbstractSQLOptimiser = AbstractSQLOptimiser.AbstractSQLOptimiser;
 	AbstractSQLRules2SQL = AbstractSQLRules2SQL.AbstractSQLRules2SQL;
 	return {
