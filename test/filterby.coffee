@@ -11,7 +11,7 @@ operandToSQL = (operand) ->
 			return decodeURIComponent(operand)
 		fieldParts = operand.split('/')
 		if fieldParts.length > 1
-			mapping = clientModel.resourceToSQLMappings[fieldParts[0]][fieldParts[1]]
+			mapping = clientModel.resourceToSQLMappings[fieldParts[fieldParts.length - 2]][fieldParts[fieldParts.length - 1]]
 		else
 			mapping = clientModel.resourceToSQLMappings['pilot'][operand]
 		return '"' + mapping.join('"."') + '"'
@@ -41,10 +41,10 @@ operandTest = (lhs, op, rhs = 'name') ->
 	{odata, sql} = createExpression(lhs, op, rhs)
 	test '/pilot?$filter=' + odata, (result) ->
 		it 'should select from pilot where "' + odata + '"', ->
-			expect(result.query).to.equal('''
+			expect(result.query).to.equal '''
 				SELECT "pilot".*
 				FROM "pilot"
-				WHERE ''' + sql)
+				WHERE ''' + sql
 
 operandTest(2, 'eq')
 operandTest(2, 'ne')
@@ -70,3 +70,41 @@ do ->
 	left = createExpression('age', 'gt', 2)
 	right = createExpression('age', 'lt', 10)
 	operandTest(left, 'and', right)
+
+do ->
+	{odata, sql} = createExpression('pilot__can_fly__plane/id', 'eq', 10)
+	test '/pilot?$filter=' + odata, (result) ->
+		it 'should select from pilot where "' + odata + '"', ->
+			expect(result.query).to.equal '''
+				SELECT "pilot".*
+				FROM "pilot",
+					"pilot-can_fly-plane"
+				WHERE "pilot"."id" = "pilot-can_fly-plane"."pilot"
+				AND ''' + sql
+
+do ->
+	{odata, sql} = createExpression('plane/id', 'eq', 10)
+	test '/pilot(1)/pilot__can_fly__plane?$filter=' + odata, (result) ->
+		it 'should select from pilot__can_fly__plane where "' + odata + '"', ->
+			expect(result.query).to.equal '''
+				SELECT "pilot-can_fly-plane".*
+				FROM "pilot",
+					"pilot-can_fly-plane",
+					"plane"
+				WHERE "plane"."id" = "pilot-can_fly-plane"."plane"
+				AND ''' + sql + '\n' + '''
+				AND "pilot"."id" = "pilot-can_fly-plane"."pilot"
+				AND "pilot"."id" = 1'''
+
+do ->
+	{odata, sql} = createExpression('pilot__can_fly__plane/plane/id', 'eq', 10)
+	test '/pilot?$filter=' + odata, (result) ->
+		it 'should select from pilot where "' + odata + '"', ->
+			expect(result.query).to.equal '''
+				SELECT "pilot".*
+				FROM "pilot",
+					"pilot-can_fly-plane",
+					"plane"
+				WHERE "pilot"."id" = "pilot-can_fly-plane"."pilot"
+				AND "plane"."id" = "pilot-can_fly-plane"."plane"
+				AND ''' + sql
