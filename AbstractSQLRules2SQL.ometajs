@@ -157,7 +157,7 @@ export ometa AbstractSQLRules2SQL {
 	Select =
 		'Select'
 		[	end
-			{['1']}fields
+			{['1']}:fields
 		|
 			(	[
 					(	'Count'
