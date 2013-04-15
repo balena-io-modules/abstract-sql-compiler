@@ -32,6 +32,11 @@ sqlOps =
 	div: ' /'
 
 createExpression = (lhs, op, rhs) ->
+	if lhs is 'not'
+		return {
+			odata: 'not ' + if op.odata? then '(' + op.odata + ')' else op
+			sql: 'NOT (\n\t' + (op.sql ? operandToSQL(op)) + '\n)'
+		}
 	return {
 		odata: (lhs.odata ? lhs) + ' ' + op + ' ' + (rhs.odata ? rhs)
 		sql: (lhs.sql ? operandToSQL(lhs)) + sqlOps[op] + ' ' + (rhs.sql ? operandToSQL(rhs))
@@ -44,16 +49,6 @@ createMethodCall = (method, args...) ->
 
 operandTest = (lhs, op, rhs = 'name') ->
 	{odata, sql} = createExpression(lhs, op, rhs)
-	test '/pilot?$filter=' + odata, (result) ->
-		it 'should select from pilot where "' + odata + '"', ->
-			expect(result.query).to.equal '''
-				SELECT "pilot".*
-				FROM "pilot"
-				WHERE ''' + sql
-
-notTest = (expression) ->
-	odata = 'not ' + if expression.odata? then '(' + expression.odata + ')' else expression
-	sql = 'NOT (\n\t' + (expression.sql ? operandToSQL(expression)) + '\n)'
 	test '/pilot?$filter=' + odata, (result) ->
 		it 'should select from pilot where "' + odata + '"', ->
 			expect(result.query).to.equal '''
@@ -95,8 +90,8 @@ do ->
 	right = createExpression('age', 'lt', 10)
 	operandTest(left, 'and', right)
 	# operandTest(left, 'or', right)
-	notTest('is_experienced')
-	notTest(left)
+	operandTest('not', 'is_experienced')
+	operandTest('not', left)
 
 # do ->
 	# mathOps = [
