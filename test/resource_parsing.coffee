@@ -78,23 +78,23 @@ test '/pilot(1)', 'PUT', (result) ->
 	it 'should insert/update the pilot with id 1', ->
 		expect(result[0].query).to.equal('''
 			INSERT INTO "pilot" ("id", "is experienced", "name", "age", "favourite colour", "licence")
-			 VALUES (?, ?, ?, ?, ?, ?)
+			VALUES (?, ?, ?, ?, ?, ?)
 		''')
 		expect(result[1].query).to.equal('''
 			UPDATE "pilot"
-			 SET "id" = ?,
-			"is experienced" = ?,
-			"name" = ?,
-			"age" = ?,
-			"favourite colour" = ?,
-			"licence" = ?
+			SET "id" = ?,
+				"is experienced" = ?,
+				"name" = ?,
+				"age" = ?,
+				"favourite colour" = ?,
+				"licence" = ?
 			WHERE "pilot"."id" = 1
 		''')	
 test '/pilot(1)', 'POST', (result) ->
 	it 'should insert/update the pilot with id 1', ->
 		expect(result.query).to.equal('''
 			INSERT INTO "pilot" ("id", "is experienced", "name", "age", "favourite colour", "licence")
-			 VALUES (?, ?, ?, ?, ?, ?)
+			VALUES (?, ?, ?, ?, ?, ?)
 		''')
 
 

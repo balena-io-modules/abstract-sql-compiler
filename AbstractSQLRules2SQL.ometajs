@@ -78,7 +78,7 @@ export ometa AbstractSQLRules2SQL {
 			anything*
 		]*
 		(	?(fieldValues[0].length > 0)
-			-> ('INSERT INTO ' + tables.join(', ') + ' (' + fieldValues[0].join(', ') + ')' + indent + ' VALUES (' + fieldValues[1].join(', ') + ')')
+			-> ('INSERT INTO ' + tables.join(', ') + ' (' + fieldValues[0].join(', ') + ')' + indent + 'VALUES (' + fieldValues[1].join(', ') + ')')
 		|	-> ('INSERT INTO ' + tables.join(', ') + ' DEFAULT VALUES')
 		),
 	
@@ -99,7 +99,8 @@ export ometa AbstractSQLRules2SQL {
 				sets[i] = fieldValues[0][i] + ' = ' + fieldValues[1][i];
 			}
 		}
-		-> ('UPDATE ' + tables.join(', ') + indent + ' SET ' + sets.join(',' + indent) + where),
+		NestedIndent(indent):nestedIndent
+		-> ('UPDATE ' + tables.join(', ') + indent + 'SET ' + sets.join(',' + nestedIndent) + where),
 	
 	UpsertQuery :indent =
 		{[]}:tables
