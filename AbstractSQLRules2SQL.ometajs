@@ -212,7 +212,8 @@ export ometa AbstractSQLRules2SQL {
 			):field
 			{orders.push(field + ' ' + order)}
 		]+
-		-> ('ORDER BY ' + orders.join(', ')),
+		NestedIndent(indent):nestedIndent
+		-> ('ORDER BY ' + orders.join(',' + nestedIndent)),
 	
 	Limit :indent =
 		'Limit'
