@@ -217,12 +217,12 @@ export ometa AbstractSQLRules2SQL {
 	
 	Limit :indent =
 		'Limit'
-		Number:num
+		NumericValue:num
 		-> ('LIMIT ' + num),
 	
 	Offset :indent =
 		'Offset'
-		Number:num
+		NumericValue:num
 		-> ('OFFSET ' + num),
 	
 	Field =
@@ -247,7 +247,7 @@ export ometa AbstractSQLRules2SQL {
 			:number
 		]
 		-> number,
-	
+
 	Boolean =
 		[	'Boolean'
 			(	true
@@ -304,8 +304,24 @@ export ometa AbstractSQLRules2SQL {
 		|	BitwiseAnd
 		|	BitwiseShiftRight
 		|	CharacterLength
+		|	MathOp
 		),
-	
+
+	MathOp =
+		[	(	'Add'
+				-> '+'
+			|	'Subtract'
+				-> '-'
+			|	'Multiply'
+				-> '*'
+			|	'Divide'
+				-> '/'
+			):op
+			Comparator:lhs
+			Comparator:rhs
+		]
+		-> [lhs, op, rhs].join(' '),
+
 	BitwiseAnd =
 		[	'BitwiseAnd'
 			NumericValue:operand
@@ -354,13 +370,10 @@ export ometa AbstractSQLRules2SQL {
 			-> ('(' + nestedIndent + query + indent + ')')
 		|	Field
 		|	ReferencedField
-		|	Number
+		|	NumericValue
 		|	Boolean
 		|	Text
 		|	Bind
-		|	CharacterLength
-		|	BitwiseAnd
-		|	BitwiseShiftRight
 		|	Concat,
 		
 	

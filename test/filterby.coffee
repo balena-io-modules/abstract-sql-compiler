@@ -93,16 +93,16 @@ do ->
 	operandTest('not', 'is_experienced')
 	operandTest('not', left)
 
-# do ->
-	# mathOps = [
-		# 'add'
-		# 'sub'
-		# 'mul'
-		# 'div'
-	# ]
-	# for mathOp in mathOps
-		# mathOp = createExpression('age', mathOp, 2)
-		# operandTest(mathOp, 'gt', 10)
+do ->
+	mathOps = [
+		'add'
+		'sub'
+		'mul'
+		'div'
+	]
+	for mathOp in mathOps
+		mathOp = createExpression('age', mathOp, 2)
+		operandTest(mathOp, 'gt', 10)
 
 do ->
 	{odata, sql} = createExpression('pilot__can_fly__plane/id', 'eq', 10)
