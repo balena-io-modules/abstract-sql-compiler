@@ -1,17 +1,12 @@
 expect = require('chai').expect
 test = require('./test')
 
-itShouldNotHaveAnyBindings = (result) ->
-	it 'should not have any bindings', ->
-		expect(result.bindings).to.be.empty
-
 test '/pilot', (result) ->
 	it 'should select from pilot', ->
 		expect(result.query).to.equal('''
 			SELECT "pilot".*
 			FROM "pilot"
 		''')
-	itShouldNotHaveAnyBindings(result)
 
 test '/pilot(1)', (result) ->
 	it 'should select from pilot with id', ->
@@ -20,7 +15,6 @@ test '/pilot(1)', (result) ->
 			FROM "pilot"
 			WHERE "pilot"."id" = 1
 		''')
-	itShouldNotHaveAnyBindings(result)
 
 test '/pilot(1)/licence', (result) ->
 	it 'should select from the licence of pilot with id', ->
@@ -31,7 +25,6 @@ test '/pilot(1)/licence', (result) ->
 			WHERE "licence"."id" = "pilot"."licence"
 			AND "pilot"."id" = 1
 		''')
-	itShouldNotHaveAnyBindings(result)
 
 
 test '/licence(1)/pilot', (result) ->
@@ -43,7 +36,6 @@ test '/licence(1)/pilot', (result) ->
 			WHERE "licence"."id" = "pilot"."licence"
 			AND "licence"."id" = 1
 		''')
-	itShouldNotHaveAnyBindings(result)
 
 
 test '/pilot(1)/pilot__can_fly__plane/plane', (result) ->
@@ -57,7 +49,6 @@ test '/pilot(1)/pilot__can_fly__plane/plane', (result) ->
 			AND "pilot"."id" = "pilot-can_fly-plane"."pilot"
 			AND "pilot"."id" = 1
 		''')
-	itShouldNotHaveAnyBindings(result)
 
 
 test '/plane(1)/pilot__can_fly__plane/pilot', (result) ->
@@ -71,7 +62,6 @@ test '/plane(1)/pilot__can_fly__plane/pilot', (result) ->
 			AND "plane"."id" = "pilot-can_fly-plane"."plane"
 			AND "plane"."id" = 1
 		''')
-	itShouldNotHaveAnyBindings(result)
 
 do ->
 	bindings = [
@@ -82,13 +72,12 @@ do ->
 		['pilot', 'favourite colour']
 		['pilot', 'licence']
 	]
-	test '/pilot(1)', 'PUT', (result) ->
+	test '/pilot(1)', 'PUT', bindings, (result) ->
 		it 'should insert/update the pilot with id 1', ->
 			expect(result[0].query).to.equal('''
 				INSERT INTO "pilot" ("id", "is experienced", "name", "age", "favourite colour", "licence")
 				VALUES (?, ?, ?, ?, ?, ?)
 			''')
-			expect(result[0].bindings).to.deep.equal(bindings)
 			expect(result[1].query).to.equal('''
 				UPDATE "pilot"
 				SET "id" = ?,
@@ -99,14 +88,12 @@ do ->
 					"licence" = ?
 				WHERE "pilot"."id" = 1
 			''')	
-			expect(result[1].bindings).to.deep.equal(bindings)
-	test '/pilot(1)', 'POST', (result) ->
+	test '/pilot(1)', 'POST', bindings, (result) ->
 		it 'should insert/update the pilot with id 1', ->
 			expect(result.query).to.equal('''
 				INSERT INTO "pilot" ("id", "is experienced", "name", "age", "favourite colour", "licence")
 				VALUES (?, ?, ?, ?, ?, ?)
 			''')
-			expect(result.bindings).to.deep.equal(bindings)
 
 
 test '/pilot(1)/$links/licence', (result) ->
@@ -116,7 +103,6 @@ test '/pilot(1)/$links/licence', (result) ->
 			FROM "pilot"
 			WHERE "pilot"."id" = 1
 		''')
-	itShouldNotHaveAnyBindings(result)
 
 
 test '/pilot(1)/pilot__can_fly__plane/$links/plane', (result) ->
@@ -128,7 +114,6 @@ test '/pilot(1)/pilot__can_fly__plane/$links/plane', (result) ->
 			WHERE "pilot"."id" = "pilot-can_fly-plane"."pilot"
 			AND "pilot"."id" = 1
 		''')
-	itShouldNotHaveAnyBindings(result)
 
 
 test.skip '/pilot(1)/favourite_colour/red', (result) ->

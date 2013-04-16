@@ -1,18 +1,12 @@
 expect = require('chai').expect
 test = require('./test')
 
-itShouldNotHaveAnyBindings = (result) ->
-	it 'should not have any bindings', ->
-		expect(result.bindings).to.be.empty
-
-
 test '/pilot?$select=name', (result) ->
 	it 'should select name from pilot', ->
 		expect(result.query).to.equal('''
 			SELECT "pilot"."name"
 			FROM "pilot"
 		''')
-	itShouldNotHaveAnyBindings(result)
 
 
 test '/pilot?$select=pilot/name', (result) ->
@@ -21,7 +15,6 @@ test '/pilot?$select=pilot/name', (result) ->
 			SELECT "pilot"."name"
 			FROM "pilot"
 		''')
-	itShouldNotHaveAnyBindings(result)
 
 
 test '/pilot?$select=pilot/name,age', (result) ->
@@ -30,7 +23,6 @@ test '/pilot?$select=pilot/name,age', (result) ->
 			SELECT "pilot"."name", "pilot"."age"
 			FROM "pilot"
 		''')
-	itShouldNotHaveAnyBindings(result)
 
 
 test '/pilot?$select=*', (result) ->
@@ -39,7 +31,6 @@ test '/pilot?$select=*', (result) ->
 			SELECT "pilot".*
 			FROM "pilot"
 		''')
-	itShouldNotHaveAnyBindings(result)
 
 
 test '/pilot?$select=licence/id', (result) ->
@@ -50,7 +41,6 @@ test '/pilot?$select=licence/id', (result) ->
 				"licence"
 			WHERE "licence"."id" = "pilot"."licence"
 		''')
-	itShouldNotHaveAnyBindings(result)
 
 
 test '/pilot?$select=pilot__can_fly__plane/plane/id', (result) ->
@@ -63,4 +53,3 @@ test '/pilot?$select=pilot__can_fly__plane/plane/id', (result) ->
 			WHERE "pilot"."id" = "pilot-can_fly-plane"."pilot"
 			AND "plane"."id" = "pilot-can_fly-plane"."plane"
 		''')
-	itShouldNotHaveAnyBindings(result)

@@ -4,16 +4,36 @@ OData2AbstractSQL = require('odata-to-abstract-sql').OData2AbstractSQL.createIns
 OData2AbstractSQL.clientModel = require('./client-model.json')
 AbstractSQLCompiler = require('../index')
 
-runExpectation = (describe, input, method, expectation) ->
+expect = require('chai').expect
+_ = require('lodash')
+
+bindingsTest = (actualBindings, expectedBindings = false) ->
+	if expectedBindings is false
+		it 'should not have any bindings', ->
+			expect(actualBindings).to.be.empty
+	else
+		it 'should not have matching bindings', ->
+			expect(actualBindings).to.deep.equal(expectedBindings)
+
+runExpectation = (describe, input, method, expectedBindings, expectation) ->
 	if !expectation?
-		expectation = method
-		method = 'GET'
+		if !expectedBindings?
+			expectation = method
+			method = 'GET'
+		else
+			expectation = expectedBindings
+		expectedBindings = false
 
 	describe 'Parsing ' + input, ->
 		try
 			input = ODataParser.matchAll(input, 'OData')
 			input = OData2AbstractSQL.match(input, 'Process', [method])
 			result = AbstractSQLCompiler.compile(null, input)
+			if _.isArray(result)
+				for actualResult in result
+					bindingsTest(actualResult.bindings, expectedBindings)
+			else
+				bindingsTest(result.bindings, expectedBindings)
 			expectation(result)
 		catch e
 			expectation(e)

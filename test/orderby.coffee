@@ -1,10 +1,6 @@
 expect = require('chai').expect
 test = require('./test')
 
-itShouldNotHaveAnyBindings = (result) ->
-	it 'should not have any bindings', ->
-		expect(result.bindings).to.be.empty
-
 test '/pilot?$orderby=name', (result) ->
 	it 'should order by name desc', ->
 		expect(result.query).to.equal('''
@@ -12,7 +8,6 @@ test '/pilot?$orderby=name', (result) ->
 			FROM "pilot"
 			ORDER BY "pilot"."name" DESC
 		''')
-	itShouldNotHaveAnyBindings(result)
 
 
 test '/pilot?$orderby=name,age', (result) ->
@@ -23,7 +18,6 @@ test '/pilot?$orderby=name,age', (result) ->
 			ORDER BY "pilot"."name" DESC,
 				"pilot"."age" DESC
 		''')
-	itShouldNotHaveAnyBindings(result)
 
 
 test '/pilot?$orderby=name desc', (result) ->
@@ -33,7 +27,6 @@ test '/pilot?$orderby=name desc', (result) ->
 			FROM "pilot"
 			ORDER BY "pilot"."name" DESC
 		''')
-	itShouldNotHaveAnyBindings(result)
 
 			
 test '/pilot?$orderby=name asc', (result) ->
@@ -43,7 +36,6 @@ test '/pilot?$orderby=name asc', (result) ->
 			FROM "pilot"
 			ORDER BY "pilot"."name" ASC
 		''')
-	itShouldNotHaveAnyBindings(result)
 
 
 test '/pilot?$orderby=name asc,age desc', (result) ->
@@ -54,7 +46,6 @@ test '/pilot?$orderby=name asc,age desc', (result) ->
 			ORDER BY "pilot"."name" ASC,
 				"pilot"."age" DESC
 		''')
-	itShouldNotHaveAnyBindings(result)
 
 
 test '/pilot?$orderby=licence/id asc', (result) ->
@@ -66,7 +57,6 @@ test '/pilot?$orderby=licence/id asc', (result) ->
 			WHERE "licence"."id" = "pilot"."licence"
 			ORDER BY "licence"."id" ASC
 		''')
-	itShouldNotHaveAnyBindings(result)
 
 
 test '/pilot?$orderby=pilot__can_fly__plane/plane/id asc', (result) ->
@@ -80,7 +70,6 @@ test '/pilot?$orderby=pilot__can_fly__plane/plane/id asc', (result) ->
 			AND "plane"."id" = "pilot-can_fly-plane"."plane"
 			ORDER BY "plane"."id" ASC
 		''')
-	itShouldNotHaveAnyBindings(result)
 
 
 test.skip '/pilot?$orderby=favourite_colour/red', (result) ->
