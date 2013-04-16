@@ -12,27 +12,6 @@ export ometa AbstractSQLRules2SQL {
 	NestedIndent :indent =
 		-> (indent + '\t'),
 
-	Not :indent =
-		[	'Not'
-			NestedIndent(indent):nestedIndent
-			RuleBody(nestedIndent):ruleBody
-			{'NOT (' + nestedIndent + ruleBody + indent + ')'}:notStatement
-		]
-		-> notStatement,
-
-	Exists :indent =
-		[	'Exists'
-			(	// We need to create a SelectQuery differently to other comparators, so we check for it first.
-				NestedIndent(indent):nestedIndent
-				SelectQuery(nestedIndent):ruleBody
-			|	Comparator:comparator
-			)
-		]
-		(	?comparator
-			-> (comparator + ' IS NOT NULL')
-		|	-> ('EXISTS (' + nestedIndent + ruleBody + indent + ')')
-		),
-	
 	SelectQuery :indent =
 		NestedIndent(indent):nestedIndent
 		{[]}:tables
@@ -224,7 +203,13 @@ export ometa AbstractSQLRules2SQL {
 		'Offset'
 		NumericValue:num
 		-> ('OFFSET ' + num),
-	
+
+	UnknownValue =
+		(	ReferencedField
+		|	Field
+		|	Bind
+		),
+
 	Field =
 		[	'Field'
 			:field
@@ -265,10 +250,9 @@ export ometa AbstractSQLRules2SQL {
 			-> ('CONCAT(' + comparators.join(', ') + ')')
 		|	-> ('(' + comparators.join(' || ') + ')')
 		),
-	
+
 	NumericValue =
-		(	ReferencedField
-		|	Field
+		(	UnknownValue
 		|	Number
 		|	MathOp
 		|	BitwiseAnd
@@ -327,6 +311,17 @@ export ometa AbstractSQLRules2SQL {
 		|	-> ('LENGTH(' + text + ')')
 		),
 
+	BooleanValue :indent =
+		(	UnknownValue
+		|	Boolean
+		|	And(indent)
+		|	Not(indent)
+		|	Or(indent)
+		|	Exists(indent)
+		|	Comparison(indent)
+		|	Between(indent)
+		),
+
 	Boolean =
 		[	'Boolean'
 			(	true
@@ -337,18 +332,39 @@ export ometa AbstractSQLRules2SQL {
 		]
 		-> bool,
 
+	Not :indent =
+		[	'Not'
+			NestedIndent(indent):nestedIndent
+			RuleBody(nestedIndent):ruleBody
+			{'NOT (' + nestedIndent + ruleBody + indent + ')'}:notStatement
+		]
+		-> notStatement,
+
 	And :indent =
 		[	'And'
 			RuleBody(indent)*:ruleBodies
 		]
 	->	ruleBodies.join(indent + 'AND '),
-	
+
 	Or :indent =
 		[	'Or'
 			RuleBody(indent)*:ruleBodies
 		]
 	->	ruleBodies.join(indent + 'OR '),
-	
+
+	Exists :indent =
+		[	'Exists'
+			(	// We need to create a SelectQuery differently to other comparators, so we check for it first.
+				NestedIndent(indent):nestedIndent
+				SelectQuery(nestedIndent):ruleBody
+			|	Comparator:comparator
+			)
+		]
+		(	?comparator
+			-> (comparator + ' IS NOT NULL')
+		|	-> ('EXISTS (' + nestedIndent + ruleBody + indent + ')')
+		),
+
 	Comparison :indent =
 		[	(	'Equals'
 			|	'GreaterThan'
@@ -375,24 +391,15 @@ export ometa AbstractSQLRules2SQL {
 			NestedIndent(indent):nestedIndent
 			SelectQuery(nestedIndent):query
 			-> ('(' + nestedIndent + query + indent + ')')
-		|	Field
-		|	ReferencedField
+		|	UnknownValue
 		|	NumericValue
-		|	Boolean
+		|	BooleanValue(indent)
 		|	Text
-		|	Bind
 		|	Concat,
-		
-	
+
 	RuleBody :indent =
 			Comparator(indent)
-		|	Not(indent)
-		|	Exists(indent)
-		|	Comparison(indent)
-		|	Between(indent)
-		|	And(indent)
-		|	Or(indent)
-		|	Boolean,
+		|	BooleanValue(indent),
 
 	Process =
 			{this.fieldOrderings = []}
