@@ -89,7 +89,7 @@ do ->
 	left = createExpression('age', 'gt', 2)
 	right = createExpression('age', 'lt', 10)
 	operandTest(left, 'and', right)
-	# operandTest(left, 'or', right)
+	operandTest(left, 'or', right)
 	operandTest('not', 'is_experienced')
 	operandTest('not', left)
 
