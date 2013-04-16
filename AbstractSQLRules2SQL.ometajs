@@ -237,26 +237,7 @@ export ometa AbstractSQLRules2SQL {
 			:field
 		]
 		-> ('"' + binding + '"."' + field + '"'),
-	
-	// TODO: Integer should actually be separate from number, for the case of bitwise operations that need an integral type.
-	Number =
-		[	(	'Number'
-			|	'Real'
-			|	'Integer'
-			)
-			:number
-		]
-		-> number,
 
-	Boolean =
-		[	'Boolean'
-			(	true
-				-> 1
-			|	false
-				-> 0
-			):bool
-		]
-		-> bool,
 	Bind =
 		[	'Bind'
 			:tableName
@@ -273,18 +254,6 @@ export ometa AbstractSQLRules2SQL {
 		]
 		// TODO: This should have quotes escaped
 		-> ("'" + text + "'"),
-		
-	CharacterLength =
-		[	'CharacterLength'
-			(	ReferencedField
-			|	Field
-			|	Text
-			):text
-		]
-		(	?(this.engine == 'mysql')
-			-> ('CHAR_LENGTH(' + text + ')')
-		|	-> ('LENGTH(' + text + ')')
-		),
 	
 	Concat =
 		[	(	'Concat'
@@ -301,11 +270,21 @@ export ometa AbstractSQLRules2SQL {
 		(	ReferencedField
 		|	Field
 		|	Number
+		|	MathOp
 		|	BitwiseAnd
 		|	BitwiseShiftRight
 		|	CharacterLength
-		|	MathOp
 		),
+
+	// TODO: Integer should actually be separate from number, for the case of bitwise operations that need an integral type.
+	Number =
+		[	(	'Number'
+			|	'Real'
+			|	'Integer'
+			)
+			:number
+		]
+		-> number,
 
 	MathOp =
 		[	(	'Add'
@@ -335,7 +314,29 @@ export ometa AbstractSQLRules2SQL {
 			NumericValue:shift
 		]
 		-> ('(' + operand + ' >> ' + shift + ')'),
-	
+
+	CharacterLength =
+		[	'CharacterLength'
+			(	ReferencedField
+			|	Field
+			|	Text
+			):text
+		]
+		(	?(this.engine == 'mysql')
+			-> ('CHAR_LENGTH(' + text + ')')
+		|	-> ('LENGTH(' + text + ')')
+		),
+
+	Boolean =
+		[	'Boolean'
+			(	true
+				-> 1
+			|	false
+				-> 0
+			):bool
+		]
+		-> bool,
+
 	And :indent =
 		[	'And'
 			RuleBody(indent)*:ruleBodies
