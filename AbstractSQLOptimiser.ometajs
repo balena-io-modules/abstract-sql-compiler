@@ -1,4 +1,3 @@
-_ = require('lodash')
 ometa AbstractSQLValidator {
 	
 	Query =
