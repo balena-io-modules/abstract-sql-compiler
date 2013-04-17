@@ -88,7 +88,7 @@ do ->
 					"licence" = ?
 				WHERE "pilot"."id" = 1
 			''')
-	test '/pilot(1)', 'POST', bindings, (result) ->
+	test '/pilot', 'POST', bindings, (result) ->
 		it 'should insert/update the pilot with id 1', ->
 			expect(result.query).to.equal('''
 				INSERT INTO "pilot" ("id", "is experienced", "name", "age", "favourite colour", "licence")
