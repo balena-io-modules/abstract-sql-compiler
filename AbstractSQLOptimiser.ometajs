@@ -4,13 +4,12 @@ ometa AbstractSQLValidator {
 		SelectQuery,
 
 	SelectQuery =
-		{['SelectQuery']}:query
 		[	'SelectQuery'
-			(
-				(	?(select==null)
+			{['SelectQuery']}:query
+			(	(	?(select==null)
 					Select:select
 				|	//?(from==null)
-					From:from
+					Table:from
 				|	Join
 				|	?(where==null)
 					Where:where
@@ -27,6 +26,78 @@ ometa AbstractSQLValidator {
 			?(from!=null)
 		]
 		-> query,
+
+	DeleteQuery =
+		[	'DeleteQuery'
+			{['DeleteQuery']}:query
+			(	(	Table:table
+				|	?(where==null)
+					Where:where
+				):queryPart
+				{query.concat(queryPart)}:query
+			)*
+			?(table!=null)
+		]
+		-> query,
+
+	UpsertQuery =
+		[	'UpsertQuery'
+			UpdateBody:body
+		]
+		-> ['UpsertQuery'].concat(body),
+
+	InsertQuery =
+		[	'InsertQuery'
+			InsertBody:body
+		]
+		-> ['InsertQuery'].concat(body),
+
+	UpdateQuery =
+		[	'UpdateQuery'
+			UpdateBody:body
+		]
+		-> ['UpdateQuery'].concat(body),
+
+	InsertBody =
+		{[]}:body
+		(	(	Fields:fieldValues
+			|	Table:table
+			):bodyPart
+			{body.concat(bodyPart)}:body
+		)+
+		?(fieldValues!=null)
+		?(table!=null)
+		-> body,
+
+	UpdateBody =
+		{[]}:body
+		(	(	Fields:fieldValues
+			|	Table:table
+			|	?(where==null)
+				Where:where
+			):bodyPart
+			{body.concat(bodyPart)}:body
+		)+
+		?(fieldValues!=null)
+		?(table!=null)
+		-> body,
+
+	Fields =
+		[	'Fields'
+			[	(	[	anything:field
+						(	'?'
+						|	true
+						|	false
+						|	Null
+						|	Bind
+						|	anything
+						):value
+					]
+					-> [field, value]
+				)+:fields
+			]
+		]
+		-> [['Fields', fields]],
 
 	Select =
 		[	'Select'
@@ -54,7 +125,7 @@ ometa AbstractSQLValidator {
 			'*'
 		],
 
-	From =
+	Table =
 		[	'From'
 			:table
 			anything?:as
@@ -435,13 +506,21 @@ export ometa AbstractSQLOptimiser <: AbstractSQLValidator {
 	Process =
 		:query
 		// Make sure we can at least do one valid pass.
-		(	BooleanValue(query)
+		(	AnyValue(query)
 		|	SelectQuery(query)
+		|	InsertQuery(query)
+		|	UpdateQuery(query)
+		|	DeleteQuery(query)
+		|	UpsertQuery(query)
 		):query
 		(	Helped('disableMemoisation')
-			(	BooleanValue(query)
+			(	AnyValue(query)
 			|	SelectQuery(query)
-			):query:query
+			|	InsertQuery(query)
+			|	UpdateQuery(query)
+			|	DeleteQuery(query)
+			|	UpsertQuery(query)
+			):query
 		)*
 		-> query
 }
