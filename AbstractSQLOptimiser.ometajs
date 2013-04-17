@@ -14,6 +14,12 @@ ometa AbstractSQLValidator {
 				|	Join
 				|	?(where==null)
 					Where:where
+				|	?(orderBy==null)
+					OrderBy:orderBy
+				|	?(limit==null)
+					Limit:limit
+				|	?(offset==null)
+					Offset:offset
 				):queryPart
 				{query.concat(queryPart)}:query
 			)+
@@ -24,12 +30,22 @@ ometa AbstractSQLValidator {
 
 	Select =
 		[	'Select'
-			(	[	(
-						Count
-					)*:fields
-				]
-			|	'*':fields
-			)
+			[	(	Count
+				|	[	:table
+						'*'
+					]
+				|	[	(	Field
+						|	ReferencedField
+						):field
+						anything:as
+					]
+					-> [field, as]
+				|	Field
+				|	ReferencedField
+				|	'*'
+				|	Null
+				)*:fields
+			]
 		]
 		-> [['Select', fields]],
 
@@ -41,10 +57,12 @@ ometa AbstractSQLValidator {
 	From =
 		[	'From'
 			:table
-			{['From', table]}:from
-			(anything:as {from.push(as)})?
+			anything?:as
 		]
-		-> [from],
+		(	?(as != null)
+			-> [['From', table, as]]
+		|	-> [['From', table]]
+		),
 
 	Join =
 		[	'Join'
@@ -52,132 +70,109 @@ ometa AbstractSQLValidator {
 				:table
 			]
 			[	'On'
-				BooleanStatement:boolStatement
+				BooleanValue:boolStatement
 			]
 		]
 		-> [['Join', ['With', table], ['On', boolStatement]]],
 
-	BooleanStatement =
-		(	Not
-		|	And
-		|	Exists
-		|	Equals
-		|	GreaterThan
-		|	GreaterThanOrEqual
-		|	LessThan
-		|	LessThanOrEqual
-		|	Like
-		|	Between
-		|	Boolean
-		),
-
 	Where =
 		[	'Where'
-			BooleanStatement:boolStatement
+			BooleanValue:boolStatement
 		]
 		-> [['Where', boolStatement]],
 
-	Not =
-		[	'Not'
-			BooleanStatement:boolStatement
+	OrderBy =
+		[	'OrderBy'
+			(	[	(	'ASC'
+					|	'DESC'
+					):order
+					(	Field
+					|	ReferencedField
+					):field
+				]
+				-> [order, field]
+			)+:orders
 		]
-		-> ['Not', boolStatement],
+		-> [['OrderBy'].concat(orders)],
 
-	And =
-		[	'And'
-			BooleanStatement:boolStatement1
-			BooleanStatement+:boolStatement2
+	Limit =
+		[	'Limit'
+			NumericValue:num
 		]
-		-> ['And', boolStatement1].concat(boolStatement2),
+		-> [['Limit', num]],
 
-	Exists =
-		[	'Exists'
-			Comparator:comparator
+	Offset =
+		[	'Offset'
+			NumericValue:num
 		]
-		-> ['Exists', comparator],
+		-> [['Offset', num]],
 
-	NotEquals =
-		[	'NotEquals'
-			Comparator:comp1
-			Comparator:comp2
-		]
-		-> ['NotEquals', comp1, comp2],
+	AnyValue =
+			UnknownValue
+		|	TextValue
+		|	NumericValue
+		|	BooleanValue,
 
-	Equals =
-		[	'Equals'
-			Comparator:comp1
-			Comparator:comp2
-		]
-		-> ['Equals', comp1, comp2],
-
-	GreaterThan =
-		[	'GreaterThan'
-			Comparator:comp1
-			Comparator:comp2
-		]
-		-> ['GreaterThan', comp1, comp2],
-
-	GreaterThanOrEqual =
-		[	'GreaterThanOrEqual'
-			Comparator:comp1
-			Comparator:comp2
-		]
-		-> ['GreaterThanOrEqual', comp1, comp2],
-
-	LessThan =
-		[	'LessThan'
-			Comparator:comp1
-			Comparator:comp2
-		]
-		-> ['LessThan', comp1, comp2],
-
-	LessThanOrEqual =
-		[	'LessThanOrEqual'
-			Comparator:comp1
-			Comparator:comp2
-		]
-		-> ['LessThanOrEqual', comp1, comp2],
-
-	Like =
-		[	'Like'
-			Comparator:comp1
-			Comparator:comp2
-		]
-		-> ['Like', comp1, comp2],
-
-	Between =
-		[	'Between'
-			Comparator:comp1
-			Comparator:comp2
-			Comparator:comp3
-		]
-		-> ['Between', comp1, comp2, comp3],
-
-	Comparator =
-			Query
+	UnknownValue =
+		(	ReferencedField
 		|	Field
-		|	ReferencedField
-		|	Number
-		|	Text
-		|	Boolean
-		|	CharacterLength
-		|	BitwiseAnd
-		|	BitwiseShiftRight
-		|	Concat,
+		|	Bind
+		|	Null
+		|	SelectQuery
+		),
 
 	Field =
 		[	'Field'
-			:table
 			:field
-		]
-		-> ['Field', table, field],
+		],
 
 	ReferencedField =
 		[	'ReferencedField'
-			:binding
+			:table
 			:field
+		],
+
+	Bind =
+		[	'Bind'
+			:tableName
+			:field
+		],
+
+	Null =
+		:next
+		?(next===null)
+		-> null,
+
+	TextValue =
+		(	UnknownValue
+		|	Text
+		|	Concat
+		),
+
+	Text =
+		[	(	'Value'
+			|	'Text'
+			)
+			:text
+		],
+
+	Concat =
+		[	(	'Concat'
+			|	'Concatenate'
+			)
+			TextValue:firstString
+			TextValue+:otherStrings
 		]
-		-> ['ReferencedField', binding, field],
+		-> ['Concatenate', firstString].concat(otherStrings),
+
+	NumericValue =
+		(	UnknownValue
+		|	Number
+		|	MathOp
+		|	BitwiseAnd
+		|	BitwiseShiftRight
+		|	CharacterLength
+		),
 
 	// TODO: Integer should actually be separate from number, for the case of bitwise operations that need an integral type.
 	Number =
@@ -186,51 +181,42 @@ ometa AbstractSQLValidator {
 			|	'Integer'
 			)
 			:number
-		]
-		-> ['Number', number],
+		],
 
-	Text =
-		[	(	'Value'
-			|	'Text'
-			)
-			:text
-		]
-		-> ['Text', text],
-
-
-	Boolean =
-		[	'Boolean'
-			(	true
-			|	false
-			):bool
-		]
-		-> ['Boolean', bool],
-
-	CharacterLength =
-		[	'CharacterLength'
-			(	ReferencedField
-			|	Field
-			|	Text
-			):text
-		]
-		-> ['CharacterLength', text],
-
-	Concat =
-		[	(	'Concat'
-			|	'Concatenate'
-			):name
-			Comparator+:comparators
-		]
-		-> [name].concat(comparators),
-
-	NumericValue =
-		(	ReferencedField
-		|	Field
-		|	Number
-		|	BitwiseAnd
-		|	BitwiseShiftRight
-		|	CharacterLength
+	MathOp =
+		(	Add
+		|	Subtract
+		|	Multiply
+		|	Divide
 		),
+
+	Add =
+		[	'Add'
+			NumericValue:lhs
+			NumericValue:rhs
+		]
+		-> ['Add', lhs, rhs],
+
+	Subtract =
+		[	'Subtract'
+			NumericValue:lhs
+			NumericValue:rhs
+		]
+		-> ['Subtract', lhs, rhs],
+
+	Multiply =
+		[	'Multiply'
+			NumericValue:lhs
+			NumericValue:rhs
+		]
+		-> ['Multiply', lhs, rhs],
+
+	Divide =
+		[	'Divide'
+			NumericValue:lhs
+			NumericValue:rhs
+		]
+		-> ['Divide', lhs, rhs],
 
 	BitwiseAnd =
 		[	'BitwiseAnd'
@@ -244,7 +230,125 @@ ometa AbstractSQLValidator {
 			NumericValue:operand
 			NumericValue:shift
 		]
-		-> ['BitwiseShiftRight', operand, shift]
+		-> ['BitwiseShiftRight', operand, shift],
+
+	CharacterLength =
+		[	'CharacterLength'
+			TextValue:text
+		]
+		-> ['CharacterLength', text],
+
+	BooleanValue =
+		(	UnknownValue
+		|	Boolean
+		|	And
+		|	Not
+		|	Or
+		|	Exists
+		|	Comparison
+		|	Between
+		),
+
+	Boolean =
+		[	'Boolean'
+			(	true
+			|	false
+			):bool
+		]
+		-> ['Boolean', bool],
+
+	Not =
+		[	'Not'
+			BooleanValue:bool
+		]
+		-> ['Not', bool],
+
+	And =
+		[	'And'
+			BooleanValue:firstBool
+			BooleanValue+:otherBools
+		]
+		-> ['And', firstBool].concat(otherBools),
+
+	Or =
+		[	'Or'
+			BooleanValue:firstBool
+			BooleanValue+:otherBools
+		]
+		-> ['Or', firstBool].concat(otherBools),
+
+	Exists =
+		[	'Exists'
+			AnyValue:exists
+		]
+		-> ['Exists', exists],
+
+	Comparison =
+		(	Equals
+		|	GreaterThan
+		|	GreaterThanOrEqual
+		|	LessThan
+		|	LessThanOrEqual
+		|	NotEquals
+		|	Like
+		),
+
+	Equals =
+		[	'Equals'
+			AnyValue:comp1
+			AnyValue:comp2
+		]
+		-> ['Equals', comp1, comp2],
+
+	GreaterThan =
+		[	'GreaterThan'
+			AnyValue:comp1
+			AnyValue:comp2
+		]
+		-> ['GreaterThan', comp1, comp2],
+
+	GreaterThanOrEqual =
+		[	'GreaterThanOrEqual'
+			AnyValue:comp1
+			AnyValue:comp2
+		]
+		-> ['GreaterThanOrEqual', comp1, comp2],
+
+	LessThan =
+		[	'LessThan'
+			AnyValue:comp1
+			AnyValue:comp2
+		]
+		-> ['LessThan', comp1, comp2],
+
+	LessThanOrEqual =
+		[	'LessThanOrEqual'
+			AnyValue:comp1
+			AnyValue:comp2
+		]
+		-> ['LessThanOrEqual', comp1, comp2],
+
+	NotEquals =
+		[	'NotEquals'
+			AnyValue:comp1
+			AnyValue:comp2
+		]
+		-> ['NotEquals', comp1, comp2],
+
+	Like =
+		[	'Like'
+			AnyValue:comp1
+			AnyValue:comp2
+		]
+		-> ['Like', comp1, comp2],
+
+	Between =
+		[	'Between'
+			AnyValue:comp1
+			AnyValue:comp2
+			AnyValue:comp3
+		]
+		-> ['Between', comp1, comp2, comp3]
 }
 
 export ometa AbstractSQLOptimiser <: AbstractSQLValidator {
@@ -255,10 +359,10 @@ export ometa AbstractSQLOptimiser <: AbstractSQLValidator {
 		// (	apply(actual)
 		// |	'And'
 			// (	AndApply(rule)
-			// |	BooleanStatement
+			// |	BooleanValue
 			// )
 			// (	AndApply(rule)
-			// |	BooleanStatement
+			// |	BooleanValue
 			// )+
 		// ),
 
@@ -303,10 +407,9 @@ export ometa AbstractSQLOptimiser <: AbstractSQLValidator {
 		// |	^Where,
 
 	Not =
-			[	'Not'
-				(
-					[	'Not'
-						BooleanStatement:boolStatement
+		(	[	'Not'
+				(	[	'Not'
+						BooleanValue:boolStatement
 					]
 				|	Equals:boolStatement
 					{boolStatement[0] = 'NotEquals'}
@@ -314,13 +417,13 @@ export ometa AbstractSQLOptimiser <: AbstractSQLValidator {
 			]
 			SetHelped
 			-> boolStatement
-		|
-			[	'Exists'
-				[	'SelectQuery'
+		// |	[	'Exists'
+				// [	'SelectQuery'
 					// TODO: ?
-				]
-			]
-		|	^Not,
+				// ]
+			// ]
+		|	^Not
+		),
 
 	Helped :disableMemoisationHack =
 		?(this.helped === true)
@@ -332,11 +435,11 @@ export ometa AbstractSQLOptimiser <: AbstractSQLValidator {
 	Process =
 		:query
 		// Make sure we can at least do one valid pass.
-		(	BooleanStatement(query)
+		(	BooleanValue(query)
 		|	SelectQuery(query)
 		):query
 		(	Helped('disableMemoisation')
-			(	BooleanStatement(query)
+			(	BooleanValue(query)
 			|	SelectQuery(query)
 			):query:query
 		)*
