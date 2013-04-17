@@ -24,11 +24,7 @@
 			var optimiser = AbstractSQLOptimiser.createInstance(),
 				compiler = AbstractSQLRules2SQL.createInstance();
 			return function(engine, abstractSQL) {
-				try {
-					abstractSQL = optimiser.match(abstractSQL, 'Process');
-				}
-				catch(e) {
-				}
+				abstractSQL = optimiser.match(abstractSQL, 'Process');
 				compiler.engine = engine;
 				return compiler.match(abstractSQL, 'Process');
 			};

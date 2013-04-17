@@ -57,7 +57,7 @@ operandTest = (lhs, op, rhs = 'name') ->
 				WHERE ''' + sql
 
 methodTest = (args...) ->
-	{odata, abstractsql} = createMethodCall.apply(null, args)
+	{odata, sql} = createMethodCall.apply(null, args)
 	test.skip '/pilot?$filter=' + odata, (result) ->
 		it 'should select from pilot where "' + odata + '"', ->
 			expect(result.query).to.equal '''
@@ -142,9 +142,9 @@ do ->
 				AND "plane"."id" = "pilot-can_fly-plane"."plane"
 				AND ''' + sql
 
-methodTest('substringof', "'Pete'", 'name')
-methodTest('startswith', 'name', "'P'")
-methodTest('endswith', 'name', "'ete'")
+# methodTest('substringof', "'Pete'", 'name')
+# methodTest('startswith', 'name', "'P'")
+# methodTest('endswith', 'name', "'ete'")
 # operandTest(createMethodCall('length', 'name'), 'eq', 4)
 # operandTest(createMethodCall('indexof', 'name', "'Pe'"), 'eq', 0)
 # operandTest(createMethodCall('replace', 'name', "'ete'", "'at'"), 'eq', "'Pat'")
