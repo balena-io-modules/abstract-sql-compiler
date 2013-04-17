@@ -28,7 +28,7 @@ test '/pilot?$orderby=name desc', (result) ->
 			ORDER BY "pilot"."name" DESC
 		''')
 
-			
+
 test '/pilot?$orderby=name asc', (result) ->
 	it 'should order by name asc', ->
 		expect(result.query).to.equal('''

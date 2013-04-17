@@ -46,7 +46,7 @@ export ometa AbstractSQLRules2SQL {
 			]*
 		]
 		-> ('DELETE FROM ' + tables.join(', ') + where),
-	
+
 	InsertBody :indent =
 		{[]}:tables
 		[	Fields:fieldValues
@@ -60,7 +60,7 @@ export ometa AbstractSQLRules2SQL {
 			-> ('INSERT INTO ' + tables.join(', ') + ' (' + fieldValues[0].join(', ') + ')' + indent + 'VALUES (' + fieldValues[1].join(', ') + ')')
 		|	-> ('INSERT INTO ' + tables.join(', ') + ' DEFAULT VALUES')
 		),
-	
+
 	UpdateBody :indent =
 		{[]}:tables
 		{''}:where
@@ -80,7 +80,7 @@ export ometa AbstractSQLRules2SQL {
 		}
 		NestedIndent(indent):nestedIndent
 		-> ('UPDATE ' + tables.join(', ') + indent + 'SET ' + sets.join(',' + nestedIndent) + where),
-	
+
 	UpsertQuery :indent =
 		{[]}:tables
 		[	'UpsertQuery'
@@ -91,19 +91,19 @@ export ometa AbstractSQLRules2SQL {
 			{{query: update, bindings: this.fieldOrderings}}:update
 		]
 		-> [insert, update],
-	
+
 	InsertQuery :indent =
 		[	'InsertQuery'
 			InsertBody(indent):insert
 		]
 		-> insert,
-	
+
 	UpdateQuery :indent =
 		[	'UpdateQuery'
 			UpdateBody(indent):update
 		]
 		-> update,
-	
+
 	Fields =
 		'Fields'
 		{[]}:fields
@@ -127,7 +127,7 @@ export ometa AbstractSQLRules2SQL {
 			]*
 		]
 		-> [fields, values],
-	
+
 	Select =
 		'Select'
 		[	end
@@ -155,7 +155,7 @@ export ometa AbstractSQLRules2SQL {
 			)*:fields
 		]
 		-> fields,
-	
+
 	Table =
 		'From'
 		anything:table
@@ -164,12 +164,12 @@ export ometa AbstractSQLRules2SQL {
 		|	-> ''
 		):alias
 		-> ('"' + table + '"' + alias),
-	
+
 	Where :indent =
 		'Where'
 		BooleanValue(indent):ruleBody
 		-> ('WHERE ' + ruleBody),
-	
+
 	OrderBy :indent =
 		'OrderBy'
 		(	[	(	'ASC'
@@ -183,12 +183,12 @@ export ometa AbstractSQLRules2SQL {
 		)+:orders
 		NestedIndent(indent):nestedIndent
 		-> ('ORDER BY ' + orders.join(',' + nestedIndent)),
-	
+
 	Limit :indent =
 		'Limit'
 		NumericValue(indent):num
 		-> ('LIMIT ' + num),
-	
+
 	Offset :indent =
 		'Offset'
 		NumericValue(indent):num
@@ -303,7 +303,7 @@ export ometa AbstractSQLRules2SQL {
 			NumericValue(indent):mask
 		]
 		-> ('(' + operand + ' & ' + mask + ')'),
-	
+
 	BitwiseShiftRight :indent =
 		[	'BitwiseShiftRight'
 			NumericValue(indent):operand
@@ -352,13 +352,13 @@ export ometa AbstractSQLRules2SQL {
 		[	'And'
 			BooleanValue(indent)*:bools
 		]
-	->	bools.join(indent + 'AND '),
+		->	bools.join(indent + 'AND '),
 
 	Or :indent =
 		[	'Or'
 			BooleanValue(indent)*:bools
 		]
-	->	bools.join(indent + 'OR '),
+		->	bools.join(indent + 'OR '),
 
 	Exists :indent =
 		[	'Exists'
@@ -385,7 +385,7 @@ export ometa AbstractSQLRules2SQL {
 			AnyValue(indent):b
 		]
 		-> (a + comparisons[comparison] + b),
-	
+
 	Between :indent =
 		[	'Between'
 			AnyValue(indent):val

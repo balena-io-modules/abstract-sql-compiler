@@ -87,7 +87,7 @@ do ->
 					"favourite colour" = ?,
 					"licence" = ?
 				WHERE "pilot"."id" = 1
-			''')	
+			''')
 	test '/pilot(1)', 'POST', bindings, (result) ->
 		it 'should insert/update the pilot with id 1', ->
 			expect(result.query).to.equal('''
