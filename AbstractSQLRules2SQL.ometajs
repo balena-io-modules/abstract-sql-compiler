@@ -104,11 +104,6 @@ export ometa AbstractSQLRules2SQL {
 		]
 		-> update,
 	
-	Null =
-		:next
-		?(next===null)
-		-> null,
-	
 	Fields =
 		'Fields'
 		{[]}:fields
@@ -138,30 +133,25 @@ export ometa AbstractSQLRules2SQL {
 		[	end
 			{['1']}:fields
 		|
-			(	[
-					(	'Count'
+			(	[	(	'Count'
 						'*'
 						-> 'COUNT(*)'
 					|	:table
 						'*'
 						-> ('"' + table + '".*')
+					|	(	Field
+						|	ReferencedField
+						):field
+						anything:as
+						-> (field + ' AS "' + as + '"')
 					):field
-				|	(	Field
-					|	ReferencedField
-					):field
-					anything:as
-					-> (field + ' AS "' + as + '"')
 				]
 				-> field
-			|	(	Field
-				|	ReferencedField
-				)
+			|	Field
+			|	ReferencedField
 			|	'*'
 			|	Null
 				-> 'NULL'
-			|	anything:field
-				// TODO: Should escape "
-				-> ('"' + field + '"')
 			)*:fields
 		]
 		-> fields,
@@ -169,11 +159,11 @@ export ometa AbstractSQLRules2SQL {
 	Table =
 		'From'
 		anything:table
-		{[]}:alias
 		(	:alias
-			{['"' + alias + '"']}:alias
-		)?
-		-> ['"' + table + '"'].concat(alias).join(' AS '),
+			-> (' AS "' + alias + '"')
+		|	-> ''
+		):alias
+		-> ('"' + table + '"' + alias),
 	
 	Where :indent =
 		'Where'
@@ -182,15 +172,15 @@ export ometa AbstractSQLRules2SQL {
 	
 	OrderBy :indent =
 		'OrderBy'
-		{[]}:orders
-		[	(	'ASC'
-			|	'DESC'
-			):order
-			(	Field
-			|	ReferencedField
-			):field
-			{orders.push(field + ' ' + order)}
-		]+
+		(	[	(	'ASC'
+				|	'DESC'
+				):order
+				(	Field
+				|	ReferencedField
+				):field
+			]
+			-> (field + ' ' + order)
+		)+:orders
 		NestedIndent(indent):nestedIndent
 		-> ('ORDER BY ' + orders.join(',' + nestedIndent)),
 	
@@ -205,15 +195,17 @@ export ometa AbstractSQLRules2SQL {
 		-> ('OFFSET ' + num),
 
 	AnyValue :indent =
-			UnknownValue(indent)
+		(	UnknownValue(indent)
 		|	TextValue(indent)
 		|	NumericValue(indent)
-		|	BooleanValue(indent),
+		|	BooleanValue(indent)
+		),
 
 	UnknownValue :indent =
 		(	ReferencedField
 		|	Field
 		|	Bind
+		|	Null
 		|	NestedIndent(indent):nestedIndent
 			SelectQuery(nestedIndent):query
 			-> ('(' + nestedIndent + query + indent + ')')
@@ -227,10 +219,10 @@ export ometa AbstractSQLRules2SQL {
 
 	ReferencedField =
 		[	'ReferencedField'
-			:binding
+			:table
 			:field
 		]
-		-> ('"' + binding + '"."' + field + '"'),
+		-> ('"' + table + '"."' + field + '"'),
 
 	Bind =
 		[	'Bind'
@@ -239,6 +231,11 @@ export ometa AbstractSQLRules2SQL {
 		]
 		{this.fieldOrderings.push([tableName, field])}
 		-> '?',
+
+	Null =
+		:next
+		?(next===null)
+		-> null,
 
 	TextValue :indent =
 		(	UnknownValue(indent)
