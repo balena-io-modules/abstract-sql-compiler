@@ -47,6 +47,28 @@ export ometa AbstractSQLRules2SQL {
 		]
 		-> ('DELETE FROM ' + tables.join(', ') + where),
 
+	UpsertQuery :indent =
+		[	'UpsertQuery'
+			&InsertBody(indent):insert
+			{{query: insert, bindings: this.fieldOrderings}}:insert
+			{this.fieldOrderings = []}
+			UpdateBody(indent):update
+			{{query: update, bindings: this.fieldOrderings}}:update
+		]
+		-> [insert, update],
+
+	InsertQuery :indent =
+		[	'InsertQuery'
+			InsertBody(indent):insert
+		]
+		-> insert,
+
+	UpdateQuery :indent =
+		[	'UpdateQuery'
+			UpdateBody(indent):update
+		]
+		-> update,
+
 	InsertBody :indent =
 		{[]}:tables
 		[	Fields:fieldValues
@@ -70,9 +92,6 @@ export ometa AbstractSQLRules2SQL {
 		|	Where(indent):where
 			{indent + where}:where
 		]*
-		(	?(fieldValues[0].length > 0)
-		|	___UPDATE_QUERY_WITH_NO_FIELDS___.die
-		)
 		{[]}:sets
 		{	for(var i=0; i < fieldValues[0].length; i++) {
 				sets[i] = fieldValues[0][i] + ' = ' + fieldValues[1][i];
@@ -81,35 +100,11 @@ export ometa AbstractSQLRules2SQL {
 		NestedIndent(indent):nestedIndent
 		-> ('UPDATE ' + tables.join(', ') + indent + 'SET ' + sets.join(',' + nestedIndent) + where),
 
-	UpsertQuery :indent =
-		{[]}:tables
-		[	'UpsertQuery'
-			&InsertBody(indent):insert
-			{{query: insert, bindings: this.fieldOrderings}}:insert
-			{this.fieldOrderings = []}
-			UpdateBody(indent):update
-			{{query: update, bindings: this.fieldOrderings}}:update
-		]
-		-> [insert, update],
-
-	InsertQuery :indent =
-		[	'InsertQuery'
-			InsertBody(indent):insert
-		]
-		-> insert,
-
-	UpdateQuery :indent =
-		[	'UpdateQuery'
-			UpdateBody(indent):update
-		]
-		-> update,
-
 	Fields =
 		'Fields'
 		{[]}:fields
 		{[]}:values
-		[
-			[	anything:field
+		[	[	anything:field
 				{fields.push('"' + field + '"')}
 				(	'?'
 				|	true
@@ -124,7 +119,7 @@ export ometa AbstractSQLRules2SQL {
 					-> ("'" + value + "'")
 				):value
 				{values.push(value)}
-			]*
+			]+
 		]
 		-> [fields, values],
 
@@ -132,8 +127,7 @@ export ometa AbstractSQLRules2SQL {
 		'Select'
 		[	end
 			{['1']}:fields
-		|
-			(	[	(	'Count'
+		|	(	[	(	'Count'
 						'*'
 						-> 'COUNT(*)'
 					|	:table
