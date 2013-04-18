@@ -13,8 +13,8 @@
 		"ometa-js": "1.x"
 	},
 	"devDependencies": {
-		"odata-to-abstract-sql": "git+ssh://git@bitbucket.org:rulemotion/odata-to-abstract-sql.git",
-		"odata-parser": "git+ssh://git@bitbucket.org:rulemotion/odata-parser.git",
+		"odata-parser": "git+ssh://git@bitbucket.org:rulemotion/odata-parser.git#v0.0.1",
+		"odata-to-abstract-sql": "git+ssh://git@bitbucket.org:rulemotion/odata-to-abstract-sql.git#v0.0.1",
 		"chai": "latest"
 	}
 }
