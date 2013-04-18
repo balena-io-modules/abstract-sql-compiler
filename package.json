@@ -1,20 +1,20 @@
 {
-	"name": "abstract-sql-compiler",
-	"version": "0.0.0",
-	"description": "A translator for abstract sql into sql.",
-	"scripts": {
-		"test": "mocha",
-		"postinstall": "npm install ometa-js@1.x && node node_modules/ometa-js/bin/ometajs2js --input AbstractSQLOptimiser.ometajs --output AbstractSQLOptimiser.js && node node_modules/ometa-js/bin/ometajs2js --input AbstractSQLRules2SQL.ometajs --output AbstractSQLRules2SQL.js"
-	},
-	"repository": "",
-	"author": "",
-	"dependencies": {
-		"lodash": "1.1.x",
-		"ometa-js": "1.x"
-	},
-	"devDependencies": {
-		"odata-parser": "git+ssh://git@bitbucket.org:rulemotion/odata-parser.git#v0.0.1",
-		"odata-to-abstract-sql": "git+ssh://git@bitbucket.org:rulemotion/odata-to-abstract-sql.git#v0.0.1",
-		"chai": "latest"
-	}
+  "name": "abstract-sql-compiler",
+  "version": "0.0.1",
+  "description": "A translator for abstract sql into sql.",
+  "scripts": {
+    "test": "mocha",
+    "postinstall": "npm install ometa-js@1.x && node node_modules/ometa-js/bin/ometajs2js --input AbstractSQLOptimiser.ometajs --output AbstractSQLOptimiser.js && node node_modules/ometa-js/bin/ometajs2js --input AbstractSQLRules2SQL.ometajs --output AbstractSQLRules2SQL.js"
+  },
+  "repository": "",
+  "author": "",
+  "dependencies": {
+    "lodash": "1.1.x",
+    "ometa-js": "1.x"
+  },
+  "devDependencies": {
+    "odata-parser": "git+ssh://git@bitbucket.org:rulemotion/odata-parser.git#v0.0.1",
+    "odata-to-abstract-sql": "git+ssh://git@bitbucket.org:rulemotion/odata-to-abstract-sql.git#v0.0.1",
+    "chai": "latest"
+  }
 }
