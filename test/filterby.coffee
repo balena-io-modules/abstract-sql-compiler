@@ -30,6 +30,8 @@ sqlOps =
 	sub: ' -'
 	mul: ' *'
 	div: ' /'
+sqlOpBrackets =
+	or: true
 
 createExpression = (lhs, op, rhs) ->
 	if lhs is 'not'
@@ -37,9 +39,14 @@ createExpression = (lhs, op, rhs) ->
 			odata: 'not ' + if op.odata? then '(' + op.odata + ')' else op
 			sql: 'NOT (\n\t' + (op.sql ? operandToSQL(op)) + '\n)'
 		}
+	lhsSql = lhs.sql ? operandToSQL(lhs)
+	rhsSql = rhs.sql ? operandToSQL(rhs)
+	sql = lhsSql + sqlOps[op] + ' ' + rhsSql
+	if sqlOpBrackets[op]
+		sql = '(' + sql + ')'
 	return {
 		odata: (lhs.odata ? lhs) + ' ' + op + ' ' + (rhs.odata ? rhs)
-		sql: (lhs.sql ? operandToSQL(lhs)) + sqlOps[op] + ' ' + (rhs.sql ? operandToSQL(rhs))
+		sql
 	}
 createMethodCall = (method, args...) ->
 	return {
@@ -141,6 +148,19 @@ do ->
 				WHERE "pilot"."id" = "pilot-can_fly-plane"."pilot"
 				AND "plane"."id" = "pilot-can_fly-plane"."plane"
 				AND ''' + sql
+
+do ->
+	oneEqOne = createExpression(1, 'eq', 1)
+	{odata, sql} = createExpression(oneEqOne, 'or', oneEqOne)
+	test '/pilot(1)/pilot__can_fly__plane?$filter=' + odata, (result) ->
+		it 'should select from pilot__can_fly__plane where "' + odata + '"', ->
+			expect(result.query).to.equal '''
+				SELECT "pilot-can_fly-plane".*
+				FROM "pilot",
+					"pilot-can_fly-plane"
+				WHERE ''' + sql + '\n' + '''
+				AND "pilot"."id" = "pilot-can_fly-plane"."pilot"
+				AND "pilot"."id" = 1'''
 
 # methodTest('substringof', "'Pete'", 'name')
 # methodTest('startswith', 'name', "'P'")
