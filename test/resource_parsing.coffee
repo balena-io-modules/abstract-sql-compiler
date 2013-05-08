@@ -66,7 +66,7 @@ test '/plane(1)/pilot__can_fly__plane/pilot', (result) ->
 do ->
 	bindings = [
 		['pilot', 'id']
-		['pilot', 'is experienced']
+		['pilot', 'is_experienced']
 		['pilot', 'name']
 		['pilot', 'age']
 		['pilot', 'favourite colour']
