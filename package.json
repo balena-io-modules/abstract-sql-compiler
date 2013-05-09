@@ -1,6 +1,6 @@
 {
   "name": "abstract-sql-compiler",
-  "version": "0.0.3",
+  "version": "0.0.4",
   "description": "A translator for abstract sql into sql.",
   "scripts": {
     "test": "mocha",
