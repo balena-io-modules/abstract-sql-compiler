@@ -22,8 +22,8 @@ test '/pilot(1)/licence', (result) ->
 			SELECT "licence".*
 			FROM "pilot",
 				"licence"
-			WHERE "licence"."id" = "pilot"."licence"
-			AND "pilot"."id" = 1
+			WHERE "pilot"."id" = 1
+			AND "licence"."id" = "pilot"."licence"
 		''')
 
 
@@ -33,8 +33,8 @@ test '/licence(1)/pilot', (result) ->
 			SELECT "pilot".*
 			FROM "licence",
 				"pilot"
-			WHERE "licence"."id" = "pilot"."licence"
-			AND "licence"."id" = 1
+			WHERE "licence"."id" = 1
+			AND "licence"."id" = "pilot"."licence"
 		''')
 
 
@@ -45,9 +45,9 @@ test '/pilot(1)/pilot__can_fly__plane/plane', (result) ->
 			FROM "pilot",
 				"pilot-can_fly-plane",
 				"plane"
-			WHERE "plane"."id" = "pilot-can_fly-plane"."plane"
+			WHERE "pilot"."id" = 1
+			AND "plane"."id" = "pilot-can_fly-plane"."plane"
 			AND "pilot"."id" = "pilot-can_fly-plane"."pilot"
-			AND "pilot"."id" = 1
 		''')
 
 
@@ -58,9 +58,9 @@ test '/plane(1)/pilot__can_fly__plane/pilot', (result) ->
 			FROM "plane",
 				"pilot-can_fly-plane",
 				"pilot"
-			WHERE "pilot"."id" = "pilot-can_fly-plane"."pilot"
+			WHERE "plane"."id" = 1
+			AND "pilot"."id" = "pilot-can_fly-plane"."pilot"
 			AND "plane"."id" = "pilot-can_fly-plane"."plane"
-			AND "plane"."id" = 1
 		''')
 
 do ->
@@ -111,8 +111,8 @@ test '/pilot(1)/pilot__can_fly__plane/$links/plane', (result) ->
 			SELECT "pilot-can_fly-plane"."plane"
 			FROM "pilot",
 				"pilot-can_fly-plane"
-			WHERE "pilot"."id" = "pilot-can_fly-plane"."pilot"
-			AND "pilot"."id" = 1
+			WHERE "pilot"."id" = 1
+			AND "pilot"."id" = "pilot-can_fly-plane"."pilot"
 		''')
 
 

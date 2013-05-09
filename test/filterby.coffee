@@ -131,10 +131,10 @@ do ->
 				FROM "pilot",
 					"pilot-can_fly-plane",
 					"plane"
-				WHERE "plane"."id" = "pilot-can_fly-plane"."plane"
+				WHERE "pilot"."id" = 1
+				AND "plane"."id" = "pilot-can_fly-plane"."plane"
 				AND ''' + sql + '\n' + '''
-				AND "pilot"."id" = "pilot-can_fly-plane"."pilot"
-				AND "pilot"."id" = 1'''
+				AND "pilot"."id" = "pilot-can_fly-plane"."pilot"'''
 
 do ->
 	{odata, sql} = createExpression('pilot__can_fly__plane/plane/id', 'eq', 10)
@@ -158,9 +158,9 @@ do ->
 				SELECT "pilot-can_fly-plane".*
 				FROM "pilot",
 					"pilot-can_fly-plane"
-				WHERE ''' + sql + '\n' + '''
-				AND "pilot"."id" = "pilot-can_fly-plane"."pilot"
-				AND "pilot"."id" = 1'''
+				WHERE "pilot"."id" = 1
+				AND ''' + sql + '\n' + '''
+				AND "pilot"."id" = "pilot-can_fly-plane"."pilot"'''
 
 # methodTest('substringof', "'Pete'", 'name')
 # methodTest('startswith', 'name', "'P'")
