@@ -94,6 +94,25 @@ do ->
 				INSERT INTO "pilot" ("id", "is experienced", "name", "age", "favourite colour", "licence")
 				VALUES (?, ?, ?, ?, ?, ?)
 			''')
+do ->
+	bindings = [
+		['pilot', 'id']
+		['pilot', 'is_experienced']
+	]
+	testFunc = (result) ->
+		it 'should insert/update the pilot with id 1', ->
+			expect(result[0].query).to.equal('''
+				INSERT INTO "pilot" ("id", "is experienced")
+				VALUES (?, ?)
+			''')
+			expect(result[1].query).to.equal('''
+				UPDATE "pilot"
+				SET "id" = ?,
+					"is experienced" = ?
+				WHERE "pilot"."id" = 1
+			''')
+	test '/pilot(1)', 'PATCH', bindings, {is_experienced:true}, testFunc
+	test '/pilot(1)', 'MERGE', bindings, {is_experienced:true}, testFunc
 
 
 test '/pilot(1)/$links/licence', (result) ->

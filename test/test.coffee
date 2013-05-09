@@ -15,19 +15,23 @@ bindingsTest = (actualBindings, expectedBindings = false) ->
 		it 'should not have matching bindings', ->
 			expect(actualBindings).to.deep.equal(expectedBindings)
 
-runExpectation = (describe, input, method, expectedBindings, expectation) ->
+runExpectation = (describe, input, method, expectedBindings, body, expectation) ->
 	if !expectation?
-		if !expectedBindings?
-			expectation = method
-			method = 'GET'
+		if !body?
+			if !expectedBindings?
+				expectation = method
+				method = 'GET'
+			else
+				expectation = expectedBindings
+			expectedBindings = false
 		else
-			expectation = expectedBindings
-		expectedBindings = false
+			expectation = body
+		body = {}
 
-	describe 'Parsing ' + input, ->
+	describe 'Parsing ' + method + ' ' + input, ->
 		try
 			input = ODataParser.matchAll(input, 'OData')
-			input = OData2AbstractSQL.match(input, 'Process', [method])
+			input = OData2AbstractSQL.match(input, 'Process', [method, body])
 			result = AbstractSQLCompiler.compile(null, input)
 			if _.isArray(result)
 				for actualResult in result
