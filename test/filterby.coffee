@@ -181,3 +181,17 @@ do ->
 # operandTest(createMethodCall('round', 'age'), 'eq', 25)
 # operandTest(createMethodCall('floor', 'age'), 'eq', 25)
 # operandTest(createMethodCall('ceiling', 'age'), 'eq', 25)
+
+test.only "/pilot?$filter=pilot__can_fly__plane/any(d:d/plane/name eq 'Concorde')", (result) ->
+	it 'should select from pilot where ...', ->
+		expect(result.query).to.equal '''
+			SELECT "pilot".*
+			FROM "pilot"
+			WHERE EXISTS (
+				SELECT 1
+				FROM "pilot-can_fly-plane",
+					"plane"
+				WHERE "pilot"."id" = "pilot-can_fly-plane"."pilot"
+				AND "plane"."id" = "pilot-can_fly-plane"."plane"
+				AND "plane"."name" = 'Concorde'
+			)'''
