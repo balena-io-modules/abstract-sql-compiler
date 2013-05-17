@@ -88,11 +88,14 @@ do ->
 					"licence" = ?
 				WHERE "pilot"."id" = 1
 			''')
-	test '/pilot', 'POST', bindings, (result) ->
+	bindings = [
+		['pilot', 'name']
+	]
+	test '/pilot', 'POST', bindings, {name: 'Peter'}, (result) ->
 		it 'should insert/update the pilot with id 1', ->
 			expect(result.query).to.equal('''
-				INSERT INTO "pilot" ("id", "is experienced", "name", "age", "favourite colour", "licence")
-				VALUES (?, ?, ?, ?, ?, ?)
+				INSERT INTO "pilot" ("name")
+				VALUES (?)
 			''')
 do ->
 	bindings = [
@@ -133,11 +136,15 @@ do ->
 					"id" = ?
 				WHERE "pilot-can_fly-plane"."id" = 1
 			''')
-	test '/pilot__can_fly__plane', 'POST', bindings, (result) ->
+	bindings = [
+		['pilot__can_fly__plane', 'pilot']
+		['pilot__can_fly__plane', 'plane']
+	]
+	test '/pilot__can_fly__plane', 'POST', bindings, {pilot:2, plane:3}, (result) ->
 		it 'should insert/update the pilot-can_fly-plane with id 1', ->
 			expect(result.query).to.equal('''
-				INSERT INTO "pilot-can_fly-plane" ("pilot", "plane", "id")
-				VALUES (?, ?, ?)
+				INSERT INTO "pilot-can_fly-plane" ("pilot", "plane")
+				VALUES (?, ?)
 			''')
 do ->
 	bindings = [
