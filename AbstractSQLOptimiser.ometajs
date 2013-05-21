@@ -496,6 +496,18 @@ export ometa AbstractSQLOptimiser <: AbstractSQLValidator {
 		|	^Not
 		),
 
+	BooleanValue =
+			Substringof
+		|	^BooleanValue,
+
+	Substringof =
+		[	'Substringof'
+			TextValue:needle
+			TextValue:haystack
+		]
+		SetHelped
+		-> ['Like', ['Concat', ['Text', '%'], needle, ['Text', '%']], haystack],
+
 	Helped :disableMemoisationHack =
 		?(this.helped === true)
 		{this.helped = false},

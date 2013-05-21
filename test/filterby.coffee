@@ -51,7 +51,13 @@ createExpression = (lhs, op, rhs) ->
 createMethodCall = (method, args...) ->
 	return {
 		odata: method + '(' + (arg.odata ? arg for arg in args).join(',') + ')'
-		sql: method + '(' + (arg.sql ? operandToSQL(arg) for arg in args).join(', ') + ')'
+		sql: (
+			switch method
+				when 'substringof'
+					"('%' || " + (args[0].sql ? operandToSQL(args[0])) + " || '%') LIKE " + (args[1].sql ? operandToSQL(args[1]))
+				else
+					method + '(' + (arg.sql ? operandToSQL(arg) for arg in args).join(', ') + ')'
+		)
 	}
 
 operandTest = (lhs, op, rhs = 'name') ->
@@ -65,7 +71,7 @@ operandTest = (lhs, op, rhs = 'name') ->
 
 methodTest = (args...) ->
 	{odata, sql} = createMethodCall.apply(null, args)
-	test.skip '/pilot?$filter=' + odata, (result) ->
+	test '/pilot?$filter=' + odata, (result) ->
 		it 'should select from pilot where "' + odata + '"', ->
 			expect(result.query).to.equal '''
 				SELECT "pilot".*
@@ -162,7 +168,7 @@ do ->
 				AND ''' + sql + '\n' + '''
 				AND "pilot"."id" = "pilot-can_fly-plane"."pilot"'''
 
-# methodTest('substringof', "'Pete'", 'name')
+methodTest('substringof', "'Pete'", 'name')
 # methodTest('startswith', 'name', "'P'")
 # methodTest('endswith', 'name', "'ete'")
 # operandTest(createMethodCall('length', 'name'), 'eq', 4)
