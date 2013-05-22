@@ -506,7 +506,7 @@ export ometa AbstractSQLOptimiser <: AbstractSQLValidator {
 			TextValue:haystack
 		]
 		SetHelped
-		-> ['Like', ['Concat', ['Text', '%'], needle, ['Text', '%']], haystack],
+		-> ['Like', haystack, ['Concat', ['Text', '%'], needle, ['Text', '%']]],
 
 	Helped :disableMemoisationHack =
 		?(this.helped === true)

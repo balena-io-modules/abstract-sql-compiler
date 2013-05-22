@@ -54,7 +54,7 @@ createMethodCall = (method, args...) ->
 		sql: (
 			switch method
 				when 'substringof'
-					"('%' || " + (args[0].sql ? operandToSQL(args[0])) + " || '%') LIKE " + (args[1].sql ? operandToSQL(args[1]))
+					(args[1].sql ? operandToSQL(args[1])) + " LIKE ('%' || " + (args[0].sql ? operandToSQL(args[0])) + " || '%')"
 				else
 					method + '(' + (arg.sql ? operandToSQL(arg) for arg in args).join(', ') + ')'
 		)
