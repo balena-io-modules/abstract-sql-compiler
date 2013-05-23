@@ -2,6 +2,7 @@ expect = require('chai').expect
 test = require('./test')
 clientModel = require('./client-model.json')
 _ = require('lodash')
+{pilotFields, pilotCanFlyPlaneFields} = require('./fields')
 
 operandToSQL = (operand) ->
 	if _.isNumber(operand)
@@ -65,7 +66,7 @@ operandTest = (lhs, op, rhs = 'name') ->
 	test '/pilot?$filter=' + odata, (result) ->
 		it 'should select from pilot where "' + odata + '"', ->
 			expect(result.query).to.equal '''
-				SELECT "pilot".*
+				SELECT ''' + pilotFields + '\n' + '''
 				FROM "pilot"
 				WHERE ''' + sql
 
@@ -74,7 +75,7 @@ methodTest = (args...) ->
 	test '/pilot?$filter=' + odata, (result) ->
 		it 'should select from pilot where "' + odata + '"', ->
 			expect(result.query).to.equal '''
-				SELECT "pilot".*
+				SELECT ''' + pilotFields + '\n' + '''
 				FROM "pilot"
 				WHERE ''' + sql
 
@@ -122,7 +123,7 @@ do ->
 	test '/pilot?$filter=' + odata, (result) ->
 		it 'should select from pilot where "' + odata + '"', ->
 			expect(result.query).to.equal '''
-				SELECT "pilot".*
+				SELECT ''' + pilotFields + '\n' + '''
 				FROM "pilot",
 					"pilot-can_fly-plane"
 				WHERE "pilot"."id" = "pilot-can_fly-plane"."pilot"
@@ -133,7 +134,7 @@ do ->
 	test '/pilot(1)/pilot__can_fly__plane?$filter=' + odata, (result) ->
 		it 'should select from pilot__can_fly__plane where "' + odata + '"', ->
 			expect(result.query).to.equal '''
-				SELECT "pilot-can_fly-plane".*
+				SELECT ''' + pilotCanFlyPlaneFields + '\n' + '''
 				FROM "pilot",
 					"pilot-can_fly-plane",
 					"plane"
@@ -147,7 +148,7 @@ do ->
 	test '/pilot?$filter=' + odata, (result) ->
 		it 'should select from pilot where "' + odata + '"', ->
 			expect(result.query).to.equal '''
-				SELECT "pilot".*
+				SELECT ''' + pilotFields + '\n' + '''
 				FROM "pilot",
 					"pilot-can_fly-plane",
 					"plane"
@@ -161,7 +162,7 @@ do ->
 	test '/pilot(1)/pilot__can_fly__plane?$filter=' + odata, (result) ->
 		it 'should select from pilot__can_fly__plane where "' + odata + '"', ->
 			expect(result.query).to.equal '''
-				SELECT "pilot-can_fly-plane".*
+				SELECT ''' + pilotCanFlyPlaneFields + '\n' + '''
 				FROM "pilot",
 					"pilot-can_fly-plane"
 				WHERE "pilot"."id" = 1
@@ -191,7 +192,7 @@ methodTest('substringof', "'Pete'", 'name')
 test "/pilot?$filter=pilot__can_fly__plane/any(d:d/plane/name eq 'Concorde')", (result) ->
 	it 'should select from pilot where ...', ->
 		expect(result.query).to.equal '''
-			SELECT "pilot".*
+			SELECT ''' + pilotFields + '\n' + '''
 			FROM "pilot"
 			WHERE EXISTS (
 				SELECT 1

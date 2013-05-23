@@ -1,5 +1,6 @@
 expect = require('chai').expect
 test = require('./test')
+{pilotFields} = require('./fields')
 
 test '/pilot?$select=name', (result) ->
 	it 'should select name from pilot', ->
@@ -28,7 +29,7 @@ test '/pilot?$select=pilot/name,age', (result) ->
 test '/pilot?$select=*', (result) ->
 	it 'should select * from pilot', ->
 		expect(result.query).to.equal('''
-			SELECT "pilot".*
+			SELECT ''' + pilotFields + '\n' + '''
 			FROM "pilot"
 		''')
 

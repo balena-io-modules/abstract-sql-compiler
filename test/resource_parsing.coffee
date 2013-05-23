@@ -1,17 +1,18 @@
 expect = require('chai').expect
 test = require('./test')
+{pilotFields} = require('./fields')
 
 test '/pilot', (result) ->
 	it 'should select from pilot', ->
 		expect(result.query).to.equal('''
-			SELECT "pilot".*
+			SELECT ''' + pilotFields + '\n' + '''
 			FROM "pilot"
 		''')
 
 test '/pilot(1)', (result) ->
 	it 'should select from pilot with id', ->
 		expect(result.query).to.equal('''
-			SELECT "pilot".*
+			SELECT ''' + pilotFields + '\n' + '''
 			FROM "pilot"
 			WHERE "pilot"."id" = 1
 		''')
@@ -19,7 +20,7 @@ test '/pilot(1)', (result) ->
 test '/pilot(1)/licence', (result) ->
 	it 'should select from the licence of pilot with id', ->
 		expect(result.query).to.equal('''
-			SELECT "licence".*
+			SELECT "licence"."id"
 			FROM "pilot",
 				"licence"
 			WHERE "pilot"."id" = 1
@@ -30,7 +31,7 @@ test '/pilot(1)/licence', (result) ->
 test '/licence(1)/pilot', (result) ->
 	it 'should select from the pilots of licence with id', ->
 		expect(result.query).to.equal('''
-			SELECT "pilot".*
+			SELECT ''' + pilotFields + '\n' + '''
 			FROM "licence",
 				"pilot"
 			WHERE "licence"."id" = 1
@@ -41,7 +42,7 @@ test '/licence(1)/pilot', (result) ->
 test '/pilot(1)/pilot__can_fly__plane/plane', (result) ->
 	it 'should select from the plane of pilot with id', ->
 		expect(result.query).to.equal('''
-			SELECT "plane".*
+			SELECT "plane"."id", "plane"."name"
 			FROM "pilot",
 				"pilot-can_fly-plane",
 				"plane"
@@ -54,7 +55,7 @@ test '/pilot(1)/pilot__can_fly__plane/plane', (result) ->
 test '/plane(1)/pilot__can_fly__plane/pilot', (result) ->
 	it 'should select from the pilots of plane with id', ->
 		expect(result.query).to.equal('''
-			SELECT "pilot".*
+			SELECT ''' + pilotFields + '\n' + '''
 			FROM "plane",
 				"pilot-can_fly-plane",
 				"pilot"
