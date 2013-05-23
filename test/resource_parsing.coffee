@@ -64,6 +64,14 @@ test '/plane(1)/pilot__can_fly__plane/pilot', (result) ->
 			AND "plane"."id" = "pilot-can_fly-plane"."plane"
 		''')
 
+
+test '/pilot(1)', 'DELETE', (result) ->
+	it 'should delete the pilot with id 1', ->
+		expect(result.query).to.equal('''
+			DELETE FROM "pilot"
+			WHERE "pilot"."id" = 1
+		''')
+
 do ->
 	bindings = [
 		['pilot', 'id']
@@ -117,6 +125,14 @@ do ->
 			''')
 	test '/pilot(1)', 'PATCH', bindings, {is_experienced:true}, testFunc
 	test '/pilot(1)', 'MERGE', bindings, {is_experienced:true}, testFunc
+
+
+test '/pilot__can_fly__plane(1)', 'DELETE', (result) ->
+	it 'should delete the pilot with id 1', ->
+		expect(result.query).to.equal('''
+			DELETE FROM "pilot-can_fly-plane"
+			WHERE "pilot-can_fly-plane"."id" = 1
+		''')
 
 do ->
 	bindings = [
