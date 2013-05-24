@@ -105,14 +105,11 @@ ometa AbstractSQLValidator {
 				|	[	:table
 						'*'
 					]
-				|	[	(	Field
-						|	ReferencedField
-						):field
+				|	[	AnyValue:value
 						anything:as
 					]
-					-> [field, as]
-				|	Field
-				|	ReferencedField
+					-> [value, as]
+				|	AnyValue
 				|	'*'
 				|	Null
 				)*:fields
