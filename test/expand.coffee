@@ -2,7 +2,7 @@ expect = require('chai').expect
 test = require('./test')
 {pilotFields, pilotCanFlyPlaneFields} = require('./fields')
 
-test '/pilot?$expand=licence', (result) ->
+test.postgres '/pilot?$expand=licence', (result) ->
 	it 'should select from pilot.*, licence.*', ->
 		expect(result.query).to.equal '''
 			SELECT array_to_json(array_agg("licence".*)) AS "licence", ''' +  _.reject(pilotFields, (field) -> field is '"pilot"."licence"').join(', ') + '\n' + '''
@@ -12,7 +12,7 @@ test '/pilot?$expand=licence', (result) ->
 			GROUP BY "pilot"."id"'''
 
 
-test '/pilot?$expand=pilot__can_fly__plane/plane', (result) ->
+test.postgres '/pilot?$expand=pilot__can_fly__plane/plane', (result) ->
 	it 'should select from pilot.*, plane.*', ->
 		expect(result.query).to.equal '''
 			SELECT array_to_json(array_agg("pilot-can_fly-plane".*)) AS "pilot-can_fly-plane", ''' + pilotFields.join(', ') + '\n' + '''
@@ -27,7 +27,7 @@ test '/pilot?$expand=pilot__can_fly__plane/plane', (result) ->
 			GROUP BY "pilot"."id"'''
 
 
-test '/pilot?$expand=pilot__can_fly__plane/plane,licence', (result) ->
+test.postgres '/pilot?$expand=pilot__can_fly__plane/plane,licence', (result) ->
 	it 'should select from pilot.*, plane.*', ->
 		expect(result.query).to.equal '''
 			SELECT array_to_json(array_agg("pilot-can_fly-plane".*)) AS "pilot-can_fly-plane", array_to_json(array_agg("licence".*)) AS "licence", ''' + _.reject(pilotFields, (field) -> field is '"pilot"."licence"').join(', ') + '\n' + '''

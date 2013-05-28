@@ -15,7 +15,7 @@ bindingsTest = (actualBindings, expectedBindings = false) ->
 		it 'should not have matching bindings', ->
 			expect(actualBindings).to.deep.equal(expectedBindings)
 
-runExpectation = (describe, input, method, expectedBindings, body, expectation) ->
+runExpectation = (describe, engine, input, method, expectedBindings, body, expectation) ->
 	if !expectation?
 		if !body?
 			if !expectedBindings?
@@ -32,7 +32,7 @@ runExpectation = (describe, input, method, expectedBindings, body, expectation) 
 		try
 			input = ODataParser.matchAll(input, 'OData')
 			input = OData2AbstractSQL.match(input, 'Process', [method, body])
-			result = AbstractSQLCompiler.compile(null, input)
+			result = AbstractSQLCompiler.compile(engine, input)
 			if _.isArray(result)
 				for actualResult in result
 					bindingsTest(actualResult.bindings, expectedBindings)
@@ -42,6 +42,13 @@ runExpectation = (describe, input, method, expectedBindings, body, expectation) 
 		catch e
 			expectation(e)
 
-module.exports = runExpectation.bind(null, describe)
-module.exports.skip = runExpectation.bind(null, describe.skip)
-module.exports.only = runExpectation.bind(null, describe.only)
+bindRunExpectation = (engine) ->
+	bound = runExpectation.bind(null, describe, engine)
+	bound.skip = runExpectation.bind(null, describe.skip, engine)
+	bound.only = runExpectation.bind(null, describe.only, engine)
+	return bound
+
+module.exports = bindRunExpectation()
+module.exports.postgres = bindRunExpectation('postgres')
+module.exports.mysql = bindRunExpectation('mysql')
+module.exports.websql = bindRunExpectation('websql')
