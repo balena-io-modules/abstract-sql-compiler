@@ -432,7 +432,13 @@ export ometa AbstractSQLRules2SQL {
 				):field
 			]
 		]
-		-> ('array_to_json(array_agg("' + table + '".' + field + '))'),
+		{'"' + table + '".' + field}:field
+		(	?(this.engine == 'postgres')
+			-> ('array_to_json(array_agg(' + field + '))')
+		|	?(this.engine == 'mysql')
+			-> ("'[' || string_agg(" + field + ", ',') || ']'")
+		|	{throw 'AggregateJSON not supported on "' + this.engine + '"'}
+		),
 
 	Process =
 			{this.fieldOrderings = []}
