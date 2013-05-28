@@ -3,8 +3,8 @@ test = require('./test')
 {pilotFields, pilotCanFlyPlaneFields} = require('./fields')
 
 postgresAgg = (field) -> 'array_to_json(array_agg(' + field + '))'
-mysqlAgg = (field) -> "'[' || string_agg(" + field + ", ',') || ']'"
-websqlAgg = (field) -> "'[' || group_concat(" + field + ", ',') || ']'"
+mysqlAgg = websqlAgg = (field) -> "'[' || group_concat(" + field + ", ',') || ']'"
+(field) -> "'[' || group_concat(" + field + ", ',') || ']'"
 do ->
 	testFunc = (aggFunc) -> (result) ->
 		it 'should select from pilot.*, aggregated licence', ->
