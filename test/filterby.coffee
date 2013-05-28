@@ -4,7 +4,14 @@ clientModel = require('./client-model.json')
 _ = require('lodash')
 {pilotFields, pilotCanFlyPlaneFields} = require('./fields')
 
+operandToOData = (operand) ->
+	if operand.odata?
+		return operand.odata
+	return operand
+
 operandToSQL = (operand) ->
+	if operand.sql?
+		return operand.sql
 	if _.isNumber(operand)
 		return operand
 	if _.isString(operand)
@@ -37,27 +44,27 @@ sqlOpBrackets =
 createExpression = (lhs, op, rhs) ->
 	if lhs is 'not'
 		return {
-			odata: 'not ' + if op.odata? then '(' + op.odata + ')' else op
+			odata: 'not ' + if op.odata? then '(' + op.odata + ')' else operandToOData(op)
 			sql: 'NOT (\n\t' + (op.sql ? operandToSQL(op)) + '\n)'
 		}
-	lhsSql = lhs.sql ? operandToSQL(lhs)
-	rhsSql = rhs.sql ? operandToSQL(rhs)
+	lhsSql = operandToSQL(lhs)
+	rhsSql = operandToSQL(rhs)
 	sql = lhsSql + sqlOps[op] + ' ' + rhsSql
 	if sqlOpBrackets[op]
 		sql = '(' + sql + ')'
 	return {
-		odata: (lhs.odata ? lhs) + ' ' + op + ' ' + (rhs.odata ? rhs)
+		odata: operandToOData(lhs) + ' ' + op + ' ' + operandToOData(rhs)
 		sql
 	}
 createMethodCall = (method, args...) ->
 	return {
-		odata: method + '(' + (arg.odata ? arg for arg in args).join(',') + ')'
+		odata: method + '(' + (operandToOData(arg) for arg in args).join(',') + ')'
 		sql: (
 			switch method
 				when 'substringof'
-					(args[1].sql ? operandToSQL(args[1])) + " LIKE ('%' || " + (args[0].sql ? operandToSQL(args[0])) + " || '%')"
+					operandToSQL(args[1]) + " LIKE ('%' || " + operandToSQL(args[0]) + " || '%')"
 				else
-					method + '(' + (arg.sql ? operandToSQL(arg) for arg in args).join(', ') + ')'
+					method + '(' + (operandToSQL(arg) for arg in args).join(', ') + ')'
 		)
 	}
 
