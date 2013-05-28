@@ -4,6 +4,7 @@ test = require('./test')
 
 postgresAgg = (field) -> 'array_to_json(array_agg(' + field + '))'
 mysqlAgg = (field) -> "'[' || string_agg(" + field + ", ',') || ']'"
+websqlAgg = (field) -> "'[' || group_concat(" + field + ", ',') || ']'"
 do ->
 	testFunc = (aggFunc) -> (result) ->
 		it 'should select from pilot.*, aggregated licence', ->
@@ -15,6 +16,7 @@ do ->
 				GROUP BY "pilot"."id"'''
 	test.postgres '/pilot?$expand=licence', testFunc(postgresAgg)
 	test.mysql '/pilot?$expand=licence', testFunc(mysqlAgg)
+	test.websql '/pilot?$expand=licence', testFunc(websqlAgg)
 
 
 do ->
@@ -33,6 +35,7 @@ do ->
 				GROUP BY "pilot"."id"'''
 	test.postgres '/pilot?$expand=pilot__can_fly__plane/plane', testFunc(postgresAgg)
 	test.mysql '/pilot?$expand=pilot__can_fly__plane/plane', testFunc(mysqlAgg)
+	test.websql '/pilot?$expand=pilot__can_fly__plane/plane', testFunc(websqlAgg)
 
 
 do ->
@@ -53,3 +56,4 @@ do ->
 				GROUP BY "pilot"."id"'''
 	test.postgres '/pilot?$expand=pilot__can_fly__plane/plane,licence', testFunc(postgresAgg)
 	test.mysql '/pilot?$expand=pilot__can_fly__plane/plane,licence', testFunc(mysqlAgg)
+	test.websql '/pilot?$expand=pilot__can_fly__plane/plane,licence', testFunc(websqlAgg)
