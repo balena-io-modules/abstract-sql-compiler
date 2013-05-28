@@ -16,15 +16,18 @@ export ometa AbstractSQLRules2SQL {
 		NestedIndent(indent):nestedIndent
 		{[]}:tables
 		{''}:where
+		{''}:groupBy
 		{''}:orderBy
 		{''}:limit
 		{''}:offset
 		[	'SelectQuery'
 			[	Select:fields
-			|	Table:table
+			|	Table(indent):table
 				{tables.push(table)}
 			|	Where(indent):where
 				{indent + where}:where
+			|	GroupBy(indent):groupBy
+				{indent + groupBy}:groupBy
 			|	OrderBy(indent):orderBy
 				{indent + orderBy}:orderBy
 			|	Limit(indent):limit
@@ -33,13 +36,13 @@ export ometa AbstractSQLRules2SQL {
 				{indent + offset}:offset
 			]*
 		]
-		-> ('SELECT ' + fields.join(', ') + indent + 'FROM ' + tables.join(',' + nestedIndent) + where + orderBy + limit + offset),
+		-> ('SELECT ' + fields.join(', ') + indent + 'FROM ' + tables.join(',' + nestedIndent) + where + groupBy + orderBy + limit + offset),
 
 	DeleteQuery :indent =
 		{[]}:tables
 		{''}:where
 		[	'DeleteQuery'
-			[	Table:table
+			[	Table(indent):table
 				{tables.push(table)}
 			|	Where(indent):where
 				{indent + where}:where
@@ -72,7 +75,7 @@ export ometa AbstractSQLRules2SQL {
 	InsertBody :indent =
 		{[]}:tables
 		[	Fields:fieldValues
-		|	Table:table
+		|	Table(indent):table
 			{tables.push(table)}
 		|	// Ignore a where - we're probably in an Upsert.
 			'Where'
@@ -87,7 +90,7 @@ export ometa AbstractSQLRules2SQL {
 		{[]}:tables
 		{''}:where
 		[	Fields:fieldValues
-		|	Table:table
+		|	Table(indent):table
 			{tables.push(table)}
 		|	Where(indent):where
 			{indent + where}:where
@@ -147,19 +150,35 @@ export ometa AbstractSQLRules2SQL {
 		]
 		-> fields,
 
-	Table =
+	Table :indent =
 		'From'
-		anything:table
-		(	:alias
-			-> (' AS "' + alias + '"')
-		|	-> ''
-		):alias
-		-> ('"' + table + '"' + alias),
+		NestedIndent(indent):indent
+		NestedIndent(indent):nestedIndent
+		(	~string
+			[	(	SelectQuery(nestedIndent):query
+					-> ('(\t' + query + indent + ')')
+				|	anything:table
+					-> ('"' + table + '"')
+				):from
+				anything:alias
+			]
+			-> (from + ' AS "' + alias + '"')
+		|	SelectQuery(nestedIndent)
+			-> ('(\t' + query + indent + ')')
+		|	anything:table
+			-> ('"' + table + '"')
+		),
 
 	Where :indent =
 		'Where'
 		BooleanValue(indent):ruleBody
 		-> ('WHERE ' + ruleBody),
+
+	GroupBy :indent =
+		'GroupBy'
+		[	AnyValue(indent)+:values
+		]
+		-> ('GROUP BY ' + values.join(', ')),
 
 	OrderBy :indent =
 		'OrderBy'
@@ -191,6 +210,7 @@ export ometa AbstractSQLRules2SQL {
 		|	NumericValue(indent)
 		|	BooleanValue(indent)
 		|	DateValue(indent)
+		|	JSONValue(indent)
 		),
 
 	UnknownValue :indent =
@@ -397,6 +417,22 @@ export ometa AbstractSQLRules2SQL {
 		]
 		{this.fieldOrderings.push(['Date', date])}
 		-> '?',
+
+	JSONValue :indent =
+		(	UnknownValue(indent)
+		|	AggregateJSON(indent)
+		),
+
+	AggregateJSON :indent =
+		[	'AggregateJSON'
+			[	:table
+				(	'*'
+				|	anything:field
+					-> ('"' + field + '"')
+				):field
+			]
+		]
+		-> ('array_to_json(array_agg("' + table + '".' + field + '))'),
 
 	Process =
 			{this.fieldOrderings = []}

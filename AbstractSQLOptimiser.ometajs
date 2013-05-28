@@ -15,6 +15,8 @@ ometa AbstractSQLValidator {
 				|	Join
 				|	?(where==null)
 					Where:where
+				|	?(groupBy==null)
+					GroupBy:groupBy
 				|	?(orderBy==null)
 					OrderBy:orderBy
 				|	?(limit==null)
@@ -126,13 +128,18 @@ ometa AbstractSQLValidator {
 
 	Table =
 		[	'From'
-			:table
-			anything?:as
+			(	~string
+				[	(	SelectQuery
+					|	anything
+					):table
+					anything:as
+				]
+				-> [table, as]
+			|	SelectQuery
+			|	anything
+			):from
 		]
-		(	?(as != null)
-			-> [['From', table, as]]
-		|	-> [['From', table]]
-		),
+		-> [['From', from]],
 
 	Join =
 		[	'Join'
@@ -150,6 +157,13 @@ ometa AbstractSQLValidator {
 			BooleanValue:boolStatement
 		]
 		-> [['Where', boolStatement]],
+
+	GroupBy =
+		[	'GroupBy'
+			[	AnyValue+:values
+			]
+		]
+		-> [['GroupBy', values]],
 
 	OrderBy =
 		[	'OrderBy'
@@ -182,7 +196,8 @@ ometa AbstractSQLValidator {
 		|	TextValue
 		|	NumericValue
 		|	BooleanValue
-		|	DateValue,
+		|	DateValue
+		|	JSONValue,
 
 	UnknownValue =
 		(	ReferencedField
@@ -431,7 +446,18 @@ ometa AbstractSQLValidator {
 			anything:date
 		]
 		?_.isDate(date)
-		-> ['Date', date]
+		-> ['Date', date],
+
+	JSONValue =
+		(	UnknownValue
+		|	AggregateJSON
+		),
+
+	AggregateJSON =
+		[	'AggregateJSON'
+			anything:field
+		]
+		-> ['AggregateJSON', field]
 }
 
 export ometa AbstractSQLOptimiser <: AbstractSQLValidator {

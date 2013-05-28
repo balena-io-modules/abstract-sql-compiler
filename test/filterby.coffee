@@ -3,6 +3,8 @@ test = require('./test')
 clientModel = require('./client-model.json')
 _ = require('lodash')
 {pilotFields, pilotCanFlyPlaneFields} = require('./fields')
+pilotFields = pilotFields.join(', ')
+pilotCanFlyPlaneFields = pilotCanFlyPlaneFields.join(', ')
 
 operandToOData = (operand) ->
 	if operand.odata?

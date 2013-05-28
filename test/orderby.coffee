@@ -1,6 +1,7 @@
 expect = require('chai').expect
 test = require('./test')
 {pilotFields} = require('./fields')
+pilotFields = pilotFields.join(', ')
 
 test '/pilot?$orderby=name', (result) ->
 	it 'should order by name desc', ->
