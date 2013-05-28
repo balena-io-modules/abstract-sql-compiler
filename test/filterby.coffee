@@ -7,13 +7,22 @@ _ = require('lodash')
 operandToOData = (operand) ->
 	if operand.odata?
 		return operand.odata
+	if _.isDate(operand)
+		return "datetime'" + encodeURIComponent(operand.toISOString()) + "'"
 	return operand
+
+operandToBindings = (operand) ->
+	if _.isDate(operand)
+		return [['Date', operand]]
+	return []
 
 operandToSQL = (operand) ->
 	if operand.sql?
 		return operand.sql
 	if _.isNumber(operand)
 		return operand
+	if _.isDate(operand)
+		return '?'
 	if _.isString(operand)
 		if operand.charAt(0) is "'"
 			return decodeURIComponent(operand)
@@ -49,12 +58,17 @@ createExpression = (lhs, op, rhs) ->
 		}
 	lhsSql = operandToSQL(lhs)
 	rhsSql = operandToSQL(rhs)
+	bindings = [].concat(
+		operandToBindings(lhs)
+		operandToBindings(rhs)
+	)
 	sql = lhsSql + sqlOps[op] + ' ' + rhsSql
 	if sqlOpBrackets[op]
 		sql = '(' + sql + ')'
 	return {
 		odata: operandToOData(lhs) + ' ' + op + ' ' + operandToOData(rhs)
 		sql
+		bindings
 	}
 createMethodCall = (method, args...) ->
 	return {
@@ -69,8 +83,8 @@ createMethodCall = (method, args...) ->
 	}
 
 operandTest = (lhs, op, rhs = 'name') ->
-	{odata, sql} = createExpression(lhs, op, rhs)
-	test '/pilot?$filter=' + odata, (result) ->
+	{odata, sql, bindings} = createExpression(lhs, op, rhs)
+	test '/pilot?$filter=' + odata, 'GET', bindings, (result) ->
 		it 'should select from pilot where "' + odata + '"', ->
 			expect(result.query).to.equal '''
 				SELECT ''' + pilotFields + '\n' + '''
@@ -101,6 +115,7 @@ do ->
 			"'bar'"
 			"name"
 			"pilot/name"
+			new Date()
 		]
 	for lhs in operands
 		for rhs in operands

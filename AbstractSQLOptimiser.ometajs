@@ -1,3 +1,5 @@
+var _ = require('lodash');
+
 ometa AbstractSQLValidator {
 
 	Query =
@@ -179,7 +181,8 @@ ometa AbstractSQLValidator {
 			UnknownValue
 		|	TextValue
 		|	NumericValue
-		|	BooleanValue,
+		|	BooleanValue
+		|	DateValue,
 
 	UnknownValue =
 		(	ReferencedField
@@ -416,7 +419,19 @@ ometa AbstractSQLValidator {
 			AnyValue:comp2
 			AnyValue:comp3
 		]
-		-> ['Between', comp1, comp2, comp3]
+		-> ['Between', comp1, comp2, comp3],
+
+	DateValue =
+		(	UnknownValue
+		|	Date
+		),
+
+	Date =
+		[	'Date'
+			anything:date
+		]
+		?_.isDate(date)
+		-> ['Date', date]
 }
 
 export ometa AbstractSQLOptimiser <: AbstractSQLValidator {

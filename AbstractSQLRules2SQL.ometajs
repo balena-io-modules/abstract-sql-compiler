@@ -190,6 +190,7 @@ export ometa AbstractSQLRules2SQL {
 		|	TextValue(indent)
 		|	NumericValue(indent)
 		|	BooleanValue(indent)
+		|	DateValue(indent)
 		),
 
 	UnknownValue :indent =
@@ -384,6 +385,18 @@ export ometa AbstractSQLRules2SQL {
 			AnyValue(indent):b
 		]
 		-> (val + ' BETWEEN ' + a + ' AND ' + b),
+
+	DateValue :indent =
+		(	UnknownValue(indent)
+		|	Date(indent)
+		),
+
+	Date :indent =
+		[	'Date'
+			anything:date
+		]
+		{this.fieldOrderings.push(['Date', date])}
+		-> '?',
 
 	Process =
 			{this.fieldOrderings = []}
