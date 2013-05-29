@@ -15,8 +15,8 @@ do ->
 				WHERE "licence"."id" = "pilot"."licence"
 				GROUP BY "pilot"."id"'''
 	test.postgres '/pilot?$expand=licence', testFunc(postgresAgg)
-	test.mysql '/pilot?$expand=licence', testFunc(mysqlAgg)
-	test.websql '/pilot?$expand=licence', testFunc(websqlAgg)
+	test.mysql.skip '/pilot?$expand=licence', testFunc(mysqlAgg)
+	test.websql.skip '/pilot?$expand=licence', testFunc(websqlAgg)
 
 
 do ->
@@ -34,8 +34,8 @@ do ->
 				WHERE "pilot"."id" = "pilot-can_fly-plane"."pilot"
 				GROUP BY "pilot"."id"'''
 	test.postgres '/pilot?$expand=pilot__can_fly__plane/plane', testFunc(postgresAgg)
-	test.mysql '/pilot?$expand=pilot__can_fly__plane/plane', testFunc(mysqlAgg)
-	test.websql '/pilot?$expand=pilot__can_fly__plane/plane', testFunc(websqlAgg)
+	test.mysql.skip '/pilot?$expand=pilot__can_fly__plane/plane', testFunc(mysqlAgg)
+	test.websql.skip '/pilot?$expand=pilot__can_fly__plane/plane', testFunc(websqlAgg)
 
 
 do ->
@@ -55,5 +55,5 @@ do ->
 				AND "licence"."id" = "pilot"."licence"
 				GROUP BY "pilot"."id"'''
 	test.postgres '/pilot?$expand=pilot__can_fly__plane/plane,licence', testFunc(postgresAgg)
-	test.mysql '/pilot?$expand=pilot__can_fly__plane/plane,licence', testFunc(mysqlAgg)
-	test.websql '/pilot?$expand=pilot__can_fly__plane/plane,licence', testFunc(websqlAgg)
+	test.mysql.skip '/pilot?$expand=pilot__can_fly__plane/plane,licence', testFunc(mysqlAgg)
+	test.websql.skip '/pilot?$expand=pilot__can_fly__plane/plane,licence', testFunc(websqlAgg)
