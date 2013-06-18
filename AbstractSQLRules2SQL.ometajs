@@ -152,19 +152,18 @@ export ometa AbstractSQLRules2SQL {
 
 	Table :indent =
 		'From'
-		NestedIndent(indent):indent
-		NestedIndent(indent):nestedIndent
+		NestedIndent(indent):nestedindent
 		(	~string
-			[	(	SelectQuery(nestedIndent):query
-					-> ('(\t' + query + indent + ')')
+			[	(	SelectQuery(nestedindent):query
+					-> ('(' + nestedindent + query + indent + ')')
 				|	anything:table
 					-> ('"' + table + '"')
 				):from
 				anything:alias
 			]
 			-> (from + ' AS "' + alias + '"')
-		|	SelectQuery(nestedIndent)
-			-> ('(\t' + query + indent + ')')
+		|	SelectQuery(nestedindent)
+			-> ('(' + nestedindent + query + indent + ')')
 		|	anything:table
 			-> ('"' + table + '"')
 		),
