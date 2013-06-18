@@ -21,7 +21,7 @@ export ometa AbstractSQLRules2SQL {
 		{''}:limit
 		{''}:offset
 		[	'SelectQuery'
-			[	Select:fields
+			[	Select(indent):fields
 			|	Table(indent):table
 				{tables.push(table)}
 			|	Where(indent):where
@@ -126,7 +126,7 @@ export ometa AbstractSQLRules2SQL {
 		]
 		-> [fields, values],
 
-	Select =
+	Select :indent =
 		'Select'
 		[	end
 			{['1']}:fields
@@ -136,13 +136,13 @@ export ometa AbstractSQLRules2SQL {
 					|	:table
 						'*'
 						-> ('"' + table + '".*')
-					|	AnyValue:value
+					|	AnyValue(indent):value
 						anything:as
 						-> (value + ' AS "' + as + '"')
 					):field
 				]
 				-> field
-			|	AnyValue
+			|	AnyValue(indent)
 			|	'*'
 			|	Null
 				-> 'NULL'
