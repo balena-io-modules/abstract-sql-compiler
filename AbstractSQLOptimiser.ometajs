@@ -233,6 +233,8 @@ ometa AbstractSQLValidator {
 		(	UnknownValue
 		|	Text
 		|	Concat
+		|	Lower
+		|	Upper
 		),
 
 	Text =
@@ -250,6 +252,24 @@ ometa AbstractSQLValidator {
 			TextValue+:otherStrings
 		]
 		-> ['Concatenate', firstString].concat(otherStrings),
+
+	Lower =
+		[	(	'Tolower'
+			|	'ToLower'
+			|	'Lower'
+			)
+			TextValue:string
+		]
+		-> ['Lower', string],
+
+	Upper =
+		[	(	'Toupper'
+			|	'ToUpper'
+			|	'Upper'
+			)
+			TextValue:string
+		]
+		-> ['Upper', string],
 
 	NumericValue =
 		(	UnknownValue

@@ -52,6 +52,10 @@ sqlOps =
 sqlOpBrackets =
 	or: true
 
+methodMaps =
+	toupper: 'UPPER'
+	tolower: 'LOWER'
+
 createExpression = (lhs, op, rhs) ->
 	if lhs is 'not'
 		return {
@@ -80,6 +84,8 @@ createMethodCall = (method, args...) ->
 				when 'substringof'
 					operandToSQL(args[1]) + " LIKE ('%' || " + operandToSQL(args[0]) + " || '%')"
 				else
+					if methodMaps.hasOwnProperty(method)
+						method = methodMaps[method]
 					method + '(' + (operandToSQL(arg) for arg in args).join(', ') + ')'
 		)
 	}
@@ -201,8 +207,8 @@ methodTest('substringof', "'Pete'", 'name')
 # operandTest(createMethodCall('replace', 'name', "'ete'", "'at'"), 'eq', "'Pat'")
 # operandTest(createMethodCall('substring', 'name', 1), 'eq', "'ete'")
 # operandTest(createMethodCall('substring', 'name', 1, 2), 'eq', "'et'")
-# operandTest(createMethodCall('tolower', 'name'), 'eq', "'pete'")
-# operandTest(createMethodCall('toupper', 'name'), 'eq', "'PETE'")
+operandTest(createMethodCall('tolower', 'name'), 'eq', "'pete'")
+operandTest(createMethodCall('toupper', 'name'), 'eq', "'PETE'")
 
 # do ->
 	# concat = createMethodCall('concat', 'name', "'%20'")

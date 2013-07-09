@@ -252,6 +252,8 @@ export ometa AbstractSQLRules2SQL {
 		(	UnknownValue(indent)
 		|	Text
 		|	Concat(indent)
+		|	Lower(indent)
+		|	Upper(indent)
 		),
 
 	Text =
@@ -273,6 +275,18 @@ export ometa AbstractSQLRules2SQL {
 			-> ('CONCAT(' + comparators.join(', ') + ')')
 		|	-> ('(' + comparators.join(' || ') + ')')
 		),
+
+	Lower :indent =
+		[	'Lower'
+			TextValue(indent):string
+		]
+		-> ('LOWER(' + string + ')'),
+
+	Upper :indent =
+		[	'Upper'
+			TextValue(indent):string
+		]
+		-> ('UPPER(' + string + ')'),
 
 	NumericValue :indent =
 		(	UnknownValue(indent)
