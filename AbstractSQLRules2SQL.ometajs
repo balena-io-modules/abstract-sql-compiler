@@ -254,6 +254,7 @@ export ometa AbstractSQLRules2SQL {
 		|	Concat(indent)
 		|	Lower(indent)
 		|	Upper(indent)
+		|	Trim(indent)
 		),
 
 	Text =
@@ -287,6 +288,12 @@ export ometa AbstractSQLRules2SQL {
 			TextValue(indent):string
 		]
 		-> ('UPPER(' + string + ')'),
+
+	Trim :indent =
+		[	'Trim'
+			TextValue(indent):string
+		]
+		-> ('TRIM(' + string + ')'),
 
 	NumericValue :indent =
 		(	UnknownValue(indent)

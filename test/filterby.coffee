@@ -53,8 +53,8 @@ sqlOpBrackets =
 	or: true
 
 methodMaps =
-	toupper: 'UPPER'
-	tolower: 'LOWER'
+	TOUPPER: 'UPPER'
+	TOLOWER: 'LOWER'
 
 createExpression = (lhs, op, rhs) ->
 	if lhs is 'not'
@@ -80,13 +80,16 @@ createMethodCall = (method, args...) ->
 	return {
 		odata: method + '(' + (operandToOData(arg) for arg in args).join(',') + ')'
 		sql: (
+			method = method.toUpperCase()
 			switch method
-				when 'substringof'
+				when 'SUBSTRINGOF'
 					operandToSQL(args[1]) + " LIKE ('%' || " + operandToSQL(args[0]) + " || '%')"
-				when 'startswith'
+				when 'STARTSWITH'
 					operandToSQL(args[1]) + ' LIKE (' + operandToSQL(args[0]) + " || '%')"
-				when 'endswith'
+				when 'ENDSWITH'
 					operandToSQL(args[1]) + " LIKE ('%' || " + operandToSQL(args[0]) + ')'
+				when 'CONCAT'
+					'(' + (operandToSQL(arg) for arg in args).join(' || ') + ')'
 				else
 					if methodMaps.hasOwnProperty(method)
 						method = methodMaps[method]
@@ -214,10 +217,10 @@ methodTest('endswith', 'name', "'ete'")
 operandTest(createMethodCall('tolower', 'name'), 'eq', "'pete'")
 operandTest(createMethodCall('toupper', 'name'), 'eq', "'PETE'")
 
-# do ->
-	# concat = createMethodCall('concat', 'name', "'%20'")
-	# operandTest(concat, 'eq', "'Pete%20'")
-	# operandTest(createMethodCall('trim', concat), 'eq', "'Pete'")
+do ->
+	concat = createMethodCall('concat', 'name', "'%20'")
+	operandTest(concat, 'eq', "'Pete%20'")
+	operandTest(createMethodCall('trim', concat), 'eq', "'Pete'")
 
 # operandTest(createMethodCall('round', 'age'), 'eq', 25)
 # operandTest(createMethodCall('floor', 'age'), 'eq', 25)

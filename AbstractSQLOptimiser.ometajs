@@ -235,6 +235,7 @@ ometa AbstractSQLValidator {
 		|	Concat
 		|	Lower
 		|	Upper
+		|	Trim
 		),
 
 	Text =
@@ -270,6 +271,12 @@ ometa AbstractSQLValidator {
 			TextValue:string
 		]
 		-> ['Upper', string],
+
+	Trim =
+		[	'Trim'
+			TextValue:str
+		]
+		-> ['Trim', str],
 
 	NumericValue =
 		(	UnknownValue
