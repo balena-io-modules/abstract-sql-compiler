@@ -556,6 +556,8 @@ export ometa AbstractSQLOptimiser <: AbstractSQLValidator {
 
 	BooleanValue =
 			Substringof
+		|	StartsWith
+		|	EndsWith
 		|	^BooleanValue,
 
 	Substringof =
@@ -565,6 +567,22 @@ export ometa AbstractSQLOptimiser <: AbstractSQLValidator {
 		]
 		SetHelped
 		-> ['Like', haystack, ['Concat', ['Text', '%'], needle, ['Text', '%']]],
+
+	StartsWith =
+		[	'Startswith'
+			TextValue:needle
+			TextValue:haystack
+		]
+		SetHelped
+		-> ['Like', haystack, ['Concat', needle, ['Text', '%']]],
+
+	EndsWith =
+		[	'Endswith'
+			TextValue:needle
+			TextValue:haystack
+		]
+		SetHelped
+		-> ['Like', haystack, ['Concat', ['Text', '%'], needle]],
 
 	Helped :disableMemoisationHack =
 		?(this.helped === true)

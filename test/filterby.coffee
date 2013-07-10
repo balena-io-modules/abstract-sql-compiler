@@ -83,6 +83,10 @@ createMethodCall = (method, args...) ->
 			switch method
 				when 'substringof'
 					operandToSQL(args[1]) + " LIKE ('%' || " + operandToSQL(args[0]) + " || '%')"
+				when 'startswith'
+					operandToSQL(args[1]) + ' LIKE (' + operandToSQL(args[0]) + " || '%')"
+				when 'endswith'
+					operandToSQL(args[1]) + " LIKE ('%' || " + operandToSQL(args[0]) + ')'
 				else
 					if methodMaps.hasOwnProperty(method)
 						method = methodMaps[method]
@@ -100,7 +104,7 @@ operandTest = (lhs, op, rhs = 'name') ->
 				WHERE ''' + sql
 
 methodTest = (args...) ->
-	{odata, sql} = createMethodCall.apply(null, args)
+	{odata, sql} = createMethodCall(args...)
 	test '/pilot?$filter=' + odata, (result) ->
 		it 'should select from pilot where "' + odata + '"', ->
 			expect(result.query).to.equal '''
@@ -200,8 +204,8 @@ do ->
 				AND "pilot"."id" = "pilot-can_fly-plane"."pilot"'''
 
 methodTest('substringof', "'Pete'", 'name')
-# methodTest('startswith', 'name', "'P'")
-# methodTest('endswith', 'name', "'ete'")
+methodTest('startswith', 'name', "'P'")
+methodTest('endswith', 'name', "'ete'")
 # operandTest(createMethodCall('length', 'name'), 'eq', 4)
 # operandTest(createMethodCall('indexof', 'name', "'Pe'"), 'eq', 0)
 # operandTest(createMethodCall('replace', 'name', "'ete'", "'at'"), 'eq', "'Pat'")
