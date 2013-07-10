@@ -302,6 +302,8 @@ export ometa AbstractSQLRules2SQL {
 		|	BitwiseAnd(indent)
 		|	BitwiseShiftRight(indent)
 		|	CharacterLength(indent)
+		|	InStr(indent)
+		|	StrPos(indent)
 		),
 
 	// TODO: Integer should actually be separate from number, for the case of bitwise operations that need an integral type.
@@ -350,6 +352,26 @@ export ometa AbstractSQLRules2SQL {
 		(	?(this.engine == 'mysql')
 			-> ('CHAR_LENGTH(' + text + ')')
 		|	-> ('LENGTH(' + text + ')')
+		),
+
+	InStr :indent =
+		[	'InStr'
+			TextValue:haystack
+			TextValue:needle
+		]
+		(	?(this.engine == 'postgres')
+			-> ('(STRPOS(' + haystack + ', ' + needle + ') + 1)')
+		|	-> ('INSTR(' + haystack + ', ' + needle + ')')
+		),
+
+	StrPos :indent =
+		[	'StrPos'
+			TextValue:haystack
+			TextValue:needle
+		]
+		(	?(this.engine == 'postgres')
+			-> ('STRPOS(' + haystack + ', ' + needle + ')')
+		|	-> ('(INSTR(' + haystack + ', ' + needle + ') - 1)')
 		),
 
 	BooleanValue :indent =

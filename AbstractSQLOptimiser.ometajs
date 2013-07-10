@@ -285,6 +285,9 @@ ometa AbstractSQLValidator {
 		|	BitwiseAnd
 		|	BitwiseShiftRight
 		|	CharacterLength
+		|	InStr
+		|	IndexOf
+		|	StrPos
 		),
 
 	// TODO: Integer should actually be separate from number, for the case of bitwise operations that need an integral type.
@@ -350,6 +353,30 @@ ometa AbstractSQLValidator {
 			TextValue:text
 		]
 		-> ['CharacterLength', text],
+
+	InStr =
+		[	'InStr'
+			TextValue:haystack
+			TextValue:needle
+		]
+		-> ['InStr', haystack, needle],
+
+	IndexOf =
+		[	(	'IndexOf'
+			|	'Indexof'
+			)
+			TextValue:haystack
+			TextValue:needle
+		]
+		SetHelped
+		-> ['InStr', haystack, needle],
+
+	StrPos =
+		[	'StrPos'
+			TextValue:haystack
+			TextValue:needle
+		]
+		-> ['StrPos', haystack, needle],
 
 	BooleanValue =
 		(	UnknownValue

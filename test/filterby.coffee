@@ -55,6 +55,7 @@ sqlOpBrackets =
 methodMaps =
 	TOUPPER: 'UPPER'
 	TOLOWER: 'LOWER'
+	INDEXOF: 'INSTR'
 
 createExpression = (lhs, op, rhs) ->
 	if lhs is 'not'
@@ -210,7 +211,7 @@ methodTest('substringof', "'Pete'", 'name')
 methodTest('startswith', 'name', "'P'")
 methodTest('endswith', 'name', "'ete'")
 # operandTest(createMethodCall('length', 'name'), 'eq', 4)
-# operandTest(createMethodCall('indexof', 'name', "'Pe'"), 'eq', 0)
+operandTest(createMethodCall('indexof', 'name', "'Pe'"), 'eq', 0)
 # operandTest(createMethodCall('replace', 'name', "'ete'", "'at'"), 'eq', "'Pat'")
 # operandTest(createMethodCall('substring', 'name', 1), 'eq', "'ete'")
 # operandTest(createMethodCall('substring', 'name', 1, 2), 'eq', "'et'")
