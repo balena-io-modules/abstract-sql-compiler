@@ -236,6 +236,7 @@ ometa AbstractSQLValidator {
 		|	Lower
 		|	Upper
 		|	Trim
+		|	Replace
 		),
 
 	Text =
@@ -277,6 +278,14 @@ ometa AbstractSQLValidator {
 			TextValue:str
 		]
 		-> ['Trim', str],
+
+	Replace =
+		[	'Replace'
+			TextValue:string
+			TextValue:find
+			TextValue:replacement
+		]
+		-> ['Replace', string, find, replacement],
 
 	NumericValue =
 		(	UnknownValue
