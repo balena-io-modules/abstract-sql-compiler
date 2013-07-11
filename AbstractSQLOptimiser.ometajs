@@ -237,6 +237,7 @@ ometa AbstractSQLValidator {
 		|	Upper
 		|	Trim
 		|	Replace
+		|	Substring
 		),
 
 	Text =
@@ -286,6 +287,13 @@ ometa AbstractSQLValidator {
 			TextValue:replacement
 		]
 		-> ['Replace', string, find, replacement],
+
+	Substring =
+		[	'Substring'
+			TextValue:string
+			NumericValue+:args
+		]
+		-> ['Substring', string].concat(args),
 
 	NumericValue =
 		(	UnknownValue

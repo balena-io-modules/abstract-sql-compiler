@@ -94,6 +94,9 @@ createMethodCall = (method, args...) ->
 				else
 					if methodMaps.hasOwnProperty(method)
 						method = methodMaps[method]
+					switch method
+						when 'SUBSTRING'
+							args[1]++
 					method + '(' + (operandToSQL(arg) for arg in args).join(', ') + ')'
 		)
 	}
@@ -213,8 +216,8 @@ methodTest('endswith', 'name', "'ete'")
 operandTest(createMethodCall('length', 'name'), 'eq', 4)
 operandTest(createMethodCall('indexof', 'name', "'Pe'"), 'eq', 0)
 operandTest(createMethodCall('replace', 'name', "'ete'", "'at'"), 'eq', "'Pat'")
-# operandTest(createMethodCall('substring', 'name', 1), 'eq', "'ete'")
-# operandTest(createMethodCall('substring', 'name', 1, 2), 'eq', "'et'")
+operandTest(createMethodCall('substring', 'name', 1), 'eq', "'ete'")
+operandTest(createMethodCall('substring', 'name', 1, 2), 'eq', "'et'")
 operandTest(createMethodCall('tolower', 'name'), 'eq', "'pete'")
 operandTest(createMethodCall('toupper', 'name'), 'eq', "'PETE'")
 

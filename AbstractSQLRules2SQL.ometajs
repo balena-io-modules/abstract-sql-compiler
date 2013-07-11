@@ -256,6 +256,7 @@ export ometa AbstractSQLRules2SQL {
 		|	Upper(indent)
 		|	Trim(indent)
 		|	Replace(indent)
+		|	Substring(indent)
 		),
 
 	Text =
@@ -303,6 +304,13 @@ export ometa AbstractSQLRules2SQL {
 			TextValue(indent):replacement
 		]
 		-> ('REPLACE(' + string + ', ' + find + ', ' + replacement + ')'),
+
+	Substring :indent =
+		[	'Substring'
+			TextValue:string
+			NumericValue+:args
+		]
+		-> ('SUBSTRING(' + [string].concat(args).join(', ') + ')'),
 
 	NumericValue :indent =
 		(	UnknownValue(indent)
