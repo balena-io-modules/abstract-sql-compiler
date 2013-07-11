@@ -223,9 +223,9 @@ do ->
 	operandTest(concat, 'eq', "'Pete%20'")
 	operandTest(createMethodCall('trim', concat), 'eq', "'Pete'")
 
-# operandTest(createMethodCall('round', 'age'), 'eq', 25)
-# operandTest(createMethodCall('floor', 'age'), 'eq', 25)
-# operandTest(createMethodCall('ceiling', 'age'), 'eq', 25)
+operandTest(createMethodCall('round', 'age'), 'eq', 25)
+operandTest(createMethodCall('floor', 'age'), 'eq', 25)
+operandTest(createMethodCall('ceiling', 'age'), 'eq', 25)
 
 test "/pilot?$filter=pilot__can_fly__plane/any(d:d/plane/name eq 'Concorde')", (result) ->
 	it 'should select from pilot where ...', ->

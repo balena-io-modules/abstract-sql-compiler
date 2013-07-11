@@ -313,6 +313,9 @@ export ometa AbstractSQLRules2SQL {
 		|	CharacterLength(indent)
 		|	InStr(indent)
 		|	StrPos(indent)
+		|	Round(indent)
+		|	Floor(indent)
+		|	Ceiling(indent)
 		),
 
 	// TODO: Integer should actually be separate from number, for the case of bitwise operations that need an integral type.
@@ -382,6 +385,24 @@ export ometa AbstractSQLRules2SQL {
 			-> ('STRPOS(' + haystack + ', ' + needle + ')')
 		|	-> ('(INSTR(' + haystack + ', ' + needle + ') - 1)')
 		),
+
+	Round :indent =
+		[	'Round'
+			NumericValue:num
+		]
+		-> ('ROUND(' + num + ')'),
+
+	Floor :indent =
+		[	'Floor'
+			NumericValue:num
+		]
+		-> ('FLOOR(' + num + ')'),
+
+	Ceiling :indent =
+		[	'Ceiling'
+			NumericValue:num
+		]
+		-> ('CEILING(' + num + ')'),
 
 	BooleanValue :indent =
 		(	UnknownValue(indent)

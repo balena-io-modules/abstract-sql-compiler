@@ -297,6 +297,9 @@ ometa AbstractSQLValidator {
 		|	InStr
 		|	IndexOf
 		|	StrPos
+		|	Round
+		|	Floor
+		|	Ceiling
 		),
 
 	// TODO: Integer should actually be separate from number, for the case of bitwise operations that need an integral type.
@@ -386,6 +389,24 @@ ometa AbstractSQLValidator {
 			TextValue:needle
 		]
 		-> ['StrPos', haystack, needle],
+
+	Round =
+		[	'Round'
+			NumericValue:num
+		]
+		-> ['Round', num],
+
+	Floor =
+		[	'Floor'
+			NumericValue:num
+		]
+		-> ['Floor', num],
+
+	Ceiling =
+		[	'Ceiling'
+			NumericValue:num
+		]
+		-> ['Ceiling', num],
 
 	BooleanValue =
 		(	UnknownValue
