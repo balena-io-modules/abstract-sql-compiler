@@ -11,3 +11,10 @@ exports.pilotCanFlyPlaneFields = [
 	'"pilot-can_fly-plane"."plane"'
 	'"pilot-can_fly-plane"."id"'
 ]
+exports.licenceFields = [
+	'"licence"."id"'
+]
+exports.planeFields = [
+	'"plane"."id"'
+	'"plane"."name"'
+]
