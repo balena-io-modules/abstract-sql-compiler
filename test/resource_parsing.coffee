@@ -186,7 +186,7 @@ do ->
 test '/pilot(1)/$links/licence', (result) ->
 	it 'should select the list of licence ids, for generating the links', ->
 		expect(result.query).to.equal('''
-			SELECT "pilot"."licence"
+			SELECT "pilot"."licence" AS "licence"
 			FROM "pilot"
 			WHERE "pilot"."id" = 1
 		''')
@@ -195,7 +195,7 @@ test '/pilot(1)/$links/licence', (result) ->
 test '/pilot(1)/pilot__can_fly__plane/$links/plane', (result) ->
 	it 'should select the list of plane ids, for generating the links', ->
 		expect(result.query).to.equal('''
-			SELECT "pilot-can_fly-plane"."plane"
+			SELECT "pilot-can_fly-plane"."plane" AS "plane"
 			FROM "pilot",
 				"pilot-can_fly-plane"
 			WHERE "pilot"."id" = 1
