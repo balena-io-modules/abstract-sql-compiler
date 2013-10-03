@@ -82,7 +82,7 @@ ometa AbstractSQLValidator {
 			):bodyPart
 			{body.concat(bodyPart)}:body
 		)+
-		?(fieldValues!=null)
+		?(fieldValues!=null && fieldValues[0][1].length > 0)
 		?(table!=null)
 		-> body,
 
@@ -98,7 +98,7 @@ ometa AbstractSQLValidator {
 						):value
 					]
 					-> [field, value]
-				)+:fields
+				)*:fields
 			]
 		]
 		-> [['Fields', fields]],

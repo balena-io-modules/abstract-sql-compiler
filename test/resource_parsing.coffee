@@ -107,6 +107,11 @@ do ->
 				INSERT INTO "pilot" ("name")
 				VALUES (?)
 			''')
+	test '/pilot', 'POST', (result) ->
+		it 'should insert a pilot with default values', ->
+			expect(result.query).to.equal('''
+				INSERT INTO "pilot" DEFAULT VALUES
+			''')
 do ->
 	bindings = [
 		['pilot', 'id']
@@ -163,6 +168,11 @@ do ->
 			expect(result.query).to.equal('''
 				INSERT INTO "pilot-can_fly-plane" ("pilot", "plane")
 				VALUES (?, ?)
+			''')
+	test '/pilot__can_fly__plane', 'POST', (result) ->
+		it 'should insert a "pilot-can_fly-plane" with default values', ->
+			expect(result.query).to.equal('''
+				INSERT INTO "pilot-can_fly-plane" DEFAULT VALUES
 			''')
 do ->
 	bindings = [

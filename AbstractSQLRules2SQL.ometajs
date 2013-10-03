@@ -90,6 +90,7 @@ export ometa AbstractSQLRules2SQL {
 		{[]}:tables
 		{''}:where
 		[	Fields:fieldValues
+			?(fieldValues[0].length > 0)
 		|	Table(indent):table
 			{tables.push(table)}
 		|	Where(indent):where
@@ -122,7 +123,7 @@ export ometa AbstractSQLRules2SQL {
 					-> ("'" + value + "'")
 				):value
 				{values.push(value)}
-			]+
+			]*
 		]
 		-> [fields, values],
 
