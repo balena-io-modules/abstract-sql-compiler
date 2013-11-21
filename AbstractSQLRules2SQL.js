@@ -1,8 +1,8 @@
-(function(root, factory) {
+!function(root, factory) {
     "function" == typeof define && define.amd ? define([ "require", "exports", "ometa-core" ], factory) : "object" == typeof exports ? factory(require, exports, require("ometa-js").core) : factory(function(moduleName) {
         return root[moduleName];
     }, root, root.OMeta);
-})(this, function(require, exports, OMeta) {
+}(this, function(require, exports, OMeta) {
     var comparisons = {
         Equals: " = ",
         GreaterThan: " > ",
@@ -122,17 +122,15 @@
                         table = this._applyWithArgs("Table", indent);
                         return tables.push(table);
                     }, function() {
-                        return function() {
-                            switch (this._apply("anything")) {
-                              case "Where":
-                                return this._many(function() {
-                                    return this._apply("anything");
-                                });
+                        switch (this.anything()) {
+                          case "Where":
+                            return this._many(function() {
+                                return this.anything();
+                            });
 
-                              default:
-                                throw this._fail();
-                            }
-                        }.call(this);
+                          default:
+                            throw this._fail();
+                        }
                     });
                 });
             });
@@ -163,7 +161,7 @@
             });
             sets = [];
             (function() {
-                for (var i = 0; fieldValues[0].length > i; i++) sets[i] = fieldValues[0][i] + " = " + fieldValues[1][i];
+                for (var i = 0; i < fieldValues[0].length; i++) sets[i] = fieldValues[0][i] + " = " + fieldValues[1][i];
             }).call(this);
             nestedIndent = this._applyWithArgs("NestedIndent", indent);
             return "UPDATE " + tables.join(", ") + indent + "SET " + sets.join("," + nestedIndent) + where;
@@ -176,18 +174,16 @@
             this._form(function() {
                 return this._many(function() {
                     return this._form(function() {
-                        field = this._apply("anything");
+                        field = this.anything();
                         fields.push('"' + field + '"');
                         value = this._or(function() {
-                            return function() {
-                                switch (this._apply("anything")) {
-                                  case "?":
-                                    return "?";
+                            switch (this.anything()) {
+                              case "?":
+                                return "?";
 
-                                  default:
-                                    throw this._fail();
-                                }
-                            }.call(this);
+                              default:
+                                throw this._fail();
+                            }
                         }, function() {
                             this._apply("true");
                             return 1;
@@ -200,7 +196,7 @@
                         }, function() {
                             return this._apply("Bind");
                         }, function() {
-                            value = this._apply("anything");
+                            value = this.anything();
                             return "'" + value + "'";
                         });
                         return values.push(value);
@@ -221,25 +217,21 @@
                         return this._or(function() {
                             this._form(function() {
                                 return field = this._or(function() {
-                                    return function() {
-                                        switch (this._apply("anything")) {
-                                          case "Count":
-                                            return function() {
-                                                this._applyWithArgs("exactly", "*");
-                                                return "COUNT(*)";
-                                            }.call(this);
+                                    switch (this.anything()) {
+                                      case "Count":
+                                        this._applyWithArgs("exactly", "*");
+                                        return "COUNT(*)";
 
-                                          default:
-                                            throw this._fail();
-                                        }
-                                    }.call(this);
+                                      default:
+                                        throw this._fail();
+                                    }
                                 }, function() {
-                                    table = this._apply("anything");
+                                    table = this.anything();
                                     this._applyWithArgs("exactly", "*");
                                     return '"' + table + '".*';
                                 }, function() {
                                     value = this._applyWithArgs("AnyValue", indent);
-                                    as = this._apply("anything");
+                                    as = this.anything();
                                     return value + ' AS "' + as + '"';
                                 });
                             });
@@ -247,15 +239,13 @@
                         }, function() {
                             return this._applyWithArgs("AnyValue", indent);
                         }, function() {
-                            return function() {
-                                switch (this._apply("anything")) {
-                                  case "*":
-                                    return "*";
+                            switch (this.anything()) {
+                              case "*":
+                                return "*";
 
-                                  default:
-                                    throw this._fail();
-                                }
-                            }.call(this);
+                              default:
+                                throw this._fail();
+                            }
                         }, function() {
                             this._apply("Null");
                             return "NULL";
@@ -278,17 +268,17 @@
                         query = this._applyWithArgs("SelectQuery", nestedindent);
                         return "(" + nestedindent + query + indent + ")";
                     }, function() {
-                        table = this._apply("anything");
+                        table = this.anything();
                         return '"' + table + '"';
                     });
-                    return alias = this._apply("anything");
+                    return alias = this.anything();
                 });
                 return from + ' AS "' + alias + '"';
             }, function() {
                 this._applyWithArgs("SelectQuery", nestedindent);
                 return "(" + nestedindent + query + indent + ")";
             }, function() {
-                table = this._apply("anything");
+                table = this.anything();
                 return '"' + table + '"';
             });
         },
@@ -314,7 +304,7 @@
             orders = this._many1(function() {
                 this._form(function() {
                     order = function() {
-                        switch (this._apply("anything")) {
+                        switch (this.anything()) {
                           case "ASC":
                             return "ASC";
 
@@ -384,7 +374,7 @@
             var $elf = this, _fromIdx = this.input.idx, field;
             this._form(function() {
                 this._applyWithArgs("exactly", "Field");
-                return field = this._apply("anything");
+                return field = this.anything();
             });
             return '"' + field + '"';
         },
@@ -392,8 +382,8 @@
             var $elf = this, _fromIdx = this.input.idx, field, table;
             this._form(function() {
                 this._applyWithArgs("exactly", "ReferencedField");
-                table = this._apply("anything");
-                return field = this._apply("anything");
+                table = this.anything();
+                return field = this.anything();
             });
             return '"' + table + '"."' + field + '"';
         },
@@ -401,15 +391,15 @@
             var $elf = this, _fromIdx = this.input.idx, field, tableName;
             this._form(function() {
                 this._applyWithArgs("exactly", "Bind");
-                tableName = this._apply("anything");
-                return field = this._apply("anything");
+                tableName = this.anything();
+                return field = this.anything();
             });
             this.fieldOrderings.push([ tableName, field ]);
             return "?";
         },
         Null: function() {
             var $elf = this, _fromIdx = this.input.idx, next;
-            next = this._apply("anything");
+            next = this.anything();
             this._pred(null === next);
             return null;
         },
@@ -437,7 +427,7 @@
             var $elf = this, _fromIdx = this.input.idx, text;
             this._form(function() {
                 (function() {
-                    switch (this._apply("anything")) {
+                    switch (this.anything()) {
                       case "Text":
                         return "Text";
 
@@ -448,7 +438,7 @@
                         throw this._fail();
                     }
                 }).call(this);
-                return text = this._apply("anything");
+                return text = this.anything();
             });
             return "'" + text + "'";
         },
@@ -456,7 +446,7 @@
             var $elf = this, _fromIdx = this.input.idx, comparators;
             this._form(function() {
                 (function() {
-                    switch (this._apply("anything")) {
+                    switch (this.anything()) {
                       case "Concat":
                         return "Concat";
 
@@ -553,7 +543,7 @@
             var $elf = this, _fromIdx = this.input.idx, number;
             this._form(function() {
                 (function() {
-                    switch (this._apply("anything")) {
+                    switch (this.anything()) {
                       case "Integer":
                         return "Integer";
 
@@ -567,7 +557,7 @@
                         throw this._fail();
                     }
                 }).call(this);
-                return number = this._apply("anything");
+                return number = this.anything();
             });
             return number;
         },
@@ -575,7 +565,7 @@
             var $elf = this, _fromIdx = this.input.idx, lhs, op, rhs;
             this._form(function() {
                 op = function() {
-                    switch (this._apply("anything")) {
+                    switch (this.anything()) {
                       case "Add":
                         return "+";
 
@@ -762,7 +752,7 @@
             var $elf = this, _fromIdx = this.input.idx, a, b, comparison;
             this._form(function() {
                 comparison = function() {
-                    switch (this._apply("anything")) {
+                    switch (this.anything()) {
                       case "Equals":
                         return "Equals";
 
@@ -815,7 +805,7 @@
             var $elf = this, _fromIdx = this.input.idx, date;
             this._form(function() {
                 this._applyWithArgs("exactly", "Date");
-                return date = this._apply("anything");
+                return date = this.anything();
             });
             this.fieldOrderings.push([ "Date", date ]);
             return "?";
@@ -833,19 +823,17 @@
             this._form(function() {
                 this._applyWithArgs("exactly", "AggregateJSON");
                 return this._form(function() {
-                    table = this._apply("anything");
+                    table = this.anything();
                     return field = this._or(function() {
-                        return function() {
-                            switch (this._apply("anything")) {
-                              case "*":
-                                return "*";
+                        switch (this.anything()) {
+                          case "*":
+                            return "*";
 
-                              default:
-                                throw this._fail();
-                            }
-                        }.call(this);
+                          default:
+                            throw this._fail();
+                        }
                     }, function() {
-                        field = this._apply("anything");
+                        field = this.anything();
                         return '"' + field + '"';
                     });
                 });

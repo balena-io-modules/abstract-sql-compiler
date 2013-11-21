@@ -1,8 +1,8 @@
-(function(root, factory) {
+!function(root, factory) {
     "function" == typeof define && define.amd ? define([ "require", "exports", "ometa-core", "lodash" ], factory) : "object" == typeof exports ? factory(require, exports, require("ometa-js").core) : factory(function(moduleName) {
         return root[moduleName];
     }, root, root.OMeta);
-})(this, function(require, exports, OMeta) {
+}(this, function(require, exports, OMeta) {
     var _ = require("lodash"), AbstractSQLValidator = OMeta._extend({
         Query: function() {
             var $elf = this, _fromIdx = this.input.idx;
@@ -126,17 +126,15 @@
                 return this._form(function() {
                     return fields = this._many(function() {
                         this._form(function() {
-                            field = this._apply("anything");
+                            field = this.anything();
                             return value = this._or(function() {
-                                return function() {
-                                    switch (this._apply("anything")) {
-                                      case "?":
-                                        return "?";
+                                switch (this.anything()) {
+                                  case "?":
+                                    return "?";
 
-                                      default:
-                                        throw this._fail();
-                                    }
-                                }.call(this);
+                                  default:
+                                    throw this._fail();
+                                }
                             }, function() {
                                 return this._apply("true");
                             }, function() {
@@ -146,7 +144,7 @@
                             }, function() {
                                 return this._apply("Bind");
                             }, function() {
-                                return this._apply("anything");
+                                return this.anything();
                             });
                         });
                         return [ field, value ];
@@ -165,27 +163,25 @@
                             return this._apply("Count");
                         }, function() {
                             return this._form(function() {
-                                table = this._apply("anything");
+                                table = this.anything();
                                 return this._applyWithArgs("exactly", "*");
                             });
                         }, function() {
                             this._form(function() {
                                 value = this._apply("AnyValue");
-                                return as = this._apply("anything");
+                                return as = this.anything();
                             });
                             return [ value, as ];
                         }, function() {
                             return this._apply("AnyValue");
                         }, function() {
-                            return function() {
-                                switch (this._apply("anything")) {
-                                  case "*":
-                                    return "*";
+                            switch (this.anything()) {
+                              case "*":
+                                return "*";
 
-                                  default:
-                                    throw this._fail();
-                                }
-                            }.call(this);
+                              default:
+                                throw this._fail();
+                            }
                         }, function() {
                             return this._apply("Null");
                         });
@@ -213,15 +209,15 @@
                         table = this._or(function() {
                             return this._apply("SelectQuery");
                         }, function() {
-                            return this._apply("anything");
+                            return this.anything();
                         });
-                        return as = this._apply("anything");
+                        return as = this.anything();
                     });
                     return [ table, as ];
                 }, function() {
                     return this._apply("SelectQuery");
                 }, function() {
-                    return this._apply("anything");
+                    return this.anything();
                 });
             });
             return [ [ "From", from ] ];
@@ -232,7 +228,7 @@
                 this._applyWithArgs("exactly", "Join");
                 this._form(function() {
                     this._applyWithArgs("exactly", "With");
-                    return table = this._apply("anything");
+                    return table = this.anything();
                 });
                 return this._form(function() {
                     this._applyWithArgs("exactly", "On");
@@ -268,7 +264,7 @@
                 return orders = this._many1(function() {
                     this._form(function() {
                         order = function() {
-                            switch (this._apply("anything")) {
+                            switch (this.anything()) {
                               case "ASC":
                                 return "ASC";
 
@@ -340,28 +336,28 @@
             var $elf = this, _fromIdx = this.input.idx, field;
             return this._form(function() {
                 this._applyWithArgs("exactly", "Field");
-                return field = this._apply("anything");
+                return field = this.anything();
             });
         },
         ReferencedField: function() {
             var $elf = this, _fromIdx = this.input.idx, field, table;
             return this._form(function() {
                 this._applyWithArgs("exactly", "ReferencedField");
-                table = this._apply("anything");
-                return field = this._apply("anything");
+                table = this.anything();
+                return field = this.anything();
             });
         },
         Bind: function() {
             var $elf = this, _fromIdx = this.input.idx, field, tableName;
             return this._form(function() {
                 this._applyWithArgs("exactly", "Bind");
-                tableName = this._apply("anything");
-                return field = this._apply("anything");
+                tableName = this.anything();
+                return field = this.anything();
             });
         },
         Null: function() {
             var $elf = this, _fromIdx = this.input.idx, next;
-            next = this._apply("anything");
+            next = this.anything();
             this._pred(null === next);
             return null;
         },
@@ -389,7 +385,7 @@
             var $elf = this, _fromIdx = this.input.idx, text;
             return this._form(function() {
                 (function() {
-                    switch (this._apply("anything")) {
+                    switch (this.anything()) {
                       case "Text":
                         return "Text";
 
@@ -400,14 +396,14 @@
                         throw this._fail();
                     }
                 }).call(this);
-                return text = this._apply("anything");
+                return text = this.anything();
             });
         },
         Concat: function() {
             var $elf = this, _fromIdx = this.input.idx, firstString, otherStrings;
             this._form(function() {
                 (function() {
-                    switch (this._apply("anything")) {
+                    switch (this.anything()) {
                       case "Concat":
                         return "Concat";
 
@@ -429,7 +425,7 @@
             var $elf = this, _fromIdx = this.input.idx, string;
             this._form(function() {
                 (function() {
-                    switch (this._apply("anything")) {
+                    switch (this.anything()) {
                       case "Lower":
                         return "Lower";
 
@@ -451,7 +447,7 @@
             var $elf = this, _fromIdx = this.input.idx, string;
             this._form(function() {
                 (function() {
-                    switch (this._apply("anything")) {
+                    switch (this.anything()) {
                       case "ToUpper":
                         return "ToUpper";
 
@@ -530,7 +526,7 @@
             var $elf = this, _fromIdx = this.input.idx, number;
             return this._form(function() {
                 (function() {
-                    switch (this._apply("anything")) {
+                    switch (this.anything()) {
                       case "Integer":
                         return "Integer";
 
@@ -544,7 +540,7 @@
                         throw this._fail();
                     }
                 }).call(this);
-                return number = this._apply("anything");
+                return number = this.anything();
             });
         },
         MathOp: function() {
@@ -634,7 +630,7 @@
             var $elf = this, _fromIdx = this.input.idx, haystack, needle;
             this._form(function() {
                 (function() {
-                    switch (this._apply("anything")) {
+                    switch (this.anything()) {
                       case "IndexOf":
                         return "IndexOf";
 
@@ -857,7 +853,7 @@
             var $elf = this, _fromIdx = this.input.idx, date;
             this._form(function() {
                 this._applyWithArgs("exactly", "Date");
-                return date = this._apply("anything");
+                return date = this.anything();
             });
             this._pred(_.isDate(date));
             return [ "Date", date ];
@@ -874,7 +870,7 @@
             var $elf = this, _fromIdx = this.input.idx, field;
             this._form(function() {
                 this._applyWithArgs("exactly", "AggregateJSON");
-                return field = this._apply("anything");
+                return field = this.anything();
             });
             return [ "AggregateJSON", field ];
         }
@@ -953,7 +949,7 @@
         },
         Process: function() {
             var $elf = this, _fromIdx = this.input.idx, query;
-            query = this._apply("anything");
+            query = this.anything();
             query = this._or(function() {
                 return this._applyWithArgs("AnyValue", query);
             }, function() {
