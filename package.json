@@ -10,12 +10,12 @@
   "repository": "git@bitbucket.org:rulemotion/abstract-sql-compiler.git",
   "author": "",
   "dependencies": {
-    "lodash": "~2.2.1",
-    "ometa-js": "~1.0.4"
+    "lodash": "~2.3.0",
+    "ometa-js": "~1.1.0"
   },
   "devDependencies": {
-    "odata-parser": "git+ssh://git@bitbucket.org:rulemotion/odata-parser.git#v0.0.6",
-    "odata-to-abstract-sql": "git+ssh://git@bitbucket.org:rulemotion/odata-to-abstract-sql.git#v0.0.19",
+    "odata-parser": "git+ssh://git@bitbucket.org:rulemotion/odata-parser.git#v0.0.7",
+    "odata-to-abstract-sql": "git+ssh://git@bitbucket.org:rulemotion/odata-to-abstract-sql.git#v0.0.21",
     "chai": "~1.8.1"
   }
 }
