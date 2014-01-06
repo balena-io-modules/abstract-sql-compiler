@@ -18,6 +18,14 @@ test '/pilot(1)', (result) ->
 			WHERE "pilot"."id" = 1
 		''')
 
+test "/pilot('TextKey')", (result) ->
+	it 'should select from pilot with id', ->
+		expect(result.query).to.equal('''
+			SELECT ''' + pilotFields + '\n' + '''
+			FROM "pilot"
+			WHERE "pilot"."id" = 'TextKey'
+		''')
+
 test '/pilot(1)/licence', (result) ->
 	it 'should select from the licence of pilot with id', ->
 		expect(result.query).to.equal('''
