@@ -14,8 +14,8 @@
     "ometa-js": "~1.1.3"
   },
   "devDependencies": {
-    "odata-parser": "git+ssh://git@bitbucket.org:rulemotion/odata-parser.git#v0.0.8",
-    "odata-to-abstract-sql": "git+ssh://git@bitbucket.org:rulemotion/odata-to-abstract-sql.git#v0.0.24",
+    "odata-parser": "git+ssh://git@bitbucket.org:rulemotion/odata-parser.git#v0.0.9",
+    "odata-to-abstract-sql": "git+ssh://git@bitbucket.org:rulemotion/odata-to-abstract-sql.git#v0.0.26",
     "chai": "~1.8.1"
   }
 }
