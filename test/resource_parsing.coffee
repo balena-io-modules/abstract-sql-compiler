@@ -127,11 +127,7 @@ do ->
 	]
 	testFunc = (result) ->
 		it 'should insert/update the pilot with id 1', ->
-			expect(result[0].query).to.equal('''
-				INSERT INTO "pilot" ("id", "is experienced")
-				VALUES (?, ?)
-			''')
-			expect(result[1].query).to.equal('''
+			expect(result.query).to.equal('''
 				UPDATE "pilot"
 				SET "id" = ?,
 					"is experienced" = ?
@@ -188,11 +184,7 @@ do ->
 	]
 	testFunc = (result) ->
 		it 'should insert/update the pilot with id 1', ->
-			expect(result[0].query).to.equal('''
-				INSERT INTO "pilot-can_fly-plane" ("pilot")
-				VALUES (?)
-			''')
-			expect(result[1].query).to.equal('''
+			expect(result.query).to.equal('''
 				UPDATE "pilot-can_fly-plane"
 				SET "pilot" = ?
 				WHERE "pilot-can_fly-plane"."id" = 1
