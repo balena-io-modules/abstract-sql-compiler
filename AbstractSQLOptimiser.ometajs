@@ -170,9 +170,7 @@ ometa AbstractSQLValidator {
 			(	[	(	'ASC'
 					|	'DESC'
 					):order
-					(	Field
-					|	ReferencedField
-					):field
+					Field:field
 				]
 				-> [order, field]
 			)+:orders
@@ -200,14 +198,17 @@ ometa AbstractSQLValidator {
 		|	JSONValue,
 
 	UnknownValue =
-		(	ReferencedField
-		|	Field
+		(	Field
 		|	Bind
 		|	Null
 		|	SelectQuery
 		),
 
 	Field =
+			ReferencedField
+		|	UnreferencedField,
+
+	UnreferencedField =
 		[	'Field'
 			:field
 		],

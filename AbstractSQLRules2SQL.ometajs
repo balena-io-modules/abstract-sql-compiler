@@ -185,9 +185,7 @@ export ometa AbstractSQLRules2SQL {
 		(	[	(	'ASC'
 				|	'DESC'
 				):order
-				(	Field
-				|	ReferencedField
-				):field
+				Field:field
 			]
 			-> (field + ' ' + order)
 		)+:orders
@@ -214,8 +212,7 @@ export ometa AbstractSQLRules2SQL {
 		),
 
 	UnknownValue :indent =
-		(	ReferencedField
-		|	Field
+		(	Field
 		|	Bind
 		|	Null
 		|	NestedIndent(indent):nestedIndent
@@ -224,6 +221,10 @@ export ometa AbstractSQLRules2SQL {
 		),
 
 	Field =
+			ReferencedField
+		|	UnreferencedField,
+
+	UnreferencedField =
 		[	'Field'
 			:field
 		]
