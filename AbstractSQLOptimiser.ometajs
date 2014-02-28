@@ -689,6 +689,17 @@ export ometa AbstractSQLOptimiser <: AbstractSQLValidator {
 				-> ['Or', inStatement].concat(otherBools)
 			|	-> inStatement
 			)
+		|	// Collapse nested ANDs.
+			[	'And'
+				{[]}:conditions
+				(	And:and
+					{conditions.concat(and.slice(1))}:conditions
+					SetHelped
+				|	BooleanValue:bool
+					{conditions.push(bool)}
+				)+
+			]
+			-> ['And'].concat(conditions)
 		|	^And,
 
 	Not =
