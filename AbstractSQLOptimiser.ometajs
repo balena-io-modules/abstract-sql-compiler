@@ -427,6 +427,7 @@ ometa AbstractSQLValidator {
 		|	Comparison
 		|	Between
 		|	In
+		|	NotIn
 		),
 
 	Boolean =
@@ -537,6 +538,13 @@ ometa AbstractSQLValidator {
 		]
 		-> ['In', field].concat(vals),
 
+	NotIn =
+		[	'NotIn'
+			Field:field
+			AnyValue+:vals
+		]
+		-> ['NotIn', field].concat(vals),
+
 	DateValue =
 		(	UnknownValue
 		|	Date
@@ -616,6 +624,16 @@ export ometa AbstractSQLOptimiser <: AbstractSQLValidator {
 			// -> queryAdditions
 		// |	^Where,
 
+	FieldNotEquals =
+		[	'NotEquals'
+			(	Field:comp1
+				AnyValue:comp2
+			|	AnyValue:comp2
+				Field:comp1
+			)
+		]
+		-> ['NotEquals', comp1, comp2],
+
 	FieldEquals =
 		[	'Equals'
 			(	Field:comp1
@@ -625,6 +643,7 @@ export ometa AbstractSQLOptimiser <: AbstractSQLValidator {
 			)
 		]
 		-> ['Equals', comp1, comp2],
+
 	Or =
 			// Optimise id = 1 OR id = 2 OR id = 3 -> id IN [1, 2, 3]
 			[	'Or'
@@ -653,6 +672,24 @@ export ometa AbstractSQLOptimiser <: AbstractSQLValidator {
 			]
 			-> ['Or'].concat(conditions)
 		|	^Or,
+
+	And =
+			// Optimise id != 1 AND id != 2 AND id != 3 -> id NOT IN [1, 2, 3]
+			[	'And'
+				FieldNotEquals:firstBool
+				(	FieldNotEquals:secondBool
+					?_.isEqual(firstBool[1], secondBool[1])
+					-> secondBool[2]
+				)+:inVals
+				BooleanValue*:otherBools
+			]
+			SetHelped
+			{['NotIn', firstBool[1], firstBool[2]].concat(inVals)}:inStatement
+			(	?(otherBools.length > 0)
+				-> ['Or', inStatement].concat(otherBools)
+			|	-> inStatement
+			)
+		|	^And,
 
 	Not =
 		(	[	'Not'

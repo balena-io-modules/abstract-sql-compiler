@@ -424,6 +424,7 @@ export ometa AbstractSQLRules2SQL {
 		|	Comparison(indent)
 		|	Between(indent)
 		|	In(indent)
+		|	NotIn(indent)
 		),
 
 	Boolean =
@@ -495,6 +496,13 @@ export ometa AbstractSQLRules2SQL {
 			AnyValue(indent)+:vals
 		]
 		-> (field + ' IN (' + vals.join(', ') + ')'),
+
+	NotIn :indent =
+		[	'NotIn'
+			Field:field
+			AnyValue(indent)+:vals
+		]
+		-> (field + ' NOT IN (' + vals.join(', ') + ')'),
 
 	DateValue :indent =
 		(	UnknownValue(indent)
