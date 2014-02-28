@@ -275,11 +275,7 @@
                                 throw this._fail();
                             }
                         }.call(this);
-                        return field = this._or(function() {
-                            return this._apply("Field");
-                        }, function() {
-                            return this._apply("ReferencedField");
-                        });
+                        return field = this._apply("Field");
                     });
                     return [ order, field ];
                 });
@@ -321,8 +317,6 @@
         UnknownValue: function() {
             var $elf = this, _fromIdx = this.input.idx;
             return this._or(function() {
-                return this._apply("ReferencedField");
-            }, function() {
                 return this._apply("Field");
             }, function() {
                 return this._apply("Bind");
@@ -333,6 +327,14 @@
             });
         },
         Field: function() {
+            var $elf = this, _fromIdx = this.input.idx;
+            return this._or(function() {
+                return this._apply("ReferencedField");
+            }, function() {
+                return this._apply("UnreferencedField");
+            });
+        },
+        UnreferencedField: function() {
             var $elf = this, _fromIdx = this.input.idx, field;
             return this._form(function() {
                 this._applyWithArgs("exactly", "Field");
@@ -698,6 +700,10 @@
                 return this._apply("Comparison");
             }, function() {
                 return this._apply("Between");
+            }, function() {
+                return this._apply("In");
+            }, function() {
+                return this._apply("NotIn");
             });
         },
         Boolean: function() {
@@ -841,6 +847,28 @@
             });
             return [ "Between", comp1, comp2, comp3 ];
         },
+        In: function() {
+            var $elf = this, _fromIdx = this.input.idx, field, vals;
+            this._form(function() {
+                this._applyWithArgs("exactly", "In");
+                field = this._apply("Field");
+                return vals = this._many1(function() {
+                    return this._apply("AnyValue");
+                });
+            });
+            return [ "In", field ].concat(vals);
+        },
+        NotIn: function() {
+            var $elf = this, _fromIdx = this.input.idx, field, vals;
+            this._form(function() {
+                this._applyWithArgs("exactly", "NotIn");
+                field = this._apply("Field");
+                return vals = this._many1(function() {
+                    return this._apply("AnyValue");
+                });
+            });
+            return [ "NotIn", field ].concat(vals);
+        },
         DateValue: function() {
             var $elf = this, _fromIdx = this.input.idx;
             return this._or(function() {
@@ -875,6 +903,120 @@
             return [ "AggregateJSON", field ];
         }
     }), AbstractSQLOptimiser = exports.AbstractSQLOptimiser = AbstractSQLValidator._extend({
+        FieldNotEquals: function() {
+            var $elf = this, _fromIdx = this.input.idx, comp1, comp2;
+            this._form(function() {
+                this._applyWithArgs("exactly", "NotEquals");
+                return this._or(function() {
+                    comp1 = this._apply("Field");
+                    return comp2 = this._apply("AnyValue");
+                }, function() {
+                    comp2 = this._apply("AnyValue");
+                    return comp1 = this._apply("Field");
+                });
+            });
+            return [ "NotEquals", comp1, comp2 ];
+        },
+        FieldEquals: function() {
+            var $elf = this, _fromIdx = this.input.idx, comp1, comp2;
+            this._form(function() {
+                this._applyWithArgs("exactly", "Equals");
+                return this._or(function() {
+                    comp1 = this._apply("Field");
+                    return comp2 = this._apply("AnyValue");
+                }, function() {
+                    comp2 = this._apply("AnyValue");
+                    return comp1 = this._apply("Field");
+                });
+            });
+            return [ "Equals", comp1, comp2 ];
+        },
+        Or: function() {
+            var $elf = this, _fromIdx = this.input.idx, bool, conditions, firstBool, inStatement, inVals, or, otherBools, secondBool;
+            return this._or(function() {
+                this._form(function() {
+                    this._applyWithArgs("exactly", "Or");
+                    firstBool = this._apply("FieldEquals");
+                    inVals = this._many1(function() {
+                        secondBool = this._apply("FieldEquals");
+                        this._pred(_.isEqual(firstBool[1], secondBool[1]));
+                        return secondBool[2];
+                    });
+                    return otherBools = this._many(function() {
+                        return this._apply("BooleanValue");
+                    });
+                });
+                this._apply("SetHelped");
+                inStatement = [ "In", firstBool[1], firstBool[2] ].concat(inVals);
+                return this._or(function() {
+                    this._pred(otherBools.length > 0);
+                    return [ "Or", inStatement ].concat(otherBools);
+                }, function() {
+                    return inStatement;
+                });
+            }, function() {
+                this._form(function() {
+                    this._applyWithArgs("exactly", "Or");
+                    conditions = [];
+                    return this._many1(function() {
+                        return this._or(function() {
+                            or = this._apply("Or");
+                            conditions = conditions.concat(or.slice(1));
+                            return this._apply("SetHelped");
+                        }, function() {
+                            bool = this._apply("BooleanValue");
+                            return conditions.push(bool);
+                        });
+                    });
+                });
+                return [ "Or" ].concat(conditions);
+            }, function() {
+                return AbstractSQLValidator._superApplyWithArgs(this, "Or");
+            });
+        },
+        And: function() {
+            var $elf = this, _fromIdx = this.input.idx, and, bool, conditions, firstBool, inStatement, inVals, otherBools, secondBool;
+            return this._or(function() {
+                this._form(function() {
+                    this._applyWithArgs("exactly", "And");
+                    firstBool = this._apply("FieldNotEquals");
+                    inVals = this._many1(function() {
+                        secondBool = this._apply("FieldNotEquals");
+                        this._pred(_.isEqual(firstBool[1], secondBool[1]));
+                        return secondBool[2];
+                    });
+                    return otherBools = this._many(function() {
+                        return this._apply("BooleanValue");
+                    });
+                });
+                this._apply("SetHelped");
+                inStatement = [ "NotIn", firstBool[1], firstBool[2] ].concat(inVals);
+                return this._or(function() {
+                    this._pred(otherBools.length > 0);
+                    return [ "Or", inStatement ].concat(otherBools);
+                }, function() {
+                    return inStatement;
+                });
+            }, function() {
+                this._form(function() {
+                    this._applyWithArgs("exactly", "And");
+                    conditions = [];
+                    return this._many1(function() {
+                        return this._or(function() {
+                            and = this._apply("And");
+                            conditions = conditions.concat(and.slice(1));
+                            return this._apply("SetHelped");
+                        }, function() {
+                            bool = this._apply("BooleanValue");
+                            return conditions.push(bool);
+                        });
+                    });
+                });
+                return [ "And" ].concat(conditions);
+            }, function() {
+                return AbstractSQLValidator._superApplyWithArgs(this, "And");
+            });
+        },
         Not: function() {
             var $elf = this, _fromIdx = this.input.idx, boolStatement;
             return this._or(function() {
@@ -888,6 +1030,9 @@
                     }, function() {
                         boolStatement = this._apply("Equals");
                         return boolStatement[0] = "NotEquals";
+                    }, function() {
+                        boolStatement = this._apply("In");
+                        return boolStatement[0] = "NotIn";
                     });
                 });
                 this._apply("SetHelped");

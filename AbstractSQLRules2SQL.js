@@ -315,11 +315,7 @@
                             throw this._fail();
                         }
                     }.call(this);
-                    return field = this._or(function() {
-                        return this._apply("Field");
-                    }, function() {
-                        return this._apply("ReferencedField");
-                    });
+                    return field = this._apply("Field");
                 });
                 return field + " " + order;
             });
@@ -357,8 +353,6 @@
         UnknownValue: function(indent) {
             var $elf = this, _fromIdx = this.input.idx, nestedIndent, query;
             return this._or(function() {
-                return this._apply("ReferencedField");
-            }, function() {
                 return this._apply("Field");
             }, function() {
                 return this._apply("Bind");
@@ -371,6 +365,14 @@
             });
         },
         Field: function() {
+            var $elf = this, _fromIdx = this.input.idx;
+            return this._or(function() {
+                return this._apply("ReferencedField");
+            }, function() {
+                return this._apply("UnreferencedField");
+            });
+        },
+        UnreferencedField: function() {
             var $elf = this, _fromIdx = this.input.idx, field;
             this._form(function() {
                 this._applyWithArgs("exactly", "Field");
@@ -688,6 +690,10 @@
                 return this._applyWithArgs("Comparison", indent);
             }, function() {
                 return this._applyWithArgs("Between", indent);
+            }, function() {
+                return this._applyWithArgs("In", indent);
+            }, function() {
+                return this._applyWithArgs("NotIn", indent);
             });
         },
         Boolean: function() {
@@ -792,6 +798,28 @@
                 return b = this._applyWithArgs("AnyValue", indent);
             });
             return val + " BETWEEN " + a + " AND " + b;
+        },
+        In: function(indent) {
+            var $elf = this, _fromIdx = this.input.idx, field, vals;
+            this._form(function() {
+                this._applyWithArgs("exactly", "In");
+                field = this._apply("Field");
+                return vals = this._many1(function() {
+                    return this._applyWithArgs("AnyValue", indent);
+                });
+            });
+            return field + " IN (" + vals.join(", ") + ")";
+        },
+        NotIn: function(indent) {
+            var $elf = this, _fromIdx = this.input.idx, field, vals;
+            this._form(function() {
+                this._applyWithArgs("exactly", "NotIn");
+                field = this._apply("Field");
+                return vals = this._many1(function() {
+                    return this._applyWithArgs("AnyValue", indent);
+                });
+            });
+            return field + " NOT IN (" + vals.join(", ") + ")";
         },
         DateValue: function(indent) {
             var $elf = this, _fromIdx = this.input.idx;
