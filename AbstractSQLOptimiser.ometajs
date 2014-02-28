@@ -426,6 +426,7 @@ ometa AbstractSQLValidator {
 		|	Exists
 		|	Comparison
 		|	Between
+		|	In
 		),
 
 	Boolean =
@@ -529,6 +530,13 @@ ometa AbstractSQLValidator {
 		]
 		-> ['Between', comp1, comp2, comp3],
 
+	In =
+		[	'In'
+			Field:field
+			AnyValue+:vals
+		]
+		-> ['In', field].concat(vals),
+
 	DateValue =
 		(	UnknownValue
 		|	Date
@@ -607,6 +615,33 @@ export ometa AbstractSQLOptimiser <: AbstractSQLValidator {
 			// SetHelped
 			// -> queryAdditions
 		// |	^Where,
+
+	FieldEquals =
+		[	'Equals'
+			(	Field:comp1
+				AnyValue:comp2
+			|	AnyValue:comp2
+				Field:comp1
+			)
+		]
+		-> ['Equals', comp1, comp2],
+	Or =
+			// Optimise id = 1 OR id = 2 OR id = 3 -> id IN [1, 2, 3]
+			[	'Or'
+				FieldEquals:firstBool
+				(	FieldEquals:secondBool
+					?_.isEqual(firstBool[1], secondBool[1])
+					-> secondBool[2]
+				)+:inVals
+				BooleanValue*:otherBools
+			]
+			SetHelped
+			{['In', firstBool[1], firstBool[2]].concat(inVals)}:inStatement
+			(	?(otherBools.length > 0)
+				-> ['Or', inStatement].concat(otherBools)
+			|	-> inStatement
+			)
+		|	^Or,
 
 	Not =
 		(	[	'Not'
