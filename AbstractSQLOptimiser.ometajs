@@ -709,6 +709,8 @@ export ometa AbstractSQLOptimiser <: AbstractSQLValidator {
 					]
 				|	Equals:boolStatement
 					{boolStatement[0] = 'NotEquals'}
+				|	In:boolStatement
+					{boolStatement[0] = 'NotIn'}
 				)
 			]
 			SetHelped
