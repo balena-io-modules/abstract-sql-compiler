@@ -10,6 +10,28 @@ test '/pilot?$select=name', (result) ->
 			FROM "pilot"
 		''')
 
+test '/pilot?$select=favourite_colour', (result) ->
+	it 'should select favourite_colour from pilot', ->
+		expect(result.query).to.equal('''
+			SELECT "pilot"."favourite colour" AS "favourite_colour"
+			FROM "pilot"
+		''')
+
+test "/pilot(1)?$select=favourite_colour", (result) ->
+	it 'should select from pilot with id', ->
+		expect(result.query).to.equal('''
+			SELECT "pilot"."favourite colour" AS "favourite_colour"
+			FROM "pilot"
+			WHERE "pilot"."id" = 1
+		''')
+
+test "/pilot('TextKey')?$select=favourite_colour", (result) ->
+		expect(result.query).to.equal('''
+			SELECT "pilot"."favourite colour" AS "favourite_colour"
+			FROM "pilot"
+			WHERE "pilot"."id" = 'TextKey'
+		''')
+
 
 test '/pilot?$select=pilot/name', (result) ->
 	it 'should select name from pilot', ->
