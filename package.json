@@ -4,7 +4,7 @@
   "description": "A translator for abstract sql into sql.",
   "scripts": {
     "pretest": "npm run-script prepublish",
-    "test": "mocha",
+    "test": "./node_modules/.bin/mocha",
     "prepublish": "node node_modules/ometa-js/bin/ometajs2js --input AbstractSQLOptimiser.ometajs --output AbstractSQLOptimiser.js && node node_modules/ometa-js/bin/ometajs2js --input AbstractSQLRules2SQL.ometajs --output AbstractSQLRules2SQL.js"
   },
   "repository": "git@bitbucket.org:rulemotion/abstract-sql-compiler.git",
@@ -14,8 +14,10 @@
     "ometa-js": "~1.3.0"
   },
   "devDependencies": {
+    "chai": "~1.8.1",
+    "coffee-script": "~1.8.0",
+    "mocha": "~1.21.4",
     "odata-parser": "git+ssh://git@bitbucket.org:rulemotion/odata-parser.git#v0.0.9",
-    "odata-to-abstract-sql": "git+ssh://git@bitbucket.org:rulemotion/odata-to-abstract-sql.git#v0.0.26",
-    "chai": "~1.8.1"
+    "odata-to-abstract-sql": "git+ssh://git@bitbucket.org:rulemotion/odata-to-abstract-sql.git#v0.0.26"
   }
 }
