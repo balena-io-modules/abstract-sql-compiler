@@ -61,7 +61,12 @@ createExpression = (lhs, op, rhs) ->
 	if lhs is 'not'
 		return {
 			odata: 'not ' + if op.odata? then '(' + op.odata + ')' else operandToOData(op)
-			sql: 'NOT (\n\t' + (op.sql ? operandToSQL(op)) + '\n)'
+			sql: 'NOT (\n\t' + operandToSQL(op) + '\n)'
+		}
+	if !rhs?
+		return {
+			odata: if lhs.odata? then '(' + lhs.odata + ')' else operandToOData(lhs)
+			sql: operandToSQL(lhs)
 		}
 	lhsSql = operandToSQL(lhs)
 	rhsSql = operandToSQL(rhs)
@@ -101,7 +106,7 @@ createMethodCall = (method, args...) ->
 		)
 	}
 
-operandTest = (lhs, op, rhs = 'name') ->
+operandTest = (lhs, op, rhs) ->
 	{odata, sql, bindings} = createExpression(lhs, op, rhs)
 	test '/pilot?$filter=' + odata, 'GET', bindings, (result) ->
 		it 'should select from pilot where "' + odata + '"', ->
@@ -119,12 +124,12 @@ methodTest = (args...) ->
 				FROM "pilot"
 				WHERE ''' + sql
 
-operandTest(2, 'eq')
-operandTest(2, 'ne')
-operandTest(2, 'gt')
-operandTest(2, 'ge')
-operandTest(2, 'lt')
-operandTest(2, 'le')
+operandTest(2, 'eq', 'name')
+operandTest(2, 'ne', 'name')
+operandTest(2, 'gt', 'name')
+operandTest(2, 'ge', 'name')
+operandTest(2, 'lt', 'name')
+operandTest(2, 'le', 'name')
 
 # Test each combination of operands
 do ->
@@ -145,6 +150,7 @@ do ->
 	right = createExpression('age', 'lt', 10)
 	operandTest(left, 'and', right)
 	operandTest(left, 'or', right)
+	operandTest('is_experienced')
 	operandTest('not', 'is_experienced')
 	operandTest('not', left)
 
@@ -196,6 +202,45 @@ do ->
 				WHERE "pilot"."id" = "pilot-can_fly-plane"."pilot"
 				AND "plane"."id" = "pilot-can_fly-plane"."plane"
 				AND ''' + sql
+
+	test '/pilot?$filter=' + odata, 'PATCH', [['pilot', 'name']], name: 'Peter', (result) ->
+		it 'should select from pilot where "' + odata + '"', ->
+			expect(result.query).to.equal '''
+				UPDATE "pilot"
+				SET "name" = ?
+				WHERE "pilot"."id" IN ((
+					SELECT "pilot"."id"
+					FROM "pilot-can_fly-plane",
+						"plane",
+						"pilot"
+					WHERE "pilot"."id" = "pilot-can_fly-plane"."pilot"
+					AND "plane"."id" = "pilot-can_fly-plane"."plane"
+					AND "plane"."id" = 10
+				))
+				'''
+
+	test '/pilot?$filter=' + odata, 'DELETE', (result) ->
+		it 'should select from pilot where "' + odata + '"', ->
+			console.log(result.query)
+			expect(result.query).to.equal '''
+				DELETE FROM "pilot"
+				WHERE "pilot"."id" IN ((
+					SELECT "pilot"."id"
+					FROM "pilot-can_fly-plane",
+						"plane",
+						"pilot"
+					WHERE "pilot"."id" = "pilot-can_fly-plane"."pilot"
+					AND "plane"."id" = "pilot-can_fly-plane"."plane"
+					AND "plane"."id" = 10
+				))
+				'''
+
+	test '/pilot?$filter=' + odata, 'POST', [['pilot', 'name']], name: 'Peter', (result) ->
+		it 'should select from pilot where "' + odata + '"', ->
+			expect(result.query).to.equal '''
+				INSERT INTO "pilot" ("name")
+				VALUES (?)
+				'''
 
 do ->
 	oneEqOne = createExpression(1, 'eq', 1)
