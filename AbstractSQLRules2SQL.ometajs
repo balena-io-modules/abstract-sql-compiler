@@ -74,31 +74,34 @@ export ometa AbstractSQLRules2SQL {
 
 	InsertBody :indent =
 		{[]}:tables
-		[	Fields:fieldValues
+		[	Fields:fields
+		|	Values:values
 		|	Table(indent):table
 			{tables.push(table)}
 		|	// Ignore a where - we're probably in an Upsert.
 			'Where'
 			anything*
 		]*
-		(	?(fieldValues[0].length > 0)
-			-> ('INSERT INTO ' + tables.join(', ') + ' (' + fieldValues[0].join(', ') + ')' + indent + 'VALUES (' + fieldValues[1].join(', ') + ')')
+		(	?(fields.length > 0)
+			-> ('INSERT INTO ' + tables.join(', ') + ' (' + fields.join(', ') + ')' + indent + 'VALUES (' + values.join(', ') + ')')
 		|	-> ('INSERT INTO ' + tables.join(', ') + ' DEFAULT VALUES')
 		),
 
 	UpdateBody :indent =
 		{[]}:tables
 		{''}:where
-		[	Fields:fieldValues
-			?(fieldValues[0].length > 0)
+		[	Fields:fields
+			?(fields.length > 0)
+		|	Values:values
+			?(values.length > 0)
 		|	Table(indent):table
 			{tables.push(table)}
 		|	Where(indent):where
 			{indent + where}:where
 		]*
 		{[]}:sets
-		{	for(var i=0; i < fieldValues[0].length; i++) {
-				sets[i] = fieldValues[0][i] + ' = ' + fieldValues[1][i];
+		{	for(var i=0; i < fields.length; i++) {
+				sets[i] = fields[i] + ' = ' + values[i];
 			}
 		}
 		NestedIndent(indent):nestedIndent
@@ -107,25 +110,28 @@ export ometa AbstractSQLRules2SQL {
 	Fields =
 		'Fields'
 		{[]}:fields
-		{[]}:values
-		[	[	anything:field
-				{fields.push('"' + field + '"')}
-				(	'?'
-				|	true
-					-> 1
-				|	false
-					-> 0
-				|	Null
-					-> 'NULL'
-				|	Bind
-				|	anything:value
-					// TODO: Should escape this.
-					-> ("'" + value + "'")
-				):value
-				{values.push(value)}
-			]*
+		[	(	anything:field
+				-> ('"' + field + '"')
+			)*:fields
 		]
-		-> [fields, values],
+		-> fields,
+
+	Values =
+		'Values'
+		[	(	'?'
+			|	true
+				-> 1
+			|	false
+				-> 0
+			|	Null
+				-> 'NULL'
+			|	Bind
+			|	anything:value
+				// TODO: Should escape this.
+				-> ("'" + value + "'")
+			)*:values
+		]
+		-> values,
 
 	Select :indent =
 		'Select'

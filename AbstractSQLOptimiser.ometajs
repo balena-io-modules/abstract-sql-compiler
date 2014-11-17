@@ -64,44 +64,52 @@ ometa AbstractSQLValidator {
 
 	InsertBody =
 		{[]}:body
-		(	(	Fields:fieldValues
+		(	(	Fields:fields
+			|	Values:values
 			|	Table:table
 			):bodyPart
 			{body.concat(bodyPart)}:body
 		)+
-		?(fieldValues!=null)
+		?(fields!=null)
+		?(values!=null)
 		?(table!=null)
 		-> body,
 
 	UpdateBody =
 		{[]}:body
-		(	(	Fields:fieldValues
+		(	(	Fields:fields
+			|	Values:values
 			|	Table:table
 			|	?(where==null)
 				Where:where
 			):bodyPart
 			{body.concat(bodyPart)}:body
 		)+
-		?(fieldValues!=null && fieldValues[0][1].length > 0)
+		?(fields!=null && fields[0].length > 0)
+		?(values!=null && values[0].length > 0)
 		?(table!=null)
 		-> body,
 
 	Fields =
 		[	'Fields'
-			[	(	[	anything:field
-						(	'?'
-						|	true
-						|	false
-						|	Null
-						|	Bind
-						|	anything
-						):value
-					]
-					-> [field, value]
-				)*:fields
+			[	anything*:fields
 			]
 		]
 		-> [['Fields', fields]],
+
+	Values =
+		[	'Values'
+			[
+				(	'?'
+				|	true
+				|	false
+				|	Null
+				|	Bind
+				|	anything
+				)*:values
+			]
+		]
+		-> [['Values', values]],
 
 	Select =
 		[	'Select'
