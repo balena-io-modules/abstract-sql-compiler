@@ -163,7 +163,7 @@ export ometa AbstractSQLRules2SQL {
 				anything:alias
 			]
 			-> (from + ' AS "' + alias + '"')
-		|	SelectQuery(nestedindent)
+		|	SelectQuery(nestedindent):query
 			-> ('(' + nestedindent + query + indent + ')')
 		|	anything:table
 			-> ('"' + table + '"')
