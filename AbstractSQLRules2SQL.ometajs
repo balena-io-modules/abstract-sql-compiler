@@ -36,7 +36,11 @@ export ometa AbstractSQLRules2SQL {
 				{indent + offset}:offset
 			]*
 		]
-		-> ('SELECT ' + fields.join(', ') + indent + 'FROM ' + tables.join(',' + nestedIndent) + where + groupBy + orderBy + limit + offset),
+		(	?tables.length
+			-> (indent + 'FROM ' + tables.join(',' + nestedIndent))
+		|	-> ''
+		):from
+		-> ('SELECT ' + fields.join(', ') + from + where + groupBy + orderBy + limit + offset),
 
 	DeleteQuery :indent =
 		{[]}:tables
@@ -75,7 +79,7 @@ export ometa AbstractSQLRules2SQL {
 	InsertBody :indent =
 		{[]}:tables
 		[	Fields:fields
-		|	Values:values
+		|	Values(indent):values
 		|	Table(indent):table
 			{tables.push(table)}
 		|	// Ignore a where - we're probably in an Upsert.
@@ -83,7 +87,10 @@ export ometa AbstractSQLRules2SQL {
 			anything*
 		]*
 		(	?(fields.length > 0)
-			-> ('INSERT INTO ' + tables.join(', ') + ' (' + fields.join(', ') + ')' + indent + 'VALUES (' + values.join(', ') + ')')
+			(	?(_.isArray(values))
+				{'VALUES (' + values.join(', ') + ')'}:values
+			)?
+			-> ('INSERT INTO ' + tables.join(', ') + ' (' + fields.join(', ') + ')' + indent + values)
 		|	-> ('INSERT INTO ' + tables.join(', ') + ' DEFAULT VALUES')
 		),
 
@@ -116,21 +123,23 @@ export ometa AbstractSQLRules2SQL {
 		]
 		-> fields,
 
-	Values =
+	Values :indent =
 		'Values'
-		[	(	'?'
-			|	true
-				-> 1
-			|	false
-				-> 0
-			|	Null
-				-> 'NULL'
-			|	Bind
-			|	anything:value
-				// TODO: Should escape this.
-				-> ("'" + value + "'")
-			)*:values
-		]
+		(	SelectQuery(indent):values
+		|	[	(	'?'
+				|	true
+					-> 1
+				|	false
+					-> 0
+				|	Null
+					-> 'NULL'
+				|	Bind
+				|	anything:value
+					// TODO: Should escape this.
+					-> ("'" + value + "'")
+				)*:values
+			]
+		)
 		-> values,
 
 	Select :indent =

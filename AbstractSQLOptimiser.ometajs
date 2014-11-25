@@ -99,15 +99,16 @@ ometa AbstractSQLValidator {
 
 	Values =
 		[	'Values'
-			[
-				(	'?'
-				|	true
-				|	false
-				|	Null
-				|	Bind
-				|	anything
-				)*:values
-			]
+			(	SelectQuery:values
+			|	[	(	'?'
+					|	true
+					|	false
+					|	Null
+					|	Bind
+					|	anything
+					)*:values
+				]
+			)
 		]
 		-> [['Values', values]],
 
