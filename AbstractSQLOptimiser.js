@@ -87,26 +87,31 @@
             return [ "UpdateQuery" ].concat(body);
         },
         InsertBody: function() {
-            var $elf = this, _fromIdx = this.input.idx, body, bodyPart, fieldValues, table;
+            var $elf = this, _fromIdx = this.input.idx, body, bodyPart, fields, table, values;
             body = [];
             this._many1(function() {
                 bodyPart = this._or(function() {
-                    return fieldValues = this._apply("Fields");
+                    return fields = this._apply("Fields");
+                }, function() {
+                    return values = this._apply("Values");
                 }, function() {
                     return table = this._apply("Table");
                 });
                 return body = body.concat(bodyPart);
             });
-            this._pred(null != fieldValues);
+            this._pred(null != fields);
+            this._pred(null != values);
             this._pred(null != table);
             return body;
         },
         UpdateBody: function() {
-            var $elf = this, _fromIdx = this.input.idx, body, bodyPart, fieldValues, table, where;
+            var $elf = this, _fromIdx = this.input.idx, body, bodyPart, fields, table, values, where;
             body = [];
             this._many1(function() {
                 bodyPart = this._or(function() {
-                    return fieldValues = this._apply("Fields");
+                    return fields = this._apply("Fields");
+                }, function() {
+                    return values = this._apply("Values");
                 }, function() {
                     return table = this._apply("Table");
                 }, function() {
@@ -115,19 +120,33 @@
                 });
                 return body = body.concat(bodyPart);
             });
-            this._pred(null != fieldValues && fieldValues[0][1].length > 0);
+            this._pred(null != fields && fields[0].length > 0);
+            this._pred(null != values && values[0].length > 0);
             this._pred(null != table);
             return body;
         },
         Fields: function() {
-            var $elf = this, _fromIdx = this.input.idx, field, fields, value;
+            var $elf = this, _fromIdx = this.input.idx, fields;
             this._form(function() {
                 this._applyWithArgs("exactly", "Fields");
                 return this._form(function() {
                     return fields = this._many(function() {
-                        this._form(function() {
-                            field = this.anything();
-                            return value = this._or(function() {
+                        return this.anything();
+                    });
+                });
+            });
+            return [ [ "Fields", fields ] ];
+        },
+        Values: function() {
+            var $elf = this, _fromIdx = this.input.idx, values;
+            this._form(function() {
+                this._applyWithArgs("exactly", "Values");
+                return this._or(function() {
+                    return values = this._apply("SelectQuery");
+                }, function() {
+                    return this._form(function() {
+                        return values = this._many(function() {
+                            return this._or(function() {
                                 switch (this.anything()) {
                                   case "?":
                                     return "?";
@@ -147,11 +166,10 @@
                                 return this.anything();
                             });
                         });
-                        return [ field, value ];
                     });
                 });
             });
-            return [ [ "Fields", fields ] ];
+            return [ [ "Values", values ] ];
         },
         Select: function() {
             var $elf = this, _fromIdx = this.input.idx, as, fields, table, value;

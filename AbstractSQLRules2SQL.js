@@ -17,7 +17,7 @@
             return indent + "	";
         },
         SelectQuery: function(indent) {
-            var $elf = this, _fromIdx = this.input.idx, fields, groupBy, limit, nestedIndent, offset, orderBy, table, tables, where;
+            var $elf = this, _fromIdx = this.input.idx, fields, from, groupBy, limit, nestedIndent, offset, orderBy, table, tables, where;
             nestedIndent = this._applyWithArgs("NestedIndent", indent);
             tables = [];
             where = "";
@@ -53,7 +53,13 @@
                     });
                 });
             });
-            return "SELECT " + fields.join(", ") + indent + "FROM " + tables.join("," + nestedIndent) + where + groupBy + orderBy + limit + offset;
+            from = this._or(function() {
+                this._pred(tables.length);
+                return indent + "FROM " + tables.join("," + nestedIndent);
+            }, function() {
+                return "";
+            });
+            return "SELECT " + fields.join(", ") + from + where + groupBy + orderBy + limit + offset;
         },
         DeleteQuery: function(indent) {
             var $elf = this, _fromIdx = this.input.idx, table, tables, where;
@@ -112,12 +118,14 @@
             return update;
         },
         InsertBody: function(indent) {
-            var $elf = this, _fromIdx = this.input.idx, fieldValues, table, tables;
+            var $elf = this, _fromIdx = this.input.idx, fields, table, tables, values;
             tables = [];
             this._many(function() {
                 return this._form(function() {
                     return this._or(function() {
-                        return fieldValues = this._apply("Fields");
+                        return fields = this._apply("Fields");
+                    }, function() {
+                        return values = this._applyWithArgs("Values", indent);
                     }, function() {
                         table = this._applyWithArgs("Table", indent);
                         return tables.push(table);
@@ -135,21 +143,28 @@
                 });
             });
             return this._or(function() {
-                this._pred(fieldValues[0].length > 0);
-                return "INSERT INTO " + tables.join(", ") + " (" + fieldValues[0].join(", ") + ")" + indent + "VALUES (" + fieldValues[1].join(", ") + ")";
+                this._pred(fields.length > 0);
+                this._opt(function() {
+                    this._pred(_.isArray(values));
+                    return values = "VALUES (" + values.join(", ") + ")";
+                });
+                return "INSERT INTO " + tables.join(", ") + " (" + fields.join(", ") + ")" + indent + values;
             }, function() {
                 return "INSERT INTO " + tables.join(", ") + " DEFAULT VALUES";
             });
         },
         UpdateBody: function(indent) {
-            var $elf = this, _fromIdx = this.input.idx, fieldValues, nestedIndent, sets, table, tables, where;
+            var $elf = this, _fromIdx = this.input.idx, fields, nestedIndent, sets, table, tables, values, where;
             tables = [];
             where = "";
             this._many(function() {
                 return this._form(function() {
                     return this._or(function() {
-                        fieldValues = this._apply("Fields");
-                        return this._pred(fieldValues[0].length > 0);
+                        fields = this._apply("Fields");
+                        return this._pred(fields.length > 0);
+                    }, function() {
+                        values = this._apply("Values");
+                        return this._pred(values.length > 0);
                     }, function() {
                         table = this._applyWithArgs("Table", indent);
                         return tables.push(table);
@@ -161,22 +176,32 @@
             });
             sets = [];
             (function() {
-                for (var i = 0; i < fieldValues[0].length; i++) sets[i] = fieldValues[0][i] + " = " + fieldValues[1][i];
+                for (var i = 0; i < fields.length; i++) sets[i] = fields[i] + " = " + values[i];
             }).call(this);
             nestedIndent = this._applyWithArgs("NestedIndent", indent);
             return "UPDATE " + tables.join(", ") + indent + "SET " + sets.join("," + nestedIndent) + where;
         },
         Fields: function() {
-            var $elf = this, _fromIdx = this.input.idx, field, fields, value, values;
+            var $elf = this, _fromIdx = this.input.idx, field, fields;
             this._applyWithArgs("exactly", "Fields");
             fields = [];
-            values = [];
             this._form(function() {
-                return this._many(function() {
-                    return this._form(function() {
-                        field = this.anything();
-                        fields.push('"' + field + '"');
-                        value = this._or(function() {
+                return fields = this._many(function() {
+                    field = this.anything();
+                    return '"' + field + '"';
+                });
+            });
+            return fields;
+        },
+        Values: function(indent) {
+            var $elf = this, _fromIdx = this.input.idx, value, values;
+            this._applyWithArgs("exactly", "Values");
+            this._or(function() {
+                return values = this._applyWithArgs("SelectQuery", indent);
+            }, function() {
+                return this._form(function() {
+                    return values = this._many(function() {
+                        return this._or(function() {
                             switch (this.anything()) {
                               case "?":
                                 return "?";
@@ -199,11 +224,10 @@
                             value = this.anything();
                             return "'" + value + "'";
                         });
-                        return values.push(value);
                     });
                 });
             });
-            return [ fields, values ];
+            return values;
         },
         Select: function(indent) {
             var $elf = this, _fromIdx = this.input.idx, as, field, fields, table, value;
@@ -275,7 +299,7 @@
                 });
                 return from + ' AS "' + alias + '"';
             }, function() {
-                this._applyWithArgs("SelectQuery", nestedindent);
+                query = this._applyWithArgs("SelectQuery", nestedindent);
                 return "(" + nestedindent + query + indent + ")";
             }, function() {
                 table = this.anything();
