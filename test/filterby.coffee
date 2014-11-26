@@ -235,12 +235,18 @@ do ->
 				))
 				'''
 
-	test '/pilot?$filter=' + odata, 'POST', [['pilot', 'name']], name: 'Peter', (result) ->
+do ->
+	name = 'Peter'
+	{odata, sql} = createExpression('name', 'eq', "'#{name}'")
+	test '/pilot?$filter=' + odata, 'POST', [['pilot', 'name']], {name}, (result) ->
 		it 'should select from pilot where "' + odata + '"', ->
 			expect(result.query).to.equal '''
 				INSERT INTO "pilot" ("name")
-				VALUES (?)
-				'''
+				SELECT "pilot".*
+				FROM (
+					SELECT ? AS "name"
+				) AS "pilot"
+				WHERE ''' + sql
 
 do ->
 	oneEqOne = createExpression(1, 'eq', 1)
