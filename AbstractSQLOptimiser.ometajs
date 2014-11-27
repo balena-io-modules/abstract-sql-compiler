@@ -210,6 +210,7 @@ ometa AbstractSQLValidator {
 		(	Field
 		|	Bind
 		|	Null
+		|	Cast
 		|	SelectQuery
 		),
 
@@ -238,6 +239,13 @@ ometa AbstractSQLValidator {
 		:next
 		?(next===null)
 		-> null,
+
+	Cast =
+		[	'Cast'
+			AnyValue:v
+			:as
+		]
+		-> ['Cast', v, as],
 
 	TextValue =
 		(	UnknownValue

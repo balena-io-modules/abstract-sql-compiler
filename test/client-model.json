@@ -9,7 +9,8 @@
 					"dataType": "Serial",
 					"fieldName": "id",
 					"required": true,
-					"index": "PRIMARY KEY"
+					"index": "PRIMARY KEY",
+					"references": null
 				}
 			],
 			"idField": "id",
@@ -30,7 +31,8 @@
 					"dataType": "Serial",
 					"fieldName": "id",
 					"required": true,
-					"index": "PRIMARY KEY"
+					"index": "PRIMARY KEY",
+					"references": null
 				},
 				{
 					"dataType": "Short Text",
@@ -95,12 +97,15 @@
 					"dataType": "Serial",
 					"fieldName": "id",
 					"required": true,
-					"index": "PRIMARY KEY"
+					"index": "PRIMARY KEY",
+					"references": null
 				},
 				{
 					"dataType": "Boolean",
 					"fieldName": "is experienced",
-					"required": true
+					"required": true,
+					"index": null,
+					"references": null
 				},
 				{
 					"dataType": "Short Text",
@@ -170,7 +175,9 @@
 				{
 					"dataType": "Boolean",
 					"fieldName": "is experienced",
-					"required": true
+					"required": true,
+					"index": null,
+					"references": null
 				}
 			],
 			"idField": "pilot",
@@ -264,10 +271,19 @@
 						"fieldName": "id"
 					}
 				},
-				false
+				{
+					"dataType": "Color",
+					"fieldName": "favourite colour",
+					"required": true,
+					"index": null,
+					"references": {
+						"tableName": "favourite_colour",
+						"fieldName": null
+					}
+				}
 			],
 			"idField": "pilot",
-			"referenceScheme": "favourite_colour",
+			"referenceScheme": "favourite colour",
 			"actions": [
 				"view",
 				"add",
@@ -303,7 +319,8 @@
 					"dataType": "Serial",
 					"fieldName": "id",
 					"required": true,
-					"index": "PRIMARY KEY"
+					"index": "PRIMARY KEY",
+					"references": null
 				}
 			],
 			"idField": "id",
@@ -342,6 +359,65 @@
 			],
 			"idField": "pilot",
 			"referenceScheme": "licence",
+			"actions": [
+				"view",
+				"add",
+				"delete"
+			]
+		},
+		"team": {
+			"resourceName": "team",
+			"modelName": "team",
+			"topLevel": true,
+			"fields": [
+				{
+					"dataType": "Color",
+					"fieldName": "favourite colour",
+					"required": true,
+					"index": null,
+					"references": {
+						"tableName": "favourite_colour",
+						"fieldName": null
+					}
+				}
+			],
+			"idField": "favourite colour",
+			"referenceScheme": "id",
+			"actions": [
+				"view",
+				"add",
+				"edit",
+				"delete"
+			]
+		},
+		"team__has__favourite_colour": {
+			"resourceName": "team__has__favourite_colour",
+			"modelName": "team has favourite colour",
+			"topLevel": false,
+			"fields": [
+				{
+					"dataType": "ForeignKey",
+					"fieldName": "team",
+					"required": true,
+					"index": null,
+					"references": {
+						"tableName": "team",
+						"fieldName": "favourite colour"
+					}
+				},
+				{
+					"dataType": "Color",
+					"fieldName": "favourite colour",
+					"required": true,
+					"index": null,
+					"references": {
+						"tableName": "favourite_colour",
+						"fieldName": null
+					}
+				}
+			],
+			"idField": "team",
+			"referenceScheme": "favourite colour",
 			"actions": [
 				"view",
 				"add",
@@ -445,9 +521,9 @@
 				"pilot",
 				"id"
 			],
-			"favourite_colour": [
+			"favourite colour": [
 				"pilot",
-				"favourite_colour"
+				"favourite colour"
 			]
 		},
 		"pilot__can_fly__plane": {
@@ -474,6 +550,24 @@
 			"licence": [
 				"pilot",
 				"licence"
+			]
+		},
+		"team": {
+			"_name": "team",
+			"favourite_colour": [
+				"team",
+				"favourite colour"
+			]
+		},
+		"team__has__favourite_colour": {
+			"_name": "team",
+			"team": [
+				"team",
+				"favourite colour"
+			],
+			"favourite colour": [
+				"team",
+				"favourite colour"
 			]
 		}
 	}
