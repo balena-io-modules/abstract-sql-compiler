@@ -55,7 +55,7 @@ sqlOpBrackets =
 methodMaps =
 	TOUPPER: 'UPPER'
 	TOLOWER: 'LOWER'
-	INDEXOF: 'INSTR'
+	INDEXOF: 'STRPOS'
 
 createExpression = (lhs, op, rhs) ->
 	if lhs is 'not'
@@ -102,7 +102,10 @@ createMethodCall = (method, args...) ->
 					switch method
 						when 'SUBSTRING'
 							args[1]++
-					method + '(' + (operandToSQL(arg) for arg in args).join(', ') + ')'
+					result = method + '(' + (operandToSQL(arg) for arg in args).join(', ') + ')'
+					if method is 'STRPOS'
+						result = "(#{result} + 1)"
+					result
 		)
 	}
 
@@ -204,7 +207,7 @@ do ->
 				AND ''' + sql
 
 	test '/pilot?$filter=' + odata, 'PATCH', [['pilot', 'name']], name: 'Peter', (result) ->
-		it 'should select from pilot where "' + odata + '"', ->
+		it 'should update pilot where "' + odata + '"', ->
 			expect(result.query).to.equal '''
 				UPDATE "pilot"
 				SET "name" = ?
@@ -220,8 +223,7 @@ do ->
 				'''
 
 	test '/pilot?$filter=' + odata, 'DELETE', (result) ->
-		it 'should select from pilot where "' + odata + '"', ->
-			console.log(result.query)
+		it 'should delete from pilot where "' + odata + '"', ->
 			expect(result.query).to.equal '''
 				DELETE FROM "pilot"
 				WHERE "pilot"."id" IN ((
@@ -244,7 +246,7 @@ do ->
 				INSERT INTO "pilot" ("name")
 				SELECT "pilot".*
 				FROM (
-					SELECT ? AS "name"
+					SELECT CAST(? AS VARCHAR(255)) AS "name"
 				) AS "pilot"
 				WHERE ''' + sql
 
@@ -325,6 +327,6 @@ do ->
 				INSERT INTO "team" ("favourite colour")
 				SELECT "team".*
 				FROM (
-					SELECT ? AS "favourite colour"
+					SELECT CAST(? AS INTEGER) AS "favourite colour"
 				) AS "team"
 				WHERE ''' + sql
