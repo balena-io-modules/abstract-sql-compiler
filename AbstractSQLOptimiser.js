@@ -341,6 +341,8 @@
             }, function() {
                 return this._apply("Null");
             }, function() {
+                return this._apply("Cast");
+            }, function() {
                 return this._apply("SelectQuery");
             });
         },
@@ -380,6 +382,15 @@
             next = this.anything();
             this._pred(null === next);
             return null;
+        },
+        Cast: function() {
+            var $elf = this, _fromIdx = this.input.idx, as, v;
+            this._form(function() {
+                this._applyWithArgs("exactly", "Cast");
+                v = this._apply("AnyValue");
+                return as = this.anything();
+            });
+            return [ "Cast", v, as ];
         },
         TextValue: function() {
             var $elf = this, _fromIdx = this.input.idx;

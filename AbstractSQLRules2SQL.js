@@ -1,9 +1,9 @@
 !function(root, factory) {
-    "function" == typeof define && define.amd ? define([ "require", "exports", "ometa-core" ], factory) : "object" == typeof exports ? factory(require, exports, require("ometa-js").core) : factory(function(moduleName) {
+    "function" == typeof define && define.amd ? define([ "require", "exports", "ometa-core", "sbvr-types" ], factory) : "object" == typeof exports ? factory(require, exports, require("ometa-js").core) : factory(function(moduleName) {
         return root[moduleName];
     }, root, root.OMeta);
 }(this, function(require, exports, OMeta) {
-    var comparisons = {
+    var sbvrTypes = require("sbvr-types"), comparisons = {
         Equals: " = ",
         GreaterThan: " > ",
         GreaterThanOrEqual: " >= ",
@@ -383,6 +383,8 @@
             }, function() {
                 return this._apply("Null");
             }, function() {
+                return this._applyWithArgs("Cast", indent);
+            }, function() {
                 nestedIndent = this._applyWithArgs("NestedIndent", indent);
                 query = this._applyWithArgs("SelectQuery", nestedIndent);
                 return "(" + nestedIndent + query + indent + ")";
@@ -428,6 +430,22 @@
             next = this.anything();
             this._pred(null === next);
             return null;
+        },
+        Cast: function(indent) {
+            var $elf = this, _fromIdx = this.input.idx, type, v;
+            this._form(function() {
+                this._applyWithArgs("exactly", "Cast");
+                v = this._applyWithArgs("AnyValue", indent);
+                return type = this._apply("DataType");
+            });
+            return "CAST(" + v + " AS " + type + ")";
+        },
+        DataType: function() {
+            var $elf = this, _fromIdx = this.input.idx, typeName;
+            typeName = this.anything();
+            this._pred(sbvrTypes[typeName]);
+            this._pred(sbvrTypes[typeName].types[this.engine]);
+            return sbvrTypes[typeName].types[this.engine];
         },
         TextValue: function(indent) {
             var $elf = this, _fromIdx = this.input.idx;
