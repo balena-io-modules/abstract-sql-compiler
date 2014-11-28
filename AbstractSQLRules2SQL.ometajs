@@ -1,12 +1,14 @@
+var sbvrTypes = require('sbvr-types');
+
 var comparisons = {
-		'Equals': ' = ',
-		'GreaterThan': ' > ',
-		'GreaterThanOrEqual': ' >= ',
-		'LessThan': ' < ',
-		'LessThanOrEqual': ' <= ',
-		'NotEquals': ' != ',
-		'Like': ' LIKE '
-	};
+	'Equals': ' = ',
+	'GreaterThan': ' > ',
+	'GreaterThanOrEqual': ' >= ',
+	'LessThan': ' < ',
+	'LessThanOrEqual': ' <= ',
+	'NotEquals': ' != ',
+	'Like': ' LIKE '
+};
 
 export ometa AbstractSQLRules2SQL {
 	NestedIndent :indent =
@@ -230,6 +232,7 @@ export ometa AbstractSQLRules2SQL {
 		(	Field
 		|	Bind
 		|	Null
+		|	Cast(indent)
 		|	NestedIndent(indent):nestedIndent
 			SelectQuery(nestedIndent):query
 			-> ('(' + nestedIndent + query + indent + ')')
@@ -264,6 +267,20 @@ export ometa AbstractSQLRules2SQL {
 		:next
 		?(next===null)
 		-> null,
+
+	Cast :indent =
+		[	'Cast'
+			AnyValue(indent):v
+			DataType:type
+		]
+		-> ('CAST(' + v + ' AS ' + type + ')'),
+
+	DataType =
+		:typeName
+		?sbvrTypes[typeName]
+		?sbvrTypes[typeName].types[this.engine]
+		-> sbvrTypes[typeName].types[this.engine]
+	,
 
 	TextValue :indent =
 		(	UnknownValue(indent)

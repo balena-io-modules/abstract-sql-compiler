@@ -219,3 +219,19 @@ test.skip '/pilot(1)/favourite_colour/red', (result) ->
 
 test.skip '/method(1)/child?foo=bar', (result) ->
 	it 'should do something..'
+
+
+test "/team('purple')", (result) ->
+	it 'should select the team with the "favourite colour" id of "purple"', ->
+		expect(result.query).to.equal('''
+			SELECT "team"."favourite colour" AS "favourite_colour"
+			FROM "team"
+			WHERE "team"."favourite colour" = 'purple'
+		''')
+
+test '/team', 'POST', [['team', 'favourite_colour']], {favourite_colour: 'purple'}, (result) ->
+	it 'should insert a team', ->
+		expect(result.query).to.equal('''
+			INSERT INTO "team" ("favourite colour")
+			VALUES (?)
+		''')

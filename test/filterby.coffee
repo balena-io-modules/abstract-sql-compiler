@@ -18,7 +18,7 @@ operandToBindings = (operand) ->
 		return [['Date', operand]]
 	return []
 
-operandToSQL = (operand) ->
+operandToSQL = (operand, resource = 'pilot') ->
 	if operand.sql?
 		return operand.sql
 	if _.isNumber(operand)
@@ -32,7 +32,7 @@ operandToSQL = (operand) ->
 		if fieldParts.length > 1
 			mapping = clientModel.resourceToSQLMappings[fieldParts[fieldParts.length - 2]][fieldParts[fieldParts.length - 1]]
 		else
-			mapping = clientModel.resourceToSQLMappings['pilot'][operand]
+			mapping = clientModel.resourceToSQLMappings[resource][operand]
 		return '"' + mapping.join('"."') + '"'
 	throw 'Unknown operand type: ' + operand
 
@@ -55,7 +55,7 @@ sqlOpBrackets =
 methodMaps =
 	TOUPPER: 'UPPER'
 	TOLOWER: 'LOWER'
-	INDEXOF: 'INSTR'
+	INDEXOF: 'STRPOS'
 
 createExpression = (lhs, op, rhs) ->
 	if lhs is 'not'
@@ -102,7 +102,10 @@ createMethodCall = (method, args...) ->
 					switch method
 						when 'SUBSTRING'
 							args[1]++
-					method + '(' + (operandToSQL(arg) for arg in args).join(', ') + ')'
+					result = method + '(' + (operandToSQL(arg) for arg in args).join(', ') + ')'
+					if method is 'STRPOS'
+						result = "(#{result} + 1)"
+					result
 		)
 	}
 
@@ -204,7 +207,7 @@ do ->
 				AND ''' + sql
 
 	test '/pilot?$filter=' + odata, 'PATCH', [['pilot', 'name']], name: 'Peter', (result) ->
-		it 'should select from pilot where "' + odata + '"', ->
+		it 'should update pilot where "' + odata + '"', ->
 			expect(result.query).to.equal '''
 				UPDATE "pilot"
 				SET "name" = ?
@@ -220,8 +223,7 @@ do ->
 				'''
 
 	test '/pilot?$filter=' + odata, 'DELETE', (result) ->
-		it 'should select from pilot where "' + odata + '"', ->
-			console.log(result.query)
+		it 'should delete from pilot where "' + odata + '"', ->
 			expect(result.query).to.equal '''
 				DELETE FROM "pilot"
 				WHERE "pilot"."id" IN ((
@@ -239,12 +241,12 @@ do ->
 	name = 'Peter'
 	{odata, sql} = createExpression('name', 'eq', "'#{name}'")
 	test '/pilot?$filter=' + odata, 'POST', [['pilot', 'name']], {name}, (result) ->
-		it 'should select from pilot where "' + odata + '"', ->
+		it 'should insert into pilot where "' + odata + '"', ->
 			expect(result.query).to.equal '''
 				INSERT INTO "pilot" ("name")
 				SELECT "pilot".*
 				FROM (
-					SELECT ? AS "name"
+					SELECT CAST(? AS VARCHAR(255)) AS "name"
 				) AS "pilot"
 				WHERE ''' + sql
 
@@ -312,3 +314,19 @@ test "/pilot?$filter=pilot__can_fly__plane/all(d:d/plane/name eq 'Concorde')", (
 					)
 				)
 			)'''
+
+# Switch operandToSQL permanently to using 'team' as the resource,
+# as we are switch to using that as our base resource from here on.
+operandToSQL = _.partialRight(operandToSQL, 'team')
+do ->
+	favouriteColour = 'purple'
+	{odata, sql} = createExpression('favourite_colour', 'eq', "'#{favouriteColour}'")
+	test '/team?$filter=' + odata, 'POST', [['team', 'favourite_colour']], {favourite_colour: favouriteColour}, (result) ->
+		it 'should insert into team where "' + odata + '"', ->
+			expect(result.query).to.equal '''
+				INSERT INTO "team" ("favourite colour")
+				SELECT "team".*
+				FROM (
+					SELECT CAST(? AS INTEGER) AS "favourite colour"
+				) AS "team"
+				WHERE ''' + sql

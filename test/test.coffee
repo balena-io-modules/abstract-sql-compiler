@@ -48,7 +48,7 @@ bindRunExpectation = (engine) ->
 	bound.only = runExpectation.bind(null, describe.only, engine)
 	return bound
 
-module.exports = bindRunExpectation()
+module.exports = bindRunExpectation('postgres')
 module.exports.postgres = bindRunExpectation('postgres')
 module.exports.mysql = bindRunExpectation('mysql')
 module.exports.websql = bindRunExpectation('websql')
