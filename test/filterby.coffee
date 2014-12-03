@@ -14,6 +14,8 @@ operandToOData = (operand) ->
 	return operand
 
 operandToBindings = (operand) ->
+	if operand.bindings?
+		return operand.bindings
 	if _.isDate(operand)
 		return [['Date', operand]]
 	return []
@@ -35,6 +37,13 @@ operandToSQL = (operand, resource = 'pilot') ->
 			mapping = clientModel.resourceToSQLMappings[resource][operand]
 		return '"' + mapping.join('"."') + '"'
 	throw 'Unknown operand type: ' + operand
+
+parseOperand = (operand) ->
+	return {
+		sql: operandToSQL(operand)
+		bindings: operandToBindings(operand)
+		odata: operandToOData(operand)
+	}
 
 sqlOps =
 	eq: ' ='
@@ -59,55 +68,75 @@ methodMaps =
 
 createExpression = (lhs, op, rhs) ->
 	if lhs is 'not'
+		op = parseOperand(op)
 		return {
-			odata: 'not ' + if op.odata? then '(' + op.odata + ')' else operandToOData(op)
-			sql: 'NOT (\n\t' + operandToSQL(op) + '\n)'
+			odata: 'not(' + op.odata + ')'
+			sql: 'NOT (\n\t' + op.sql + '\n)'
+			bindings: op.bindings
 		}
 	if !rhs?
+		lhs = parseOperand(lhs)
 		return {
-			odata: if lhs.odata? then '(' + lhs.odata + ')' else operandToOData(lhs)
-			sql: operandToSQL(lhs)
+			odata: '(' + lhs.odata + ')'
+			sql: lhs.sql
+			bindings: lhs.bindings
 		}
-	lhsSql = operandToSQL(lhs)
-	rhsSql = operandToSQL(rhs)
-	bindings = [].concat(
-		operandToBindings(lhs)
-		operandToBindings(rhs)
-	)
-	sql = lhsSql + sqlOps[op] + ' ' + rhsSql
+	lhs = parseOperand(lhs)
+	rhs = parseOperand(rhs)
+	bindings = lhs.bindings.concat(rhs.bindings)
+	sql = lhs.sql + sqlOps[op] + ' ' + rhs.sql
 	if sqlOpBrackets[op]
 		sql = '(' + sql + ')'
 	return {
-		odata: operandToOData(lhs) + ' ' + op + ' ' + operandToOData(rhs)
+		odata: lhs.odata + ' ' + op + ' ' + rhs.odata
 		sql
 		bindings
 	}
 createMethodCall = (method, args...) ->
-	return {
-		odata: method + '(' + (operandToOData(arg) for arg in args).join(',') + ')'
-		sql: (
-			method = method.toUpperCase()
+	args =
+		for arg in args
+			parseOperand(arg)
+	odata = method + '(' + (arg.odata for arg in args).join(',') + ')'
+	method = method.toUpperCase()
+	switch method
+		when 'SUBSTRINGOF'
+			return {
+				sql: args[1].sql + " LIKE ('%' || " + args[0].sql + " || '%')"
+				bindings: args[1].bindings.concat(args[0].bindings)
+				odata
+			}
+		when 'STARTSWITH'
+			return {
+				sql: args[1].sql + ' LIKE (' + args[0].sql + " || '%')"
+				bindings: args[1].bindings.concat(args[0].bindings)
+				odata
+			}
+		when 'ENDSWITH'
+			return {
+				sql: args[1].sql + " LIKE ('%' || " + args[0].sql + ')'
+				bindings: args[1].bindings.concat(args[0].bindings)
+				odata
+			}
+		when 'CONCAT'
+			return {
+				sql: '(' + (arg.sql for arg in args).join(' || ') + ')'
+				bindings: [].concat((arg.bindings for arg in args)...)
+				odata
+			}
+		else
+			if methodMaps.hasOwnProperty(method)
+				method = methodMaps[method]
 			switch method
-				when 'SUBSTRINGOF'
-					operandToSQL(args[1]) + " LIKE ('%' || " + operandToSQL(args[0]) + " || '%')"
-				when 'STARTSWITH'
-					operandToSQL(args[1]) + ' LIKE (' + operandToSQL(args[0]) + " || '%')"
-				when 'ENDSWITH'
-					operandToSQL(args[1]) + " LIKE ('%' || " + operandToSQL(args[0]) + ')'
-				when 'CONCAT'
-					'(' + (operandToSQL(arg) for arg in args).join(' || ') + ')'
-				else
-					if methodMaps.hasOwnProperty(method)
-						method = methodMaps[method]
-					switch method
-						when 'SUBSTRING'
-							args[1]++
-					result = method + '(' + (operandToSQL(arg) for arg in args).join(', ') + ')'
-					if method is 'STRPOS'
-						result = "(#{result} + 1)"
-					result
-		)
-	}
+				when 'SUBSTRING'
+					args[1].sql++
+			sql = method + '(' + (arg.sql for arg in args).join(', ') + ')'
+			if method is 'STRPOS'
+				sql = "(#{sql} + 1)"
+			return {
+				sql: sql
+				bindings: [].concat((arg.bindings for arg in args)...)
+				odata
+			}
 
 operandTest = (lhs, op, rhs) ->
 	{odata, sql, bindings} = createExpression(lhs, op, rhs)
@@ -119,8 +148,8 @@ operandTest = (lhs, op, rhs) ->
 				WHERE ''' + sql
 
 methodTest = (args...) ->
-	{odata, sql} = createMethodCall(args...)
-	test '/pilot?$filter=' + odata, (result) ->
+	{odata, sql, bindings} = createMethodCall(args...)
+	test '/pilot?$filter=' + odata, 'GET', bindings, (result) ->
 		it 'should select from pilot where "' + odata + '"', ->
 			expect(result.query).to.equal '''
 				SELECT ''' + pilotFields + '\n' + '''
@@ -370,8 +399,8 @@ test "/pilot?$filter=pilot__can_fly__plane/all(d:d/plane/name eq 'Concorde')", (
 operandToSQL = _.partialRight(operandToSQL, 'team')
 do ->
 	favouriteColour = 'purple'
-	{odata, sql} = createExpression('favourite_colour', 'eq', "'#{favouriteColour}'")
-	test '/team?$filter=' + odata, 'POST', [['Bind', ['team', 'favourite_colour']]], {favourite_colour: favouriteColour}, (result) ->
+	{odata, sql, bindings} = createExpression('favourite_colour', 'eq', "'#{favouriteColour}'")
+	test '/team?$filter=' + odata, 'POST', [['Bind', ['team', 'favourite_colour']]].concat(bindings), {favourite_colour: favouriteColour}, (result) ->
 		it 'should insert into team where "' + odata + '"', ->
 			expect(result.query).to.equal '''
 				INSERT INTO "team" ("favourite colour")
