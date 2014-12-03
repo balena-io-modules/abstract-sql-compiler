@@ -26,6 +26,7 @@ test "/pilot(1)?$select=favourite_colour", (result) ->
 		''')
 
 test "/pilot('TextKey')?$select=favourite_colour", (result) ->
+	it 'should select favourite colour from pilot "TextKey"', ->
 		expect(result.query).to.equal('''
 			SELECT "pilot"."favourite colour" AS "favourite_colour"
 			FROM "pilot"
