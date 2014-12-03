@@ -46,9 +46,10 @@ ometa AbstractSQLValidator {
 
 	UpsertQuery =
 		[	'UpsertQuery'
-			UpdateBody:body
+			InsertQuery:insert
+			UpdateQuery:update
 		]
-		-> ['UpsertQuery'].concat(body),
+		-> ['UpsertQuery', insert, update],
 
 	InsertQuery =
 		[	'InsertQuery'
@@ -64,7 +65,9 @@ ometa AbstractSQLValidator {
 
 	InsertBody =
 		{[]}:body
-		(	(	Fields:fields
+		(	// Ignore/strip where clauses for inserts.
+			Where
+		|	(	Fields:fields
 			|	Values:values
 			|	Table:table
 			):bodyPart
@@ -105,12 +108,16 @@ ometa AbstractSQLValidator {
 					|	false
 					|	Null
 					|	Bind
+					|	Default
 					|	anything
 					)*:values
 				]
 			)
 		]
 		-> [['Values', values]],
+
+	Default =
+		'Default',
 
 	Select =
 		[	'Select'
