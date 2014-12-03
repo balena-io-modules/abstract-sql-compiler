@@ -133,9 +133,8 @@ export ometa AbstractSQLRules2SQL {
 				|	Null
 				|	Bind
 				|	Default
-				|	anything:value
-					// TODO: Should escape this.
-					-> ("'" + value + "'")
+				|	Text
+				|	Number
 				)*:values
 			]
 		)
