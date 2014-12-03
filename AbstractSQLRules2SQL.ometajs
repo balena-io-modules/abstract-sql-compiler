@@ -371,7 +371,7 @@ export ometa AbstractSQLRules2SQL {
 			|	'Real'
 			|	'Integer'
 			)
-			:number
+			number:number
 		]
 		-> number,
 
