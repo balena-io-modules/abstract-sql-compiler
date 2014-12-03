@@ -134,7 +134,6 @@ export ometa AbstractSQLRules2SQL {
 				|	false
 					-> 0
 				|	Null
-					-> 'NULL'
 				|	Bind
 				|	anything:value
 					// TODO: Should escape this.
@@ -163,7 +162,6 @@ export ometa AbstractSQLRules2SQL {
 			|	AnyValue(indent)
 			|	'*'
 			|	Null
-				-> 'NULL'
 			)*:fields
 		]
 		-> fields,
@@ -266,7 +264,7 @@ export ometa AbstractSQLRules2SQL {
 	Null =
 		:next
 		?(next===null)
-		-> null,
+		-> 'NULL',
 
 	Cast :indent =
 		[	'Cast'
