@@ -206,7 +206,7 @@ do ->
 				AND "plane"."id" = "pilot-can_fly-plane"."plane"
 				AND ''' + sql
 
-	test '/pilot?$filter=' + odata, 'PATCH', [['pilot', 'name']], name: 'Peter', (result) ->
+	test '/pilot?$filter=' + odata, 'PATCH', [['Bind', ['pilot', 'name']]], name: 'Peter', (result) ->
 		it 'should update pilot where "' + odata + '"', ->
 			expect(result.query).to.equal '''
 				UPDATE "pilot"
@@ -240,7 +240,7 @@ do ->
 do ->
 	name = 'Peter'
 	{odata, sql} = createExpression('name', 'eq', "'#{name}'")
-	test '/pilot?$filter=' + odata, 'POST', [['pilot', 'name']], {name}, (result) ->
+	test '/pilot?$filter=' + odata, 'POST', [['Bind', ['pilot', 'name']]], {name}, (result) ->
 		it 'should insert into pilot where "' + odata + '"', ->
 			expect(result.query).to.equal '''
 				INSERT INTO "pilot" ("name")
@@ -250,7 +250,11 @@ do ->
 				) AS "pilot"
 				WHERE ''' + sql
 
-	test '/pilot(1)?$filter=' + odata, 'PATCH', [['pilot', 'id'], ['pilot', 'name']], {name}, (result) ->
+	bindings = [
+		['Bind', ['pilot', 'id']]
+		['Bind', ['pilot', 'name']]
+	]
+	test '/pilot(1)?$filter=' + odata, 'PATCH', bindings, {name}, (result) ->
 		it 'should update the pilot with id 1', ->
 			expect(result.query).to.equal """
 				UPDATE "pilot"
@@ -263,7 +267,11 @@ do ->
 					WHERE #{sql}
 				))"""
 
-	test '/pilot(1)?$filter=' + odata, 'PUT', [['pilot', 'id'], ['pilot', 'name']], {name}, (result) ->
+	bindings = [
+		['Bind', ['pilot', 'id']]
+		['Bind', ['pilot', 'name']]
+	]
+	test '/pilot(1)?$filter=' + odata, 'PUT', bindings, {name}, (result) ->
 		describe 'should upsert the pilot with id 1', ->
 			it 'should be an upsert', ->
 				expect(result).to.be.an.array
@@ -363,7 +371,7 @@ operandToSQL = _.partialRight(operandToSQL, 'team')
 do ->
 	favouriteColour = 'purple'
 	{odata, sql} = createExpression('favourite_colour', 'eq', "'#{favouriteColour}'")
-	test '/team?$filter=' + odata, 'POST', [['team', 'favourite_colour']], {favourite_colour: favouriteColour}, (result) ->
+	test '/team?$filter=' + odata, 'POST', [['Bind', ['team', 'favourite_colour']]], {favourite_colour: favouriteColour}, (result) ->
 		it 'should insert into team where "' + odata + '"', ->
 			expect(result.query).to.equal '''
 				INSERT INTO "team" ("favourite colour")

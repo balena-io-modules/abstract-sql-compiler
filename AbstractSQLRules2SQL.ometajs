@@ -260,7 +260,7 @@ export ometa AbstractSQLRules2SQL {
 			:tableName
 			:field
 		]
-		{this.fieldOrderings.push([tableName, field])}
+		{this.fieldOrderings.push(['Bind', [tableName, field]])}
 		-> '?',
 
 	Null =

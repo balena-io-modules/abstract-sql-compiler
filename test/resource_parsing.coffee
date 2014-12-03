@@ -83,7 +83,7 @@ test '/pilot(1)', 'DELETE', (result) ->
 
 do ->
 	bindings = [
-		['pilot', 'id']
+		['Bind', ['pilot', 'id']]
 	]
 	test '/pilot(1)', 'PUT', bindings, (result) ->
 		it 'should insert/update the pilot with id 1', ->
@@ -102,7 +102,7 @@ do ->
 				WHERE "pilot"."id" = 1
 			''')
 	bindings = [
-		['pilot', 'name']
+		['Bind', ['pilot', 'name']]
 	]
 	test '/pilot', 'POST', bindings, {name: 'Peter'}, (result) ->
 		it 'should insert/update the pilot with id 1', ->
@@ -117,8 +117,8 @@ do ->
 			''')
 do ->
 	bindings = [
-		['pilot', 'id']
-		['pilot', 'is_experienced']
+		['Bind', ['pilot', 'id']]
+		['Bind', ['pilot', 'is_experienced']]
 	]
 	testFunc = (result) ->
 		it 'should insert/update the pilot with id 1', ->
@@ -141,7 +141,7 @@ test '/pilot__can_fly__plane(1)', 'DELETE', (result) ->
 
 do ->
 	bindings = [
-		['pilot__can_fly__plane', 'id']
+		['Bind', ['pilot__can_fly__plane', 'id']]
 	]
 	test '/pilot__can_fly__plane(1)', 'PUT', bindings, (result) ->
 		it 'should insert/update the pilot-can_fly-plane with id 1', ->
@@ -157,8 +157,8 @@ do ->
 				WHERE "pilot-can_fly-plane"."id" = 1
 			''')
 	bindings = [
-		['pilot__can_fly__plane', 'pilot']
-		['pilot__can_fly__plane', 'plane']
+		['Bind', ['pilot__can_fly__plane', 'pilot']]
+		['Bind', ['pilot__can_fly__plane', 'plane']]
 	]
 	test '/pilot__can_fly__plane', 'POST', bindings, {pilot:2, plane:3}, (result) ->
 		it 'should insert/update the pilot-can_fly-plane with id 1', ->
@@ -173,8 +173,8 @@ do ->
 			''')
 do ->
 	bindings = [
-		['pilot__can_fly__plane', 'pilot']
-		['pilot__can_fly__plane', 'id']
+		['Bind', ['pilot__can_fly__plane', 'pilot']]
+		['Bind', ['pilot__can_fly__plane', 'id']]
 	]
 	testFunc = (result) ->
 		it 'should insert/update the pilot with id 1', ->
@@ -224,7 +224,7 @@ test "/team('purple')", (result) ->
 			WHERE "team"."favourite colour" = 'purple'
 		''')
 
-test '/team', 'POST', [['team', 'favourite_colour']], {favourite_colour: 'purple'}, (result) ->
+test '/team', 'POST', [['Bind', ['team', 'favourite_colour']]], {favourite_colour: 'purple'}, (result) ->
 	it 'should insert a team', ->
 		expect(result.query).to.equal('''
 			INSERT INTO "team" ("favourite colour")
