@@ -58,10 +58,10 @@ export ometa AbstractSQLRules2SQL {
 
 	UpsertQuery :indent =
 		[	'UpsertQuery'
-			&InsertBody(indent):insert
+			InsertQuery(indent):insert
 			{{query: insert, bindings: this.fieldOrderings}}:insert
 			{this.fieldOrderings = []}
-			UpdateBody(indent):update
+			UpdateQuery(indent):update
 			{{query: update, bindings: this.fieldOrderings}}:update
 		]
 		-> [insert, update],
@@ -84,9 +84,6 @@ export ometa AbstractSQLRules2SQL {
 		|	Values(indent):values
 		|	Table(indent):table
 			{tables.push(table)}
-		|	// Ignore a where - we're probably in an Upsert.
-			'Where'
-			anything*
 		]*
 		(	?(fields.length > 0)
 			(	?(_.isArray(values))
@@ -135,6 +132,7 @@ export ometa AbstractSQLRules2SQL {
 					-> 0
 				|	Null
 				|	Bind
+				|	Default
 				|	anything:value
 					// TODO: Should escape this.
 					-> ("'" + value + "'")
@@ -142,6 +140,10 @@ export ometa AbstractSQLRules2SQL {
 			]
 		)
 		-> values,
+
+	Default =
+		'Default'
+		-> 'DEFAULT',
 
 	Select :indent =
 		'Select'
@@ -277,7 +279,13 @@ export ometa AbstractSQLRules2SQL {
 		:typeName
 		?sbvrTypes[typeName]
 		?sbvrTypes[typeName].types[this.engine]
-		-> sbvrTypes[typeName].types[this.engine]
+		{sbvrTypes[typeName].types[this.engine]}:dbType
+		(	?(dbType.toUpperCase() === 'SERIAL')
+			// HACK: SERIAL type in postgres is really an INTEGER with automatic sequence,
+			// so it's not actually possible to cast to SERIAL, instead you have to cast to INTEGER.
+			-> 'INTEGER'
+		|	-> dbType
+		)
 	,
 
 	TextValue :indent =

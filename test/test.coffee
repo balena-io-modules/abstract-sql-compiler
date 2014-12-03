@@ -12,7 +12,7 @@ bindingsTest = (actualBindings, expectedBindings = false) ->
 		it 'should not have any bindings', ->
 			expect(actualBindings).to.be.empty
 	else
-		it 'should not have matching bindings', ->
+		it 'should have matching bindings', ->
 			expect(actualBindings).to.deep.equal(expectedBindings)
 
 runExpectation = (describe, engine, input, method, expectedBindings, body, expectation) ->

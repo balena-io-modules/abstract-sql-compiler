@@ -250,6 +250,48 @@ do ->
 				) AS "pilot"
 				WHERE ''' + sql
 
+	test '/pilot(1)?$filter=' + odata, 'PATCH', [['pilot', 'id'], ['pilot', 'name']], {name}, (result) ->
+		it 'should update the pilot with id 1', ->
+			expect(result.query).to.equal """
+				UPDATE "pilot"
+				SET "id" = ?,
+					"name" = ?
+				WHERE "pilot"."id" = 1
+				AND "pilot"."id" IN ((
+					SELECT "pilot"."id"
+					FROM "pilot"
+					WHERE #{sql}
+				))"""
+
+	test '/pilot(1)?$filter=' + odata, 'PUT', [['pilot', 'id'], ['pilot', 'name']], {name}, (result) ->
+		describe 'should upsert the pilot with id 1', ->
+			it 'should be an upsert', ->
+				expect(result).to.be.an.array
+			it 'that inserts', ->
+				expect(result[0].query).to.equal """
+					INSERT INTO "pilot" ("id", "name")
+					SELECT "pilot".*
+					FROM (
+						SELECT CAST(? AS INTEGER) AS "id", CAST(? AS VARCHAR(255)) AS "name"
+					) AS "pilot"
+					WHERE "pilot"."name" = 'Peter'
+					"""
+			it 'and updates', ->
+				expect(result[1].query).to.equal """
+					UPDATE "pilot"
+					SET "id" = ?,
+						"is experienced" = DEFAULT,
+						"name" = ?,
+						"age" = DEFAULT,
+						"favourite colour" = DEFAULT,
+						"licence" = DEFAULT
+					WHERE "pilot"."id" = 1
+					AND "pilot"."id" IN ((
+						SELECT "pilot"."id"
+						FROM "pilot"
+						WHERE #{sql}
+					))"""
+
 do ->
 	oneEqOne = createExpression(1, 'eq', 1)
 	{odata, sql} = createExpression(oneEqOne, 'or', oneEqOne)

@@ -84,26 +84,21 @@ test '/pilot(1)', 'DELETE', (result) ->
 do ->
 	bindings = [
 		['pilot', 'id']
-		['pilot', 'is_experienced']
-		['pilot', 'name']
-		['pilot', 'age']
-		['pilot', 'favourite_colour']
-		['pilot', 'licence']
 	]
 	test '/pilot(1)', 'PUT', bindings, (result) ->
 		it 'should insert/update the pilot with id 1', ->
 			expect(result[0].query).to.equal('''
-				INSERT INTO "pilot" ("id", "is experienced", "name", "age", "favourite colour", "licence")
-				VALUES (?, ?, ?, ?, ?, ?)
+				INSERT INTO "pilot" ("id")
+				VALUES (?)
 			''')
 			expect(result[1].query).to.equal('''
 				UPDATE "pilot"
 				SET "id" = ?,
-					"is experienced" = ?,
-					"name" = ?,
-					"age" = ?,
-					"favourite colour" = ?,
-					"licence" = ?
+					"is experienced" = DEFAULT,
+					"name" = DEFAULT,
+					"age" = DEFAULT,
+					"favourite colour" = DEFAULT,
+					"licence" = DEFAULT
 				WHERE "pilot"."id" = 1
 			''')
 	bindings = [
@@ -146,20 +141,18 @@ test '/pilot__can_fly__plane(1)', 'DELETE', (result) ->
 
 do ->
 	bindings = [
-		['pilot__can_fly__plane', 'pilot']
-		['pilot__can_fly__plane', 'plane']
 		['pilot__can_fly__plane', 'id']
 	]
 	test '/pilot__can_fly__plane(1)', 'PUT', bindings, (result) ->
 		it 'should insert/update the pilot-can_fly-plane with id 1', ->
 			expect(result[0].query).to.equal('''
-				INSERT INTO "pilot-can_fly-plane" ("pilot", "plane", "id")
-				VALUES (?, ?, ?)
+				INSERT INTO "pilot-can_fly-plane" ("id")
+				VALUES (?)
 			''')
 			expect(result[1].query).to.equal('''
 				UPDATE "pilot-can_fly-plane"
-				SET "pilot" = ?,
-					"plane" = ?,
+				SET "pilot" = DEFAULT,
+					"plane" = DEFAULT,
 					"id" = ?
 				WHERE "pilot-can_fly-plane"."id" = 1
 			''')
@@ -181,12 +174,14 @@ do ->
 do ->
 	bindings = [
 		['pilot__can_fly__plane', 'pilot']
+		['pilot__can_fly__plane', 'id']
 	]
 	testFunc = (result) ->
 		it 'should insert/update the pilot with id 1', ->
 			expect(result.query).to.equal('''
 				UPDATE "pilot-can_fly-plane"
-				SET "pilot" = ?
+				SET "pilot" = ?,
+					"id" = ?
 				WHERE "pilot-can_fly-plane"."id" = 1
 			''')
 	test '/pilot__can_fly__plane(1)', 'PATCH', bindings, {pilot:1}, testFunc
