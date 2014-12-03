@@ -15,9 +15,9 @@
     "sbvr-types": "git+ssh://git@bitbucket.org:rulemotion/sbvr-types.git#v0.0.3"
   },
   "devDependencies": {
-    "chai": "~1.8.1",
+    "chai": "~1.10.0",
     "coffee-script": "~1.8.0",
-    "mocha": "~1.21.4",
+    "mocha": "~2.0.1",
     "odata-parser": "git+ssh://git@bitbucket.org:rulemotion/odata-parser.git#v0.0.9",
     "odata-to-abstract-sql": "git+ssh://git@bitbucket.org:rulemotion/odata-to-abstract-sql.git#v0.1.1"
   }
