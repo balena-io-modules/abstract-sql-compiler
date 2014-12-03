@@ -18,12 +18,12 @@ test '/pilot(1)', (result) ->
 			WHERE "pilot"."id" = 1
 		''')
 
-test "/pilot('TextKey')", (result) ->
+test "/pilot('TextKey')", 'GET', [['Text', 'TextKey']], (result) ->
 	it 'should select from pilot with id', ->
 		expect(result.query).to.equal('''
 			SELECT ''' + pilotFields + '\n' + '''
 			FROM "pilot"
-			WHERE "pilot"."id" = 'TextKey'
+			WHERE "pilot"."id" = ?
 		''')
 
 test '/pilot(1)/licence', (result) ->
@@ -216,12 +216,12 @@ test.skip '/method(1)/child?foo=bar', (result) ->
 	it 'should do something..'
 
 
-test "/team('purple')", (result) ->
+test "/team('purple')", 'GET', [['Text', 'purple']], (result) ->
 	it 'should select the team with the "favourite colour" id of "purple"', ->
 		expect(result.query).to.equal('''
 			SELECT "team"."favourite colour" AS "favourite_colour"
 			FROM "team"
-			WHERE "team"."favourite colour" = 'purple'
+			WHERE "team"."favourite colour" = ?
 		''')
 
 test '/team', 'POST', [['Bind', ['team', 'favourite_colour']]], {favourite_colour: 'purple'}, (result) ->

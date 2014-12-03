@@ -18,6 +18,8 @@ operandToBindings = (operand) ->
 		return operand.bindings
 	if _.isDate(operand)
 		return [['Date', operand]]
+	if _.isString(operand) and operand.charAt(0) is "'"
+		return [['Text', decodeURIComponent(operand[1...-1])]]
 	return []
 
 operandToSQL = (operand, resource = 'pilot') ->
@@ -29,7 +31,7 @@ operandToSQL = (operand, resource = 'pilot') ->
 		return '?'
 	if _.isString(operand)
 		if operand.charAt(0) is "'"
-			return decodeURIComponent(operand)
+			return '?'
 		fieldParts = operand.split('/')
 		if fieldParts.length > 1
 			mapping = clientModel.resourceToSQLMappings[fieldParts[fieldParts.length - 2]][fieldParts[fieldParts.length - 1]]
@@ -101,20 +103,20 @@ createMethodCall = (method, args...) ->
 	switch method
 		when 'SUBSTRINGOF'
 			return {
-				sql: args[1].sql + " LIKE ('%' || " + args[0].sql + " || '%')"
-				bindings: args[1].bindings.concat(args[0].bindings)
+				sql: args[1].sql + " LIKE (? || " + args[0].sql + " || ?)"
+				bindings: [args[1].bindings..., ['Text', '%'], args[0].bindings..., ['Text', '%']]
 				odata
 			}
 		when 'STARTSWITH'
 			return {
-				sql: args[1].sql + ' LIKE (' + args[0].sql + " || '%')"
-				bindings: args[1].bindings.concat(args[0].bindings)
+				sql: args[1].sql + ' LIKE (' + args[0].sql + " || ?)"
+				bindings: [args[1].bindings..., args[0].bindings..., ['Text', '%']]
 				odata
 			}
 		when 'ENDSWITH'
 			return {
-				sql: args[1].sql + " LIKE ('%' || " + args[0].sql + ')'
-				bindings: args[1].bindings.concat(args[0].bindings)
+				sql: args[1].sql + " LIKE (? || " + args[0].sql + ')'
+				bindings: [args[1].bindings..., ['Text', '%'], args[0].bindings...]
 				odata
 			}
 		when 'CONCAT'
@@ -268,8 +270,12 @@ do ->
 
 do ->
 	name = 'Peter'
-	{odata, sql} = createExpression('name', 'eq', "'#{name}'")
-	test '/pilot?$filter=' + odata, 'POST', [['Bind', ['pilot', 'name']]], {name}, (result) ->
+	{odata, sql, bindings: exprBindings} = createExpression('name', 'eq', "'#{name}'")
+	bindings = [
+		['Bind', ['pilot', 'name']]
+		exprBindings...
+	]
+	test '/pilot?$filter=' + odata, 'POST', bindings, {name}, (result) ->
 		it 'should insert into pilot where "' + odata + '"', ->
 			expect(result.query).to.equal '''
 				INSERT INTO "pilot" ("name")
@@ -282,6 +288,7 @@ do ->
 	bindings = [
 		['Bind', ['pilot', 'id']]
 		['Bind', ['pilot', 'name']]
+		exprBindings...
 	]
 	test '/pilot(1)?$filter=' + odata, 'PATCH', bindings, {name}, (result) ->
 		it 'should update the pilot with id 1', ->
@@ -296,10 +303,6 @@ do ->
 					WHERE #{sql}
 				))"""
 
-	bindings = [
-		['Bind', ['pilot', 'id']]
-		['Bind', ['pilot', 'name']]
-	]
 	test '/pilot(1)?$filter=' + odata, 'PUT', bindings, {name}, (result) ->
 		describe 'should upsert the pilot with id 1', ->
 			it 'should be an upsert', ->
@@ -311,7 +314,7 @@ do ->
 					FROM (
 						SELECT CAST(? AS INTEGER) AS "id", CAST(? AS VARCHAR(255)) AS "name"
 					) AS "pilot"
-					WHERE "pilot"."name" = 'Peter'
+					WHERE #{sql}
 					"""
 			it 'and updates', ->
 				expect(result[1].query).to.equal """
@@ -362,7 +365,7 @@ operandTest(createMethodCall('round', 'age'), 'eq', 25)
 operandTest(createMethodCall('floor', 'age'), 'eq', 25)
 operandTest(createMethodCall('ceiling', 'age'), 'eq', 25)
 
-test "/pilot?$filter=pilot__can_fly__plane/any(d:d/plane/name eq 'Concorde')", (result) ->
+test "/pilot?$filter=pilot__can_fly__plane/any(d:d/plane/name eq 'Concorde')", 'GET', [['Text', 'Concorde']], (result) ->
 	it 'should select from pilot where ...', ->
 		expect(result.query).to.equal '''
 			SELECT ''' + pilotFields + '\n' + '''
@@ -373,10 +376,10 @@ test "/pilot?$filter=pilot__can_fly__plane/any(d:d/plane/name eq 'Concorde')", (
 					"plane"
 				WHERE "pilot"."id" = "pilot-can_fly-plane"."pilot"
 				AND "plane"."id" = "pilot-can_fly-plane"."plane"
-				AND "plane"."name" = 'Concorde'
+				AND "plane"."name" = ?
 			)'''
 
-test "/pilot?$filter=pilot__can_fly__plane/all(d:d/plane/name eq 'Concorde')", (result) ->
+test "/pilot?$filter=pilot__can_fly__plane/all(d:d/plane/name eq 'Concorde')", 'GET', [['Text', 'Concorde']], (result) ->
 	it 'should select from pilot where ...', ->
 		expect(result.query).to.equal '''
 			SELECT ''' + pilotFields + '\n' + '''
@@ -389,7 +392,7 @@ test "/pilot?$filter=pilot__can_fly__plane/all(d:d/plane/name eq 'Concorde')", (
 					WHERE NOT (
 						"pilot"."id" = "pilot-can_fly-plane"."pilot"
 						AND "plane"."id" = "pilot-can_fly-plane"."plane"
-						AND "plane"."name" = 'Concorde'
+						AND "plane"."name" = ?
 					)
 				)
 			)'''

@@ -305,8 +305,8 @@ export ometa AbstractSQLRules2SQL {
 			)
 			:text
 		]
-		// TODO: This should have quotes escaped
-		-> ("'" + text + "'"),
+		{this.fieldOrderings.push(['Text', text])}
+		-> '?',
 
 	Concat :indent =
 		[	(	'Concat'

@@ -25,12 +25,12 @@ test "/pilot(1)?$select=favourite_colour", (result) ->
 			WHERE "pilot"."id" = 1
 		''')
 
-test "/pilot('TextKey')?$select=favourite_colour", (result) ->
+test "/pilot('TextKey')?$select=favourite_colour", 'GET', [['Text', 'TextKey']], (result) ->
 	it 'should select favourite colour from pilot "TextKey"', ->
 		expect(result.query).to.equal('''
 			SELECT "pilot"."favourite colour" AS "favourite_colour"
 			FROM "pilot"
-			WHERE "pilot"."id" = 'TextKey'
+			WHERE "pilot"."id" = ?
 		''')
 
 
