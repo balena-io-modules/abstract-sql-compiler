@@ -67,30 +67,35 @@ ometa AbstractSQLValidator {
 		{[]}:body
 		(	// Ignore/strip where clauses for inserts.
 			Where
-		|	(	Fields:fields
-			|	Values:values
-			|	Table:table
-			):bodyPart
-			{body.concat(bodyPart)}:body
+		|	Table:table
+			{body.concat(table)}:body
+		|	Fields:fields
+		|	Values:values
 		)+
 		?(fields!=null)
 		?(values!=null)
 		?(table!=null)
+		// Make sure the body is in the correct order.
+		{body.concat(fields, values)}:body
 		-> body,
 
 	UpdateBody =
 		{[]}:body
-		(	(	Fields:fields
-			|	Values:values
-			|	Table:table
-			|	?(where==null)
-				Where:where
-			):bodyPart
-			{body.concat(bodyPart)}:body
+		(	Table:table
+			{body.concat(table)}:body
+		|	Fields:fields
+		|	Values:values
+		|	?(where==null)
+			Where:where
 		)+
 		?(fields!=null && fields[0].length > 0)
 		?(values!=null && values[0].length > 0)
 		?(table!=null)
+		// Make sure the body is in the correct order.
+		{body.concat(fields, values)}:body
+		(	?where
+			{body.concat(where)}:body
+		)?
 		-> body,
 
 	Fields =

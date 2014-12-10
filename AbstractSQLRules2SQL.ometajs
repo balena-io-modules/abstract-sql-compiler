@@ -133,9 +133,8 @@ export ometa AbstractSQLRules2SQL {
 				|	Null
 				|	Bind
 				|	Default
-				|	anything:value
-					// TODO: Should escape this.
-					-> ("'" + value + "'")
+				|	Text
+				|	Number
 				)*:values
 			]
 		)
@@ -260,7 +259,7 @@ export ometa AbstractSQLRules2SQL {
 			:tableName
 			:field
 		]
-		{this.fieldOrderings.push([tableName, field])}
+		{this.fieldOrderings.push(['Bind', [tableName, field]])}
 		-> '?',
 
 	Null =
@@ -305,8 +304,8 @@ export ometa AbstractSQLRules2SQL {
 			)
 			:text
 		]
-		// TODO: This should have quotes escaped
-		-> ("'" + text + "'"),
+		{this.fieldOrderings.push(['Text', text])}
+		-> '?',
 
 	Concat :indent =
 		[	(	'Concat'
@@ -372,7 +371,7 @@ export ometa AbstractSQLRules2SQL {
 			|	'Real'
 			|	'Integer'
 			)
-			:number
+			number:number
 		]
 		-> number,
 
