@@ -63,12 +63,13 @@
             return query;
         },
         UpsertQuery: function() {
-            var $elf = this, _fromIdx = this.input.idx, body;
+            var $elf = this, _fromIdx = this.input.idx, insert, update;
             this._form(function() {
                 this._applyWithArgs("exactly", "UpsertQuery");
-                return body = this._apply("UpdateBody");
+                insert = this._apply("InsertQuery");
+                return update = this._apply("UpdateQuery");
             });
-            return [ "UpsertQuery" ].concat(body);
+            return [ "UpsertQuery", insert, update ];
         },
         InsertQuery: function() {
             var $elf = this, _fromIdx = this.input.idx, body;
@@ -87,42 +88,50 @@
             return [ "UpdateQuery" ].concat(body);
         },
         InsertBody: function() {
-            var $elf = this, _fromIdx = this.input.idx, body, bodyPart, fields, table, values;
+            var $elf = this, _fromIdx = this.input.idx, body, fields, table, values;
             body = [];
             this._many1(function() {
-                bodyPart = this._or(function() {
+                return this._or(function() {
+                    return this._apply("Where");
+                }, function() {
+                    table = this._apply("Table");
+                    return body = body.concat(table);
+                }, function() {
                     return fields = this._apply("Fields");
                 }, function() {
                     return values = this._apply("Values");
-                }, function() {
-                    return table = this._apply("Table");
                 });
-                return body = body.concat(bodyPart);
             });
             this._pred(null != fields);
             this._pred(null != values);
             this._pred(null != table);
+            body = body.concat(fields, values);
             return body;
         },
         UpdateBody: function() {
-            var $elf = this, _fromIdx = this.input.idx, body, bodyPart, fields, table, values, where;
+            var $elf = this, _fromIdx = this.input.idx, body, fields, table, values, where;
             body = [];
             this._many1(function() {
-                bodyPart = this._or(function() {
+                return this._or(function() {
+                    table = this._apply("Table");
+                    return body = body.concat(table);
+                }, function() {
                     return fields = this._apply("Fields");
                 }, function() {
                     return values = this._apply("Values");
                 }, function() {
-                    return table = this._apply("Table");
-                }, function() {
                     this._pred(null == where);
                     return where = this._apply("Where");
                 });
-                return body = body.concat(bodyPart);
             });
             this._pred(null != fields && fields[0].length > 0);
             this._pred(null != values && values[0].length > 0);
             this._pred(null != table);
+            body = body.concat(fields, values);
+            this._opt(function() {
+                this._pred(where);
+                return body = body.concat(where);
+            });
             return body;
         },
         Fields: function() {
@@ -163,6 +172,8 @@
                             }, function() {
                                 return this._apply("Bind");
                             }, function() {
+                                return this._apply("Default");
+                            }, function() {
                                 return this.anything();
                             });
                         });
@@ -170,6 +181,10 @@
                 });
             });
             return [ [ "Values", values ] ];
+        },
+        Default: function() {
+            var $elf = this, _fromIdx = this.input.idx;
+            return this._applyWithArgs("exactly", "Default");
         },
         Select: function() {
             var $elf = this, _fromIdx = this.input.idx, as, fields, table, value;

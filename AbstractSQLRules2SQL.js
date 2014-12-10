@@ -85,15 +85,13 @@
             var $elf = this, _fromIdx = this.input.idx, insert, update;
             this._form(function() {
                 this._applyWithArgs("exactly", "UpsertQuery");
-                insert = this._lookahead(function() {
-                    return this._applyWithArgs("InsertBody", indent);
-                });
+                insert = this._applyWithArgs("InsertQuery", indent);
                 insert = {
                     query: insert,
                     bindings: this.fieldOrderings
                 };
                 this.fieldOrderings = [];
-                update = this._applyWithArgs("UpdateBody", indent);
+                update = this._applyWithArgs("UpdateQuery", indent);
                 return update = {
                     query: update,
                     bindings: this.fieldOrderings
@@ -129,16 +127,6 @@
                     }, function() {
                         table = this._applyWithArgs("Table", indent);
                         return tables.push(table);
-                    }, function() {
-                        switch (this.anything()) {
-                          case "Where":
-                            return this._many(function() {
-                                return this.anything();
-                            });
-
-                          default:
-                            throw this._fail();
-                        }
                     });
                 });
             });
@@ -194,7 +182,7 @@
             return fields;
         },
         Values: function(indent) {
-            var $elf = this, _fromIdx = this.input.idx, value, values;
+            var $elf = this, _fromIdx = this.input.idx, values;
             this._applyWithArgs("exactly", "Values");
             this._or(function() {
                 return values = this._applyWithArgs("SelectQuery", indent);
@@ -216,18 +204,25 @@
                             this._apply("false");
                             return 0;
                         }, function() {
-                            this._apply("Null");
-                            return "NULL";
+                            return this._apply("Null");
                         }, function() {
                             return this._apply("Bind");
                         }, function() {
-                            value = this.anything();
-                            return "'" + value + "'";
+                            return this._apply("Default");
+                        }, function() {
+                            return this._apply("Text");
+                        }, function() {
+                            return this._apply("Number");
                         });
                     });
                 });
             });
             return values;
+        },
+        Default: function() {
+            var $elf = this, _fromIdx = this.input.idx;
+            this._applyWithArgs("exactly", "Default");
+            return "DEFAULT";
         },
         Select: function(indent) {
             var $elf = this, _fromIdx = this.input.idx, as, field, fields, table, value;
@@ -271,8 +266,7 @@
                                 throw this._fail();
                             }
                         }, function() {
-                            this._apply("Null");
-                            return "NULL";
+                            return this._apply("Null");
                         });
                     });
                 });
@@ -422,14 +416,14 @@
                 tableName = this.anything();
                 return field = this.anything();
             });
-            this.fieldOrderings.push([ tableName, field ]);
+            this.fieldOrderings.push([ "Bind", [ tableName, field ] ]);
             return "?";
         },
         Null: function() {
             var $elf = this, _fromIdx = this.input.idx, next;
             next = this.anything();
             this._pred(null === next);
-            return null;
+            return "NULL";
         },
         Cast: function(indent) {
             var $elf = this, _fromIdx = this.input.idx, type, v;
@@ -441,11 +435,17 @@
             return "CAST(" + v + " AS " + type + ")";
         },
         DataType: function() {
-            var $elf = this, _fromIdx = this.input.idx, typeName;
+            var $elf = this, _fromIdx = this.input.idx, dbType, typeName;
             typeName = this.anything();
             this._pred(sbvrTypes[typeName]);
             this._pred(sbvrTypes[typeName].types[this.engine]);
-            return sbvrTypes[typeName].types[this.engine];
+            dbType = sbvrTypes[typeName].types[this.engine];
+            return this._or(function() {
+                this._pred("SERIAL" === dbType.toUpperCase());
+                return "INTEGER";
+            }, function() {
+                return dbType;
+            });
         },
         TextValue: function(indent) {
             var $elf = this, _fromIdx = this.input.idx;
@@ -484,7 +484,8 @@
                 }).call(this);
                 return text = this.anything();
             });
-            return "'" + text + "'";
+            this.fieldOrderings.push([ "Text", text ]);
+            return "?";
         },
         Concat: function(indent) {
             var $elf = this, _fromIdx = this.input.idx, comparators;
@@ -601,7 +602,7 @@
                         throw this._fail();
                     }
                 }).call(this);
-                return number = this.anything();
+                return number = this._apply("number");
             });
             return number;
         },
