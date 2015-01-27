@@ -25,6 +25,8 @@ operandToBindings = (operand) ->
 operandToSQL = (operand, resource = 'pilot') ->
 	if operand.sql?
 		return operand.sql
+	if _.isBoolean(operand)
+		return Number(operand)
 	if _.isNumber(operand)
 		return operand
 	if _.isDate(operand)
@@ -174,6 +176,8 @@ do ->
 			"name"
 			"pilot/name"
 			new Date()
+			true
+			false
 		]
 	for lhs in operands
 		for rhs in operands
