@@ -249,7 +249,7 @@ ometa AbstractSQLValidator {
 
 	Null =
 		:next
-		?(next===null)
+		?(next === null || next === 'Null')
 		-> null,
 
 	Cast =
@@ -748,6 +748,19 @@ export ometa AbstractSQLOptimiser <: AbstractSQLValidator {
 			-> boolStatement
 		|	^Not
 		),
+
+	Equals =
+			// Convert equals null to exists.
+			[	'Equals'
+				(	Null
+					AnyValue:value
+				|	AnyValue:value
+					Null
+				)
+			]
+			SetHelped
+			-> ['Not', ['Exists', value]]
+		|	^Equals,
 
 	BooleanValue =
 			Substringof

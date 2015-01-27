@@ -32,6 +32,8 @@ operandToSQL = (operand, resource = 'pilot') ->
 	if _.isDate(operand)
 		return '?'
 	if _.isString(operand)
+		if operand is 'null'
+			return 'NULL'
 		if operand.charAt(0) is "'"
 			return '?'
 		fieldParts = operand.split('/')
@@ -88,7 +90,15 @@ createExpression = (lhs, op, rhs) ->
 	lhs = parseOperand(lhs)
 	rhs = parseOperand(rhs)
 	bindings = lhs.bindings.concat(rhs.bindings)
-	sql = lhs.sql + sqlOps[op] + ' ' + rhs.sql
+	if op in ['eq', 'ne'] and 'NULL' in [lhs.sql, rhs.sql]
+		nullCheck = if op is 'eq' then ' IS NULL' else ' IS NOT NULL'
+		if lhs.sql is 'NULL'
+			sql = rhs.sql + nullCheck
+		else
+			sql = lhs.sql + nullCheck
+	else
+		sql = lhs.sql + sqlOps[op] + ' ' + rhs.sql
+
 	if sqlOpBrackets[op]
 		sql = '(' + sql + ')'
 	return {
@@ -178,6 +188,8 @@ do ->
 			new Date()
 			true
 			false
+			# null is quoted as otherwise we hit issues with coffeescript defaulting values
+			'null'
 		]
 	for lhs in operands
 		for rhs in operands
