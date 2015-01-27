@@ -384,16 +384,14 @@ test "/pilot?$filter=pilot__can_fly__plane/all(d:d/plane/name eq 'Concorde')", '
 		expect(result.query).to.equal '''
 			SELECT ''' + pilotFields + '\n' + '''
 			FROM "pilot"
-			WHERE NOT (
-				EXISTS (
-					SELECT 1
-					FROM "pilot-can_fly-plane",
-						"plane"
-					WHERE NOT (
-						"pilot"."id" = "pilot-can_fly-plane"."pilot"
-						AND "plane"."id" = "pilot-can_fly-plane"."plane"
-						AND "plane"."name" = ?
-					)
+			WHERE NOT EXISTS (
+				SELECT 1
+				FROM "pilot-can_fly-plane",
+					"plane"
+				WHERE NOT (
+					"pilot"."id" = "pilot-can_fly-plane"."pilot"
+					AND "plane"."id" = "pilot-can_fly-plane"."plane"
+					AND "plane"."name" = ?
 				)
 			)'''
 
