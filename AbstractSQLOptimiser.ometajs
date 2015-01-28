@@ -453,6 +453,7 @@ ometa AbstractSQLValidator {
 		|	Not
 		|	Or
 		|	Exists
+		|	NotExists
 		|	Comparison
 		|	Between
 		|	In
@@ -486,6 +487,12 @@ ometa AbstractSQLValidator {
 			BooleanValue+:otherBools
 		]
 		-> ['Or', firstBool].concat(otherBools),
+
+	NotExists =
+		[	'NotExists'
+			AnyValue:exists
+		]
+		-> ['NotExists', exists],
 
 	Exists =
 		[	'Exists'
@@ -736,18 +743,39 @@ export ometa AbstractSQLOptimiser <: AbstractSQLValidator {
 				(	[	'Not'
 						BooleanValue:boolStatement
 					]
-				|	Equals:boolStatement
-					{boolStatement[0] = 'NotEquals'}
-				|	In:boolStatement
-					{boolStatement[0] = 'NotIn'}
-				|	Exists:boolStatement
-					{boolStatement[0] = 'NotExists'}
+				|	(	Equals:boolStatement
+						-> 'NotEquals'
+					|	NotEquals:boolStatement
+						-> 'Equals'
+					|	In:boolStatement
+						-> 'NotIn'
+					|	NotIn:boolStatement
+						-> 'In'
+					|	Exists:boolStatement
+						-> 'NotExists'
+					|	NotExists:boolStatement
+						-> 'Exists'
+					):replace
+					{boolStatement[0] = replace}
 				)
 			]
 			SetHelped
 			-> boolStatement
 		|	^Not
 		),
+
+	NotEquals =
+			// Convert not equals null to exists.
+			[	'NotEquals'
+				(	Null
+					AnyValue:value
+				|	AnyValue:value
+					Null
+				)
+			]
+			SetHelped
+			-> ['Exists', value]
+		|	^NotEquals,
 
 	Equals =
 			// Convert equals null to exists.
