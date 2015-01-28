@@ -740,15 +740,12 @@ export ometa AbstractSQLOptimiser <: AbstractSQLValidator {
 					{boolStatement[0] = 'NotEquals'}
 				|	In:boolStatement
 					{boolStatement[0] = 'NotIn'}
+				|	Exists:boolStatement
+					{boolStatement[0] = 'NotExists'}
 				)
 			]
 			SetHelped
 			-> boolStatement
-		// |	[	'Exists'
-				// [	'SelectQuery'
-					// TODO: ?
-				// ]
-			// ]
 		|	^Not
 		),
 

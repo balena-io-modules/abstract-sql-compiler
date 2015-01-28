@@ -458,6 +458,7 @@ export ometa AbstractSQLRules2SQL {
 		|	Not(indent)
 		|	Or(indent)
 		|	Exists(indent)
+		|	NotExists(indent)
 		|	Comparison(indent)
 		|	Between(indent)
 		|	In(indent)
@@ -501,6 +502,18 @@ export ometa AbstractSQLRules2SQL {
 				-> ('EXISTS (' + nestedIndent + ruleBody + indent + ')')
 			|	AnyValue(indent):comparator
 				-> (comparator + ' IS NOT NULL')
+			):exists
+		]
+		-> exists,
+
+	NotExists :indent =
+		[	'NotExists'
+			(	// We need to create a SelectQuery differently to other comparators, so we check for it first.
+				NestedIndent(indent):nestedIndent
+				SelectQuery(nestedIndent):ruleBody
+				-> ('NOT EXISTS (' + nestedIndent + ruleBody + indent + ')')
+			|	AnyValue(indent):comparator
+				-> (comparator + ' IS NULL')
 			):exists
 		]
 		-> exists,
