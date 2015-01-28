@@ -170,15 +170,16 @@ methodTest = (args...) ->
 				FROM "pilot"
 				WHERE ''' + sql
 
-operandTest(2, 'eq', 'name')
-operandTest(2, 'ne', 'name')
-operandTest(2, 'gt', 'name')
-operandTest(2, 'ge', 'name')
-operandTest(2, 'lt', 'name')
-operandTest(2, 'le', 'name')
-
-# Test each combination of operands
+# Test each combination of operands and operations
 do ->
+	operations = [
+		'eq'
+		'ne'
+		'gt'
+		'ge'
+		'lt'
+		'le'
+	]
 	operands = [
 			2
 			2.5
@@ -191,9 +192,11 @@ do ->
 			# null is quoted as otherwise we hit issues with coffeescript defaulting values
 			'null'
 		]
-	for lhs in operands
-		for rhs in operands
-			operandTest(lhs, 'eq', rhs)
+	for op in operations
+		describe op, ->
+			for lhs in operands
+				for rhs in operands
+					operandTest(lhs, op, rhs)
 
 do ->
 	left = createExpression('age', 'gt', 2)
