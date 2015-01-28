@@ -730,6 +730,8 @@
             }, function() {
                 return this._applyWithArgs("Exists", indent);
             }, function() {
+                return this._applyWithArgs("NotExists", indent);
+            }, function() {
                 return this._applyWithArgs("Comparison", indent);
             }, function() {
                 return this._applyWithArgs("Between", indent);
@@ -793,6 +795,21 @@
                 }, function() {
                     comparator = this._applyWithArgs("AnyValue", indent);
                     return comparator + " IS NOT NULL";
+                });
+            });
+            return exists;
+        },
+        NotExists: function(indent) {
+            var $elf = this, _fromIdx = this.input.idx, comparator, exists, nestedIndent, ruleBody;
+            this._form(function() {
+                this._applyWithArgs("exactly", "NotExists");
+                return exists = this._or(function() {
+                    nestedIndent = this._applyWithArgs("NestedIndent", indent);
+                    ruleBody = this._applyWithArgs("SelectQuery", nestedIndent);
+                    return "NOT EXISTS (" + nestedIndent + ruleBody + indent + ")";
+                }, function() {
+                    comparator = this._applyWithArgs("AnyValue", indent);
+                    return comparator + " IS NULL";
                 });
             });
             return exists;
