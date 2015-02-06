@@ -1,3 +1,7 @@
+v0.3.0
+
+* Updated sbvr-types to v0.1.0
+
 v0.2.1
 
 * Optimised not exists statements.
