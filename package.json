@@ -10,7 +10,7 @@
   "repository": "git@bitbucket.org:rulemotion/abstract-sql-compiler.git",
   "author": "",
   "dependencies": {
-    "lodash": "~2.4.1",
+    "lodash": "~3.0.0",
     "ometa-js": "~1.3.0",
     "sbvr-types": "git+ssh://git@bitbucket.org:rulemotion/sbvr-types.git#v0.1.0"
   },
