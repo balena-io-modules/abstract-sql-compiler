@@ -166,3 +166,23 @@ do ->
 	test.postgres(url, testFunc(postgresAgg))
 	test.mysql.skip(url, testFunc(mysqlAgg))
 	test.websql.skip(url, testFunc(websqlAgg))
+
+do ->
+	remainingPilotCanFlyFields = _.reject(pilotCanFlyPlaneFields, (field) -> field is '"pilot-can_fly-plane"."plane"').join(', ')
+	testFunc = (aggFunc) -> (result) ->
+		it 'should select from pilot.*, aggregated(pilot-can_fly-plane, aggregated plane)', ->
+			expect(result.query).to.equal """
+				SELECT (
+					SELECT #{aggFunc('"pilot-can_fly-plane".*')} AS "pilot__can_fly__plane"
+					FROM (
+						SELECT "pilot-can_fly-plane"."plane"
+						FROM "pilot-can_fly-plane"
+						WHERE "pilot"."id" = "pilot-can_fly-plane"."pilot"
+					) AS "pilot-can_fly-plane"
+				) AS "pilot__can_fly__plane", #{pilotFields.join(', ')}
+				FROM "pilot"
+				"""
+	url = '/pilot?$expand=pilot__can_fly__plane($select=plane)'
+	test.postgres(url, testFunc(postgresAgg))
+	test.mysql.skip(url, testFunc(mysqlAgg))
+	test.websql.skip(url, testFunc(websqlAgg))
