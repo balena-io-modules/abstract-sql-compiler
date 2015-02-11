@@ -106,3 +106,23 @@ do ->
 	test.postgres(url, testFunc(postgresAgg))
 	test.mysql.skip(url, testFunc(mysqlAgg))
 	test.websql.skip(url, testFunc(websqlAgg))
+
+do ->
+	remainingPilotFields = _.reject(pilotFields, (field) -> field is '"pilot"."licence"').join(', ')
+	testFunc = (aggFunc) -> (result) ->
+		it 'should select from pilot.*, aggregated licence', ->
+			expect(result.query).to.equal '''
+				SELECT (
+					SELECT ''' + aggFunc('"licence".*') + ''' AS "licence"
+					FROM (
+						SELECT "licence"."id"
+						FROM "licence"
+						WHERE "licence"."id" = "pilot"."licence"
+						ORDER BY "licence"."id" DESC
+					) AS "licence"
+				) AS "licence", ''' +  remainingPilotFields + '\n' + '''
+				FROM "pilot"'''
+	url = '/pilot?$expand=licence($orderby=id)'
+	test.postgres(url, testFunc(postgresAgg))
+	test.mysql.skip(url, testFunc(mysqlAgg))
+	test.websql.skip(url, testFunc(websqlAgg))
