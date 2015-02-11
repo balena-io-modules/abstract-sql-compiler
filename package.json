@@ -1,6 +1,6 @@
 {
   "name": "abstract-sql-compiler",
-  "version": "0.3.0",
+  "version": "0.3.1",
   "description": "A translator for abstract sql into sql.",
   "scripts": {
     "pretest": "npm run-script prepublish",
