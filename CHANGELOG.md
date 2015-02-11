@@ -1,6 +1,7 @@
 v0.3.1
 
 * Updated lodash to ^3.0.0
+* Updated sbvr-types to v0.1.1
 
 v0.3.0
 
