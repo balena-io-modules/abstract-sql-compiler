@@ -279,9 +279,10 @@ export ometa AbstractSQLRules2SQL {
 		?sbvrTypes[typeName]
 		?sbvrTypes[typeName].types[this.engine]
 		{sbvrTypes[typeName].types[this.engine]}:dbType
-		(	?(dbType.toUpperCase() === 'SERIAL')
+		(	?(_.isFunction(dbType) || dbType.toUpperCase() === 'SERIAL')
 			// HACK: SERIAL type in postgres is really an INTEGER with automatic sequence,
 			// so it's not actually possible to cast to SERIAL, instead you have to cast to INTEGER.
+			// For mysql/websql it's a function since it needs to generate an INTEGER ... AUTOINCREMENT/AUTO_INCREMENT
 			-> 'INTEGER'
 		|	-> dbType
 		)

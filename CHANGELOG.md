@@ -1,3 +1,5 @@
+* Fixed an issue with auto incrementing fields of websql/mysql.
+
 v0.3.1
 
 * Updated lodash to ^3.0.0
