@@ -441,7 +441,7 @@
             this._pred(sbvrTypes[typeName].types[this.engine]);
             dbType = sbvrTypes[typeName].types[this.engine];
             return this._or(function() {
-                this._pred("SERIAL" === dbType.toUpperCase());
+                this._pred(_.isFunction(dbType) || "SERIAL" === dbType.toUpperCase());
                 return "INTEGER";
             }, function() {
                 return dbType;

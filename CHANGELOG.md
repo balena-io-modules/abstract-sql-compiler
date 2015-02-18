@@ -1,3 +1,5 @@
+v0.3.2
+
 * Fixed an issue with auto incrementing fields of websql/mysql.
 
 v0.3.1
