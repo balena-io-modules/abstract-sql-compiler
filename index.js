@@ -1,7 +1,7 @@
 (function (root, factory) {
 	if (typeof define === 'function' && define.amd) {
 		// AMD. Register as an anonymous module.
-		define(['abstract-sql-compiler/AbstractSQLOptimiser', 'abstract-sql-compiler/AbstractSQLRules2SQL'], factory);
+		define(['@resin/abstract-sql-compiler/AbstractSQLOptimiser', '@resin/abstract-sql-compiler/AbstractSQLRules2SQL'], factory);
 	} else if (typeof exports === 'object') {
 		// Node. Does not work with strict CommonJS, but
 		// only CommonJS-like enviroments that support module.exports,

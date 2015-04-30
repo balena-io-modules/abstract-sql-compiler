@@ -1,6 +1,6 @@
 {
   "name": "@resin/abstract-sql-compiler",
-  "version": "0.3.3",
+  "version": "0.3.4",
   "description": "A translator for abstract sql into sql.",
   "scripts": {
     "pretest": "npm run-script prepublish",
