@@ -1,6 +1,6 @@
 {
-  "name": "abstract-sql-compiler",
-  "version": "0.3.2",
+  "name": "@resin/abstract-sql-compiler",
+  "version": "0.3.3",
   "description": "A translator for abstract sql into sql.",
   "scripts": {
     "pretest": "npm run-script prepublish",
@@ -12,13 +12,13 @@
   "dependencies": {
     "lodash": "^3.0.0",
     "ometa-js": "~1.3.0",
-    "sbvr-types": "git+ssh://git@bitbucket.org:rulemotion/sbvr-types.git#v0.1.1"
+    "@resin/sbvr-types": "~0.1.3"
   },
   "devDependencies": {
     "chai": "^2.1.2",
     "coffee-script": "~1.9.1",
     "mocha": "^2.1.0",
-    "odata-parser": "git+ssh://git@bitbucket.org:rulemotion/odata-parser.git#v0.1.1",
-    "odata-to-abstract-sql": "git+ssh://git@bitbucket.org:rulemotion/odata-to-abstract-sql.git#v0.2.4"
+    "@resin/odata-parser": "~0.1.2",
+    "@resin/odata-to-abstract-sql": "~0.2.5"
   }
 }

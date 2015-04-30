@@ -1,4 +1,4 @@
-var sbvrTypes = require('sbvr-types');
+var sbvrTypes = require('@resin/sbvr-types');
 
 var comparisons = {
 	'Equals': ' = ',

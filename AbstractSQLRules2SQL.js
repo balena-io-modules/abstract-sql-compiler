@@ -1,9 +1,9 @@
 !function(root, factory) {
-    "function" == typeof define && define.amd ? define([ "require", "exports", "ometa-core", "sbvr-types" ], factory) : "object" == typeof exports ? factory(require, exports, require("ometa-js").core) : factory(function(moduleName) {
+    "function" == typeof define && define.amd ? define([ "require", "exports", "ometa-core", "@resin/sbvr-types" ], factory) : "object" == typeof exports ? factory(require, exports, require("ometa-js").core) : factory(function(moduleName) {
         return root[moduleName];
     }, root, root.OMeta);
 }(this, function(require, exports, OMeta) {
-    var sbvrTypes = require("sbvr-types"), comparisons = {
+    var sbvrTypes = require("@resin/sbvr-types"), comparisons = {
         Equals: " = ",
         GreaterThan: " > ",
         GreaterThanOrEqual: " >= ",
