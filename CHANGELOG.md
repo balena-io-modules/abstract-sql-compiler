@@ -1,3 +1,5 @@
+* Changed the exported `compile(engine, abstractSQL)` function to `[engine].compileRule(abstractsql)`
+
 v0.3.2
 
 * Fixed an issue with auto incrementing fields of websql/mysql.
