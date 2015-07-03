@@ -1,3 +1,4 @@
+* Added schema generation support.
 * Changed the exported `compile(engine, abstractSQL)` function to `[engine].compileRule(abstractsql)`
 
 v0.3.2
