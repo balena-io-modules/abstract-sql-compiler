@@ -1,7 +1,13 @@
 ((root, factory) ->
 	if typeof define is 'function' and define.amd
 		# AMD. Register as an anonymous module.
-		define(['@resin/abstract-sql-compiler/AbstractSQLOptimiser', '@resin/abstract-sql-compiler/AbstractSQLSchema2SQL', '@resin/sbvr-types', 'lodash', 'bluebird'], factory)
+		define([
+			'@resin/abstract-sql-compiler/AbstractSQLOptimiser'
+			'@resin/abstract-sql-compiler/AbstractSQLSchema2SQL'
+			'@resin/sbvr-types'
+			'lodash'
+			'bluebird'
+		], factory)
 	else if typeof exports is 'object'
 		# Node. Does not work with strict CommonJS, but
 		# only CommonJS-like enviroments that support module.exports,
@@ -16,14 +22,14 @@
 	else
 		# Browser globals
 		root.AbstractSQLCompiler = factory(root.AbstractSQLOptimiser, root.AbstractSQLRules2SQL, root.sbvrTypes, root._, root.Promise)
-) @, ({ AbstractSQLOptimiser }, { AbstractSQLRules2SQL }, sbvrTypes, _, Promise) ->
-	validateTypes = _.mapValues sbvrTypes, ({validate}) ->
+) this, ({ AbstractSQLOptimiser }, { AbstractSQLRules2SQL }, sbvrTypes, _, Promise) ->
+	validateTypes = _.mapValues sbvrTypes, ({ validate }) ->
 		if validate?
 			Promise.promisify(validate)
 
 	dataTypeValidate = (value, field, callback) ->
 		# In case one of the validation types throws an error.
-		{dataType, required} = field
+		{ dataType, required } = field
 		if value == null or value == ''
 			if required
 				Promise.rejected('cannot be null')
@@ -38,12 +44,13 @@
 		necessity = if necessity then ' NOT NULL' else ' NULL'
 		if index != ''
 			index = ' ' + index
-		if sbvrTypes[dataType]?.types?[engine]?
-			if _.isFunction(sbvrTypes[dataType].types[engine])
-				return sbvrTypes[dataType].types[engine](necessity, index)
-			return sbvrTypes[dataType].types[engine] + necessity + index
+		dbType = sbvrTypes[dataType]?.types?[engine]
+		if dbType?
+			if _.isFunction(dbType)
+				return dbType(necessity, index)
+			return dbType + necessity + index
 		else
-			throw 'Unknown data type "' + dataType + '" for engine: ' + engine
+			throw "Unknown data type '#{dataType}' for engine: #{engine}"
 
 	compileRule = do ->
 		optimiser = AbstractSQLOptimiser.createInstance()
@@ -57,16 +64,16 @@
 		ifNotExists = if ifNotExists then 'IF NOT EXISTS ' else ''
 		hasDependants = {}
 		schemaDependencyMap = {}
-		for own resourceName, table of sqlModel.tables when !_.isString(table) # and table.primitive is false
+		for own resourceName, table of sqlModel.tables when !_.isString(table)
 			foreignKeys = []
 			depends = []
 			dropSQL = 'DROP TABLE "' + table.name + '";'
 			createSQL = 'CREATE TABLE ' + ifNotExists + '"' + table.name + '" (\n\t'
 
-			for {dataType, fieldName, required, index, references} in table.fields
+			for { dataType, fieldName, required, index, references } in table.fields
 				createSQL += '"' + fieldName + '" ' + dataTypeGen(engine, dataType, required, index) + '\n,\t'
-				if dataType in ['ForeignKey', 'ConceptType']
-					foreignKeys.push({fieldName, references})
+				if dataType in [ 'ForeignKey', 'ConceptType' ]
+					foreignKeys.push({ fieldName, references })
 					depends.push(references.tableName)
 					hasDependants[references.tableName] = true
 
@@ -75,13 +82,12 @@
 			for index in table.indexes
 				createSQL += index.type + '("' + index.fields.join('", "') + '")\n,\t'
 			createSQL = createSQL[0...-2] + ');'
-			schemaDependencyMap[table.name] = {
+			schemaDependencyMap[table.name] =
 				resourceName: resourceName
 				primitive: table.primitive
 				createSQL: createSQL
 				dropSQL: dropSQL
 				depends: depends
-			}
 
 		createSchemaStatements = []
 		dropSchemaStatements = []
@@ -121,19 +127,20 @@
 			console.error(e, e.stack)
 			throw e
 
-		return {tables: sqlModel.tables, createSchema: createSchemaStatements, dropSchema: dropSchemaStatements, rules: ruleStatements}
+		return {
+			tables: sqlModel.tables
+			createSchema: createSchemaStatements
+			dropSchema: dropSchemaStatements
+			rules: ruleStatements
+		}
 
 
 	module.exports =
-		websql:
-			compileSchema: (schema) -> compileSchema(schema, 'websql', false)
-			compileRule: (rule) -> compileRule(rule, 'websql')
-			dataTypeValidate: dataTypeValidate
-		postgres:
-			compileSchema: (schema) -> compileSchema(schema, 'postgres', true)
-			compileRule: (rule) -> compileRule(rule, 'postgres')
-			dataTypeValidate: dataTypeValidate
-		mysql:
-			compileSchema: (schema) -> compileSchema(schema, 'mysql', true)
-			compileRule: (rule) -> compileRule(rule, 'mysql')
-			dataTypeValidate: dataTypeValidate
+		_.mapValues
+			postgres: true
+			mysql: true
+			websql: false
+			(ifNotExists, engine) ->
+				compileSchema: _.partial(compileSchema, _, engine, ifNotExists)
+				compileRule: _.partial(compileRule, _, engine)
+				dataTypeValidate: dataTypeValidate
