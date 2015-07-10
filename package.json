@@ -11,13 +11,13 @@
   "repository": "git@bitbucket.org:rulemotion/abstract-sql-compiler.git",
   "author": "",
   "dependencies": {
-    "@resin/sbvr-types": "~0.1.3",
+    "@resin/sbvr-types": "~0.1.4",
     "bluebird": "^2.9.30",
     "lodash": "^3.0.0",
     "ometa-js": "~1.3.0"
   },
   "devDependencies": {
-    "@resin/lf-to-abstract-sql": "0.0.13",
+    "@resin/lf-to-abstract-sql": "0.0.14",
     "@resin/odata-parser": "~0.1.2",
     "@resin/odata-to-abstract-sql": "~0.2.5",
     "@resin/sbvr-parser": "0.0.18",

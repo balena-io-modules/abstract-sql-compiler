@@ -24,7 +24,8 @@ describe 'pilots', ->
 	''', [
 		'''
 			CREATE TABLE IF NOT EXISTS "pilot" (
-				"id" SERIAL NOT NULL PRIMARY KEY
+				"created at" TIMESTAMP DEFAULT CURRENT_TIMESTAMP NOT NULL
+			,	"id" SERIAL NOT NULL PRIMARY KEY
 			,	"name" VARCHAR(255) NOT NULL
 			,	"years of experience" INTEGER NOT NULL
 			,	"is experienced" INTEGER DEFAULT 0 NOT NULL
@@ -32,13 +33,15 @@ describe 'pilots', ->
 		'''
 		'''
 			CREATE TABLE IF NOT EXISTS "plane" (
-				"id" SERIAL NOT NULL PRIMARY KEY
+				"created at" TIMESTAMP DEFAULT CURRENT_TIMESTAMP NOT NULL
+			,	"id" SERIAL NOT NULL PRIMARY KEY
 			,	"name" VARCHAR(255) NOT NULL
 			);
 		'''
 		'''
 			CREATE TABLE IF NOT EXISTS "pilot-can_fly-plane" (
-				"pilot" INTEGER NOT NULL
+				"created at" TIMESTAMP DEFAULT CURRENT_TIMESTAMP NOT NULL
+			,	"pilot" INTEGER NOT NULL
 			,	"plane" INTEGER NOT NULL
 			,	"id" SERIAL NOT NULL PRIMARY KEY
 			,	FOREIGN KEY ("pilot") REFERENCES "pilot" ("id")
@@ -48,7 +51,8 @@ describe 'pilots', ->
 		'''
 		'''
 			CREATE TABLE IF NOT EXISTS "veteran_pilot" (
-				"id" SERIAL NOT NULL PRIMARY KEY
+				"created at" TIMESTAMP DEFAULT CURRENT_TIMESTAMP NOT NULL
+			,	"id" SERIAL NOT NULL PRIMARY KEY
 			);
 		'''
 	]

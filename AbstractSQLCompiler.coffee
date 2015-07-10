@@ -40,15 +40,17 @@
 		else
 			Promise.rejected('is an unsupported type: ' + dataType)
 
-	dataTypeGen = (engine, dataType, necessity, index = '') ->
+	dataTypeGen = (engine, dataType, necessity, index = '', defaultValue) ->
 		necessity = if necessity then ' NOT NULL' else ' NULL'
+		defaultValue = if defaultValue then " DEFAULT #{defaultValue}"
 		if index != ''
 			index = ' ' + index
 		dbType = sbvrTypes[dataType]?.types?[engine]
 		if dbType?
 			if _.isFunction(dbType)
 				return dbType(necessity, index)
-			return dbType + necessity + index
+			defaultValue ?= ''
+			return dbType + defaultValue + necessity + index
 		else
 			throw "Unknown data type '#{dataType}' for engine: #{engine}"
 
@@ -70,8 +72,8 @@
 			dropSQL = 'DROP TABLE "' + table.name + '";'
 			createSQL = 'CREATE TABLE ' + ifNotExists + '"' + table.name + '" (\n\t'
 
-			for { dataType, fieldName, required, index, references } in table.fields
-				createSQL += '"' + fieldName + '" ' + dataTypeGen(engine, dataType, required, index) + '\n,\t'
+			for { dataType, fieldName, required, index, references, defaultValue } in table.fields
+				createSQL += '"' + fieldName + '" ' + dataTypeGen(engine, dataType, required, index, defaultValue) + '\n,\t'
 				if dataType in [ 'ForeignKey', 'ConceptType' ]
 					foreignKeys.push({ fieldName, references })
 					depends.push(references.tableName)
