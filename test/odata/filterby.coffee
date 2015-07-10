@@ -1,6 +1,6 @@
 expect = require('chai').expect
 test = require('./test')
-clientModel = require('./client-model.json')
+clientModel = require('../client-model.json')
 _ = require('lodash')
 {pilotFields, pilotCanFlyPlaneFields} = require('./fields')
 pilotFields = pilotFields.join(', ')

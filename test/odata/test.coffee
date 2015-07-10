@@ -1,8 +1,8 @@
 require('ometa-js')
 ODataParser = require('@resin/odata-parser').ODataParser.createInstance()
 OData2AbstractSQL = require('@resin/odata-to-abstract-sql').OData2AbstractSQL.createInstance()
-OData2AbstractSQL.clientModel = require('./client-model.json')
-AbstractSQLCompiler = require('../index')
+OData2AbstractSQL.clientModel = require('../client-model.json')
+AbstractSQLCompiler = require('../..')
 
 expect = require('chai').expect
 _ = require('lodash')
@@ -32,7 +32,7 @@ runExpectation = (describe, engine, input, method, expectedBindings, body, expec
 		try
 			input = ODataParser.matchAll(input, 'OData')
 			input = OData2AbstractSQL.match(input, 'Process', [method, body])
-			result = AbstractSQLCompiler.compile(engine, input)
+			result = AbstractSQLCompiler[engine].compileRule(input)
 			if _.isArray(result)
 				for actualResult in result
 					bindingsTest(actualResult.bindings, expectedBindings)
