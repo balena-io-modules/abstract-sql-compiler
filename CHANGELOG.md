@@ -1,3 +1,5 @@
+v0.4.0
+
 * Added support for specifying a `defaultValue` for a field.
 * Added schema generation support.
 * Changed the exported `compile(engine, abstractSQL)` function to `[engine].compileRule(abstractsql)`
