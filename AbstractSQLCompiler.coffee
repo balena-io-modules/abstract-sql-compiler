@@ -3,7 +3,7 @@
 		# AMD. Register as an anonymous module.
 		define([
 			'@resin/abstract-sql-compiler/AbstractSQLOptimiser'
-			'@resin/abstract-sql-compiler/AbstractSQLSchema2SQL'
+			'@resin/abstract-sql-compiler/AbstractSQLRules2SQL'
 			'@resin/sbvr-types'
 			'lodash'
 			'bluebird'

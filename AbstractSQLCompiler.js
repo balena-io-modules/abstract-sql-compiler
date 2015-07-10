@@ -4,7 +4,7 @@
 
   (function(root, factory) {
     if (typeof define === 'function' && define.amd) {
-      return define(['@resin/abstract-sql-compiler/AbstractSQLOptimiser', '@resin/abstract-sql-compiler/AbstractSQLSchema2SQL', '@resin/sbvr-types', 'lodash', 'bluebird'], factory);
+      return define(['@resin/abstract-sql-compiler/AbstractSQLOptimiser', '@resin/abstract-sql-compiler/AbstractSQLRules2SQL', '@resin/sbvr-types', 'lodash', 'bluebird'], factory);
     } else if (typeof exports === 'object') {
       return module.exports = factory(require('./AbstractSQLOptimiser'), require('./AbstractSQLRules2SQL'), require('@resin/sbvr-types'), require('lodash'), require('bluebird'));
     } else {
