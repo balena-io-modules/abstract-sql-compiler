@@ -2,7 +2,7 @@ expect = require('chai').expect
 test = require('./test')
 clientModel = require('../client-model.json')
 _ = require('lodash')
-{pilotFields, pilotCanFlyPlaneFields} = require('./fields')
+{pilotFields, pilotCanFlyPlaneFields, teamFields} = require('./fields')
 pilotFields = pilotFields.join(', ')
 pilotCanFlyPlaneFields = pilotCanFlyPlaneFields.join(', ')
 
@@ -222,42 +222,45 @@ do ->
 	{odata, sql} = createExpression('pilot__can_fly__plane/id', 'eq', 10)
 	test '/pilot?$filter=' + odata, (result) ->
 		it 'should select from pilot where "' + odata + '"', ->
-			expect(result.query).to.equal '''
-				SELECT ''' + pilotFields + '\n' + '''
+			expect(result.query).to.equal """
+				SELECT #{pilotFields}
 				FROM "pilot",
 					"pilot-can_fly-plane"
 				WHERE "pilot"."id" = "pilot-can_fly-plane"."pilot"
-				AND ''' + sql
+				AND #{sql}
+			"""
 
 do ->
 	{odata, sql} = createExpression('plane/id', 'eq', 10)
 	test '/pilot(1)/pilot__can_fly__plane?$filter=' + odata, (result) ->
 		it 'should select from pilot__can_fly__plane where "' + odata + '"', ->
-			expect(result.query).to.equal '''
-				SELECT ''' + pilotCanFlyPlaneFields + '\n' + '''
+			expect(result.query).to.equal """
+				SELECT #{pilotCanFlyPlaneFields}
 				FROM "pilot",
 					"pilot-can_fly-plane",
 					"plane"
 				WHERE "pilot"."id" = 1
 				AND "plane"."id" = "pilot-can_fly-plane"."plane"
-				AND ''' + sql + '\n' + '''
-				AND "pilot"."id" = "pilot-can_fly-plane"."pilot"'''
+				AND #{sql}
+				AND "pilot"."id" = "pilot-can_fly-plane"."pilot"
+			"""
 
 do ->
 	{odata, sql} = createExpression('pilot__can_fly__plane/plane/id', 'eq', 10)
 	test '/pilot?$filter=' + odata, (result) ->
-		it 'should select from pilot where "' + odata + '"', ->
-			expect(result.query).to.equal '''
-				SELECT ''' + pilotFields + '\n' + '''
+		it "should select from pilot where '#{odata}'", ->
+			expect(result.query).to.equal """
+				SELECT #{pilotFields}
 				FROM "pilot",
 					"pilot-can_fly-plane",
 					"plane"
 				WHERE "pilot"."id" = "pilot-can_fly-plane"."pilot"
 				AND "plane"."id" = "pilot-can_fly-plane"."plane"
-				AND ''' + sql
+				AND #{sql}
+			"""
 
 	test '/pilot?$filter=' + odata, 'PATCH', [['Bind', ['pilot', 'name']]], name: 'Peter', (result) ->
-		it 'should update pilot where "' + odata + '"', ->
+		it "should update pilot where '#{odata}'", ->
 			expect(result.query).to.equal '''
 				UPDATE "pilot"
 				SET "name" = ?
@@ -270,7 +273,7 @@ do ->
 					AND "plane"."id" = "pilot-can_fly-plane"."plane"
 					AND "plane"."id" = 10
 				))
-				'''
+			'''
 
 	test '/pilot?$filter=' + odata, 'DELETE', (result) ->
 		it 'should delete from pilot where "' + odata + '"', ->
@@ -285,7 +288,7 @@ do ->
 					AND "plane"."id" = "pilot-can_fly-plane"."plane"
 					AND "plane"."id" = 10
 				))
-				'''
+			'''
 
 do ->
 	name = 'Peter'
@@ -295,14 +298,15 @@ do ->
 		exprBindings...
 	]
 	test '/pilot?$filter=' + odata, 'POST', bindings, {name}, (result) ->
-		it 'should insert into pilot where "' + odata + '"', ->
-			expect(result.query).to.equal '''
+		it "should insert into pilot where '#{odata}'", ->
+			expect(result.query).to.equal """
 				INSERT INTO "pilot" ("name")
 				SELECT "pilot".*
 				FROM (
 					SELECT CAST(? AS VARCHAR(255)) AS "name"
 				) AS "pilot"
-				WHERE ''' + sql
+				WHERE #{sql}
+			"""
 
 	bindings = [
 		['Bind', ['pilot', 'id']]
@@ -320,7 +324,8 @@ do ->
 					SELECT "pilot"."id"
 					FROM "pilot"
 					WHERE #{sql}
-				))"""
+				))
+			"""
 
 	test '/pilot(1)?$filter=' + odata, 'PUT', bindings, {name}, (result) ->
 		describe 'should upsert the pilot with id 1', ->
@@ -343,6 +348,7 @@ do ->
 						"name" = ?,
 						"age" = DEFAULT,
 						"favourite colour" = DEFAULT,
+						"team" = DEFAULT,
 						"licence" = DEFAULT
 					WHERE "pilot"."id" = 1
 					AND "pilot"."id" IN ((
@@ -356,13 +362,14 @@ do ->
 	{odata, sql} = createExpression(oneEqOne, 'or', oneEqOne)
 	test '/pilot(1)/pilot__can_fly__plane?$filter=' + odata, (result) ->
 		it 'should select from pilot__can_fly__plane where "' + odata + '"', ->
-			expect(result.query).to.equal '''
-				SELECT ''' + pilotCanFlyPlaneFields + '\n' + '''
+			expect(result.query).to.equal """
+				SELECT #{pilotCanFlyPlaneFields}
 				FROM "pilot",
 					"pilot-can_fly-plane"
 				WHERE "pilot"."id" = 1
-				AND ''' + sql + '\n' + '''
-				AND "pilot"."id" = "pilot-can_fly-plane"."pilot"'''
+				AND #{sql}
+				AND "pilot"."id" = "pilot-can_fly-plane"."pilot"
+			"""
 
 methodTest('substringof', "'Pete'", 'name')
 methodTest('startswith', 'name', "'P'")
@@ -375,6 +382,8 @@ operandTest(createMethodCall('substring', 'name', 1, 2), 'eq', "'et'")
 operandTest(createMethodCall('tolower', 'name'), 'eq', "'pete'")
 operandTest(createMethodCall('toupper', 'name'), 'eq', "'PETE'")
 
+operandTest(createMethodCall('tolower', 'licence/name'), 'eq', "'pete'")
+
 do ->
 	concat = createMethodCall('concat', 'name', "'%20'")
 	operandTest(concat, 'eq', "'Pete%20'")
@@ -386,8 +395,8 @@ operandTest(createMethodCall('ceiling', 'age'), 'eq', 25)
 
 test "/pilot?$filter=pilot__can_fly__plane/any(d:d/plane/name eq 'Concorde')", 'GET', [['Text', 'Concorde']], (result) ->
 	it 'should select from pilot where ...', ->
-		expect(result.query).to.equal '''
-			SELECT ''' + pilotFields + '\n' + '''
+		expect(result.query).to.equal """
+			SELECT #{pilotFields}
 			FROM "pilot"
 			WHERE EXISTS (
 				SELECT 1
@@ -396,12 +405,13 @@ test "/pilot?$filter=pilot__can_fly__plane/any(d:d/plane/name eq 'Concorde')", '
 				WHERE "pilot"."id" = "pilot-can_fly-plane"."pilot"
 				AND "plane"."id" = "pilot-can_fly-plane"."plane"
 				AND "plane"."name" = ?
-			)'''
+			)
+		"""
 
 test "/pilot?$filter=pilot__can_fly__plane/all(d:d/plane/name eq 'Concorde')", 'GET', [['Text', 'Concorde']], (result) ->
 	it 'should select from pilot where ...', ->
-		expect(result.query).to.equal '''
-			SELECT ''' + pilotFields + '\n' + '''
+		expect(result.query).to.equal """
+			SELECT #{pilotFields}
 			FROM "pilot"
 			WHERE NOT EXISTS (
 				SELECT 1
@@ -412,7 +422,8 @@ test "/pilot?$filter=pilot__can_fly__plane/all(d:d/plane/name eq 'Concorde')", '
 					AND "plane"."id" = "pilot-can_fly-plane"."plane"
 					AND "plane"."name" = ?
 				)
-			)'''
+			)
+		"""
 
 # Switch operandToSQL permanently to using 'team' as the resource,
 # as we are switch to using that as our base resource from here on.
@@ -429,3 +440,19 @@ do ->
 					SELECT CAST(? AS INTEGER) AS "favourite colour"
 				) AS "team"
 				WHERE ''' + sql
+
+do ->
+	{odata, sql, bindings} = createExpression('pilot/pilot__can_fly__plane/plane/name', 'eq', "'Concorde'")
+	test '/team?$filter=' + odata, 'GET', bindings, (result) ->
+		it 'should select from team where "' + odata + '"', ->
+			expect(result.query).to.equal """
+				SELECT #{teamFields}
+				FROM "team",
+					"pilot",
+					"pilot-can_fly-plane",
+					"plane"
+				WHERE "team"."favourite colour" = "pilot"."team"
+				AND "pilot"."id" = "pilot-can_fly-plane"."pilot"
+				AND "plane"."id" = "pilot-can_fly-plane"."plane"
+				AND #{sql}
+			"""

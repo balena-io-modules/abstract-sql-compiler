@@ -4,6 +4,7 @@ exports.pilotFields = [
 	'"pilot"."name"'
 	'"pilot"."age"'
 	'"pilot"."favourite colour" AS "favourite_colour"'
+	'"pilot"."team"'
 	'"pilot"."licence"'
 ]
 exports.pilotCanFlyPlaneFields = [
@@ -13,8 +14,12 @@ exports.pilotCanFlyPlaneFields = [
 ]
 exports.licenceFields = [
 	'"licence"."id"'
+	'"licence"."name"'
 ]
 exports.planeFields = [
 	'"plane"."id"'
 	'"plane"."name"'
+]
+exports.teamFields = [
+	'"team"."favourite colour" AS "favourite_colour"'
 ]
