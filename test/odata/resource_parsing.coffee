@@ -1,77 +1,81 @@
 expect = require('chai').expect
 test = require('./test')
-{pilotFields} = require('./fields')
+{ pilotFields, planeFields, licenceFields, teamFields } = require('./fields')
 pilotFields = pilotFields.join(', ')
+planeFields = planeFields.join(', ')
+licenceFields = licenceFields.join(', ')
+teamFields = teamFields.join(', ')
 
 test '/pilot', (result) ->
 	it 'should select from pilot', ->
-		expect(result.query).to.equal('''
-			SELECT ''' + pilotFields + '\n' + '''
+		expect(result.query).to.equal """
+			SELECT #{pilotFields}
 			FROM "pilot"
-		''')
+		"""
 
 test '/pilot(1)', (result) ->
 	it 'should select from pilot with id', ->
-		expect(result.query).to.equal('''
-			SELECT ''' + pilotFields + '\n' + '''
+		expect(result.query).to.equal """
+			SELECT #{pilotFields}
 			FROM "pilot"
 			WHERE "pilot"."id" = 1
-		''')
+		"""
 
 test "/pilot('TextKey')", 'GET', [['Text', 'TextKey']], (result) ->
 	it 'should select from pilot with id', ->
-		expect(result.query).to.equal('''
-			SELECT ''' + pilotFields + '\n' + '''
+		expect(result.query).to.equal """
+			SELECT #{pilotFields}
 			FROM "pilot"
 			WHERE "pilot"."id" = ?
-		''')
+		"""
 
 test '/pilot(1)/licence', (result) ->
 	it 'should select from the licence of pilot with id', ->
-		expect(result.query).to.equal('''
-			SELECT "licence"."id"
+		expect(result.query).to.equal """
+			SELECT #{licenceFields}
 			FROM "pilot",
 				"licence"
 			WHERE "pilot"."id" = 1
 			AND "licence"."id" = "pilot"."licence"
-		''')
+		"""
+		
 
 
 test '/licence(1)/pilot', (result) ->
 	it 'should select from the pilots of licence with id', ->
-		expect(result.query).to.equal('''
-			SELECT ''' + pilotFields + '\n' + '''
+		expect(result.query).to.equal """
+			SELECT #{pilotFields}
 			FROM "licence",
 				"pilot"
 			WHERE "licence"."id" = 1
 			AND "licence"."id" = "pilot"."licence"
-		''')
+		"""
 
 
 test '/pilot(1)/pilot__can_fly__plane/plane', (result) ->
 	it 'should select from the plane of pilot with id', ->
-		expect(result.query).to.equal('''
-			SELECT "plane"."id", "plane"."name"
+		expect(result.query).to.equal """
+			SELECT #{planeFields}
 			FROM "pilot",
 				"pilot-can_fly-plane",
 				"plane"
 			WHERE "pilot"."id" = 1
 			AND "plane"."id" = "pilot-can_fly-plane"."plane"
 			AND "pilot"."id" = "pilot-can_fly-plane"."pilot"
-		''')
+		"""
 
 
 test '/plane(1)/pilot__can_fly__plane/pilot', (result) ->
 	it 'should select from the pilots of plane with id', ->
-		expect(result.query).to.equal('''
-			SELECT ''' + pilotFields + '\n' + '''
+		expect(result.query).to.equal """
+			SELECT #{pilotFields}
 			FROM "plane",
 				"pilot-can_fly-plane",
 				"pilot"
 			WHERE "plane"."id" = 1
 			AND "pilot"."id" = "pilot-can_fly-plane"."pilot"
 			AND "plane"."id" = "pilot-can_fly-plane"."plane"
-		''')
+		"""
 
 
 test '/pilot(1)', 'DELETE', (result) ->
@@ -98,6 +102,7 @@ do ->
 					"name" = DEFAULT,
 					"age" = DEFAULT,
 					"favourite colour" = DEFAULT,
+					"team" = DEFAULT,
 					"licence" = DEFAULT
 				WHERE "pilot"."id" = 1
 			''')
@@ -218,11 +223,11 @@ test.skip '/method(1)/child?foo=bar', (result) ->
 
 test "/team('purple')", 'GET', [['Text', 'purple']], (result) ->
 	it 'should select the team with the "favourite colour" id of "purple"', ->
-		expect(result.query).to.equal('''
-			SELECT "team"."favourite colour" AS "favourite_colour"
+		expect(result.query).to.equal """
+			SELECT #{teamFields}
 			FROM "team"
 			WHERE "team"."favourite colour" = ?
-		''')
+		"""
 
 test '/team', 'POST', [['Bind', ['team', 'favourite_colour']]], {favourite_colour: 'purple'}, (result) ->
 	it 'should insert a team', ->
