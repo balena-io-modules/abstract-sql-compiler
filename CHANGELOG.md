@@ -1,3 +1,5 @@
+* Update @resin/odata-to-abstract-sql to ~0.3.0, adding matching tests.
+
 v0.4.0
 
 * Added support for specifying a `defaultValue` for a field.

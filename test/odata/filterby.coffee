@@ -154,7 +154,7 @@ createMethodCall = (method, args...) ->
 
 operandTest = (lhs, op, rhs) ->
 	{odata, sql, bindings} = createExpression(lhs, op, rhs)
-	test '/pilot?$filter=' + odata, 'GET', bindings, (result) ->
+	test "/pilot?$filter=#{odata}", 'GET', bindings, (result) ->
 		it 'should select from pilot where "' + odata + '"', ->
 			expect(result.query).to.equal '''
 				SELECT ''' + pilotFields + '\n' + '''
@@ -163,7 +163,7 @@ operandTest = (lhs, op, rhs) ->
 
 methodTest = (args...) ->
 	{odata, sql, bindings} = createMethodCall(args...)
-	test '/pilot?$filter=' + odata, 'GET', bindings, (result) ->
+	test "/pilot?$filter=#{odata}", 'GET', bindings, (result) ->
 		it 'should select from pilot where "' + odata + '"', ->
 			expect(result.query).to.equal '''
 				SELECT ''' + pilotFields + '\n' + '''
@@ -220,7 +220,7 @@ do ->
 
 do ->
 	{odata, sql} = createExpression('pilot__can_fly__plane/id', 'eq', 10)
-	test '/pilot?$filter=' + odata, (result) ->
+	test "/pilot?$filter=#{odata}", (result) ->
 		it 'should select from pilot where "' + odata + '"', ->
 			expect(result.query).to.equal """
 				SELECT #{pilotFields}
@@ -247,48 +247,89 @@ do ->
 
 do ->
 	{odata, sql} = createExpression('pilot__can_fly__plane/plane/id', 'eq', 10)
-	test '/pilot?$filter=' + odata, (result) ->
+	name = 'Peter'
+	bindings = [
+		['Bind', ['pilot', 'name']]
+	]
+	filterWhere = [
+		'WHERE "pilot"."id" = "pilot-can_fly-plane"."pilot"'
+		'AND "plane"."id" = "pilot-can_fly-plane"."plane"'
+		"AND #{sql}"
+	]
+	insertTest = (result) ->
+		expect(result.query).to.equal """
+			INSERT INTO "pilot" ("name")
+			SELECT "pilot"."name"
+			FROM "pilot-can_fly-plane",
+				"plane",
+				(
+				SELECT NULL AS "id", NULL AS "is experienced", CAST(? AS VARCHAR(255)) AS "name", NULL AS "age", NULL AS "favourite colour", NULL AS "team", NULL AS "licence"
+			) AS "pilot"
+			#{filterWhere.join('\n')}
+		"""
+	updateWhere = """
+		WHERE "pilot"."id" IN ((
+			SELECT "pilot"."id"
+			FROM "pilot-can_fly-plane",
+				"plane",
+				"pilot"
+			#{filterWhere.join('\n\t')}
+		))
+	"""
+
+	test "/pilot?$filter=#{odata}", (result) ->
 		it "should select from pilot where '#{odata}'", ->
 			expect(result.query).to.equal """
 				SELECT #{pilotFields}
 				FROM "pilot",
 					"pilot-can_fly-plane",
 					"plane"
-				WHERE "pilot"."id" = "pilot-can_fly-plane"."pilot"
-				AND "plane"."id" = "pilot-can_fly-plane"."plane"
-				AND #{sql}
+				#{filterWhere.join('\n')}
 			"""
 
-	test '/pilot?$filter=' + odata, 'PATCH', [['Bind', ['pilot', 'name']]], name: 'Peter', (result) ->
+	test "/pilot?$filter=#{odata}", 'PATCH', bindings, { name }, (result) ->
 		it "should update pilot where '#{odata}'", ->
-			expect(result.query).to.equal '''
+			expect(result.query).to.equal """
 				UPDATE "pilot"
 				SET "name" = ?
-				WHERE "pilot"."id" IN ((
-					SELECT "pilot"."id"
-					FROM "pilot-can_fly-plane",
-						"plane",
-						"pilot"
-					WHERE "pilot"."id" = "pilot-can_fly-plane"."pilot"
-					AND "plane"."id" = "pilot-can_fly-plane"."plane"
-					AND "plane"."id" = 10
-				))
-			'''
+				#{updateWhere}
+			"""
 
-	test '/pilot?$filter=' + odata, 'DELETE', (result) ->
+	test "/pilot?$filter=#{odata}", 'POST', bindings, { name }, (result) ->
+		it "should insert pilot where '#{odata}'", ->
+			insertTest(result)
+
+	test "/pilot?$filter=#{odata}", 'PUT', bindings, { name }, (result) ->
+		describe 'should upsert the pilot with id 1', ->
+			it 'should be an upsert', ->
+				expect(result).to.be.an.array
+			it 'that inserts', ->
+				insertTest(result[0])
+			it 'and updates', ->
+				expect(result[1].query).to.equal """
+					UPDATE "pilot"
+					SET "id" = DEFAULT,
+						"is experienced" = DEFAULT,
+						"name" = ?,
+						"age" = DEFAULT,
+						"favourite colour" = DEFAULT,
+						"team" = DEFAULT,
+						"licence" = DEFAULT
+					#{updateWhere}
+				"""
+
+	test "/pilot?$filter=#{odata}", 'DELETE', (result) ->
 		it 'should delete from pilot where "' + odata + '"', ->
-			expect(result.query).to.equal '''
+			expect(result.query).to.equal """
 				DELETE FROM "pilot"
 				WHERE "pilot"."id" IN ((
 					SELECT "pilot"."id"
 					FROM "pilot-can_fly-plane",
 						"plane",
 						"pilot"
-					WHERE "pilot"."id" = "pilot-can_fly-plane"."pilot"
-					AND "plane"."id" = "pilot-can_fly-plane"."plane"
-					AND "plane"."id" = 10
+					#{filterWhere.join('\n\t')}
 				))
-			'''
+			"""
 
 do ->
 	name = 'Peter'
@@ -297,13 +338,13 @@ do ->
 		['Bind', ['pilot', 'name']]
 		exprBindings...
 	]
-	test '/pilot?$filter=' + odata, 'POST', bindings, {name}, (result) ->
+	test "/pilot?$filter=#{odata}", 'POST', bindings, { name }, (result) ->
 		it "should insert into pilot where '#{odata}'", ->
 			expect(result.query).to.equal """
 				INSERT INTO "pilot" ("name")
-				SELECT "pilot".*
+				SELECT "pilot"."name"
 				FROM (
-					SELECT CAST(? AS VARCHAR(255)) AS "name"
+					SELECT NULL AS "id", NULL AS "is experienced", CAST(? AS VARCHAR(255)) AS "name", NULL AS "age", NULL AS "favourite colour", NULL AS "team", NULL AS "licence"
 				) AS "pilot"
 				WHERE #{sql}
 			"""
@@ -313,7 +354,7 @@ do ->
 		['Bind', ['pilot', 'name']]
 		exprBindings...
 	]
-	test '/pilot(1)?$filter=' + odata, 'PATCH', bindings, {name}, (result) ->
+	test '/pilot(1)?$filter=' + odata, 'PATCH', bindings, { name }, (result) ->
 		it 'should update the pilot with id 1', ->
 			expect(result.query).to.equal """
 				UPDATE "pilot"
@@ -327,19 +368,19 @@ do ->
 				))
 			"""
 
-	test '/pilot(1)?$filter=' + odata, 'PUT', bindings, {name}, (result) ->
+	test '/pilot(1)?$filter=' + odata, 'PUT', bindings, { name }, (result) ->
 		describe 'should upsert the pilot with id 1', ->
 			it 'should be an upsert', ->
 				expect(result).to.be.an.array
 			it 'that inserts', ->
 				expect(result[0].query).to.equal """
 					INSERT INTO "pilot" ("id", "name")
-					SELECT "pilot".*
+					SELECT "pilot"."id", "pilot"."name"
 					FROM (
-						SELECT CAST(? AS INTEGER) AS "id", CAST(? AS VARCHAR(255)) AS "name"
+						SELECT CAST(? AS INTEGER) AS "id", NULL AS "is experienced", CAST(? AS VARCHAR(255)) AS "name", NULL AS "age", NULL AS "favourite colour", NULL AS "team", NULL AS "licence"
 					) AS "pilot"
 					WHERE #{sql}
-					"""
+				"""
 			it 'and updates', ->
 				expect(result[1].query).to.equal """
 					UPDATE "pilot"
@@ -355,7 +396,8 @@ do ->
 						SELECT "pilot"."id"
 						FROM "pilot"
 						WHERE #{sql}
-					))"""
+					))
+				"""
 
 do ->
 	oneEqOne = createExpression(1, 'eq', 1)
@@ -425,6 +467,38 @@ test "/pilot?$filter=pilot__can_fly__plane/all(d:d/plane/name eq 'Concorde')", '
 			)
 		"""
 
+test "/pilot?$filter=pilot__can_fly__plane/plane/any(d:d/name eq 'Concorde')", 'GET', [['Text', 'Concorde']], (result) ->
+	it 'should select from pilot where ...', ->
+		expect(result.query).to.equal """
+			SELECT #{pilotFields}
+			FROM "pilot",
+				"pilot-can_fly-plane"
+			WHERE "pilot"."id" = "pilot-can_fly-plane"."pilot"
+			AND EXISTS (
+				SELECT 1
+				FROM "plane"
+				WHERE "plane"."id" = "pilot-can_fly-plane"."plane"
+				AND "plane"."name" = ?
+			)
+		"""
+
+test "/pilot?$filter=pilot__can_fly__plane/plane/all(d:d/name eq 'Concorde')", 'GET', [['Text', 'Concorde']], (result) ->
+	it 'should select from pilot where ...', ->
+		expect(result.query).to.equal """
+			SELECT #{pilotFields}
+			FROM "pilot",
+				"pilot-can_fly-plane"
+			WHERE "pilot"."id" = "pilot-can_fly-plane"."pilot"
+			AND NOT EXISTS (
+				SELECT 1
+				FROM "plane"
+				WHERE NOT (
+					"plane"."id" = "pilot-can_fly-plane"."plane"
+					AND "plane"."name" = ?
+				)
+			)
+		"""
+
 # Switch operandToSQL permanently to using 'team' as the resource,
 # as we are switch to using that as our base resource from here on.
 operandToSQL = _.partialRight(operandToSQL, 'team')
@@ -435,7 +509,7 @@ do ->
 		it 'should insert into team where "' + odata + '"', ->
 			expect(result.query).to.equal '''
 				INSERT INTO "team" ("favourite colour")
-				SELECT "team".*
+				SELECT "team"."favourite colour"
 				FROM (
 					SELECT CAST(? AS INTEGER) AS "favourite colour"
 				) AS "team"

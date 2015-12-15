@@ -27,7 +27,6 @@ ometa AbstractSQLValidator {
 				{query.concat(queryPart)}:query
 			)+
 			?(select!=null)
-			?(from!=null)
 		]
 		-> query,
 
