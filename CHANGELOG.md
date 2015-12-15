@@ -1,4 +1,10 @@
+v0.4.2
+
 * Update @resin/odata-to-abstract-sql to ~0.3.0, adding matching tests.
+
+v0.4.1
+
+* Fixed requirejs import path.
 
 v0.4.0
 

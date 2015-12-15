@@ -39,8 +39,7 @@
                     });
                     return query = query.concat(queryPart);
                 });
-                this._pred(null != select);
-                return this._pred(null != from);
+                return this._pred(null != select);
             });
             return query;
         },
