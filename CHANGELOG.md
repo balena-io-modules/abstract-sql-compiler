@@ -1,3 +1,5 @@
+* Updated to bluebird 3.
+
 v0.4.2
 
 * Update @resin/odata-to-abstract-sql to ~0.3.0, adding matching tests.
