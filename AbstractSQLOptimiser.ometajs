@@ -805,16 +805,16 @@ export ometa AbstractSQLOptimiser <: AbstractSQLValidator {
 
 	StartsWith =
 		[	'Startswith'
-			TextValue:needle
 			TextValue:haystack
+			TextValue:needle
 		]
 		SetHelped
 		-> ['Like', haystack, ['Concat', needle, ['Text', '%']]],
 
 	EndsWith =
 		[	'Endswith'
-			TextValue:needle
 			TextValue:haystack
+			TextValue:needle
 		]
 		SetHelped
 		-> ['Like', haystack, ['Concat', ['Text', '%'], needle]],

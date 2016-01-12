@@ -121,14 +121,14 @@ createMethodCall = (method, args...) ->
 			}
 		when 'STARTSWITH'
 			return {
-				sql: args[1].sql + ' LIKE (' + args[0].sql + " || ?)"
-				bindings: [args[1].bindings..., args[0].bindings..., ['Text', '%']]
+				sql: args[0].sql + ' LIKE (' + args[1].sql + " || ?)"
+				bindings: [args[0].bindings..., args[1].bindings..., ['Text', '%']]
 				odata
 			}
 		when 'ENDSWITH'
 			return {
-				sql: args[1].sql + " LIKE (? || " + args[0].sql + ')'
-				bindings: [args[1].bindings..., ['Text', '%'], args[0].bindings...]
+				sql: args[0].sql + " LIKE (? || " + args[1].sql + ')'
+				bindings: [args[0].bindings..., ['Text', '%'], args[1].bindings...]
 				odata
 			}
 		when 'CONCAT'
