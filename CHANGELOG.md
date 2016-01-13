@@ -1,3 +1,4 @@
+* Correctly adjust INSTR/STRPOS, INSTR is the zero-indexed one!
 * Change startswith and endswith from `(needle, haystack)` to `(haystack, needle)`, to match the OData spec.
 
 v1.0.0

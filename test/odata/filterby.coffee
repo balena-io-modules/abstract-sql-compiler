@@ -145,7 +145,7 @@ createMethodCall = (method, args...) ->
 					args[1].sql++
 			sql = method + '(' + (arg.sql for arg in args).join(', ') + ')'
 			if method is 'STRPOS'
-				sql = "(#{sql} + 1)"
+				sql = "(#{sql} - 1)"
 			return {
 				sql: sql
 				bindings: [].concat((arg.bindings for arg in args)...)

@@ -420,7 +420,7 @@ export ometa AbstractSQLRules2SQL {
 			TextValue:needle
 		]
 		(	?(this.engine == 'postgres')
-			-> ('(STRPOS(' + haystack + ', ' + needle + ') + 1)')
+			-> ('(STRPOS(' + haystack + ', ' + needle + ') - 1)')
 		|	-> ('INSTR(' + haystack + ', ' + needle + ')')
 		),
 
@@ -431,7 +431,7 @@ export ometa AbstractSQLRules2SQL {
 		]
 		(	?(this.engine == 'postgres')
 			-> ('STRPOS(' + haystack + ', ' + needle + ')')
-		|	-> ('(INSTR(' + haystack + ', ' + needle + ') - 1)')
+		|	-> ('(INSTR(' + haystack + ', ' + needle + ') + 1)')
 		),
 
 	Round :indent =
