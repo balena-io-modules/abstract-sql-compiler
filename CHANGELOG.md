@@ -1,3 +1,5 @@
+* Change startswith and endswith from `(needle, haystack)` to `(haystack, needle)`, to match the OData spec.
+
 v1.0.0
 
 * Updated to bluebird 3.
