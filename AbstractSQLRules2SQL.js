@@ -672,7 +672,7 @@
             });
             return this._or(function() {
                 this._pred("postgres" == this.engine);
-                return "(STRPOS(" + haystack + ", " + needle + ") + 1)";
+                return "(STRPOS(" + haystack + ", " + needle + ") - 1)";
             }, function() {
                 return "INSTR(" + haystack + ", " + needle + ")";
             });
@@ -688,7 +688,7 @@
                 this._pred("postgres" == this.engine);
                 return "STRPOS(" + haystack + ", " + needle + ")";
             }, function() {
-                return "(INSTR(" + haystack + ", " + needle + ") - 1)";
+                return "(INSTR(" + haystack + ", " + needle + ") + 1)";
             });
         },
         Round: function(indent) {

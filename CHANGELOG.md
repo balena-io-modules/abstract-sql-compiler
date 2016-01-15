@@ -1,8 +1,7 @@
+v1.0.1
+
 * Correctly adjust INSTR/STRPOS, INSTR is the zero-indexed one!
 * Change startswith and endswith from `(needle, haystack)` to `(haystack, needle)`, to match the OData spec.
-
-v1.0.0
-
 * Updated to bluebird 3.
 
 v0.4.2

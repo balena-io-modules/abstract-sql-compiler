@@ -1173,8 +1173,8 @@
             var $elf = this, _fromIdx = this.input.idx, haystack, needle;
             this._form(function() {
                 this._applyWithArgs("exactly", "Startswith");
-                needle = this._apply("TextValue");
-                return haystack = this._apply("TextValue");
+                haystack = this._apply("TextValue");
+                return needle = this._apply("TextValue");
             });
             this._apply("SetHelped");
             return [ "Like", haystack, [ "Concat", needle, [ "Text", "%" ] ] ];
@@ -1183,8 +1183,8 @@
             var $elf = this, _fromIdx = this.input.idx, haystack, needle;
             this._form(function() {
                 this._applyWithArgs("exactly", "Endswith");
-                needle = this._apply("TextValue");
-                return haystack = this._apply("TextValue");
+                haystack = this._apply("TextValue");
+                return needle = this._apply("TextValue");
             });
             this._apply("SetHelped");
             return [ "Like", haystack, [ "Concat", [ "Text", "%" ], needle ] ];
