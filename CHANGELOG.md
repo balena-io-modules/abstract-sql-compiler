@@ -1,3 +1,7 @@
+v1.0.2
+
+* Update ometa-js
+
 v1.0.1
 
 * Correctly adjust INSTR/STRPOS, INSTR is the zero-indexed one!
