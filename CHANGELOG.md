@@ -1,3 +1,5 @@
+* `AggregateJSON` now returns an empty array instead of null in the case of zero results.
+
 v1.0.2
 
 * Update ometa-js
