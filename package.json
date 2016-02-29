@@ -13,11 +13,11 @@
   "dependencies": {
     "@resin/sbvr-types": "^1.0.0",
     "bluebird": "^3.0.6",
-    "lodash": "^3.0.0",
+    "lodash": "^4.0.0",
     "ometa-js": "^1.4.1"
   },
   "devDependencies": {
-    "@resin/lf-to-abstract-sql": "0.0.15",
+    "@resin/lf-to-abstract-sql": "0.0.16",
     "@resin/odata-parser": "~0.1.2",
     "@resin/odata-to-abstract-sql": "~0.3.0",
     "@resin/sbvr-parser": "0.0.19",

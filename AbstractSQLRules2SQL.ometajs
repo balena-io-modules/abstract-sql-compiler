@@ -1,4 +1,5 @@
-var sbvrTypes = require('@resin/sbvr-types');
+var sbvrTypes = require('@resin/sbvr-types'),
+	_ = require('lodash');
 
 var comparisons = {
 	'Equals': ' = ',
