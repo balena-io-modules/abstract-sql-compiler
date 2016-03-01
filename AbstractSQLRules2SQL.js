@@ -1,9 +1,9 @@
 !function(root, factory) {
-    "function" == typeof define && define.amd ? define([ "require", "exports", "ometa-core", "@resin/sbvr-types" ], factory) : "object" == typeof exports ? factory(require, exports, require("ometa-js").core) : factory(function(moduleName) {
+    "function" == typeof define && define.amd ? define([ "require", "exports", "ometa-core", "@resin/sbvr-types", "lodash" ], factory) : "object" == typeof exports ? factory(require, exports, require("ometa-js").core) : factory(function(moduleName) {
         return root[moduleName];
     }, root, root.OMeta);
 }(this, function(require, exports, OMeta) {
-    var sbvrTypes = require("@resin/sbvr-types"), comparisons = {
+    var sbvrTypes = require("@resin/sbvr-types"), _ = require("lodash"), comparisons = {
         Equals: " = ",
         GreaterThan: " > ",
         GreaterThanOrEqual: " >= ",
@@ -929,7 +929,7 @@
             field = '"' + table + '".' + field;
             return this._or(function() {
                 this._pred("postgres" == this.engine);
-                return "array_to_json(array_agg(" + field + "))";
+                return "coalesce(array_to_json(array_agg(" + field + ")), '[]')";
             }, function() {
                 return function() {
                     throw "AggregateJSON not supported on: " + this.engine;

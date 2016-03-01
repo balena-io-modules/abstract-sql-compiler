@@ -1,4 +1,7 @@
+v1.1.0
+
 * `AggregateJSON` now returns an empty array instead of null in the case of zero results.
+* Updated to lodash 4
 
 v1.0.2
 
