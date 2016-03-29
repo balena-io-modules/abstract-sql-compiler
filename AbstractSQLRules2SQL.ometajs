@@ -360,7 +360,6 @@ export ometa AbstractSQLRules2SQL {
 		|	BitwiseAnd(indent)
 		|	BitwiseShiftRight(indent)
 		|	CharacterLength(indent)
-		|	InStr(indent)
 		|	StrPos(indent)
 		|	Round(indent)
 		|	Floor(indent)
@@ -415,16 +414,6 @@ export ometa AbstractSQLRules2SQL {
 		|	-> ('LENGTH(' + text + ')')
 		),
 
-	InStr :indent =
-		[	'InStr'
-			TextValue:haystack
-			TextValue:needle
-		]
-		(	?(this.engine == 'postgres')
-			-> ('(STRPOS(' + haystack + ', ' + needle + ') - 1)')
-		|	-> ('INSTR(' + haystack + ', ' + needle + ')')
-		),
-
 	StrPos :indent =
 		[	'StrPos'
 			TextValue:haystack
@@ -432,7 +421,7 @@ export ometa AbstractSQLRules2SQL {
 		]
 		(	?(this.engine == 'postgres')
 			-> ('STRPOS(' + haystack + ', ' + needle + ')')
-		|	-> ('(INSTR(' + haystack + ', ' + needle + ') + 1)')
+		|	-> ('INSTR(' + haystack + ', ' + needle + ')')
 		),
 
 	Round :indent =

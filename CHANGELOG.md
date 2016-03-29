@@ -1,3 +1,4 @@
+* Fixed InStr and IndexOf.
 * Updated the sbvr model for tests.
 
 v1.1.0

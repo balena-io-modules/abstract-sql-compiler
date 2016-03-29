@@ -71,7 +71,6 @@ sqlOpBrackets =
 methodMaps =
 	TOUPPER: 'UPPER'
 	TOLOWER: 'LOWER'
-	INDEXOF: 'STRPOS'
 
 createExpression = (lhs, op, rhs) ->
 	if lhs is 'not'
@@ -138,6 +137,12 @@ createMethodCall = (method, args...) ->
 				bindings: [].concat((arg.bindings for arg in args)...)
 				odata
 			}
+		when 'INDEXOF'
+			return {
+				sql: 'STRPOS(' + (arg.sql for arg in args).join(', ') + ') - 1'
+				bindings: [].concat((arg.bindings for arg in args)...)
+				odata
+			}
 		else
 			if methodMaps.hasOwnProperty(method)
 				method = methodMaps[method]
@@ -145,8 +150,6 @@ createMethodCall = (method, args...) ->
 				when 'SUBSTRING'
 					args[1].sql++
 			sql = method + '(' + (arg.sql for arg in args).join(', ') + ')'
-			if method is 'STRPOS'
-				sql = "(#{sql} - 1)"
 			return {
 				sql: sql
 				bindings: [].concat((arg.bindings for arg in args)...)

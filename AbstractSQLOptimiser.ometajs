@@ -331,7 +331,6 @@ ometa AbstractSQLValidator {
 		|	BitwiseAnd
 		|	BitwiseShiftRight
 		|	CharacterLength
-		|	InStr
 		|	IndexOf
 		|	StrPos
 		|	Round
@@ -403,13 +402,6 @@ ometa AbstractSQLValidator {
 		]
 		-> ['CharacterLength', text],
 
-	InStr =
-		[	'InStr'
-			TextValue:haystack
-			TextValue:needle
-		]
-		-> ['InStr', haystack, needle],
-
 	IndexOf =
 		[	(	'IndexOf'
 			|	'Indexof'
@@ -418,10 +410,12 @@ ometa AbstractSQLValidator {
 			TextValue:needle
 		]
 		SetHelped
-		-> ['InStr', haystack, needle],
+		-> ['Subtract', ['StrPos', haystack, needle], ['Number', 1]],
 
 	StrPos =
-		[	'StrPos'
+		[	(	'StrPos'
+			|	'InStr'
+			)
 			TextValue:haystack
 			TextValue:needle
 		]
