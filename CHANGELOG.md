@@ -1,3 +1,5 @@
+* Updated the sbvr model for tests.
+
 v1.1.0
 
 * `AggregateJSON` now returns an empty array instead of null in the case of zero results.

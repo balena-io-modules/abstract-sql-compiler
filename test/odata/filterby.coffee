@@ -5,6 +5,7 @@ _ = require('lodash')
 {pilotFields, pilotCanFlyPlaneFields, teamFields} = require('./fields')
 pilotFields = pilotFields.join(', ')
 pilotCanFlyPlaneFields = pilotCanFlyPlaneFields.join(', ')
+teamFields = teamFields.join(', ')
 
 operandToOData = (operand) ->
 	if operand.odata?
@@ -263,7 +264,7 @@ do ->
 			FROM "pilot-can_fly-plane",
 				"plane",
 				(
-				SELECT NULL AS "id", NULL AS "is experienced", CAST(? AS VARCHAR(255)) AS "name", NULL AS "age", NULL AS "favourite colour", NULL AS "team", NULL AS "licence"
+				SELECT NULL AS "created at", NULL AS "id", NULL AS "is experienced", CAST(? AS VARCHAR(255)) AS "name", NULL AS "age", NULL AS "favourite colour", NULL AS "team", NULL AS "licence", NULL AS "hire date"
 			) AS "pilot"
 			#{filterWhere.join('\n')}
 		"""
@@ -308,13 +309,15 @@ do ->
 			it 'and updates', ->
 				expect(result[1].query).to.equal """
 					UPDATE "pilot"
-					SET "id" = DEFAULT,
+					SET "created at" = DEFAULT,
+						"id" = DEFAULT,
 						"is experienced" = DEFAULT,
 						"name" = ?,
 						"age" = DEFAULT,
 						"favourite colour" = DEFAULT,
 						"team" = DEFAULT,
-						"licence" = DEFAULT
+						"licence" = DEFAULT,
+						"hire date" = DEFAULT
 					#{updateWhere}
 				"""
 
@@ -344,7 +347,7 @@ do ->
 				INSERT INTO "pilot" ("name")
 				SELECT "pilot"."name"
 				FROM (
-					SELECT NULL AS "id", NULL AS "is experienced", CAST(? AS VARCHAR(255)) AS "name", NULL AS "age", NULL AS "favourite colour", NULL AS "team", NULL AS "licence"
+					SELECT NULL AS "created at", NULL AS "id", NULL AS "is experienced", CAST(? AS VARCHAR(255)) AS "name", NULL AS "age", NULL AS "favourite colour", NULL AS "team", NULL AS "licence", NULL AS "hire date"
 				) AS "pilot"
 				WHERE #{sql}
 			"""
@@ -377,20 +380,22 @@ do ->
 					INSERT INTO "pilot" ("id", "name")
 					SELECT "pilot"."id", "pilot"."name"
 					FROM (
-						SELECT CAST(? AS INTEGER) AS "id", NULL AS "is experienced", CAST(? AS VARCHAR(255)) AS "name", NULL AS "age", NULL AS "favourite colour", NULL AS "team", NULL AS "licence"
+						SELECT NULL AS "created at", CAST(? AS INTEGER) AS "id", NULL AS "is experienced", CAST(? AS VARCHAR(255)) AS "name", NULL AS "age", NULL AS "favourite colour", NULL AS "team", NULL AS "licence", NULL AS "hire date"
 					) AS "pilot"
 					WHERE #{sql}
 				"""
 			it 'and updates', ->
 				expect(result[1].query).to.equal """
 					UPDATE "pilot"
-					SET "id" = ?,
+					SET "created at" = DEFAULT,
+						"id" = ?,
 						"is experienced" = DEFAULT,
 						"name" = ?,
 						"age" = DEFAULT,
 						"favourite colour" = DEFAULT,
 						"team" = DEFAULT,
-						"licence" = DEFAULT
+						"licence" = DEFAULT,
+						"hire date" = DEFAULT
 					WHERE "pilot"."id" = 1
 					AND "pilot"."id" IN ((
 						SELECT "pilot"."id"
@@ -511,7 +516,7 @@ do ->
 				INSERT INTO "team" ("favourite colour")
 				SELECT "team"."favourite colour"
 				FROM (
-					SELECT CAST(? AS INTEGER) AS "favourite colour"
+					SELECT NULL AS "created at", CAST(? AS INTEGER) AS "favourite colour"
 				) AS "team"
 				WHERE ''' + sql
 
