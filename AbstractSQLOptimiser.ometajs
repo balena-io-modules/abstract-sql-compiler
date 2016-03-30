@@ -267,6 +267,7 @@ ometa AbstractSQLValidator {
 		|	Trim
 		|	Replace
 		|	Substring
+		|	Right
 		),
 
 	Text =
@@ -323,6 +324,13 @@ ometa AbstractSQLValidator {
 			NumericValue+:args
 		]
 		-> ['Substring', string].concat(args),
+
+	Right :indent =
+		[	'Right'
+			TextValue:string
+			NumericValue:n
+		]
+		-> ['Right', string, n],
 
 	NumericValue =
 		(	UnknownValue
@@ -795,7 +803,7 @@ export ometa AbstractSQLOptimiser <: AbstractSQLValidator {
 			TextValue:haystack
 		]
 		SetHelped
-		-> ['Like', haystack, ['Concat', ['Text', '%'], needle, ['Text', '%']]],
+		-> ['GreaterThan', ['StrPos', haystack, needle], ['Number', 0]],
 
 	StartsWith =
 		[	'Startswith'
@@ -803,7 +811,7 @@ export ometa AbstractSQLOptimiser <: AbstractSQLValidator {
 			TextValue:needle
 		]
 		SetHelped
-		-> ['Like', haystack, ['Concat', needle, ['Text', '%']]],
+		-> ['Equals', ['StrPos', haystack, needle], ['Number', 1]],
 
 	EndsWith =
 		[	'Endswith'
@@ -811,7 +819,7 @@ export ometa AbstractSQLOptimiser <: AbstractSQLValidator {
 			TextValue:needle
 		]
 		SetHelped
-		-> ['Like', haystack, ['Concat', ['Text', '%'], needle]],
+		-> ['Equals', ['Right', haystack, ['CharacterLength', needle]], needle],
 
 	Helped :disableMemoisationHack =
 		?(this.helped === true)

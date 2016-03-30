@@ -298,6 +298,7 @@ export ometa AbstractSQLRules2SQL {
 		|	Trim(indent)
 		|	Replace(indent)
 		|	Substring(indent)
+		|	Right(indent)
 		),
 
 	Text =
@@ -352,6 +353,16 @@ export ometa AbstractSQLRules2SQL {
 			NumericValue+:args
 		]
 		-> ('SUBSTRING(' + [string].concat(args).join(', ') + ')'),
+
+	Right :indent =
+		[	'Right'
+			TextValue:string
+			NumericValue:n
+		]
+		(	?(this.engine == 'websql')
+			-> ('SUBSTRING(' + string + ', -' + n + ')')
+		|	-> ('RIGHT(' + string + ', ' + n + ')')
+		),
 
 	NumericValue :indent =
 		(	UnknownValue(indent)

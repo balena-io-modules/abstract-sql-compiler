@@ -115,20 +115,20 @@ createMethodCall = (method, args...) ->
 	switch method
 		when 'SUBSTRINGOF'
 			return {
-				sql: args[1].sql + " LIKE (? || " + args[0].sql + " || ?)"
-				bindings: [args[1].bindings..., ['Text', '%'], args[0].bindings..., ['Text', '%']]
+				sql: "STRPOS(#{args[1].sql}, #{args[0].sql}) > 0"
+				bindings: [args[1].bindings..., args[0].bindings...]
 				odata
 			}
 		when 'STARTSWITH'
 			return {
-				sql: args[0].sql + ' LIKE (' + args[1].sql + " || ?)"
-				bindings: [args[0].bindings..., args[1].bindings..., ['Text', '%']]
+				sql: "STRPOS(#{args[0].sql}, #{args[1].sql}) = 1"
+				bindings: [args[0].bindings..., args[1].bindings...]
 				odata
 			}
 		when 'ENDSWITH'
 			return {
-				sql: args[0].sql + " LIKE (? || " + args[1].sql + ')'
-				bindings: [args[0].bindings..., ['Text', '%'], args[1].bindings...]
+				sql: "RIGHT(#{args[0].sql}, LENGTH(#{args[1].sql})) = #{args[1].sql}"
+				bindings: [args[0].bindings..., args[1].bindings..., args[1].bindings...]
 				odata
 			}
 		when 'CONCAT'
