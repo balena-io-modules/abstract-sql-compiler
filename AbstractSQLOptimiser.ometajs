@@ -792,13 +792,16 @@ export ometa AbstractSQLOptimiser <: AbstractSQLValidator {
 		|	^Equals,
 
 	BooleanValue =
-			Substringof
+			Contains
 		|	StartsWith
 		|	EndsWith
 		|	^BooleanValue,
 
-	Substringof =
-		[	'Substringof'
+	Contains =
+		[	'Contains'
+			TextValue:haystack
+			TextValue:needle
+		|	'Substringof'
 			TextValue:needle
 			TextValue:haystack
 		]

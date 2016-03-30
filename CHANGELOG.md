@@ -1,5 +1,6 @@
-* Avoided issues with wildchard characters in Substringof, StartsWith, and EndsWith.
-* Fixed InStr and IndexOf.
+* Added support for `Contains`.
+* Avoided issues with wildchard characters in `Substringof`, `StartsWith`, and `EndsWith`.
+* Fixed `InStr` and `IndexOf`.
 * Updated the sbvr model for tests.
 
 v1.1.0

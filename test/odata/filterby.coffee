@@ -113,10 +113,12 @@ createMethodCall = (method, args...) ->
 	odata = method + '(' + (arg.odata for arg in args).join(',') + ')'
 	method = method.toUpperCase()
 	switch method
-		when 'SUBSTRINGOF'
+		when 'CONTAINS', 'SUBSTRINGOF'
+			if method is 'SUBSTRINGOF'
+				args.reverse()
 			return {
-				sql: "STRPOS(#{args[1].sql}, #{args[0].sql}) > 0"
-				bindings: [args[1].bindings..., args[0].bindings...]
+				sql: "STRPOS(#{args[0].sql}, #{args[1].sql}) > 0"
+				bindings: [args[0].bindings..., args[1].bindings...]
 				odata
 			}
 		when 'STARTSWITH'
@@ -421,27 +423,26 @@ do ->
 				AND "pilot"."id" = "pilot-can_fly-plane"."pilot"
 			"""
 
-methodTest('substringof', "'Pete'", 'name')
-methodTest('startswith', 'name', "'P'")
+methodTest('contains', 'name', "'et'")
 methodTest('endswith', 'name', "'ete'")
+methodTest('startswith', 'name', "'P'")
 operandTest(createMethodCall('length', 'name'), 'eq', 4)
 operandTest(createMethodCall('indexof', 'name', "'Pe'"), 'eq', 0)
-operandTest(createMethodCall('replace', 'name', "'ete'", "'at'"), 'eq', "'Pat'")
 operandTest(createMethodCall('substring', 'name', 1), 'eq', "'ete'")
 operandTest(createMethodCall('substring', 'name', 1, 2), 'eq', "'et'")
 operandTest(createMethodCall('tolower', 'name'), 'eq', "'pete'")
-operandTest(createMethodCall('toupper', 'name'), 'eq', "'PETE'")
-
 operandTest(createMethodCall('tolower', 'licence/name'), 'eq', "'pete'")
-
+operandTest(createMethodCall('toupper', 'name'), 'eq', "'PETE'")
 do ->
 	concat = createMethodCall('concat', 'name', "'%20'")
-	operandTest(concat, 'eq', "'Pete%20'")
 	operandTest(createMethodCall('trim', concat), 'eq', "'Pete'")
-
+	operandTest(concat, 'eq', "'Pete%20'")
 operandTest(createMethodCall('round', 'age'), 'eq', 25)
 operandTest(createMethodCall('floor', 'age'), 'eq', 25)
 operandTest(createMethodCall('ceiling', 'age'), 'eq', 25)
+
+methodTest('substringof', "'Pete'", 'name')
+operandTest(createMethodCall('replace', 'name', "'ete'", "'at'"), 'eq', "'Pat'")
 
 test "/pilot?$filter=pilot__can_fly__plane/any(d:d/plane/name eq 'Concorde')", 'GET', [['Text', 'Concorde']], (result) ->
 	it 'should select from pilot where ...', ->
