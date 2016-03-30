@@ -585,6 +585,7 @@ ometa AbstractSQLValidator {
 	DateValue =
 		(	UnknownValue
 		|	Date
+		|	Now
 		),
 
 	Date =
@@ -593,6 +594,10 @@ ometa AbstractSQLValidator {
 		]
 		?_.isDate(date)
 		-> ['Date', date],
+
+	Now =
+		['Now']
+		-> ['Now'],
 
 	JSONValue =
 		(	UnknownValue

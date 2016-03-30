@@ -145,6 +145,12 @@ createMethodCall = (method, args...) ->
 				bindings: [].concat((arg.bindings for arg in args)...)
 				odata
 			}
+		when 'NOW'
+			return {
+				sql: 'CURRENT_TIMESTAMP'
+				bindings: []
+				odata
+			}
 		else
 			if methodMaps.hasOwnProperty(method)
 				method = methodMaps[method]
@@ -437,6 +443,7 @@ do ->
 	concat = createMethodCall('concat', 'name', "'%20'")
 	operandTest(createMethodCall('trim', concat), 'eq', "'Pete'")
 	operandTest(concat, 'eq', "'Pete%20'")
+operandTest(createMethodCall('now'), 'eq', new Date('2012-12-03T07:16:23Z'))
 operandTest(createMethodCall('round', 'age'), 'eq', 25)
 operandTest(createMethodCall('floor', 'age'), 'eq', 25)
 operandTest(createMethodCall('ceiling', 'age'), 'eq', 25)
