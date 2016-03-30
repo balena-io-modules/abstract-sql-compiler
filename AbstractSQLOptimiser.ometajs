@@ -341,6 +341,11 @@ ometa AbstractSQLValidator {
 		|	CharacterLength
 		|	IndexOf
 		|	StrPos
+		|	Year
+		|	Month
+		|	Day
+		|	Hour
+		|	Minute
 		|	Round
 		|	Floor
 		|	Ceiling
@@ -428,6 +433,36 @@ ometa AbstractSQLValidator {
 			TextValue:needle
 		]
 		-> ['StrPos', haystack, needle],
+
+	Year =
+		[	'Year'
+			DateValue:date
+		]
+		-> ['Year', date],
+
+	Month =
+		[	'Month'
+			DateValue:date
+		]
+		-> ['Month', date],
+
+	Day =
+		[	'Day'
+			DateValue:date
+		]
+		-> ['Day', date],
+
+	Hour =
+		[	'Hour'
+			DateValue:date
+		]
+		-> ['Hour', date],
+
+	Minute =
+		[	'Minute'
+			DateValue:date
+		]
+		-> ['Minute', date],
 
 	Round =
 		[	'Round'

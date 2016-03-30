@@ -1,4 +1,4 @@
-* Added support for `Contains` and `Now`.
+* Added support for `Contains`, `Now`, `Year`, `Month`, `Day`, `Hour`, and `Minute`.
 * Avoided issues with wildchard characters in `Substringof`, `StartsWith`, and `EndsWith`.
 * Fixed `InStr` and `IndexOf`.
 * Updated the sbvr model for tests.

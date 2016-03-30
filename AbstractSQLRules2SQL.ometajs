@@ -11,6 +11,14 @@ var comparisons = {
 	'Like': ' LIKE '
 };
 
+var websqlDateFormats = {
+	'Year': '%Y',
+	'Month': '%m',
+	'Day': '%d',
+	'Hour': '%H',
+	'Minute': '%M'
+};
+
 export ometa AbstractSQLRules2SQL {
 	NestedIndent :indent =
 		-> (indent + '\t'),
@@ -372,6 +380,7 @@ export ometa AbstractSQLRules2SQL {
 		|	BitwiseShiftRight(indent)
 		|	CharacterLength(indent)
 		|	StrPos(indent)
+		|	ExtractNumericDatePart(indent)
 		|	Round(indent)
 		|	Floor(indent)
 		|	Ceiling(indent)
@@ -433,6 +442,20 @@ export ometa AbstractSQLRules2SQL {
 		(	?(this.engine == 'postgres')
 			-> ('STRPOS(' + haystack + ', ' + needle + ')')
 		|	-> ('INSTR(' + haystack + ', ' + needle + ')')
+		),
+
+	ExtractNumericDatePart :indent =
+		[	(	'Year'
+			|	'Month'
+			|	'Day'
+			|	'Hour'
+			|	'Minute'
+			):part
+			DateValue:date
+		]
+		(	?(this.engine == 'websql')
+			-> ("STRFTIME('" + websqlDateFormats[part] + "', " + date + ')')
+		|	-> ("EXTRACT('" + part.toUpperCase() + "' FROM " + date + ')')
 		),
 
 	Round :indent =
