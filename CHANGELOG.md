@@ -47,3 +47,17 @@ v0.2.1
 * Added tests for true/false.
 * Added support for `'Null'` as well as `null` for null valus.
 * Changed comparisons against null to use `IS NULL`/`IS NOT NULL`
+
+v0.2.0
+
+* Switch to using bind vars for embedded number/text values.
+* Switched to using multiple part UPSERT queries, allowing greater flexibility.
+* Simplified NULL handling.
+
+v0.1.1
+
+* Added support for CAST.
+
+v0.1.0
+
+* Added support for select queries in the values clause.
