@@ -23,7 +23,11 @@ var websqlDateFormats = {
 	'Day': websqlBasicDateFormat('%d'),
 	'Hour': websqlBasicDateFormat('%H'),
 	'Minute': websqlBasicDateFormat('%M'),
-	'Second': websqlBasicDateFormat('%S')
+	'Second': websqlBasicDateFormat('%S'),
+	'Fractionalseconds': function(date) {
+		return websqlDateFormats['Totalseconds'](date) + ' - ' + websqlDateFormats['Second'](date);
+	},
+	'Totalseconds': websqlBasicDateFormat('%f')
 };
 
 var basicDateFormat = function(part) {
@@ -37,12 +41,13 @@ var dateFormats = {
 	'Day': basicDateFormat('DAY'),
 	'Hour': basicDateFormat('HOUR'),
 	'Minute': basicDateFormat('MINUTE'),
-	'Second': (function() {
-		var format = basicDateFormat('SECOND');
-		return function(date) {
-			return 'FLOOR(' + format(date) + ')'
-		};
-	})()
+	'Second': function(date) {
+		return 'FLOOR(' + dateFormats['Totalseconds'](date) + ')';
+	},
+	'Fractionalseconds': function(date) {
+		return dateFormats['Totalseconds'](date) + ' - ' + dateFormats['Second'](date);
+	},
+	'Totalseconds': basicDateFormat('SECOND')
 };
 
 export ometa AbstractSQLRules2SQL {
@@ -477,6 +482,7 @@ export ometa AbstractSQLRules2SQL {
 			|	'Hour'
 			|	'Minute'
 			|	'Second'
+			|	'Fractionalseconds'
 			):part
 			DateValue:date
 		]

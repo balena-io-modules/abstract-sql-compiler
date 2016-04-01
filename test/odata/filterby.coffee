@@ -163,6 +163,12 @@ createMethodCall = (method, args...) ->
 				bindings: args[0].bindings
 				odata
 			}
+		when 'FRACTIONALSECONDS'
+			return {
+				sql: "EXTRACT('SECOND' FROM #{args[0].sql}) - FLOOR(EXTRACT('SECOND' FROM #{args[0].sql}))"
+				bindings: args[0].bindings
+				odata
+			}
 		else
 			if methodMaps.hasOwnProperty(method)
 				method = methodMaps[method]
@@ -461,6 +467,7 @@ operandTest(createMethodCall('day', 'hire_date'), 'eq', 3)
 operandTest(createMethodCall('hour', 'hire_date'), 'eq', 12)
 operandTest(createMethodCall('minute', 'hire_date'), 'eq', 10)
 operandTest(createMethodCall('second', 'hire_date'), 'eq', 25)
+operandTest(createMethodCall('fractionalseconds', 'hire_date'), 'eq', .222)
 operandTest(createMethodCall('now'), 'eq', new Date('2012-12-03T07:16:23Z'))
 operandTest(createMethodCall('round', 'age'), 'eq', 25)
 operandTest(createMethodCall('floor', 'age'), 'eq', 25)
