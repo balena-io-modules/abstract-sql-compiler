@@ -11,12 +11,38 @@ var comparisons = {
 	'Like': ' LIKE '
 };
 
+var websqlBasicDateFormat = function(format) {
+	return function(date) {
+		return "STRFTIME('" + format + "', " + date + ')';
+	};
+};
+
 var websqlDateFormats = {
-	'Year': '%Y',
-	'Month': '%m',
-	'Day': '%d',
-	'Hour': '%H',
-	'Minute': '%M'
+	'Year': websqlBasicDateFormat('%Y'),
+	'Month': websqlBasicDateFormat('%m'),
+	'Day': websqlBasicDateFormat('%d'),
+	'Hour': websqlBasicDateFormat('%H'),
+	'Minute': websqlBasicDateFormat('%M'),
+	'Second': websqlBasicDateFormat('%S')
+};
+
+var basicDateFormat = function(part) {
+	return function(date) {
+		return "EXTRACT('" + part + "' FROM " + date + ')';
+	};
+};
+var dateFormats = {
+	'Year': basicDateFormat('YEAR'),
+	'Month': basicDateFormat('MONTH'),
+	'Day': basicDateFormat('DAY'),
+	'Hour': basicDateFormat('HOUR'),
+	'Minute': basicDateFormat('MINUTE'),
+	'Second': (function() {
+		var format = basicDateFormat('SECOND');
+		return function(date) {
+			return 'FLOOR(' + format(date) + ')'
+		};
+	})()
 };
 
 export ometa AbstractSQLRules2SQL {
@@ -450,12 +476,13 @@ export ometa AbstractSQLRules2SQL {
 			|	'Day'
 			|	'Hour'
 			|	'Minute'
+			|	'Second'
 			):part
 			DateValue:date
 		]
 		(	?(this.engine == 'websql')
-			-> ("STRFTIME('" + websqlDateFormats[part] + "', " + date + ')')
-		|	-> ("EXTRACT('" + part.toUpperCase() + "' FROM " + date + ')')
+			-> websqlDateFormats[part](date)
+		|	-> dateFormats[part](date)
 		),
 
 	Round :indent =
