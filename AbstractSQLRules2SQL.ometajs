@@ -11,12 +11,14 @@ var comparisons = {
 	'Like': ' LIKE '
 };
 
+var fractionalSecondsFormat = function(date) {
+	return this['Totalseconds'](date) + ' - ' + this['Second'](date);
+};
 var websqlBasicDateFormat = function(format) {
 	return function(date) {
 		return "STRFTIME('" + format + "', " + date + ')';
 	};
 };
-
 var websqlDateFormats = {
 	'Year': websqlBasicDateFormat('%Y'),
 	'Month': websqlBasicDateFormat('%m'),
@@ -24,9 +26,7 @@ var websqlDateFormats = {
 	'Hour': websqlBasicDateFormat('%H'),
 	'Minute': websqlBasicDateFormat('%M'),
 	'Second': websqlBasicDateFormat('%S'),
-	'Fractionalseconds': function(date) {
-		return websqlDateFormats['Totalseconds'](date) + ' - ' + websqlDateFormats['Second'](date);
-	},
+	'Fractionalseconds': fractionalSecondsFormat,
 	'Totalseconds': websqlBasicDateFormat('%f')
 };
 
@@ -44,9 +44,7 @@ var dateFormats = {
 	'Second': function(date) {
 		return 'FLOOR(' + dateFormats['Totalseconds'](date) + ')';
 	},
-	'Fractionalseconds': function(date) {
-		return dateFormats['Totalseconds'](date) + ' - ' + dateFormats['Second'](date);
-	},
+	'Fractionalseconds': fractionalSecondsFormat,
 	'Totalseconds': basicDateFormat('SECOND')
 };
 
