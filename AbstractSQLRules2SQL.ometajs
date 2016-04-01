@@ -615,6 +615,8 @@ export ometa AbstractSQLRules2SQL {
 	DateValue :indent =
 		(	UnknownValue(indent)
 		|	Date(indent)
+		|	ToDate(indent)
+		|	ToTime(indent)
 		|	Now(indent)
 		),
 
@@ -624,6 +626,21 @@ export ometa AbstractSQLRules2SQL {
 		]
 		{this.fieldOrderings.push(['Date', date])}
 		-> '?',
+
+	ToDate :indent =
+		[	'ToDate'
+			DateValue:date
+		]
+		-> ('DATE(' + date + ')'),
+
+	ToTime :indent =
+		[	'ToTime'
+			DateValue:date
+		]
+		(	?(this.engine == 'postgres')
+			-> ('CAST(' + date + ' AS TIME)')
+		|	-> ('TIME(' + date + ')')
+		),
 
 	Now :indent =
 		['Now']

@@ -634,6 +634,8 @@ ometa AbstractSQLValidator {
 	DateValue =
 		(	UnknownValue
 		|	Date
+		|	ToDate
+		|	ToTime
 		|	Now
 		),
 
@@ -643,6 +645,18 @@ ometa AbstractSQLValidator {
 		]
 		?_.isDate(date)
 		-> ['Date', date],
+
+	ToDate =
+		[	'ToDate'
+			DateValue:date
+		]
+		-> ['ToDate', date],
+
+	ToTime =
+		[	'ToTime'
+			DateValue:date
+		]
+		-> ['ToTime', date],
 
 	Now =
 		['Now']
