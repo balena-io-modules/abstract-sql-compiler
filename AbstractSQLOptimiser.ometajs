@@ -215,7 +215,8 @@ ometa AbstractSQLValidator {
 		|	NumericValue
 		|	BooleanValue
 		|	DateValue
-		|	JSONValue,
+		|	JSONValue
+		|	DurationValue,
 
 	UnknownValue =
 		(	Field
@@ -671,7 +672,31 @@ ometa AbstractSQLValidator {
 		[	'AggregateJSON'
 			anything:field
 		]
-		-> ['AggregateJSON', field]
+		-> ['AggregateJSON', field],
+
+	DurationValue =
+		(	UnknownValue
+		|	Duration
+		),
+
+	Duration =
+		[	'Duration'
+			anything:duration
+		]
+		?_.isObject(duration)
+		{	_(duration)
+			.pick('negative', 'day', 'hour', 'minute', 'second')
+			.omitBy(_.isNil)
+			.pickBy(function(value, key) {
+				if(key === 'negative') {
+					return _.isBoolean(value);
+				}
+				return _.isNumber(value);
+			})
+			.value()
+		}:duration
+		?(!_(duration).omit('negative').isEmpty())
+		-> ['Duration', duration]
 }
 
 export ometa AbstractSQLOptimiser <: AbstractSQLValidator {

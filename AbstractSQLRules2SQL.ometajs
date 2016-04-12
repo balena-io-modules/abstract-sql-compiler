@@ -263,6 +263,7 @@ export ometa AbstractSQLRules2SQL {
 		|	BooleanValue(indent)
 		|	DateValue(indent)
 		|	JSONValue(indent)
+		|	DurationValue(indent)
 		),
 
 	UnknownValue :indent =
@@ -661,8 +662,41 @@ export ometa AbstractSQLRules2SQL {
 		{'"' + table + '".' + field}:field
 		(	?(this.engine == 'postgres')
 			-> ('coalesce(array_to_json(array_agg(' + field + ")), '[]')")
-		|	{throw 'AggregateJSON not supported on: ' + this.engine}
+		|	{throw new Error('AggregateJSON not supported on: ' + this.engine)}
 			// -> ("'[' || group_concat(" + field + ", ',') || ']'")
+		),
+
+	DurationValue :indent =
+		(	UnknownValue(indent)
+		|	Duration(indent)
+		),
+
+	Duration :indent =
+		[	'Duration'
+			anything:duration
+		]
+		?_.isObject(duration)
+		{	_(duration)
+			.pick('negative', 'day', 'hour', 'minute', 'second')
+			.omitBy(_.isNil)
+			.value()
+		}:duration
+		?(!_(duration).omit('negative').isEmpty())
+		(	?(this.engine == 'websql')
+			{throw new Error('Durations not supported on: ' + this.engine)}
+		|	-> (
+				"INTERVAL '" +
+				(duration.negative ? '-' : '') +
+				(duration.day || '0') +
+				' ' +
+				(duration.negative ? '-' : '') +
+				(duration.hour || '0') + ':' +
+				(duration.minute || '0') + ':' +
+				// Force seconds to be at least 0.0 - required for mysql
+				Number(duration.second).toLocaleString('en', { minimumFractionDigits: 1 }) +
+				"'" +
+				(this.engine == 'mysql' ? ' DAY_MICROSECOND' : '')
+			)
 		),
 
 	Process =

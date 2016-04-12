@@ -12,6 +12,30 @@ operandToOData = (operand) ->
 		return operand.odata
 	if _.isDate(operand)
 		return "datetime'" + encodeURIComponent(operand.toISOString()) + "'"
+	if _.isObject(operand)
+		duration = []
+		t = false
+		if operand.negative
+			duration.push('-')
+		duration.push('P')
+		if operand.day?
+			duration.push(operand.day, 'D')
+		if operand.hour?
+			t = true
+			duration.push('T', operand.hour, 'H')
+		if operand.minute?
+			if not t
+				t = true
+				duration.push('T')
+			duration.push(operand.minute, 'M')
+		if operand.second?
+			if not t
+				t = true
+				duration.push('T')
+			duration.push(operand.second, 'S')
+		if duration.length < 3
+			throw new Error('Duration must contain at least 1 component')
+		return "duration'#{duration.join('')}'"
 	return operand
 
 operandToBindings = (operand) ->
@@ -43,6 +67,13 @@ operandToSQL = (operand, resource = 'pilot') ->
 		else
 			mapping = clientModel.resourceToSQLMappings[resource][operand]
 		return '"' + mapping.join('"."') + '"'
+	if _.isObject(operand)
+		sign = if operand.negative then '-' else ''
+		day = operand.day or 0
+		hour = operand.hour or 0
+		minute = operand.minute or 0
+		second = operand.second or 0
+		return "INTERVAL '#{sign}#{day} #{sign}#{hour}:#{minute}:#{second}'"
 	throw 'Unknown operand type: ' + operand
 
 parseOperand = (operand) ->
@@ -218,11 +249,14 @@ do ->
 	]
 	operands = [
 			2
+			-2
 			2.5
+			-2.5
 			"'bar'"
 			"name"
 			"pilot/name"
 			new Date()
+			{ negative: true, day: 3, hour: 4, minute: 5, second: 6.7 }
 			true
 			false
 			# null is quoted as otherwise we hit issues with coffeescript defaulting values
