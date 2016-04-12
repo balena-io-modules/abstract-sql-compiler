@@ -349,6 +349,7 @@ ometa AbstractSQLValidator {
 		|	Minute
 		|	Second
 		|	FractionalSeconds
+		|	TotalSeconds
 		|	Round
 		|	Floor
 		|	Ceiling
@@ -478,6 +479,12 @@ ometa AbstractSQLValidator {
 			DateValue:date
 		]
 		-> ['Fractionalseconds', date],
+
+	TotalSeconds =
+		[	'Totalseconds'
+			DurationValue:duration
+		]
+		-> ['Totalseconds', duration],
 
 	Round =
 		[	'Round'

@@ -411,6 +411,7 @@ export ometa AbstractSQLRules2SQL {
 		|	CharacterLength(indent)
 		|	StrPos(indent)
 		|	ExtractNumericDatePart(indent)
+		|	TotalSeconds(indent)
 		|	Round(indent)
 		|	Floor(indent)
 		|	Ceiling(indent)
@@ -488,6 +489,17 @@ export ometa AbstractSQLRules2SQL {
 		(	?(this.engine == 'websql')
 			-> websqlDateFormats[part](date)
 		|	-> dateFormats[part](date)
+		),
+
+	TotalSeconds :indent =
+		[	'Totalseconds'
+			DurationValue(indent):duration
+		]
+		(	?(this.engine == 'postgres')
+			-> ('EXTRACT(EPOCH FROM ' + duration + ')')
+		|	?(this.engine == 'mysql')
+			-> ('(TIMESTAMPDIFF(MICROSECOND, FROM_UNIXTIME(0), FROM_UNIXTIME(0) + ' + duration + ') / 1000000)')
+		|	{throw new Error('TotalSeconds not supported on: ' + this.engine)}
 		),
 
 	Round :indent =

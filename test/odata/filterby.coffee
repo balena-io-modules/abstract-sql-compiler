@@ -206,6 +206,12 @@ createMethodCall = (method, args...) ->
 				bindings: args[0].bindings
 				odata
 			}
+		when 'TOTALSECONDS'
+			return {
+				sql: "EXTRACT(EPOCH FROM #{args[0].sql})"
+				bindings: args[0].bindings
+				odata
+			}
 		else
 			if methodMaps.hasOwnProperty(method)
 				method = methodMaps[method]
@@ -511,6 +517,7 @@ operandTest(createMethodCall('fractionalseconds', 'hire_date'), 'eq', .222)
 operandTest(createMethodCall('date', 'hire_date'), 'eq', "'2011-10-03'")
 operandTest(createMethodCall('time', 'hire_date'), 'eq', "'12:10:25.222'")
 operandTest(createMethodCall('now'), 'eq', new Date('2012-12-03T07:16:23Z'))
+operandTest(createMethodCall('totalseconds', { negative: true, day: 3, hour: 4, minute: 5, second: 6.7 }), 'eq', -273906.7)
 operandTest(createMethodCall('round', 'age'), 'eq', 25)
 operandTest(createMethodCall('floor', 'age'), 'eq', 25)
 operandTest(createMethodCall('ceiling', 'age'), 'eq', 25)
