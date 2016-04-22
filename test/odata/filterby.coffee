@@ -5,12 +5,37 @@ _ = require('lodash')
 {pilotFields, pilotCanFlyPlaneFields, teamFields} = require('./fields')
 pilotFields = pilotFields.join(', ')
 pilotCanFlyPlaneFields = pilotCanFlyPlaneFields.join(', ')
+teamFields = teamFields.join(', ')
 
 operandToOData = (operand) ->
 	if operand.odata?
 		return operand.odata
 	if _.isDate(operand)
 		return "datetime'" + encodeURIComponent(operand.toISOString()) + "'"
+	if _.isObject(operand)
+		duration = []
+		t = false
+		if operand.negative
+			duration.push('-')
+		duration.push('P')
+		if operand.day?
+			duration.push(operand.day, 'D')
+		if operand.hour?
+			t = true
+			duration.push('T', operand.hour, 'H')
+		if operand.minute?
+			if not t
+				t = true
+				duration.push('T')
+			duration.push(operand.minute, 'M')
+		if operand.second?
+			if not t
+				t = true
+				duration.push('T')
+			duration.push(operand.second, 'S')
+		if duration.length < 3
+			throw new Error('Duration must contain at least 1 component')
+		return "duration'#{duration.join('')}'"
 	return operand
 
 operandToBindings = (operand) ->
@@ -42,6 +67,13 @@ operandToSQL = (operand, resource = 'pilot') ->
 		else
 			mapping = clientModel.resourceToSQLMappings[resource][operand]
 		return '"' + mapping.join('"."') + '"'
+	if _.isObject(operand)
+		sign = if operand.negative then '-' else ''
+		day = operand.day or 0
+		hour = operand.hour or 0
+		minute = operand.minute or 0
+		second = operand.second or 0
+		return "INTERVAL '#{sign}#{day} #{sign}#{hour}:#{minute}:#{second}'"
 	throw 'Unknown operand type: ' + operand
 
 parseOperand = (operand) ->
@@ -70,7 +102,6 @@ sqlOpBrackets =
 methodMaps =
 	TOUPPER: 'UPPER'
 	TOLOWER: 'LOWER'
-	INDEXOF: 'STRPOS'
 
 createExpression = (lhs, op, rhs) ->
 	if lhs is 'not'
@@ -113,28 +144,72 @@ createMethodCall = (method, args...) ->
 	odata = method + '(' + (arg.odata for arg in args).join(',') + ')'
 	method = method.toUpperCase()
 	switch method
-		when 'SUBSTRINGOF'
+		when 'CONTAINS', 'SUBSTRINGOF'
+			if method is 'SUBSTRINGOF'
+				args.reverse()
 			return {
-				sql: args[1].sql + " LIKE (? || " + args[0].sql + " || ?)"
-				bindings: [args[1].bindings..., ['Text', '%'], args[0].bindings..., ['Text', '%']]
+				sql: "STRPOS(#{args[0].sql}, #{args[1].sql}) > 0"
+				bindings: [args[0].bindings..., args[1].bindings...]
 				odata
 			}
 		when 'STARTSWITH'
 			return {
-				sql: args[0].sql + ' LIKE (' + args[1].sql + " || ?)"
-				bindings: [args[0].bindings..., args[1].bindings..., ['Text', '%']]
+				sql: "STRPOS(#{args[0].sql}, #{args[1].sql}) = 1"
+				bindings: [args[0].bindings..., args[1].bindings...]
 				odata
 			}
 		when 'ENDSWITH'
 			return {
-				sql: args[0].sql + " LIKE (? || " + args[1].sql + ')'
-				bindings: [args[0].bindings..., ['Text', '%'], args[1].bindings...]
+				sql: "RIGHT(#{args[0].sql}, LENGTH(#{args[1].sql})) = #{args[1].sql}"
+				bindings: [args[0].bindings..., args[1].bindings..., args[1].bindings...]
 				odata
 			}
 		when 'CONCAT'
 			return {
 				sql: '(' + (arg.sql for arg in args).join(' || ') + ')'
 				bindings: [].concat((arg.bindings for arg in args)...)
+				odata
+			}
+		when 'INDEXOF'
+			return {
+				sql: 'STRPOS(' + (arg.sql for arg in args).join(', ') + ') - 1'
+				bindings: [].concat((arg.bindings for arg in args)...)
+				odata
+			}
+		when 'NOW'
+			return {
+				sql: 'CURRENT_TIMESTAMP'
+				bindings: []
+				odata
+			}
+		when 'YEAR', 'MONTH', 'DAY', 'HOUR', 'MINUTE'
+			return {
+				sql: "EXTRACT('#{method}' FROM #{args[0].sql})"
+				bindings: args[0].bindings
+				odata
+			}
+		when 'SECOND'
+			return {
+				sql: "FLOOR(EXTRACT('#{method}' FROM #{args[0].sql}))"
+				bindings: args[0].bindings
+				odata
+			}
+		when 'FRACTIONALSECONDS'
+			return {
+				sql: "EXTRACT('SECOND' FROM #{args[0].sql}) - FLOOR(EXTRACT('SECOND' FROM #{args[0].sql}))"
+				bindings: args[0].bindings
+				odata
+			}
+		when 'TIME'
+			return {
+				sql: "CAST(#{args[0].sql} AS #{method})"
+				bindings: args[0].bindings
+				odata
+			}
+		when 'TOTALSECONDS'
+			return {
+				sql: "EXTRACT(EPOCH FROM #{args[0].sql})"
+				bindings: args[0].bindings
 				odata
 			}
 		else
@@ -144,8 +219,6 @@ createMethodCall = (method, args...) ->
 				when 'SUBSTRING'
 					args[1].sql++
 			sql = method + '(' + (arg.sql for arg in args).join(', ') + ')'
-			if method is 'STRPOS'
-				sql = "(#{sql} - 1)"
 			return {
 				sql: sql
 				bindings: [].concat((arg.bindings for arg in args)...)
@@ -182,11 +255,14 @@ do ->
 	]
 	operands = [
 			2
+			-2
 			2.5
+			-2.5
 			"'bar'"
 			"name"
 			"pilot/name"
 			new Date()
+			{ negative: true, day: 3, hour: 4, minute: 5, second: 6.7 }
 			true
 			false
 			# null is quoted as otherwise we hit issues with coffeescript defaulting values
@@ -263,7 +339,7 @@ do ->
 			FROM "pilot-can_fly-plane",
 				"plane",
 				(
-				SELECT NULL AS "id", NULL AS "is experienced", CAST(? AS VARCHAR(255)) AS "name", NULL AS "age", NULL AS "favourite colour", NULL AS "team", NULL AS "licence"
+				SELECT NULL AS "created at", NULL AS "id", NULL AS "is experienced", CAST(? AS VARCHAR(255)) AS "name", NULL AS "age", NULL AS "favourite colour", NULL AS "team", NULL AS "licence", NULL AS "hire date"
 			) AS "pilot"
 			#{filterWhere.join('\n')}
 		"""
@@ -308,13 +384,15 @@ do ->
 			it 'and updates', ->
 				expect(result[1].query).to.equal """
 					UPDATE "pilot"
-					SET "id" = DEFAULT,
+					SET "created at" = DEFAULT,
+						"id" = DEFAULT,
 						"is experienced" = DEFAULT,
 						"name" = ?,
 						"age" = DEFAULT,
 						"favourite colour" = DEFAULT,
 						"team" = DEFAULT,
-						"licence" = DEFAULT
+						"licence" = DEFAULT,
+						"hire date" = DEFAULT
 					#{updateWhere}
 				"""
 
@@ -344,7 +422,7 @@ do ->
 				INSERT INTO "pilot" ("name")
 				SELECT "pilot"."name"
 				FROM (
-					SELECT NULL AS "id", NULL AS "is experienced", CAST(? AS VARCHAR(255)) AS "name", NULL AS "age", NULL AS "favourite colour", NULL AS "team", NULL AS "licence"
+					SELECT NULL AS "created at", NULL AS "id", NULL AS "is experienced", CAST(? AS VARCHAR(255)) AS "name", NULL AS "age", NULL AS "favourite colour", NULL AS "team", NULL AS "licence", NULL AS "hire date"
 				) AS "pilot"
 				WHERE #{sql}
 			"""
@@ -377,20 +455,22 @@ do ->
 					INSERT INTO "pilot" ("id", "name")
 					SELECT "pilot"."id", "pilot"."name"
 					FROM (
-						SELECT CAST(? AS INTEGER) AS "id", NULL AS "is experienced", CAST(? AS VARCHAR(255)) AS "name", NULL AS "age", NULL AS "favourite colour", NULL AS "team", NULL AS "licence"
+						SELECT NULL AS "created at", CAST(? AS INTEGER) AS "id", NULL AS "is experienced", CAST(? AS VARCHAR(255)) AS "name", NULL AS "age", NULL AS "favourite colour", NULL AS "team", NULL AS "licence", NULL AS "hire date"
 					) AS "pilot"
 					WHERE #{sql}
 				"""
 			it 'and updates', ->
 				expect(result[1].query).to.equal """
 					UPDATE "pilot"
-					SET "id" = ?,
+					SET "created at" = DEFAULT,
+						"id" = ?,
 						"is experienced" = DEFAULT,
 						"name" = ?,
 						"age" = DEFAULT,
 						"favourite colour" = DEFAULT,
 						"team" = DEFAULT,
-						"licence" = DEFAULT
+						"licence" = DEFAULT,
+						"hire date" = DEFAULT
 					WHERE "pilot"."id" = 1
 					AND "pilot"."id" IN ((
 						SELECT "pilot"."id"
@@ -413,27 +493,37 @@ do ->
 				AND "pilot"."id" = "pilot-can_fly-plane"."pilot"
 			"""
 
-methodTest('substringof', "'Pete'", 'name')
-methodTest('startswith', 'name', "'P'")
+methodTest('contains', 'name', "'et'")
 methodTest('endswith', 'name', "'ete'")
+methodTest('startswith', 'name', "'P'")
 operandTest(createMethodCall('length', 'name'), 'eq', 4)
 operandTest(createMethodCall('indexof', 'name', "'Pe'"), 'eq', 0)
-operandTest(createMethodCall('replace', 'name', "'ete'", "'at'"), 'eq', "'Pat'")
 operandTest(createMethodCall('substring', 'name', 1), 'eq', "'ete'")
 operandTest(createMethodCall('substring', 'name', 1, 2), 'eq', "'et'")
 operandTest(createMethodCall('tolower', 'name'), 'eq', "'pete'")
-operandTest(createMethodCall('toupper', 'name'), 'eq', "'PETE'")
-
 operandTest(createMethodCall('tolower', 'licence/name'), 'eq', "'pete'")
-
+operandTest(createMethodCall('toupper', 'name'), 'eq', "'PETE'")
 do ->
 	concat = createMethodCall('concat', 'name', "'%20'")
-	operandTest(concat, 'eq', "'Pete%20'")
 	operandTest(createMethodCall('trim', concat), 'eq', "'Pete'")
-
+	operandTest(concat, 'eq', "'Pete%20'")
+operandTest(createMethodCall('year', 'hire_date'), 'eq', 2011)
+operandTest(createMethodCall('month', 'hire_date'), 'eq', 10)
+operandTest(createMethodCall('day', 'hire_date'), 'eq', 3)
+operandTest(createMethodCall('hour', 'hire_date'), 'eq', 12)
+operandTest(createMethodCall('minute', 'hire_date'), 'eq', 10)
+operandTest(createMethodCall('second', 'hire_date'), 'eq', 25)
+operandTest(createMethodCall('fractionalseconds', 'hire_date'), 'eq', .222)
+operandTest(createMethodCall('date', 'hire_date'), 'eq', "'2011-10-03'")
+operandTest(createMethodCall('time', 'hire_date'), 'eq', "'12:10:25.222'")
+operandTest(createMethodCall('now'), 'eq', new Date('2012-12-03T07:16:23Z'))
+operandTest(createMethodCall('totalseconds', { negative: true, day: 3, hour: 4, minute: 5, second: 6.7 }), 'eq', -273906.7)
 operandTest(createMethodCall('round', 'age'), 'eq', 25)
 operandTest(createMethodCall('floor', 'age'), 'eq', 25)
 operandTest(createMethodCall('ceiling', 'age'), 'eq', 25)
+
+methodTest('substringof', "'Pete'", 'name')
+operandTest(createMethodCall('replace', 'name', "'ete'", "'at'"), 'eq', "'Pat'")
 
 test "/pilot?$filter=pilot__can_fly__plane/any(d:d/plane/name eq 'Concorde')", 'GET', [['Text', 'Concorde']], (result) ->
 	it 'should select from pilot where ...', ->
@@ -511,7 +601,7 @@ do ->
 				INSERT INTO "team" ("favourite colour")
 				SELECT "team"."favourite colour"
 				FROM (
-					SELECT CAST(? AS INTEGER) AS "favourite colour"
+					SELECT NULL AS "created at", CAST(? AS INTEGER) AS "favourite colour"
 				) AS "team"
 				WHERE ''' + sql
 

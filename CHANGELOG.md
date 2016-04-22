@@ -1,3 +1,9 @@
+* Added support for duration literals.
+* Added support for `Contains`, `Now`, `Year`, `Month`, `Day`, `Hour`, `Minute`, `Second`, `FractionalSeconds`, `ToDate`, `ToTime`, and `TotalSeconds`.
+* Avoided issues with wildchard characters in `Substringof`, `StartsWith`, and `EndsWith`.
+* Fixed `InStr` and `IndexOf`.
+* Updated the sbvr model for tests.
+
 v1.1.0
 
 * `AggregateJSON` now returns an empty array instead of null in the case of zero results.

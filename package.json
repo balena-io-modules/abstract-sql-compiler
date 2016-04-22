@@ -5,7 +5,7 @@
   "main": "AbstractSQLCompiler.js",
   "scripts": {
     "pretest": "npm run-script prepublish",
-    "test": "./node_modules/.bin/mocha",
+    "test": "mocha",
     "prepublish": "./node_modules/.bin/coffee -c AbstractSQLCompiler.coffee && node node_modules/ometa-js/bin/ometajs2js --input AbstractSQLOptimiser.ometajs --output AbstractSQLOptimiser.js && node node_modules/ometa-js/bin/ometajs2js --input AbstractSQLRules2SQL.ometajs --output AbstractSQLRules2SQL.js"
   },
   "repository": "git@bitbucket.org:rulemotion/abstract-sql-compiler.git",
@@ -18,9 +18,9 @@
   },
   "devDependencies": {
     "@resin/lf-to-abstract-sql": "0.0.16",
-    "@resin/odata-parser": "~0.1.2",
-    "@resin/odata-to-abstract-sql": "~0.3.0",
-    "@resin/sbvr-parser": "0.0.19",
+    "@resin/odata-parser": "~0.1.8",
+    "@resin/odata-to-abstract-sql": "~0.3.3",
+    "@resin/sbvr-parser": "0.0.21",
     "chai": "^3.0.0",
     "coffee-script": "~1.10.0",
     "mocha": "^2.1.0"

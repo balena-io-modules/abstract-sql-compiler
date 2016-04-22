@@ -215,7 +215,8 @@ ometa AbstractSQLValidator {
 		|	NumericValue
 		|	BooleanValue
 		|	DateValue
-		|	JSONValue,
+		|	JSONValue
+		|	DurationValue,
 
 	UnknownValue =
 		(	Field
@@ -267,6 +268,7 @@ ometa AbstractSQLValidator {
 		|	Trim
 		|	Replace
 		|	Substring
+		|	Right
 		),
 
 	Text =
@@ -324,6 +326,13 @@ ometa AbstractSQLValidator {
 		]
 		-> ['Substring', string].concat(args),
 
+	Right :indent =
+		[	'Right'
+			TextValue:string
+			NumericValue:n
+		]
+		-> ['Right', string, n],
+
 	NumericValue =
 		(	UnknownValue
 		|	Number
@@ -331,9 +340,16 @@ ometa AbstractSQLValidator {
 		|	BitwiseAnd
 		|	BitwiseShiftRight
 		|	CharacterLength
-		|	InStr
 		|	IndexOf
 		|	StrPos
+		|	Year
+		|	Month
+		|	Day
+		|	Hour
+		|	Minute
+		|	Second
+		|	FractionalSeconds
+		|	TotalSeconds
 		|	Round
 		|	Floor
 		|	Ceiling
@@ -403,13 +419,6 @@ ometa AbstractSQLValidator {
 		]
 		-> ['CharacterLength', text],
 
-	InStr =
-		[	'InStr'
-			TextValue:haystack
-			TextValue:needle
-		]
-		-> ['InStr', haystack, needle],
-
 	IndexOf =
 		[	(	'IndexOf'
 			|	'Indexof'
@@ -418,14 +427,64 @@ ometa AbstractSQLValidator {
 			TextValue:needle
 		]
 		SetHelped
-		-> ['InStr', haystack, needle],
+		-> ['Subtract', ['StrPos', haystack, needle], ['Number', 1]],
 
 	StrPos =
-		[	'StrPos'
+		[	(	'StrPos'
+			|	'InStr'
+			)
 			TextValue:haystack
 			TextValue:needle
 		]
 		-> ['StrPos', haystack, needle],
+
+	Year =
+		[	'Year'
+			DateValue:date
+		]
+		-> ['Year', date],
+
+	Month =
+		[	'Month'
+			DateValue:date
+		]
+		-> ['Month', date],
+
+	Day =
+		[	'Day'
+			DateValue:date
+		]
+		-> ['Day', date],
+
+	Hour =
+		[	'Hour'
+			DateValue:date
+		]
+		-> ['Hour', date],
+
+	Minute =
+		[	'Minute'
+			DateValue:date
+		]
+		-> ['Minute', date],
+
+	Second =
+		[	'Second'
+			DateValue:date
+		]
+		-> ['Second', date],
+
+	FractionalSeconds =
+		[	'Fractionalseconds'
+			DateValue:date
+		]
+		-> ['Fractionalseconds', date],
+
+	TotalSeconds =
+		[	'Totalseconds'
+			DurationValue:duration
+		]
+		-> ['Totalseconds', duration],
 
 	Round =
 		[	'Round'
@@ -583,6 +642,9 @@ ometa AbstractSQLValidator {
 	DateValue =
 		(	UnknownValue
 		|	Date
+		|	ToDate
+		|	ToTime
+		|	Now
 		),
 
 	Date =
@@ -591,6 +653,22 @@ ometa AbstractSQLValidator {
 		]
 		?_.isDate(date)
 		-> ['Date', date],
+
+	ToDate =
+		[	'ToDate'
+			DateValue:date
+		]
+		-> ['ToDate', date],
+
+	ToTime =
+		[	'ToTime'
+			DateValue:date
+		]
+		-> ['ToTime', date],
+
+	Now =
+		['Now']
+		-> ['Now'],
 
 	JSONValue =
 		(	UnknownValue
@@ -601,7 +679,31 @@ ometa AbstractSQLValidator {
 		[	'AggregateJSON'
 			anything:field
 		]
-		-> ['AggregateJSON', field]
+		-> ['AggregateJSON', field],
+
+	DurationValue =
+		(	UnknownValue
+		|	Duration
+		),
+
+	Duration =
+		[	'Duration'
+			anything:duration
+		]
+		?_.isObject(duration)
+		{	_(duration)
+			.pick('negative', 'day', 'hour', 'minute', 'second')
+			.omitBy(_.isNil)
+			.pickBy(function(value, key) {
+				if(key === 'negative') {
+					return _.isBoolean(value);
+				}
+				return _.isNumber(value);
+			})
+			.value()
+		}:duration
+		?(!_(duration).omit('negative').isEmpty())
+		-> ['Duration', duration]
 }
 
 export ometa AbstractSQLOptimiser <: AbstractSQLValidator {
@@ -790,18 +892,21 @@ export ometa AbstractSQLOptimiser <: AbstractSQLValidator {
 		|	^Equals,
 
 	BooleanValue =
-			Substringof
+			Contains
 		|	StartsWith
 		|	EndsWith
 		|	^BooleanValue,
 
-	Substringof =
-		[	'Substringof'
+	Contains =
+		[	'Contains'
+			TextValue:haystack
+			TextValue:needle
+		|	'Substringof'
 			TextValue:needle
 			TextValue:haystack
 		]
 		SetHelped
-		-> ['Like', haystack, ['Concat', ['Text', '%'], needle, ['Text', '%']]],
+		-> ['GreaterThan', ['StrPos', haystack, needle], ['Number', 0]],
 
 	StartsWith =
 		[	'Startswith'
@@ -809,7 +914,7 @@ export ometa AbstractSQLOptimiser <: AbstractSQLValidator {
 			TextValue:needle
 		]
 		SetHelped
-		-> ['Like', haystack, ['Concat', needle, ['Text', '%']]],
+		-> ['Equals', ['StrPos', haystack, needle], ['Number', 1]],
 
 	EndsWith =
 		[	'Endswith'
@@ -817,7 +922,7 @@ export ometa AbstractSQLOptimiser <: AbstractSQLValidator {
 			TextValue:needle
 		]
 		SetHelped
-		-> ['Like', haystack, ['Concat', ['Text', '%'], needle]],
+		-> ['Equals', ['Right', haystack, ['CharacterLength', needle]], needle],
 
 	Helped :disableMemoisationHack =
 		?(this.helped === true)

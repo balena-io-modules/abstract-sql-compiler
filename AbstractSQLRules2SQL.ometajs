@@ -11,6 +11,43 @@ var comparisons = {
 	'Like': ' LIKE '
 };
 
+var fractionalSecondsFormat = function(date) {
+	return this['Totalseconds'](date) + ' - ' + this['Second'](date);
+};
+var websqlBasicDateFormat = function(format) {
+	return function(date) {
+		return "STRFTIME('" + format + "', " + date + ')';
+	};
+};
+var websqlDateFormats = {
+	'Year': websqlBasicDateFormat('%Y'),
+	'Month': websqlBasicDateFormat('%m'),
+	'Day': websqlBasicDateFormat('%d'),
+	'Hour': websqlBasicDateFormat('%H'),
+	'Minute': websqlBasicDateFormat('%M'),
+	'Second': websqlBasicDateFormat('%S'),
+	'Fractionalseconds': fractionalSecondsFormat,
+	'Totalseconds': websqlBasicDateFormat('%f')
+};
+
+var basicDateFormat = function(part) {
+	return function(date) {
+		return "EXTRACT('" + part + "' FROM " + date + ')';
+	};
+};
+var dateFormats = {
+	'Year': basicDateFormat('YEAR'),
+	'Month': basicDateFormat('MONTH'),
+	'Day': basicDateFormat('DAY'),
+	'Hour': basicDateFormat('HOUR'),
+	'Minute': basicDateFormat('MINUTE'),
+	'Second': function(date) {
+		return 'FLOOR(' + dateFormats['Totalseconds'](date) + ')';
+	},
+	'Fractionalseconds': fractionalSecondsFormat,
+	'Totalseconds': basicDateFormat('SECOND')
+};
+
 export ometa AbstractSQLRules2SQL {
 	NestedIndent :indent =
 		-> (indent + '\t'),
@@ -226,6 +263,7 @@ export ometa AbstractSQLRules2SQL {
 		|	BooleanValue(indent)
 		|	DateValue(indent)
 		|	JSONValue(indent)
+		|	DurationValue(indent)
 		),
 
 	UnknownValue :indent =
@@ -298,6 +336,7 @@ export ometa AbstractSQLRules2SQL {
 		|	Trim(indent)
 		|	Replace(indent)
 		|	Substring(indent)
+		|	Right(indent)
 		),
 
 	Text =
@@ -353,6 +392,16 @@ export ometa AbstractSQLRules2SQL {
 		]
 		-> ('SUBSTRING(' + [string].concat(args).join(', ') + ')'),
 
+	Right :indent =
+		[	'Right'
+			TextValue:string
+			NumericValue:n
+		]
+		(	?(this.engine == 'websql')
+			-> ('SUBSTRING(' + string + ', -' + n + ')')
+		|	-> ('RIGHT(' + string + ', ' + n + ')')
+		),
+
 	NumericValue :indent =
 		(	UnknownValue(indent)
 		|	Number
@@ -360,8 +409,9 @@ export ometa AbstractSQLRules2SQL {
 		|	BitwiseAnd(indent)
 		|	BitwiseShiftRight(indent)
 		|	CharacterLength(indent)
-		|	InStr(indent)
 		|	StrPos(indent)
+		|	ExtractNumericDatePart(indent)
+		|	TotalSeconds(indent)
 		|	Round(indent)
 		|	Floor(indent)
 		|	Ceiling(indent)
@@ -415,16 +465,6 @@ export ometa AbstractSQLRules2SQL {
 		|	-> ('LENGTH(' + text + ')')
 		),
 
-	InStr :indent =
-		[	'InStr'
-			TextValue:haystack
-			TextValue:needle
-		]
-		(	?(this.engine == 'postgres')
-			-> ('(STRPOS(' + haystack + ', ' + needle + ') - 1)')
-		|	-> ('INSTR(' + haystack + ', ' + needle + ')')
-		),
-
 	StrPos :indent =
 		[	'StrPos'
 			TextValue:haystack
@@ -432,7 +472,34 @@ export ometa AbstractSQLRules2SQL {
 		]
 		(	?(this.engine == 'postgres')
 			-> ('STRPOS(' + haystack + ', ' + needle + ')')
-		|	-> ('(INSTR(' + haystack + ', ' + needle + ') + 1)')
+		|	-> ('INSTR(' + haystack + ', ' + needle + ')')
+		),
+
+	ExtractNumericDatePart :indent =
+		[	(	'Year'
+			|	'Month'
+			|	'Day'
+			|	'Hour'
+			|	'Minute'
+			|	'Second'
+			|	'Fractionalseconds'
+			):part
+			DateValue:date
+		]
+		(	?(this.engine == 'websql')
+			-> websqlDateFormats[part](date)
+		|	-> dateFormats[part](date)
+		),
+
+	TotalSeconds :indent =
+		[	'Totalseconds'
+			DurationValue(indent):duration
+		]
+		(	?(this.engine == 'postgres')
+			-> ('EXTRACT(EPOCH FROM ' + duration + ')')
+		|	?(this.engine == 'mysql')
+			-> ('(TIMESTAMPDIFF(MICROSECOND, FROM_UNIXTIME(0), FROM_UNIXTIME(0) + ' + duration + ') / 1000000)')
+		|	{throw new Error('TotalSeconds not supported on: ' + this.engine)}
 		),
 
 	Round :indent =
@@ -559,6 +626,9 @@ export ometa AbstractSQLRules2SQL {
 	DateValue :indent =
 		(	UnknownValue(indent)
 		|	Date(indent)
+		|	ToDate(indent)
+		|	ToTime(indent)
+		|	Now(indent)
 		),
 
 	Date :indent =
@@ -567,6 +637,25 @@ export ometa AbstractSQLRules2SQL {
 		]
 		{this.fieldOrderings.push(['Date', date])}
 		-> '?',
+
+	ToDate :indent =
+		[	'ToDate'
+			DateValue:date
+		]
+		-> ('DATE(' + date + ')'),
+
+	ToTime :indent =
+		[	'ToTime'
+			DateValue:date
+		]
+		(	?(this.engine == 'postgres')
+			-> ('CAST(' + date + ' AS TIME)')
+		|	-> ('TIME(' + date + ')')
+		),
+
+	Now :indent =
+		['Now']
+		-> 'CURRENT_TIMESTAMP',
 
 	JSONValue :indent =
 		(	UnknownValue(indent)
@@ -585,8 +674,41 @@ export ometa AbstractSQLRules2SQL {
 		{'"' + table + '".' + field}:field
 		(	?(this.engine == 'postgres')
 			-> ('coalesce(array_to_json(array_agg(' + field + ")), '[]')")
-		|	{throw 'AggregateJSON not supported on: ' + this.engine}
+		|	{throw new Error('AggregateJSON not supported on: ' + this.engine)}
 			// -> ("'[' || group_concat(" + field + ", ',') || ']'")
+		),
+
+	DurationValue :indent =
+		(	UnknownValue(indent)
+		|	Duration(indent)
+		),
+
+	Duration :indent =
+		[	'Duration'
+			anything:duration
+		]
+		?_.isObject(duration)
+		{	_(duration)
+			.pick('negative', 'day', 'hour', 'minute', 'second')
+			.omitBy(_.isNil)
+			.value()
+		}:duration
+		?(!_(duration).omit('negative').isEmpty())
+		(	?(this.engine == 'websql')
+			{throw new Error('Durations not supported on: ' + this.engine)}
+		|	-> (
+				"INTERVAL '" +
+				(duration.negative ? '-' : '') +
+				(duration.day || '0') +
+				' ' +
+				(duration.negative ? '-' : '') +
+				(duration.hour || '0') + ':' +
+				(duration.minute || '0') + ':' +
+				// Force seconds to be at least 0.0 - required for mysql
+				Number(duration.second).toLocaleString('en', { minimumFractionDigits: 1 }) +
+				"'" +
+				(this.engine == 'mysql' ? ' DAY_MICROSECOND' : '')
+			)
 		),
 
 	Process =

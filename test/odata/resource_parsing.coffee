@@ -97,13 +97,15 @@ do ->
 			''')
 			expect(result[1].query).to.equal('''
 				UPDATE "pilot"
-				SET "id" = ?,
+				SET "created at" = DEFAULT,
+					"id" = ?,
 					"is experienced" = DEFAULT,
 					"name" = DEFAULT,
 					"age" = DEFAULT,
 					"favourite colour" = DEFAULT,
 					"team" = DEFAULT,
-					"licence" = DEFAULT
+					"licence" = DEFAULT,
+					"hire date" = DEFAULT
 				WHERE "pilot"."id" = 1
 			''')
 	bindings = [
@@ -156,7 +158,8 @@ do ->
 			''')
 			expect(result[1].query).to.equal('''
 				UPDATE "pilot-can_fly-plane"
-				SET "pilot" = DEFAULT,
+				SET "created at" = DEFAULT,
+					"pilot" = DEFAULT,
 					"plane" = DEFAULT,
 					"id" = ?
 				WHERE "pilot-can_fly-plane"."id" = 1
