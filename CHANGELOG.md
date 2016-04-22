@@ -1,3 +1,5 @@
+v1.2.0
+
 * Added support for duration literals.
 * Added support for `Contains`, `Now`, `Year`, `Month`, `Day`, `Hour`, `Minute`, `Second`, `FractionalSeconds`, `ToDate`, `ToTime`, and `TotalSeconds`.
 * Avoided issues with wildchard characters in `Substringof`, `StartsWith`, and `EndsWith`.

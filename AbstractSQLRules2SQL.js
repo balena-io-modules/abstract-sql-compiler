@@ -11,6 +11,36 @@
         LessThanOrEqual: " <= ",
         NotEquals: " != ",
         Like: " LIKE "
+    }, fractionalSecondsFormat = function(date) {
+        return this.Totalseconds(date) + " - " + this.Second(date);
+    }, websqlBasicDateFormat = function(format) {
+        return function(date) {
+            return "STRFTIME('" + format + "', " + date + ")";
+        };
+    }, websqlDateFormats = {
+        Year: websqlBasicDateFormat("%Y"),
+        Month: websqlBasicDateFormat("%m"),
+        Day: websqlBasicDateFormat("%d"),
+        Hour: websqlBasicDateFormat("%H"),
+        Minute: websqlBasicDateFormat("%M"),
+        Second: websqlBasicDateFormat("%S"),
+        Fractionalseconds: fractionalSecondsFormat,
+        Totalseconds: websqlBasicDateFormat("%f")
+    }, basicDateFormat = function(part) {
+        return function(date) {
+            return "EXTRACT('" + part + "' FROM " + date + ")";
+        };
+    }, dateFormats = {
+        Year: basicDateFormat("YEAR"),
+        Month: basicDateFormat("MONTH"),
+        Day: basicDateFormat("DAY"),
+        Hour: basicDateFormat("HOUR"),
+        Minute: basicDateFormat("MINUTE"),
+        Second: function(date) {
+            return "FLOOR(" + dateFormats.Totalseconds(date) + ")";
+        },
+        Fractionalseconds: fractionalSecondsFormat,
+        Totalseconds: basicDateFormat("SECOND")
     }, AbstractSQLRules2SQL = exports.AbstractSQLRules2SQL = OMeta._extend({
         NestedIndent: function(indent) {
             var $elf = this, _fromIdx = this.input.idx;
@@ -366,6 +396,8 @@
                 return this._applyWithArgs("DateValue", indent);
             }, function() {
                 return this._applyWithArgs("JSONValue", indent);
+            }, function() {
+                return this._applyWithArgs("DurationValue", indent);
             });
         },
         UnknownValue: function(indent) {
@@ -465,6 +497,8 @@
                 return this._applyWithArgs("Replace", indent);
             }, function() {
                 return this._applyWithArgs("Substring", indent);
+            }, function() {
+                return this._applyWithArgs("Right", indent);
             });
         },
         Text: function() {
@@ -558,6 +592,20 @@
             });
             return "SUBSTRING(" + [ string ].concat(args).join(", ") + ")";
         },
+        Right: function(indent) {
+            var $elf = this, _fromIdx = this.input.idx, n, string;
+            this._form(function() {
+                this._applyWithArgs("exactly", "Right");
+                string = this._apply("TextValue");
+                return n = this._apply("NumericValue");
+            });
+            return this._or(function() {
+                this._pred("websql" == this.engine);
+                return "SUBSTRING(" + string + ", -" + n + ")";
+            }, function() {
+                return "RIGHT(" + string + ", " + n + ")";
+            });
+        },
         NumericValue: function(indent) {
             var $elf = this, _fromIdx = this.input.idx;
             return this._or(function() {
@@ -573,9 +621,11 @@
             }, function() {
                 return this._applyWithArgs("CharacterLength", indent);
             }, function() {
-                return this._applyWithArgs("InStr", indent);
-            }, function() {
                 return this._applyWithArgs("StrPos", indent);
+            }, function() {
+                return this._applyWithArgs("ExtractNumericDatePart", indent);
+            }, function() {
+                return this._applyWithArgs("TotalSeconds", indent);
             }, function() {
                 return this._applyWithArgs("Round", indent);
             }, function() {
@@ -663,20 +713,6 @@
                 return "LENGTH(" + text + ")";
             });
         },
-        InStr: function(indent) {
-            var $elf = this, _fromIdx = this.input.idx, haystack, needle;
-            this._form(function() {
-                this._applyWithArgs("exactly", "InStr");
-                haystack = this._apply("TextValue");
-                return needle = this._apply("TextValue");
-            });
-            return this._or(function() {
-                this._pred("postgres" == this.engine);
-                return "(STRPOS(" + haystack + ", " + needle + ") - 1)";
-            }, function() {
-                return "INSTR(" + haystack + ", " + needle + ")";
-            });
-        },
         StrPos: function(indent) {
             var $elf = this, _fromIdx = this.input.idx, haystack, needle;
             this._form(function() {
@@ -688,7 +724,64 @@
                 this._pred("postgres" == this.engine);
                 return "STRPOS(" + haystack + ", " + needle + ")";
             }, function() {
-                return "(INSTR(" + haystack + ", " + needle + ") + 1)";
+                return "INSTR(" + haystack + ", " + needle + ")";
+            });
+        },
+        ExtractNumericDatePart: function(indent) {
+            var $elf = this, _fromIdx = this.input.idx, date, part;
+            this._form(function() {
+                part = function() {
+                    switch (this.anything()) {
+                      case "Day":
+                        return "Day";
+
+                      case "Fractionalseconds":
+                        return "Fractionalseconds";
+
+                      case "Hour":
+                        return "Hour";
+
+                      case "Minute":
+                        return "Minute";
+
+                      case "Month":
+                        return "Month";
+
+                      case "Second":
+                        return "Second";
+
+                      case "Year":
+                        return "Year";
+
+                      default:
+                        throw this._fail();
+                    }
+                }.call(this);
+                return date = this._apply("DateValue");
+            });
+            return this._or(function() {
+                this._pred("websql" == this.engine);
+                return websqlDateFormats[part](date);
+            }, function() {
+                return dateFormats[part](date);
+            });
+        },
+        TotalSeconds: function(indent) {
+            var $elf = this, _fromIdx = this.input.idx, duration;
+            this._form(function() {
+                this._applyWithArgs("exactly", "Totalseconds");
+                return duration = this._applyWithArgs("DurationValue", indent);
+            });
+            return this._or(function() {
+                this._pred("postgres" == this.engine);
+                return "EXTRACT(EPOCH FROM " + duration + ")";
+            }, function() {
+                this._pred("mysql" == this.engine);
+                return "(TIMESTAMPDIFF(MICROSECOND, FROM_UNIXTIME(0), FROM_UNIXTIME(0) + " + duration + ") / 1000000)";
+            }, function() {
+                return function() {
+                    throw new Error("TotalSeconds not supported on: " + this.engine);
+                }.call(this);
             });
         },
         Round: function(indent) {
@@ -887,6 +980,12 @@
                 return this._applyWithArgs("UnknownValue", indent);
             }, function() {
                 return this._applyWithArgs("Date", indent);
+            }, function() {
+                return this._applyWithArgs("ToDate", indent);
+            }, function() {
+                return this._applyWithArgs("ToTime", indent);
+            }, function() {
+                return this._applyWithArgs("Now", indent);
             });
         },
         Date: function(indent) {
@@ -897,6 +996,34 @@
             });
             this.fieldOrderings.push([ "Date", date ]);
             return "?";
+        },
+        ToDate: function(indent) {
+            var $elf = this, _fromIdx = this.input.idx, date;
+            this._form(function() {
+                this._applyWithArgs("exactly", "ToDate");
+                return date = this._apply("DateValue");
+            });
+            return "DATE(" + date + ")";
+        },
+        ToTime: function(indent) {
+            var $elf = this, _fromIdx = this.input.idx, date;
+            this._form(function() {
+                this._applyWithArgs("exactly", "ToTime");
+                return date = this._apply("DateValue");
+            });
+            return this._or(function() {
+                this._pred("postgres" == this.engine);
+                return "CAST(" + date + " AS TIME)";
+            }, function() {
+                return "TIME(" + date + ")";
+            });
+        },
+        Now: function(indent) {
+            var $elf = this, _fromIdx = this.input.idx;
+            this._form(function() {
+                return this._applyWithArgs("exactly", "Now");
+            });
+            return "CURRENT_TIMESTAMP";
         },
         JSONValue: function(indent) {
             var $elf = this, _fromIdx = this.input.idx;
@@ -932,8 +1059,36 @@
                 return "coalesce(array_to_json(array_agg(" + field + ")), '[]')";
             }, function() {
                 return function() {
-                    throw "AggregateJSON not supported on: " + this.engine;
+                    throw new Error("AggregateJSON not supported on: " + this.engine);
                 }.call(this);
+            });
+        },
+        DurationValue: function(indent) {
+            var $elf = this, _fromIdx = this.input.idx;
+            return this._or(function() {
+                return this._applyWithArgs("UnknownValue", indent);
+            }, function() {
+                return this._applyWithArgs("Duration", indent);
+            });
+        },
+        Duration: function(indent) {
+            var $elf = this, _fromIdx = this.input.idx, duration;
+            this._form(function() {
+                this._applyWithArgs("exactly", "Duration");
+                return duration = this.anything();
+            });
+            this._pred(_.isObject(duration));
+            duration = _(duration).pick("negative", "day", "hour", "minute", "second").omitBy(_.isNil).value();
+            this._pred(!_(duration).omit("negative").isEmpty());
+            return this._or(function() {
+                this._pred("websql" == this.engine);
+                return function() {
+                    throw new Error("Durations not supported on: " + this.engine);
+                }.call(this);
+            }, function() {
+                return "INTERVAL '" + (duration.negative ? "-" : "") + (duration.day || "0") + " " + (duration.negative ? "-" : "") + (duration.hour || "0") + ":" + (duration.minute || "0") + ":" + Number(duration.second).toLocaleString("en", {
+                    minimumFractionDigits: 1
+                }) + "'" + ("mysql" == this.engine ? " DAY_MICROSECOND" : "");
             });
         },
         Process: function() {

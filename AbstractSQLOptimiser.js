@@ -344,6 +344,8 @@
                 return this._apply("DateValue");
             }, function() {
                 return this._apply("JSONValue");
+            }, function() {
+                return this._apply("DurationValue");
             });
         },
         UnknownValue: function() {
@@ -424,6 +426,8 @@
                 return this._apply("Replace");
             }, function() {
                 return this._apply("Substring");
+            }, function() {
+                return this._apply("Right");
             });
         },
         Text: function() {
@@ -539,6 +543,15 @@
             });
             return [ "Substring", string ].concat(args);
         },
+        Right: function(indent) {
+            var $elf = this, _fromIdx = this.input.idx, n, string;
+            this._form(function() {
+                this._applyWithArgs("exactly", "Right");
+                string = this._apply("TextValue");
+                return n = this._apply("NumericValue");
+            });
+            return [ "Right", string, n ];
+        },
         NumericValue: function() {
             var $elf = this, _fromIdx = this.input.idx;
             return this._or(function() {
@@ -554,11 +567,25 @@
             }, function() {
                 return this._apply("CharacterLength");
             }, function() {
-                return this._apply("InStr");
-            }, function() {
                 return this._apply("IndexOf");
             }, function() {
                 return this._apply("StrPos");
+            }, function() {
+                return this._apply("Year");
+            }, function() {
+                return this._apply("Month");
+            }, function() {
+                return this._apply("Day");
+            }, function() {
+                return this._apply("Hour");
+            }, function() {
+                return this._apply("Minute");
+            }, function() {
+                return this._apply("Second");
+            }, function() {
+                return this._apply("FractionalSeconds");
+            }, function() {
+                return this._apply("TotalSeconds");
             }, function() {
                 return this._apply("Round");
             }, function() {
@@ -662,15 +689,6 @@
             });
             return [ "CharacterLength", text ];
         },
-        InStr: function() {
-            var $elf = this, _fromIdx = this.input.idx, haystack, needle;
-            this._form(function() {
-                this._applyWithArgs("exactly", "InStr");
-                haystack = this._apply("TextValue");
-                return needle = this._apply("TextValue");
-            });
-            return [ "InStr", haystack, needle ];
-        },
         IndexOf: function() {
             var $elf = this, _fromIdx = this.input.idx, haystack, needle;
             this._form(function() {
@@ -690,16 +708,91 @@
                 return needle = this._apply("TextValue");
             });
             this._apply("SetHelped");
-            return [ "InStr", haystack, needle ];
+            return [ "Subtract", [ "StrPos", haystack, needle ], [ "Number", 1 ] ];
         },
         StrPos: function() {
             var $elf = this, _fromIdx = this.input.idx, haystack, needle;
             this._form(function() {
-                this._applyWithArgs("exactly", "StrPos");
+                (function() {
+                    switch (this.anything()) {
+                      case "InStr":
+                        return "InStr";
+
+                      case "StrPos":
+                        return "StrPos";
+
+                      default:
+                        throw this._fail();
+                    }
+                }).call(this);
                 haystack = this._apply("TextValue");
                 return needle = this._apply("TextValue");
             });
             return [ "StrPos", haystack, needle ];
+        },
+        Year: function() {
+            var $elf = this, _fromIdx = this.input.idx, date;
+            this._form(function() {
+                this._applyWithArgs("exactly", "Year");
+                return date = this._apply("DateValue");
+            });
+            return [ "Year", date ];
+        },
+        Month: function() {
+            var $elf = this, _fromIdx = this.input.idx, date;
+            this._form(function() {
+                this._applyWithArgs("exactly", "Month");
+                return date = this._apply("DateValue");
+            });
+            return [ "Month", date ];
+        },
+        Day: function() {
+            var $elf = this, _fromIdx = this.input.idx, date;
+            this._form(function() {
+                this._applyWithArgs("exactly", "Day");
+                return date = this._apply("DateValue");
+            });
+            return [ "Day", date ];
+        },
+        Hour: function() {
+            var $elf = this, _fromIdx = this.input.idx, date;
+            this._form(function() {
+                this._applyWithArgs("exactly", "Hour");
+                return date = this._apply("DateValue");
+            });
+            return [ "Hour", date ];
+        },
+        Minute: function() {
+            var $elf = this, _fromIdx = this.input.idx, date;
+            this._form(function() {
+                this._applyWithArgs("exactly", "Minute");
+                return date = this._apply("DateValue");
+            });
+            return [ "Minute", date ];
+        },
+        Second: function() {
+            var $elf = this, _fromIdx = this.input.idx, date;
+            this._form(function() {
+                this._applyWithArgs("exactly", "Second");
+                return date = this._apply("DateValue");
+            });
+            return [ "Second", date ];
+        },
+        FractionalSeconds: function() {
+            var $elf = this, _fromIdx = this.input.idx, date;
+            this._form(function() {
+                this._applyWithArgs("exactly", "Fractionalseconds");
+                return date = this._apply("DateValue");
+            });
+            return [ "Fractionalseconds", date ];
+        },
+        TotalSeconds: function() {
+            var $elf = this, _fromIdx = this.input.idx, duration;
+            this._form(function() {
+                this._applyWithArgs("exactly", "Totalseconds");
+                return duration = this._apply("DurationValue");
+            });
+            return [ "Totalseconds", duration ];
         },
         Round: function() {
             var $elf = this, _fromIdx = this.input.idx, num;
@@ -928,6 +1021,12 @@
                 return this._apply("UnknownValue");
             }, function() {
                 return this._apply("Date");
+            }, function() {
+                return this._apply("ToDate");
+            }, function() {
+                return this._apply("ToTime");
+            }, function() {
+                return this._apply("Now");
             });
         },
         Date: function() {
@@ -938,6 +1037,29 @@
             });
             this._pred(_.isDate(date));
             return [ "Date", date ];
+        },
+        ToDate: function() {
+            var $elf = this, _fromIdx = this.input.idx, date;
+            this._form(function() {
+                this._applyWithArgs("exactly", "ToDate");
+                return date = this._apply("DateValue");
+            });
+            return [ "ToDate", date ];
+        },
+        ToTime: function() {
+            var $elf = this, _fromIdx = this.input.idx, date;
+            this._form(function() {
+                this._applyWithArgs("exactly", "ToTime");
+                return date = this._apply("DateValue");
+            });
+            return [ "ToTime", date ];
+        },
+        Now: function() {
+            var $elf = this, _fromIdx = this.input.idx;
+            this._form(function() {
+                return this._applyWithArgs("exactly", "Now");
+            });
+            return [ "Now" ];
         },
         JSONValue: function() {
             var $elf = this, _fromIdx = this.input.idx;
@@ -954,6 +1076,27 @@
                 return field = this.anything();
             });
             return [ "AggregateJSON", field ];
+        },
+        DurationValue: function() {
+            var $elf = this, _fromIdx = this.input.idx;
+            return this._or(function() {
+                return this._apply("UnknownValue");
+            }, function() {
+                return this._apply("Duration");
+            });
+        },
+        Duration: function() {
+            var $elf = this, _fromIdx = this.input.idx, duration;
+            this._form(function() {
+                this._applyWithArgs("exactly", "Duration");
+                return duration = this.anything();
+            });
+            this._pred(_.isObject(duration));
+            duration = _(duration).pick("negative", "day", "hour", "minute", "second").omitBy(_.isNil).pickBy(function(value, key) {
+                return "negative" === key ? _.isBoolean(value) : _.isNumber(value);
+            }).value();
+            this._pred(!_(duration).omit("negative").isEmpty());
+            return [ "Duration", duration ];
         }
     }), AbstractSQLOptimiser = exports.AbstractSQLOptimiser = AbstractSQLValidator._extend({
         FieldNotEquals: function() {
@@ -1150,7 +1293,7 @@
         BooleanValue: function() {
             var $elf = this, _fromIdx = this.input.idx;
             return this._or(function() {
-                return this._apply("Substringof");
+                return this._apply("Contains");
             }, function() {
                 return this._apply("StartsWith");
             }, function() {
@@ -1159,15 +1302,24 @@
                 return AbstractSQLValidator._superApplyWithArgs(this, "BooleanValue");
             });
         },
-        Substringof: function() {
+        Contains: function() {
             var $elf = this, _fromIdx = this.input.idx, haystack, needle;
             this._form(function() {
-                this._applyWithArgs("exactly", "Substringof");
-                needle = this._apply("TextValue");
-                return haystack = this._apply("TextValue");
+                switch (this.anything()) {
+                  case "Contains":
+                    haystack = this._apply("TextValue");
+                    return needle = this._apply("TextValue");
+
+                  case "Substringof":
+                    needle = this._apply("TextValue");
+                    return haystack = this._apply("TextValue");
+
+                  default:
+                    throw this._fail();
+                }
             });
             this._apply("SetHelped");
-            return [ "Like", haystack, [ "Concat", [ "Text", "%" ], needle, [ "Text", "%" ] ] ];
+            return [ "GreaterThan", [ "StrPos", haystack, needle ], [ "Number", 0 ] ];
         },
         StartsWith: function() {
             var $elf = this, _fromIdx = this.input.idx, haystack, needle;
@@ -1177,7 +1329,7 @@
                 return needle = this._apply("TextValue");
             });
             this._apply("SetHelped");
-            return [ "Like", haystack, [ "Concat", needle, [ "Text", "%" ] ] ];
+            return [ "Equals", [ "StrPos", haystack, needle ], [ "Number", 1 ] ];
         },
         EndsWith: function() {
             var $elf = this, _fromIdx = this.input.idx, haystack, needle;
@@ -1187,7 +1339,7 @@
                 return needle = this._apply("TextValue");
             });
             this._apply("SetHelped");
-            return [ "Like", haystack, [ "Concat", [ "Text", "%" ], needle ] ];
+            return [ "Equals", [ "Right", haystack, [ "CharacterLength", needle ] ], needle ];
         },
         Helped: function(disableMemoisationHack) {
             var $elf = this, _fromIdx = this.input.idx;
