@@ -30,7 +30,7 @@
 	dataTypeValidate = (value, field, callback) ->
 		# In case one of the validation types throws an error.
 		{ dataType, required } = field
-		if value == null or value == ''
+		if value == null
 			if required
 				Promise.rejected('cannot be null')
 			else
