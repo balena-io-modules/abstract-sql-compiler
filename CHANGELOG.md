@@ -1,3 +1,5 @@
+v2.0.0
+
 * Stopped treating an empty string as null.
 
 v1.2.0

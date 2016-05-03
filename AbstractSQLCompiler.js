@@ -24,7 +24,7 @@
     dataTypeValidate = function(value, field, callback) {
       var dataType, required;
       dataType = field.dataType, required = field.required;
-      if (value === null || value === '') {
+      if (value === null) {
         if (required) {
           return Promise.rejected('cannot be null');
         } else {
