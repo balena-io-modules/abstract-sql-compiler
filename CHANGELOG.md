@@ -1,3 +1,5 @@
+* Added a non-primitive concept type test to the pilots tests.
+
 v2.0.0
 
 * Stopped treating an empty string as null.

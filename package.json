@@ -4,7 +4,7 @@
   "description": "A translator for abstract sql into sql.",
   "main": "AbstractSQLCompiler.js",
   "scripts": {
-    "pretest": "npm run-script prepublish",
+    "pretest": "npm run prepublish",
     "test": "mocha",
     "prepublish": "./node_modules/.bin/coffee -c AbstractSQLCompiler.coffee && node node_modules/ometa-js/bin/ometajs2js --input AbstractSQLOptimiser.ometajs --output AbstractSQLOptimiser.js && node node_modules/ometa-js/bin/ometajs2js --input AbstractSQLRules2SQL.ometajs --output AbstractSQLRules2SQL.js"
   },
@@ -17,10 +17,10 @@
     "ometa-js": "^1.4.1"
   },
   "devDependencies": {
-    "@resin/lf-to-abstract-sql": "0.0.16",
+    "@resin/lf-to-abstract-sql": "0.0.17",
     "@resin/odata-parser": "~0.1.8",
     "@resin/odata-to-abstract-sql": "~0.3.3",
-    "@resin/sbvr-parser": "0.0.21",
+    "@resin/sbvr-parser": "0.0.22",
     "chai": "^3.0.0",
     "coffee-script": "~1.10.0",
     "mocha": "^2.1.0"

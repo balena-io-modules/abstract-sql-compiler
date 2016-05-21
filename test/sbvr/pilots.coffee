@@ -7,7 +7,9 @@ describe 'pilots', ->
 			Concept Type: Short Text (Type)
 		Term:      years of experience
 			Concept Type: Integer (Type)
+		Term:      person
 		Term:      pilot
+			Concept Type: person
 			Reference Scheme: name
 		Term:      plane
 			Reference Scheme: name
@@ -18,17 +20,26 @@ describe 'pilots', ->
 		Fact Type: plane has name
 			Necessity: each plane has exactly one name
 		Fact type: pilot can fly plane
+			Synonymous Form: plane can be flown by pilot
 		Fact type: pilot is experienced
 		Term: veteran pilot
 			Definition: pilot that can fly at least 2 planes
 	''', [
 		'''
+			CREATE TABLE IF NOT EXISTS "person" (
+				"created at" TIMESTAMP DEFAULT CURRENT_TIMESTAMP NOT NULL
+			,	"id" SERIAL NOT NULL PRIMARY KEY
+			);
+		'''
+		'''
 			CREATE TABLE IF NOT EXISTS "pilot" (
 				"created at" TIMESTAMP DEFAULT CURRENT_TIMESTAMP NOT NULL
 			,	"id" SERIAL NOT NULL PRIMARY KEY
+			,	"person" INTEGER NOT NULL
 			,	"name" VARCHAR(255) NOT NULL
 			,	"years of experience" INTEGER NOT NULL
 			,	"is experienced" INTEGER DEFAULT 0 NOT NULL
+			,	FOREIGN KEY ("person") REFERENCES "person" ("id")
 			);
 		'''
 		'''
@@ -60,8 +71,10 @@ describe 'pilots', ->
 	test.rule 'It is necessary that each pilot can fly at least 1 plane', '''
 		SELECT NOT EXISTS (
 			SELECT 1
-			FROM "pilot" AS "pilot.0"
-			WHERE NOT EXISTS (
+			FROM "pilot" AS "pilot.0",
+				"person" AS "person.0"
+			WHERE "pilot.0"."person" = "person.0"."id"
+			AND NOT EXISTS (
 				SELECT 1
 				FROM "plane" AS "plane.1",
 					"pilot-can_fly-plane" AS "pilot.0-can fly-plane.1"
@@ -74,8 +87,10 @@ describe 'pilots', ->
 	test.rule 'It is necessary that each pilot that is experienced, can fly at least 2 planes', '''
 		SELECT NOT EXISTS (
 			SELECT 1
-			FROM "pilot" AS "pilot.0"
-			WHERE "pilot.0"."is experienced" = 1
+			FROM "pilot" AS "pilot.0",
+				"person" AS "person.0"
+			WHERE "pilot.0"."person" = "person.0"."id"
+			AND "pilot.0"."is experienced" = 1
 			AND NOT (
 				(
 					SELECT COUNT(*)
@@ -91,8 +106,10 @@ describe 'pilots', ->
 	test.rule 'It is necessary that each pilot that is not experienced, can fly at most 2 planes', '''
 		SELECT NOT EXISTS (
 			SELECT 1
-			FROM "pilot" AS "pilot.0"
-			WHERE "pilot.0"."is experienced" = 0
+			FROM "pilot" AS "pilot.0",
+				"person" AS "person.0"
+			WHERE "pilot.0"."person" = "person.0"."id"
+			AND "pilot.0"."is experienced" = 0
 			AND (
 				SELECT COUNT(*)
 				FROM "plane" AS "plane.1",
@@ -106,8 +123,10 @@ describe 'pilots', ->
 	test.rule 'It is necessary that each pilot that can fly at most 2 planes, is not experienced', '''
 		SELECT NOT EXISTS (
 			SELECT 1
-			FROM "pilot" AS "pilot.0"
-			WHERE NOT (
+			FROM "pilot" AS "pilot.0",
+				"person" AS "person.0"
+			WHERE "pilot.0"."person" = "person.0"."id"
+			AND NOT (
 				(
 					SELECT COUNT(*)
 					FROM "plane" AS "plane.1",
@@ -127,8 +146,10 @@ describe 'pilots', ->
 			WHERE (
 				SELECT COUNT(*)
 				FROM "pilot" AS "pilot.1",
+					"person" AS "person.1",
 					"pilot-can_fly-plane" AS "pilot.1-can fly-plane.0"
-				WHERE "pilot.1-can fly-plane.0"."pilot" = "pilot.1"."id"
+				WHERE "pilot.1"."person" = "person.1"."id"
+				AND "pilot.1-can fly-plane.0"."pilot" = "pilot.1"."id"
 				AND "pilot.1-can fly-plane.0"."plane" = "plane.0"."id"
 			) >= 3
 			AND "plane.0"."name" IS NULL
@@ -142,8 +163,10 @@ describe 'pilots', ->
 			WHERE (
 				SELECT COUNT(*)
 				FROM "pilot" AS "pilot.1",
+					"person" AS "person.1",
 					"pilot-can_fly-plane" AS "pilot.1-can fly-plane.0"
-				WHERE "pilot.1"."is experienced" = 1
+				WHERE "pilot.1"."person" = "person.1"."id"
+				AND "pilot.1"."is experienced" = 1
 				AND "pilot.1-can fly-plane.0"."pilot" = "pilot.1"."id"
 				AND "pilot.1-can fly-plane.0"."plane" = "plane.0"."id"
 			) >= 3
@@ -158,8 +181,10 @@ describe 'pilots', ->
 			WHERE (
 				SELECT COUNT(*)
 				FROM "pilot" AS "pilot.1",
+					"person" AS "person.1",
 					"pilot-can_fly-plane" AS "pilot.1-can fly-plane.0"
-				WHERE "pilot.1"."name" IS NOT NULL
+				WHERE "pilot.1"."person" = "person.1"."id"
+				AND "pilot.1"."name" IS NOT NULL
 				AND "pilot.1-can fly-plane.0"."pilot" = "pilot.1"."id"
 				AND "pilot.1-can fly-plane.0"."plane" = "plane.0"."id"
 			) >= 3
@@ -170,8 +195,10 @@ describe 'pilots', ->
 	test.rule 'It is necessary that each pilot has a years of experience that is greater than 0', '''
 		SELECT NOT EXISTS (
 			SELECT 1
-			FROM "pilot" AS "pilot.0"
-			WHERE NOT (
+			FROM "pilot" AS "pilot.0",
+				"person" AS "person.0"
+			WHERE "pilot.0"."person" = "person.0"."id"
+			AND NOT (
 				0 < "pilot.0"."years of experience"
 				AND "pilot.0"."years of experience" IS NOT NULL
 			)
@@ -183,8 +210,10 @@ describe 'pilots', ->
 	test.rule 'It is necessary that each pilot that is experienced, can fly at least 2 planes or has a years of experience that is greater than 5', '''
 		SELECT NOT EXISTS (
 			SELECT 1
-			FROM "pilot" AS "pilot.0"
-			WHERE "pilot.0"."is experienced" = 1
+			FROM "pilot" AS "pilot.0",
+				"person" AS "person.0"
+			WHERE "pilot.0"."person" = "person.0"."id"
+			AND "pilot.0"."is experienced" = 1
 			AND NOT (
 				((
 					SELECT COUNT(*)
@@ -202,8 +231,10 @@ describe 'pilots', ->
 	test.rule 'It is necessary that each pilot that is experienced or can fly at least 2 planes, has a years of experience that is greater than 5', '''
 		SELECT NOT EXISTS (
 			SELECT 1
-			FROM "pilot" AS "pilot.0"
-			WHERE ("pilot.0"."is experienced" = 1
+			FROM "pilot" AS "pilot.0",
+				"person" AS "person.0"
+			WHERE "pilot.0"."person" = "person.0"."id"
+			AND ("pilot.0"."is experienced" = 1
 			OR (
 				SELECT COUNT(*)
 				FROM "plane" AS "plane.1",
@@ -221,8 +252,10 @@ describe 'pilots', ->
 	test.rule 'It is necessary that each pilot that is experienced or can fly at least 3 planes or can fly exactly one plane, has a years of experience that is greater than 5', '''
 		SELECT NOT EXISTS (
 			SELECT 1
-			FROM "pilot" AS "pilot.0"
-			WHERE ("pilot.0"."is experienced" = 1
+			FROM "pilot" AS "pilot.0",
+				"person" AS "person.0"
+			WHERE "pilot.0"."person" = "person.0"."id"
+			AND ("pilot.0"."is experienced" = 1
 			OR (
 				SELECT COUNT(*)
 				FROM "plane" AS "plane.1",
@@ -247,8 +280,10 @@ describe 'pilots', ->
 	test.rule 'It is necessary that each pilot that is experienced, can fly at least 3 planes or exactly one plane', '''
 		SELECT NOT EXISTS (
 			SELECT 1
-			FROM "pilot" AS "pilot.0"
-			WHERE "pilot.0"."is experienced" = 1
+			FROM "pilot" AS "pilot.0",
+				"person" AS "person.0"
+			WHERE "pilot.0"."person" = "person.0"."id"
+			AND "pilot.0"."is experienced" = 1
 			AND NOT (
 				((
 					SELECT COUNT(*)
@@ -271,8 +306,10 @@ describe 'pilots', ->
 	test.rule 'It is necessary that each pilot that can fly at least 3 planes or exactly one plane, is experienced', '''
 		SELECT NOT EXISTS (
 			SELECT 1
-			FROM "pilot" AS "pilot.0"
-			WHERE ((
+			FROM "pilot" AS "pilot.0",
+				"person" AS "person.0"
+			WHERE "pilot.0"."person" = "person.0"."id"
+			AND ((
 				SELECT COUNT(*)
 				FROM "plane" AS "plane.1",
 					"pilot-can_fly-plane" AS "pilot.0-can fly-plane.1"
@@ -293,8 +330,10 @@ describe 'pilots', ->
 	test.rule 'It is necessary that each pilot can fly at least one plane or a pilot can fly at least 10 planes', '''
 		SELECT (NOT EXISTS (
 			SELECT 1
-			FROM "pilot" AS "pilot.0"
-			WHERE NOT EXISTS (
+			FROM "pilot" AS "pilot.0",
+				"person" AS "person.0"
+			WHERE "pilot.0"."person" = "person.0"."id"
+			AND NOT EXISTS (
 				SELECT 1
 				FROM "plane" AS "plane.1",
 					"pilot-can_fly-plane" AS "pilot.0-can fly-plane.1"
@@ -304,8 +343,10 @@ describe 'pilots', ->
 		)
 		OR EXISTS (
 			SELECT 1
-			FROM "pilot" AS "pilot.2"
-			WHERE (
+			FROM "pilot" AS "pilot.2",
+				"person" AS "person.2"
+			WHERE "pilot.2"."person" = "person.2"."id"
+			AND (
 				SELECT COUNT(*)
 				FROM "plane" AS "plane.3",
 					"pilot-can_fly-plane" AS "pilot.2-can fly-plane.3"
@@ -322,15 +363,19 @@ describe 'pilots', ->
 			WHERE ((
 				SELECT COUNT(*)
 				FROM "pilot" AS "pilot.1",
+					"person" AS "person.1",
 					"pilot-can_fly-plane" AS "pilot.1-can fly-plane.0"
-				WHERE "pilot.1-can fly-plane.0"."pilot" = "pilot.1"."id"
+				WHERE "pilot.1"."person" = "person.1"."id"
+				AND "pilot.1-can fly-plane.0"."pilot" = "pilot.1"."id"
 				AND "pilot.1-can fly-plane.0"."plane" = "plane.0"."id"
 			) >= 3
 			OR (
 				SELECT COUNT(*)
 				FROM "pilot" AS "pilot.2",
+					"person" AS "person.2",
 					"pilot-can_fly-plane" AS "pilot.2-can fly-plane.0"
-				WHERE "pilot.2-can fly-plane.0"."pilot" = "pilot.2"."id"
+				WHERE "pilot.2"."person" = "person.2"."id"
+				AND "pilot.2-can fly-plane.0"."pilot" = "pilot.2"."id"
 				AND "pilot.2-can fly-plane.0"."plane" = "plane.0"."id"
 			) = 1)
 			AND "plane.0"."name" IS NULL
@@ -342,8 +387,10 @@ describe 'pilots', ->
 	test.rule 'It is necessary that each pilot that is experienced, can fly at least 2 planes and has a years of experience that is greater than 5', '''
 		SELECT NOT EXISTS (
 			SELECT 1
-			FROM "pilot" AS "pilot.0"
-			WHERE "pilot.0"."is experienced" = 1
+			FROM "pilot" AS "pilot.0",
+				"person" AS "person.0"
+			WHERE "pilot.0"."person" = "person.0"."id"
+			AND "pilot.0"."is experienced" = 1
 			AND NOT (
 				(
 					SELECT COUNT(*)
@@ -361,8 +408,10 @@ describe 'pilots', ->
 	test.rule 'It is necessary that each pilot that is experienced and can fly at least 2 planes, has a years of experience that is greater than 5', '''
 		SELECT NOT EXISTS (
 			SELECT 1
-			FROM "pilot" AS "pilot.0"
-			WHERE "pilot.0"."is experienced" = 1
+			FROM "pilot" AS "pilot.0",
+				"person" AS "person.0"
+			WHERE "pilot.0"."person" = "person.0"."id"
+			AND "pilot.0"."is experienced" = 1
 			AND (
 				SELECT COUNT(*)
 				FROM "plane" AS "plane.1",
@@ -380,8 +429,10 @@ describe 'pilots', ->
 	test.rule 'It is necessary that each pilot that is experienced, can fly at least 3 planes and exactly one plane', '''
 		SELECT NOT EXISTS (
 			SELECT 1
-			FROM "pilot" AS "pilot.0"
-			WHERE "pilot.0"."is experienced" = 1
+			FROM "pilot" AS "pilot.0",
+				"person" AS "person.0"
+			WHERE "pilot.0"."person" = "person.0"."id"
+			AND "pilot.0"."is experienced" = 1
 			AND NOT (
 				(
 					SELECT COUNT(*)
@@ -404,8 +455,10 @@ describe 'pilots', ->
 	test.rule 'It is necessary that each pilot that can fly at least 3 planes and exactly one plane, is experienced', '''
 		SELECT NOT EXISTS (
 			SELECT 1
-			FROM "pilot" AS "pilot.0"
-			WHERE (
+			FROM "pilot" AS "pilot.0",
+				"person" AS "person.0"
+			WHERE "pilot.0"."person" = "person.0"."id"
+			AND (
 				SELECT COUNT(*)
 				FROM "plane" AS "plane.1",
 					"pilot-can_fly-plane" AS "pilot.0-can fly-plane.1"
@@ -426,8 +479,10 @@ describe 'pilots', ->
 	test.rule 'It is necessary that each pilot can fly at least one plane and a pilot can fly at least 10 planes', '''
 		SELECT NOT EXISTS (
 			SELECT 1
-			FROM "pilot" AS "pilot.0"
-			WHERE NOT EXISTS (
+			FROM "pilot" AS "pilot.0",
+				"person" AS "person.0"
+			WHERE "pilot.0"."person" = "person.0"."id"
+			AND NOT EXISTS (
 				SELECT 1
 				FROM "plane" AS "plane.1",
 					"pilot-can_fly-plane" AS "pilot.0-can fly-plane.1"
@@ -437,8 +492,10 @@ describe 'pilots', ->
 		)
 		AND EXISTS (
 			SELECT 1
-			FROM "pilot" AS "pilot.2"
-			WHERE (
+			FROM "pilot" AS "pilot.2",
+				"person" AS "person.2"
+			WHERE "pilot.2"."person" = "person.2"."id"
+			AND (
 				SELECT COUNT(*)
 				FROM "plane" AS "plane.3",
 					"pilot-can_fly-plane" AS "pilot.2-can fly-plane.3"
@@ -455,15 +512,19 @@ describe 'pilots', ->
 			WHERE (
 				SELECT COUNT(*)
 				FROM "pilot" AS "pilot.1",
+					"person" AS "person.1",
 					"pilot-can_fly-plane" AS "pilot.1-can fly-plane.0"
-				WHERE "pilot.1-can fly-plane.0"."pilot" = "pilot.1"."id"
+				WHERE "pilot.1"."person" = "person.1"."id"
+				AND "pilot.1-can fly-plane.0"."pilot" = "pilot.1"."id"
 				AND "pilot.1-can fly-plane.0"."plane" = "plane.0"."id"
 			) >= 3
 			AND (
 				SELECT COUNT(*)
 				FROM "pilot" AS "pilot.2",
+					"person" AS "person.2",
 					"pilot-can_fly-plane" AS "pilot.2-can fly-plane.0"
-				WHERE "pilot.2-can fly-plane.0"."pilot" = "pilot.2"."id"
+				WHERE "pilot.2"."person" = "person.2"."id"
+				AND "pilot.2-can fly-plane.0"."pilot" = "pilot.2"."id"
 				AND "pilot.2-can fly-plane.0"."plane" = "plane.0"."id"
 			) = 1
 			AND "plane.0"."name" IS NULL
@@ -474,8 +535,10 @@ describe 'pilots', ->
 	test.rule 'It is necessary that each pilot that is experienced and can fly at least 3 planes or can fly exactly one plane, has a years of experience that is greater than 5', '''
 		SELECT NOT EXISTS (
 			SELECT 1
-			FROM "pilot" AS "pilot.0"
-			WHERE "pilot.0"."is experienced" = 1
+			FROM "pilot" AS "pilot.0",
+				"person" AS "person.0"
+			WHERE "pilot.0"."person" = "person.0"."id"
+			AND "pilot.0"."is experienced" = 1
 			AND ((
 				SELECT COUNT(*)
 				FROM "plane" AS "plane.1",
@@ -500,8 +563,10 @@ describe 'pilots', ->
 	test.rule 'It is necessary that each pilot that can fly at least 3 planes or can fly exactly one plane and is experienced, has a years of experience that is greater than 5', '''
 		SELECT NOT EXISTS (
 			SELECT 1
-			FROM "pilot" AS "pilot.0"
-			WHERE ((
+			FROM "pilot" AS "pilot.0",
+				"person" AS "person.0"
+			WHERE "pilot.0"."person" = "person.0"."id"
+			AND ((
 				SELECT COUNT(*)
 				FROM "plane" AS "plane.1",
 					"pilot-can_fly-plane" AS "pilot.0-can fly-plane.1"
@@ -527,8 +592,10 @@ describe 'pilots', ->
 	test.rule 'It is necessary that each pilot that is experienced, can fly at least 3 planes, and can fly at most 10 planes, has a years of experience that is greater than 5', '''
 		SELECT NOT EXISTS (
 			SELECT 1
-			FROM "pilot" AS "pilot.0"
-			WHERE "pilot.0"."is experienced" = 1
+			FROM "pilot" AS "pilot.0",
+				"person" AS "person.0"
+			WHERE "pilot.0"."person" = "person.0"."id"
+			AND "pilot.0"."is experienced" = 1
 			AND (
 				SELECT COUNT(*)
 				FROM "plane" AS "plane.1",
@@ -555,8 +622,10 @@ describe 'pilots', ->
 	test.rule 'It is necessary that each pilot that is experienced, can fly at least 3 planes, or can fly exactly one plane, has a years of experience that is greater than 5', '''
 		SELECT NOT EXISTS (
 			SELECT 1
-			FROM "pilot" AS "pilot.0"
-			WHERE ("pilot.0"."is experienced" = 1
+			FROM "pilot" AS "pilot.0",
+				"person" AS "person.0"
+			WHERE "pilot.0"."person" = "person.0"."id"
+			AND ("pilot.0"."is experienced" = 1
 			OR (
 				SELECT COUNT(*)
 				FROM "plane" AS "plane.1",
@@ -581,8 +650,10 @@ describe 'pilots', ->
 	test.rule 'It is necessary that each pilot that is experienced, can fly at least 3 planes, and can fly at most 10 planes or has a name that has a Length (Type) that is greater than 10, has a years of experience that is greater than 5', '''
 		SELECT NOT EXISTS (
 			SELECT 1
-			FROM "pilot" AS "pilot.0"
-			WHERE "pilot.0"."is experienced" = 1
+			FROM "pilot" AS "pilot.0",
+				"person" AS "person.0"
+			WHERE "pilot.0"."person" = "person.0"."id"
+			AND "pilot.0"."is experienced" = 1
 			AND (
 				SELECT COUNT(*)
 				FROM "plane" AS "plane.1",
@@ -612,8 +683,10 @@ describe 'pilots', ->
 	test.rule 'It is necessary that each pilot that is experienced, can fly at least 3 planes, or can fly exactly one plane and has a name that has a Length (Type) that is greater than 10, has a years of experience that is greater than 5', '''
 		SELECT NOT EXISTS (
 			SELECT 1
-			FROM "pilot" AS "pilot.0"
-			WHERE ("pilot.0"."is experienced" = 1
+			FROM "pilot" AS "pilot.0",
+				"person" AS "person.0"
+			WHERE "pilot.0"."person" = "person.0"."id"
+			AND ("pilot.0"."is experienced" = 1
 			OR (
 				SELECT COUNT(*)
 				FROM "plane" AS "plane.1",
@@ -641,8 +714,10 @@ describe 'pilots', ->
 	test.rule 'It is necessary that each pilot that is experienced, can fly at least 3 planes, or can fly exactly one plane and has a name that has a Length (Type) that is greater than 10, has a years of experience that is greater than 5', '''
 		SELECT NOT EXISTS (
 			SELECT 1
-			FROM "pilot" AS "pilot.0"
-			WHERE ("pilot.0"."is experienced" = 1
+			FROM "pilot" AS "pilot.0",
+				"person" AS "person.0"
+			WHERE "pilot.0"."person" = "person.0"."id"
+			AND ("pilot.0"."is experienced" = 1
 			OR (
 				SELECT COUNT(*)
 				FROM "plane" AS "plane.1",
@@ -670,8 +745,10 @@ describe 'pilots', ->
 	test.rule 'It is necessary that each pilot that is experienced, can fly at least 3 planes, or can fly exactly one plane and has a name that has a Length (Type) that is greater than 10, has a years of experience that is greater than 5', '''
 		SELECT NOT EXISTS (
 			SELECT 1
-			FROM "pilot" AS "pilot.0"
-			WHERE ("pilot.0"."is experienced" = 1
+			FROM "pilot" AS "pilot.0",
+				"person" AS "person.0"
+			WHERE "pilot.0"."person" = "person.0"."id"
+			AND ("pilot.0"."is experienced" = 1
 			OR (
 				SELECT COUNT(*)
 				FROM "plane" AS "plane.1",
@@ -699,8 +776,10 @@ describe 'pilots', ->
 	test.rule 'It is necessary that each pilot that is experienced, can fly exactly one plane or can fly at least 5 planes, and can fly at least 3 planes, has a years of experience that is greater than 5', '''
 		SELECT NOT EXISTS (
 			SELECT 1
-			FROM "pilot" AS "pilot.0"
-			WHERE "pilot.0"."is experienced" = 1
+			FROM "pilot" AS "pilot.0",
+				"person" AS "person.0"
+			WHERE "pilot.0"."person" = "person.0"."id"
+			AND "pilot.0"."is experienced" = 1
 			AND ((
 				SELECT COUNT(*)
 				FROM "plane" AS "plane.1",
@@ -732,8 +811,10 @@ describe 'pilots', ->
 	test.rule 'It is necessary that each pilot that is experienced, can fly at least one plane and can fly at most 5 planes, or can fly at least 3 planes, has a years of experience that is greater than 5', '''
 		SELECT NOT EXISTS (
 			SELECT 1
-			FROM "pilot" AS "pilot.0"
-			WHERE ("pilot.0"."is experienced" = 1
+			FROM "pilot" AS "pilot.0",
+				"person" AS "person.0"
+			WHERE "pilot.0"."person" = "person.0"."id"
+			AND ("pilot.0"."is experienced" = 1
 			OR EXISTS (
 				SELECT 1
 				FROM "plane" AS "plane.1",
@@ -767,8 +848,10 @@ describe 'pilots', ->
 	test.rule 'It is necessary that each pilot that is experienced, can fly at most 10 planes or has a name that has a Length (Type) that is greater than 10, and can fly at least 3 planes, has a years of experience that is greater than 5', '''
 		SELECT NOT EXISTS (
 			SELECT 1
-			FROM "pilot" AS "pilot.0"
-			WHERE "pilot.0"."is experienced" = 1
+			FROM "pilot" AS "pilot.0",
+				"person" AS "person.0"
+			WHERE "pilot.0"."person" = "person.0"."id"
+			AND "pilot.0"."is experienced" = 1
 			AND (NOT (
 				(
 					SELECT COUNT(*)
@@ -798,8 +881,10 @@ describe 'pilots', ->
 	test.rule 'It is necessary that each pilot that is experienced, can fly exactly one plane and has a name that has a Length (Type) that is greater than 10, or can fly at least 3 planes, has a years of experience that is greater than 5', '''
 		SELECT NOT EXISTS (
 			SELECT 1
-			FROM "pilot" AS "pilot.0"
-			WHERE ("pilot.0"."is experienced" = 1
+			FROM "pilot" AS "pilot.0",
+				"person" AS "person.0"
+			WHERE "pilot.0"."person" = "person.0"."id"
+			AND ("pilot.0"."is experienced" = 1
 			OR (
 				SELECT COUNT(*)
 				FROM "plane" AS "plane.1",
@@ -827,8 +912,10 @@ describe 'pilots', ->
 	test.rule 'It is necessary that each pilot that can fly at most 10 planes or can fly at least 15 planes, and is experienced and can fly at least 3 planes, has a years of experience that is greater than 5', '''
 		SELECT NOT EXISTS (
 			SELECT 1
-			FROM "pilot" AS "pilot.0"
-			WHERE (NOT (
+			FROM "pilot" AS "pilot.0",
+				"person" AS "person.0"
+			WHERE "pilot.0"."person" = "person.0"."id"
+			AND (NOT (
 				(
 					SELECT COUNT(*)
 					FROM "plane" AS "plane.1",
@@ -862,8 +949,10 @@ describe 'pilots', ->
 	test.rule 'It is necessary that each pilot that can fly at least one plane and at most 10 planes, or is experienced or can fly at least 3 planes, has a years of experience that is greater than 5', '''
 		SELECT NOT EXISTS (
 			SELECT 1
-			FROM "pilot" AS "pilot.0"
-			WHERE (EXISTS (
+			FROM "pilot" AS "pilot.0",
+				"person" AS "person.0"
+			WHERE "pilot.0"."person" = "person.0"."id"
+			AND (EXISTS (
 				SELECT 1
 				FROM "plane" AS "plane.1",
 					"pilot-can_fly-plane" AS "pilot.0-can fly-plane.1"
