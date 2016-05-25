@@ -1037,3 +1037,33 @@ describe 'pilots', ->
 			)
 		) AS "result";
 		'''
+
+	test.rule 'It is necessary that each pilot0 that can fly a plane0, can fly a plane1 that can be flown by a pilot1 that can fly a plane0', '''
+		SELECT NOT EXISTS (
+			SELECT 1
+			FROM "pilot" AS "pilot.0",
+				"person" AS "person.0",
+				"plane" AS "plane.1",
+				"pilot-can_fly-plane" AS "pilot.0-can fly-plane.1"
+			WHERE "pilot.0"."person" = "person.0"."id"
+			AND "pilot.0-can fly-plane.1"."pilot" = "pilot.0"."id"
+			AND "pilot.0-can fly-plane.1"."plane" = "plane.1"."id"
+			AND NOT EXISTS (
+				SELECT 1
+				FROM "plane" AS "plane.2",
+					"pilot" AS "pilot.3",
+					"person" AS "person.3",
+					"plane" AS "plane.1",
+					"pilot-can_fly-plane" AS "pilot.3-can fly-plane.1",
+					"pilot-can_fly-plane" AS "pilot.3-can fly-plane.2",
+					"pilot-can_fly-plane" AS "pilot.0-can fly-plane.2"
+				WHERE "pilot.3"."person" = "person.3"."id"
+				AND "pilot.3-can fly-plane.1"."pilot" = "pilot.3"."id"
+				AND "pilot.3-can fly-plane.1"."plane" = "plane.1"."id"
+				AND "pilot.3-can fly-plane.2"."pilot" = "pilot.3"."id"
+				AND "pilot.3-can fly-plane.2"."plane" = "plane.2"."id"
+				AND "pilot.0-can fly-plane.2"."pilot" = "pilot.0"."id"
+				AND "pilot.0-can fly-plane.2"."plane" = "plane.2"."id"
+			)
+		) AS "result";
+		'''
