@@ -19,9 +19,9 @@ describe 'pilots', ->
 			Necessity: each pilot has exactly one years of experience
 		Fact Type: plane has name
 			Necessity: each plane has exactly one name
-		Fact type: pilot can fly plane
+		Fact Type: pilot can fly plane
 			Synonymous Form: plane can be flown by pilot
-		Fact type: pilot is experienced
+		Fact Type: pilot is experienced
 		Term: veteran pilot
 			Definition: pilot that can fly at least 2 planes
 	''', [
