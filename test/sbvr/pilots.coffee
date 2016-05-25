@@ -174,6 +174,45 @@ describe 'pilots', ->
 		) AS "result";
 		'''
 
+	do ->
+		sql = '''
+			SELECT NOT EXISTS (
+				SELECT 1
+				FROM "plane" AS "plane.0"
+				WHERE (
+					SELECT COUNT(*)
+					FROM "pilot" AS "pilot.1",
+						"person" AS "person.1",
+						"pilot-can_fly-plane" AS "pilot.1-can fly-plane.0"
+					WHERE "pilot.1"."person" = "person.1"."id"
+					AND "pilot.1"."is experienced" = 0
+					AND "pilot.1-can fly-plane.0"."pilot" = "pilot.1"."id"
+					AND "pilot.1-can fly-plane.0"."plane" = "plane.0"."id"
+				) >= 3
+				AND "plane.0"."name" IS NULL
+			) AS "result";
+		'''
+		test.rule 'It is necessary that each plane that at least 3 pilots that are not experienced can fly, has a name', sql
+		test.rule 'It is necessary that each plane that at least 3 pilots that aren\'t experienced can fly, has a name', sql
+
+	test.rule 'It is necessary that each plane that at least 3 pilot that is experienced, can fly, has a name.', '''
+		SELECT NOT EXISTS (
+			SELECT 1
+			FROM "plane" AS "plane.0"
+			WHERE (
+				SELECT COUNT(*)
+				FROM "pilot" AS "pilot.1",
+					"person" AS "person.1",
+					"pilot-can_fly-plane" AS "pilot.1-can fly-plane.0"
+				WHERE "pilot.1"."person" = "person.1"."id"
+				AND "pilot.1"."is experienced" = 1
+				AND "pilot.1-can fly-plane.0"."pilot" = "pilot.1"."id"
+				AND "pilot.1-can fly-plane.0"."plane" = "plane.0"."id"
+			) >= 3
+			AND "plane.0"."name" IS NULL
+		) AS "result";
+	'''
+
 	test.rule 'It is necessary that each plane that at least 3 pilots that a name is of can fly, has a name', '''
 		SELECT NOT EXISTS (
 			SELECT 1
@@ -201,6 +240,22 @@ describe 'pilots', ->
 			AND NOT (
 				0 < "pilot.0"."years of experience"
 				AND "pilot.0"."years of experience" IS NOT NULL
+			)
+		) AS "result";
+		'''
+
+	test.rule 'It is necessary that each plane can be flown by at least 1 pilot', '''
+		SELECT NOT EXISTS (
+			SELECT 1
+			FROM "plane" AS "plane.0"
+			WHERE NOT EXISTS (
+				SELECT 1
+				FROM "pilot" AS "pilot.1",
+					"person" AS "person.1",
+					"pilot-can_fly-plane" AS "pilot.1-can fly-plane.0"
+				WHERE "pilot.1"."person" = "person.1"."id"
+				AND "pilot.1-can fly-plane.0"."pilot" = "pilot.1"."id"
+				AND "pilot.1-can fly-plane.0"."plane" = "plane.0"."id"
 			)
 		) AS "result";
 		'''
