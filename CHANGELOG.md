@@ -1,3 +1,7 @@
+* Added a test for a rule with numbered terms.
+* Added some tests from the sbvr-parser that were missing here.
+* Added a non-primitive concept type test to the pilots tests.
+
 v2.0.0
 
 * Stopped treating an empty string as null.
