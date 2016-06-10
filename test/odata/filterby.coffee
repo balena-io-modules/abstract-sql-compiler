@@ -233,6 +233,12 @@ operandTest = (lhs, op, rhs) ->
 				SELECT ''' + pilotFields + '\n' + '''
 				FROM "pilot"
 				WHERE ''' + sql
+	test "/pilot/$count?$filter=#{odata}", 'GET', bindings, (result) ->
+		it 'should select count(*) from pilot where "' + odata + '"', ->
+			expect(result.query).to.equal '''
+				SELECT COUNT(*)
+				FROM "pilot"
+				WHERE ''' + sql
 
 methodTest = (args...) ->
 	{odata, sql, bindings} = createMethodCall(args...)
@@ -240,6 +246,12 @@ methodTest = (args...) ->
 		it 'should select from pilot where "' + odata + '"', ->
 			expect(result.query).to.equal '''
 				SELECT ''' + pilotFields + '\n' + '''
+				FROM "pilot"
+				WHERE ''' + sql
+	test "/pilot/$count?$filter=#{odata}", 'GET', bindings, (result) ->
+		it 'should select count(*) from pilot where "' + odata + '"', ->
+			expect(result.query).to.equal '''
+				SELECT COUNT(*)
 				FROM "pilot"
 				WHERE ''' + sql
 
@@ -540,6 +552,21 @@ test "/pilot?$filter=pilot__can_fly__plane/any(d:d/plane/name eq 'Concorde')", '
 			)
 		"""
 
+test "/pilot/$count?$filter=pilot__can_fly__plane/any(d:d/plane/name eq 'Concorde')", 'GET', [['Text', 'Concorde']], (result) ->
+	it 'should select count(*) from pilot where ...', ->
+		expect(result.query).to.equal """
+			SELECT COUNT(*)
+			FROM "pilot"
+			WHERE EXISTS (
+				SELECT 1
+				FROM "pilot-can_fly-plane",
+					"plane"
+				WHERE "pilot"."id" = "pilot-can_fly-plane"."pilot"
+				AND "plane"."id" = "pilot-can_fly-plane"."plane"
+				AND "plane"."name" = ?
+			)
+		"""
+
 test "/pilot?$filter=pilot__can_fly__plane/all(d:d/plane/name eq 'Concorde')", 'GET', [['Text', 'Concorde']], (result) ->
 	it 'should select from pilot where ...', ->
 		expect(result.query).to.equal """
@@ -557,6 +584,23 @@ test "/pilot?$filter=pilot__can_fly__plane/all(d:d/plane/name eq 'Concorde')", '
 			)
 		"""
 
+test "/pilot/$count?$filter=pilot__can_fly__plane/all(d:d/plane/name eq 'Concorde')", 'GET', [['Text', 'Concorde']], (result) ->
+	it 'should select count(*) from pilot where ...', ->
+		expect(result.query).to.equal """
+			SELECT COUNT(*)
+			FROM "pilot"
+			WHERE NOT EXISTS (
+				SELECT 1
+				FROM "pilot-can_fly-plane",
+					"plane"
+				WHERE NOT (
+					"pilot"."id" = "pilot-can_fly-plane"."pilot"
+					AND "plane"."id" = "pilot-can_fly-plane"."plane"
+					AND "plane"."name" = ?
+				)
+			)
+	"""
+
 test "/pilot?$filter=pilot__can_fly__plane/plane/any(d:d/name eq 'Concorde')", 'GET', [['Text', 'Concorde']], (result) ->
 	it 'should select from pilot where ...', ->
 		expect(result.query).to.equal """
@@ -572,10 +616,42 @@ test "/pilot?$filter=pilot__can_fly__plane/plane/any(d:d/name eq 'Concorde')", '
 			)
 		"""
 
+test "/pilot/$count?$filter=pilot__can_fly__plane/plane/any(d:d/name eq 'Concorde')", 'GET', [['Text', 'Concorde']], (result) ->
+	it 'should select count(*) from pilot where ...', ->
+		expect(result.query).to.equal """
+			SELECT COUNT(*)
+			FROM "pilot",
+				"pilot-can_fly-plane"
+			WHERE "pilot"."id" = "pilot-can_fly-plane"."pilot"
+			AND EXISTS (
+				SELECT 1
+				FROM "plane"
+				WHERE "plane"."id" = "pilot-can_fly-plane"."plane"
+				AND "plane"."name" = ?
+			)
+		"""
+
 test "/pilot?$filter=pilot__can_fly__plane/plane/all(d:d/name eq 'Concorde')", 'GET', [['Text', 'Concorde']], (result) ->
 	it 'should select from pilot where ...', ->
 		expect(result.query).to.equal """
 			SELECT #{pilotFields}
+			FROM "pilot",
+				"pilot-can_fly-plane"
+			WHERE "pilot"."id" = "pilot-can_fly-plane"."pilot"
+			AND NOT EXISTS (
+				SELECT 1
+				FROM "plane"
+				WHERE NOT (
+					"plane"."id" = "pilot-can_fly-plane"."plane"
+					AND "plane"."name" = ?
+				)
+			)
+		"""
+
+test "/pilot/$count?$filter=pilot__can_fly__plane/plane/all(d:d/name eq 'Concorde')", 'GET', [['Text', 'Concorde']], (result) ->
+	it 'should select count(*) from pilot where ...', ->
+		expect(result.query).to.equal """
+			SELECT COUNT(*)
 			FROM "pilot",
 				"pilot-can_fly-plane"
 			WHERE "pilot"."id" = "pilot-can_fly-plane"."pilot"

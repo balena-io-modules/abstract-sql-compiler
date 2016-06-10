@@ -7,13 +7,13 @@ mysqlAgg = websqlAgg = (field) -> "'[' || group_concat(" + field + ", ',') || ']
 
 do ->
 	remainingPilotFields = _.reject(pilotFields, (field) -> field is '"pilot"."licence"').join(', ')
-	testFunc = (aggFunc) -> (result) ->
+	testFunc = (aggFunc, fields) -> (result) ->
 		it 'should select from pilot.*, aggregated licence', ->
 			expect(result.query).to.equal """
 				SELECT (
 					SELECT #{aggFunc('"licence".*')} AS "licence"
 					FROM (
-						SELECT #{licenceFields.join(', ')}
+						SELECT #{fields}
 						FROM "licence"
 						WHERE "licence"."id" = "pilot"."licence"
 					) AS "licence"
@@ -21,10 +21,13 @@ do ->
 				FROM "pilot"
 			"""
 	url = '/pilot?$expand=licence'
-	test.postgres(url, testFunc(postgresAgg))
-	test.mysql.skip(url, testFunc(mysqlAgg))
-	test.websql.skip(url, testFunc(websqlAgg))
-
+	urlCount = '/pilot?$expand=licence/$count'
+	test.postgres(url, testFunc(postgresAgg, licenceFields.join(', ')))
+	test.postgres(urlCount, testFunc(postgresAgg, 'COUNT(*)'))
+	test.mysql.skip(url, testFunc(mysqlAgg, licenceFields.join(', ')))
+	test.mysql.skip(urlCount, testFunc(mysqlAgg, 'COUNT(*)'))
+	test.websql.skip(url, testFunc(websqlAgg, licenceFields.join(', ')))
+	test.websql.skip(urlCount, testFunc(websqlAgg, 'COUNT(*)'))
 
 do ->
 	remainingPilotCanFlyFields = _.reject(pilotCanFlyPlaneFields, (field) -> field is '"pilot-can_fly-plane"."plane"').join(', ')
@@ -189,13 +192,13 @@ do ->
 
 do ->
 	remainingPilotFields = _.reject(pilotFields, (field) -> field is '"pilot"."licence"').join(', ')
-	testFunc = (aggFunc) -> (result) ->
+	testFunc = (aggFunc, fields) -> (result) ->
 		it 'should select from pilot.*, aggregated licence', ->
 			expect(result.query).to.equal """
 				SELECT (
 					SELECT #{aggFunc('"licence".*')} AS "licence"
 					FROM (
-						SELECT #{licenceFields.join(', ')}
+						SELECT #{fields}
 						FROM "licence"
 						WHERE "licence"."id" = 1
 						AND "licence"."id" = "pilot"."licence"
@@ -204,9 +207,13 @@ do ->
 				FROM "pilot"
 			"""
 	url = '/pilot?$expand=licence($filter=id eq 1)'
-	test.postgres(url, testFunc(postgresAgg))
-	test.mysql.skip(url, testFunc(mysqlAgg))
-	test.websql.skip(url, testFunc(websqlAgg))
+	urlCount = '/pilot?$expand=licence/$count($filter=id eq 1)'
+	test.postgres(url, testFunc(postgresAgg, licenceFields.join(', ')))
+	test.postgres(urlCount, testFunc(postgresAgg, 'COUNT(*)'))
+	test.mysql.skip(url, testFunc(mysqlAgg, licenceFields.join(', ')))
+	test.mysql.skip(urlCount, testFunc(mysqlAgg, 'COUNT(*)'))
+	test.websql.skip(url, testFunc(websqlAgg, licenceFields.join(', ')))
+	test.websql.skip(urlCount, testFunc(websqlAgg, 'COUNT(*)'))
 
 do ->
 	remainingPilotFields = _.reject(pilotFields, (field) -> field is '"pilot"."licence"').join(', ')
@@ -255,6 +262,27 @@ do ->
 do ->
 	remainingPilotFields = _.reject(pilotFields, (field) -> field is '"pilot"."licence"').join(', ')
 	testFunc = (aggFunc) -> (result) ->
+		it 'should select from pilot.*, aggregated count(*) licence and ignore orderby', ->
+			expect(result.query).to.equal """
+				SELECT (
+					SELECT #{aggFunc('"licence".*')} AS "licence"
+					FROM (
+						SELECT COUNT(*)
+						FROM "licence"
+						WHERE "licence"."id" = "pilot"."licence"
+					) AS "licence"
+				) AS "licence", #{remainingPilotFields}
+				FROM "pilot"
+			"""
+	urlCount = '/pilot?$expand=licence/$count($orderby=id)'
+	test.postgres(urlCount, testFunc(postgresAgg))
+	test.mysql.skip(urlCount, testFunc(mysqlAgg))
+	test.websql.skip(urlCount, testFunc(websqlAgg))
+
+
+do ->
+	remainingPilotFields = _.reject(pilotFields, (field) -> field is '"pilot"."licence"').join(', ')
+	testFunc = (aggFunc) -> (result) ->
 		it 'should select from pilot.*, aggregated licence', ->
 			expect(result.query).to.equal """
 				SELECT (
@@ -272,6 +300,26 @@ do ->
 	test.postgres(url, testFunc(postgresAgg))
 	test.mysql.skip(url, testFunc(mysqlAgg))
 	test.websql.skip(url, testFunc(websqlAgg))
+
+do ->
+	remainingPilotFields = _.reject(pilotFields, (field) -> field is '"pilot"."licence"').join(', ')
+	testFunc = (aggFunc) -> (result) ->
+		it 'should select from pilot.*, aggregated count(*) licence and ignore top', ->
+			expect(result.query).to.equal """
+				SELECT (
+					SELECT #{aggFunc('"licence".*')} AS "licence"
+					FROM (
+						SELECT COUNT(*)
+						FROM "licence"
+						WHERE "licence"."id" = "pilot"."licence"
+					) AS "licence"
+				) AS "licence", #{remainingPilotFields}
+				FROM "pilot"
+			"""
+	urlCount = '/pilot?$expand=licence/$count($top=10)'
+	test.postgres(urlCount, testFunc(postgresAgg))
+	test.mysql.skip(urlCount, testFunc(mysqlAgg))
+	test.websql.skip(urlCount, testFunc(websqlAgg))
 
 do ->
 	remainingPilotFields = _.reject(pilotFields, (field) -> field is '"pilot"."licence"').join(', ')
@@ -295,6 +343,26 @@ do ->
 	test.websql.skip(url, testFunc(websqlAgg))
 
 do ->
+	remainingPilotFields = _.reject(pilotFields, (field) -> field is '"pilot"."licence"').join(', ')
+	testFunc = (aggFunc) -> (result) ->
+		it 'should select from pilot.*, aggregated count(*) licence and ignore skip', ->
+			expect(result.query).to.equal """
+				SELECT (
+					SELECT #{aggFunc('"licence".*')} AS "licence"
+					FROM (
+						SELECT COUNT(*)
+						FROM "licence"
+						WHERE "licence"."id" = "pilot"."licence"
+					) AS "licence"
+				) AS "licence", #{remainingPilotFields}
+				FROM "pilot"
+			"""
+	urlCount = '/pilot?$expand=licence/$count($skip=10)'
+	test.postgres(urlCount, testFunc(postgresAgg))
+	test.mysql.skip(urlCount, testFunc(mysqlAgg))
+	test.websql.skip(urlCount, testFunc(websqlAgg))
+
+do ->
 	remainingPilotCanFlyFields = _.reject(pilotCanFlyPlaneFields, (field) -> field is '"pilot-can_fly-plane"."plane"').join(', ')
 	testFunc = (aggFunc) -> (result) ->
 		it 'should select from pilot.*, aggregated(pilot-can_fly-plane, aggregated plane)', ->
@@ -313,3 +381,23 @@ do ->
 	test.postgres(url, testFunc(postgresAgg))
 	test.mysql.skip(url, testFunc(mysqlAgg))
 	test.websql.skip(url, testFunc(websqlAgg))
+
+do ->
+	remainingPilotCanFlyFields = _.reject(pilotCanFlyPlaneFields, (field) -> field is '"pilot-can_fly-plane"."plane"').join(', ')
+	testFunc = (aggFunc) -> (result) ->
+		it 'should select from pilot.*, aggregated count(*) pilot-can_fly-plane and ignore select', ->
+			expect(result.query).to.equal """
+				SELECT (
+					SELECT #{aggFunc('"pilot-can_fly-plane".*')} AS "pilot__can_fly__plane"
+					FROM (
+						SELECT COUNT(*)
+						FROM "pilot-can_fly-plane"
+						WHERE "pilot"."id" = "pilot-can_fly-plane"."pilot"
+					) AS "pilot-can_fly-plane"
+				) AS "pilot__can_fly__plane", #{pilotFields.join(', ')}
+				FROM "pilot"
+			"""
+	urlCount = '/pilot?$expand=pilot__can_fly__plane/$count($select=plane)'
+	test.postgres(urlCount, testFunc(postgresAgg))
+	test.mysql.skip(urlCount, testFunc(mysqlAgg))
+	test.websql.skip(urlCount, testFunc(websqlAgg))
