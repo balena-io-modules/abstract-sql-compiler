@@ -23,11 +23,11 @@ do ->
 	url = '/pilot?$expand=licence'
 	urlCount = '/pilot?$expand=licence/$count'
 	test.postgres(url, testFunc(postgresAgg, licenceFields.join(', ')))
-	test.postgres(urlCount, testFunc(postgresAgg, 'COUNT(*)'))
+	test.postgres(urlCount, testFunc(postgresAgg, 'COUNT(*) AS "$count"'))
 	test.mysql.skip(url, testFunc(mysqlAgg, licenceFields.join(', ')))
-	test.mysql.skip(urlCount, testFunc(mysqlAgg, 'COUNT(*)'))
+	test.mysql.skip(urlCount, testFunc(mysqlAgg, 'COUNT(*) AS "$count"'))
 	test.websql.skip(url, testFunc(websqlAgg, licenceFields.join(', ')))
-	test.websql.skip(urlCount, testFunc(websqlAgg, 'COUNT(*)'))
+	test.websql.skip(urlCount, testFunc(websqlAgg, 'COUNT(*) AS "$count"'))
 
 do ->
 	remainingPilotCanFlyFields = _.reject(pilotCanFlyPlaneFields, (field) -> field is '"pilot-can_fly-plane"."plane"').join(', ')
@@ -209,11 +209,11 @@ do ->
 	url = '/pilot?$expand=licence($filter=id eq 1)'
 	urlCount = '/pilot?$expand=licence/$count($filter=id eq 1)'
 	test.postgres(url, testFunc(postgresAgg, licenceFields.join(', ')))
-	test.postgres(urlCount, testFunc(postgresAgg, 'COUNT(*)'))
+	test.postgres(urlCount, testFunc(postgresAgg, 'COUNT(*) AS "$count"'))
 	test.mysql.skip(url, testFunc(mysqlAgg, licenceFields.join(', ')))
-	test.mysql.skip(urlCount, testFunc(mysqlAgg, 'COUNT(*)'))
+	test.mysql.skip(urlCount, testFunc(mysqlAgg, 'COUNT(*) AS "$count"'))
 	test.websql.skip(url, testFunc(websqlAgg, licenceFields.join(', ')))
-	test.websql.skip(urlCount, testFunc(websqlAgg, 'COUNT(*)'))
+	test.websql.skip(urlCount, testFunc(websqlAgg, 'COUNT(*) AS "$count'))
 
 do ->
 	remainingPilotFields = _.reject(pilotFields, (field) -> field is '"pilot"."licence"').join(', ')
@@ -267,7 +267,7 @@ do ->
 				SELECT (
 					SELECT #{aggFunc('"licence".*')} AS "licence"
 					FROM (
-						SELECT COUNT(*)
+						SELECT COUNT(*) AS "$count"
 						FROM "licence"
 						WHERE "licence"."id" = "pilot"."licence"
 					) AS "licence"
@@ -309,7 +309,7 @@ do ->
 				SELECT (
 					SELECT #{aggFunc('"licence".*')} AS "licence"
 					FROM (
-						SELECT COUNT(*)
+						SELECT COUNT(*) AS "$count"
 						FROM "licence"
 						WHERE "licence"."id" = "pilot"."licence"
 					) AS "licence"
@@ -350,7 +350,7 @@ do ->
 				SELECT (
 					SELECT #{aggFunc('"licence".*')} AS "licence"
 					FROM (
-						SELECT COUNT(*)
+						SELECT COUNT(*) AS "$count"
 						FROM "licence"
 						WHERE "licence"."id" = "pilot"."licence"
 					) AS "licence"
@@ -390,7 +390,7 @@ do ->
 				SELECT (
 					SELECT #{aggFunc('"pilot-can_fly-plane".*')} AS "pilot__can_fly__plane"
 					FROM (
-						SELECT COUNT(*)
+						SELECT COUNT(*) AS "$count"
 						FROM "pilot-can_fly-plane"
 						WHERE "pilot"."id" = "pilot-can_fly-plane"."pilot"
 					) AS "pilot-can_fly-plane"

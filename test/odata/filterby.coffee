@@ -236,7 +236,7 @@ operandTest = (lhs, op, rhs) ->
 	test "/pilot/$count?$filter=#{odata}", 'GET', bindings, (result) ->
 		it 'should select count(*) from pilot where "' + odata + '"', ->
 			expect(result.query).to.equal '''
-				SELECT COUNT(*)
+				SELECT COUNT(*) AS "$count"
 				FROM "pilot"
 				WHERE ''' + sql
 
@@ -251,7 +251,7 @@ methodTest = (args...) ->
 	test "/pilot/$count?$filter=#{odata}", 'GET', bindings, (result) ->
 		it 'should select count(*) from pilot where "' + odata + '"', ->
 			expect(result.query).to.equal '''
-				SELECT COUNT(*)
+				SELECT COUNT(*) AS "$count"
 				FROM "pilot"
 				WHERE ''' + sql
 
@@ -555,7 +555,7 @@ test "/pilot?$filter=pilot__can_fly__plane/any(d:d/plane/name eq 'Concorde')", '
 test "/pilot/$count?$filter=pilot__can_fly__plane/any(d:d/plane/name eq 'Concorde')", 'GET', [['Text', 'Concorde']], (result) ->
 	it 'should select count(*) from pilot where ...', ->
 		expect(result.query).to.equal """
-			SELECT COUNT(*)
+			SELECT COUNT(*) AS "$count"
 			FROM "pilot"
 			WHERE EXISTS (
 				SELECT 1
@@ -587,7 +587,7 @@ test "/pilot?$filter=pilot__can_fly__plane/all(d:d/plane/name eq 'Concorde')", '
 test "/pilot/$count?$filter=pilot__can_fly__plane/all(d:d/plane/name eq 'Concorde')", 'GET', [['Text', 'Concorde']], (result) ->
 	it 'should select count(*) from pilot where ...', ->
 		expect(result.query).to.equal """
-			SELECT COUNT(*)
+			SELECT COUNT(*) AS "$count"
 			FROM "pilot"
 			WHERE NOT EXISTS (
 				SELECT 1
@@ -619,7 +619,7 @@ test "/pilot?$filter=pilot__can_fly__plane/plane/any(d:d/name eq 'Concorde')", '
 test "/pilot/$count?$filter=pilot__can_fly__plane/plane/any(d:d/name eq 'Concorde')", 'GET', [['Text', 'Concorde']], (result) ->
 	it 'should select count(*) from pilot where ...', ->
 		expect(result.query).to.equal """
-			SELECT COUNT(*)
+			SELECT COUNT(*) AS "$count"
 			FROM "pilot",
 				"pilot-can_fly-plane"
 			WHERE "pilot"."id" = "pilot-can_fly-plane"."pilot"
@@ -651,7 +651,7 @@ test "/pilot?$filter=pilot__can_fly__plane/plane/all(d:d/name eq 'Concorde')", '
 test "/pilot/$count?$filter=pilot__can_fly__plane/plane/all(d:d/name eq 'Concorde')", 'GET', [['Text', 'Concorde']], (result) ->
 	it 'should select count(*) from pilot where ...', ->
 		expect(result.query).to.equal """
-			SELECT COUNT(*)
+			SELECT COUNT(*) AS "$count"
 			FROM "pilot",
 				"pilot-can_fly-plane"
 			WHERE "pilot"."id" = "pilot-can_fly-plane"."pilot"

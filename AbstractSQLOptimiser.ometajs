@@ -142,9 +142,19 @@ ometa AbstractSQLValidator {
 		-> [['Select', fields]],
 
 	Count =
-		[	'Count'
-			'*'
-		],
+		[
+			[
+				'Count'
+				'*'
+			]
+			anything:as
+		]
+		-> [['Count', '*'], as]
+		|	[
+				'Count'
+				'*'
+			]
+		,
 
 	Table =
 		[	'From'
