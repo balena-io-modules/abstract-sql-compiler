@@ -125,36 +125,32 @@ ometa AbstractSQLValidator {
 
 	Select =
 		[	'Select'
-			[	(	Count
+			[	(	[	SelectField:field
+						anything:as
+					]
+					-> [field, as]
+				|	SelectField
 				|	[	:table
 						'*'
 					]
-				|	[	AnyValue:value
-						anything:as
-					]
-					-> [value, as]
-				|	AnyValue
 				|	'*'
-				|	Null
 				)*:fields
 			]
 		]
 		-> [['Select', fields]],
 
+	SelectField =
+			Count
+		|	AnyValue
+		|	Null
+	,
+
 	Count =
 		[
-			[
-				'Count'
-				'*'
-			]
-			anything:as
-		]
-		-> [['Count', '*'], as]
-		|	[
-				'Count'
-				'*'
-			]
-		,
+			'Count'
+			'*'
+		],
+
 
 	Table =
 		[	'From'
