@@ -1,9 +1,13 @@
 expect = require('chai').expect
 test = require('./test')
-{ pilotFields, planeFields, licenceFields, teamFields } = require('./fields')
+{ pilotFields, planeFields, licenceFields, teamFields, aliasPilotFields, aliasPlaneFields, aliasPilotLicenceFields, aliasLicenceFields } = require('./fields')
 pilotFields = pilotFields.join(', ')
 planeFields = planeFields.join(', ')
 licenceFields = licenceFields.join(', ')
+aliasPilotFields = aliasPilotFields.join(', ')
+aliasPlaneFields = aliasPlaneFields.join(', ')
+aliasPilotLicenceFields = aliasPilotLicenceFields.join(', ')
+aliasLicenceFields = aliasLicenceFields.join(', ')
 teamFields = teamFields.join(', ')
 
 test '/pilot', (result) ->
@@ -32,11 +36,11 @@ test "/pilot('TextKey')", 'GET', [['Text', 'TextKey']], (result) ->
 test '/pilot(1)/licence', (result) ->
 	it 'should select from the licence of pilot with id', ->
 		expect(result.query).to.equal """
-			SELECT #{licenceFields}
+			SELECT #{aliasLicenceFields}
 			FROM "pilot",
-				"licence"
+				"licence" AS "pilot.licence"
 			WHERE "pilot"."id" = 1
-			AND "licence"."id" = "pilot"."licence"
+			AND "pilot.licence"."id" = "pilot"."licence"
 		"""
 		
 
@@ -44,37 +48,37 @@ test '/pilot(1)/licence', (result) ->
 test '/licence(1)/pilot', (result) ->
 	it 'should select from the pilots of licence with id', ->
 		expect(result.query).to.equal """
-			SELECT #{pilotFields}
+			SELECT #{aliasPilotLicenceFields}
 			FROM "licence",
-				"pilot"
+				"pilot" AS "licence.pilot"
 			WHERE "licence"."id" = 1
-			AND "licence"."id" = "pilot"."licence"
+			AND "licence"."id" = "licence.pilot"."licence"
 		"""
 
 
 test '/pilot(1)/pilot__can_fly__plane/plane', (result) ->
 	it 'should select from the plane of pilot with id', ->
 		expect(result.query).to.equal """
-			SELECT #{planeFields}
+			SELECT #{aliasPlaneFields}
 			FROM "pilot",
-				"pilot-can_fly-plane",
-				"plane"
+				"pilot-can_fly-plane" AS "pilot.pilot-can_fly-plane",
+				"plane" AS "pilot.pilot-can_fly-plane.plane"
 			WHERE "pilot"."id" = 1
-			AND "plane"."id" = "pilot-can_fly-plane"."plane"
-			AND "pilot"."id" = "pilot-can_fly-plane"."pilot"
+			AND "pilot.pilot-can_fly-plane.plane"."id" = "pilot.pilot-can_fly-plane"."plane"
+			AND "pilot"."id" = "pilot.pilot-can_fly-plane"."pilot"
 		"""
 
 
 test '/plane(1)/pilot__can_fly__plane/pilot', (result) ->
 	it 'should select from the pilots of plane with id', ->
 		expect(result.query).to.equal """
-			SELECT #{pilotFields}
+			SELECT #{aliasPilotFields}
 			FROM "plane",
-				"pilot-can_fly-plane",
-				"pilot"
+				"pilot-can_fly-plane" AS "plane.pilot-can_fly-plane",
+				"pilot" AS "plane.pilot-can_fly-plane.pilot"
 			WHERE "plane"."id" = 1
-			AND "pilot"."id" = "pilot-can_fly-plane"."pilot"
-			AND "plane"."id" = "pilot-can_fly-plane"."plane"
+			AND "plane.pilot-can_fly-plane.pilot"."id" = "plane.pilot-can_fly-plane"."pilot"
+			AND "plane"."id" = "plane.pilot-can_fly-plane"."plane"
 		"""
 
 
@@ -99,13 +103,15 @@ do ->
 				UPDATE "pilot"
 				SET "created at" = DEFAULT,
 					"id" = ?,
+					"person" = DEFAULT,
 					"is experienced" = DEFAULT,
 					"name" = DEFAULT,
 					"age" = DEFAULT,
 					"favourite colour" = DEFAULT,
 					"team" = DEFAULT,
 					"licence" = DEFAULT,
-					"hire date" = DEFAULT
+					"hire date" = DEFAULT,
+					"pilot" = DEFAULT
 				WHERE "pilot"."id" = 1
 			''')
 	bindings = [
@@ -208,11 +214,11 @@ test '/pilot(1)/$links/licence', (result) ->
 test '/pilot(1)/pilot__can_fly__plane/$links/plane', (result) ->
 	it 'should select the list of plane ids, for generating the links', ->
 		expect(result.query).to.equal('''
-			SELECT "pilot-can_fly-plane"."plane" AS "plane"
+			SELECT "pilot.pilot-can_fly-plane"."plane" AS "plane"
 			FROM "pilot",
-				"pilot-can_fly-plane"
+				"pilot-can_fly-plane" AS "pilot.pilot-can_fly-plane"
 			WHERE "pilot"."id" = 1
-			AND "pilot"."id" = "pilot-can_fly-plane"."pilot"
+			AND "pilot"."id" = "pilot.pilot-can_fly-plane"."pilot"
 		''')
 
 
@@ -279,9 +285,9 @@ test '/pilot(5)/licence/$count', (result) ->
 		expect(result.query).to.equal """
 			SELECT COUNT(*) AS "$count"
 			FROM "pilot",
-				"licence"
+				"licence" AS "pilot.licence"
 			WHERE "pilot"."id" = 5
-			AND "licence"."id" = "pilot"."licence"
+			AND "pilot.licence"."id" = "pilot"."licence"
 		"""
 
 test '/pilot/$count?$orderby=id asc', (result) ->

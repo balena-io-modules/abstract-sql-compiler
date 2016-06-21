@@ -2,9 +2,10 @@ expect = require('chai').expect
 test = require('./test')
 clientModel = require('../client-model.json')
 _ = require('lodash')
-{pilotFields, pilotCanFlyPlaneFields, teamFields} = require('./fields')
+{pilotFields, pilotCanFlyPlaneFields, teamFields, aliasPilotCanFlyPlaneFields} = require('./fields')
 pilotFields = pilotFields.join(', ')
 pilotCanFlyPlaneFields = pilotCanFlyPlaneFields.join(', ')
+aliasPilotCanFlyPlaneFields = aliasPilotCanFlyPlaneFields.join(', ')
 teamFields = teamFields.join(', ')
 
 operandToOData = (operand) ->
@@ -340,26 +341,26 @@ do ->
 		['Bind', ['pilot', 'name']]
 	]
 	filterWhere = [
-		'WHERE "pilot"."id" = "pilot-can_fly-plane"."pilot"'
-		'AND "plane"."id" = "pilot-can_fly-plane"."plane"'
+		'WHERE "pilot"."id" = "pilot.pilot-can_fly-plane"."pilot"'
+		'AND "pilot.pilot-can_fly-plane.plane"."id" = "pilot.pilot-can_fly-plane"."plane"'
 		"AND #{sql}"
 	]
 	insertTest = (result) ->
 		expect(result.query).to.equal """
 			INSERT INTO "pilot" ("name")
 			SELECT "pilot"."name"
-			FROM "pilot-can_fly-plane",
-				"plane",
+			FROM "pilot-can_fly-plane" AS "pilot.pilot-can_fly-plane",
+				"plane" AS "pilot.pilot-can_fly-plane.plane",
 				(
-				SELECT NULL AS "created at", NULL AS "id", NULL AS "is experienced", CAST(? AS VARCHAR(255)) AS "name", NULL AS "age", NULL AS "favourite colour", NULL AS "team", NULL AS "licence", NULL AS "hire date"
+				SELECT NULL AS "created at", NULL AS "id", NULL AS "person", NULL AS "is experienced", CAST(? AS VARCHAR(255)) AS "name", NULL AS "age", NULL AS "favourite colour", NULL AS "team", NULL AS "licence", NULL AS "hire date", NULL AS "pilot"
 			) AS "pilot"
 			#{filterWhere.join('\n')}
 		"""
 	updateWhere = """
 		WHERE "pilot"."id" IN ((
 			SELECT "pilot"."id"
-			FROM "pilot-can_fly-plane",
-				"plane",
+			FROM "pilot-can_fly-plane" AS "pilot.pilot-can_fly-plane",
+				"plane" AS "pilot.pilot-can_fly-plane.plane",
 				"pilot"
 			#{filterWhere.join('\n\t')}
 		))
@@ -398,13 +399,15 @@ do ->
 					UPDATE "pilot"
 					SET "created at" = DEFAULT,
 						"id" = DEFAULT,
+						"person" = DEFAULT,
 						"is experienced" = DEFAULT,
 						"name" = ?,
 						"age" = DEFAULT,
 						"favourite colour" = DEFAULT,
 						"team" = DEFAULT,
 						"licence" = DEFAULT,
-						"hire date" = DEFAULT
+						"hire date" = DEFAULT,
+						"pilot" = DEFAULT
 					#{updateWhere}
 				"""
 
@@ -414,8 +417,8 @@ do ->
 				DELETE FROM "pilot"
 				WHERE "pilot"."id" IN ((
 					SELECT "pilot"."id"
-					FROM "pilot-can_fly-plane",
-						"plane",
+					FROM "pilot-can_fly-plane" AS "pilot.pilot-can_fly-plane",
+						"plane" AS "pilot.pilot-can_fly-plane.plane",
 						"pilot"
 					#{filterWhere.join('\n\t')}
 				))
@@ -434,7 +437,7 @@ do ->
 				INSERT INTO "pilot" ("name")
 				SELECT "pilot"."name"
 				FROM (
-					SELECT NULL AS "created at", NULL AS "id", NULL AS "is experienced", CAST(? AS VARCHAR(255)) AS "name", NULL AS "age", NULL AS "favourite colour", NULL AS "team", NULL AS "licence", NULL AS "hire date"
+					SELECT NULL AS "created at", NULL AS "id", NULL AS "person", NULL AS "is experienced", CAST(? AS VARCHAR(255)) AS "name", NULL AS "age", NULL AS "favourite colour", NULL AS "team", NULL AS "licence", NULL AS "hire date", NULL AS "pilot"
 				) AS "pilot"
 				WHERE #{sql}
 			"""
@@ -467,7 +470,7 @@ do ->
 					INSERT INTO "pilot" ("id", "name")
 					SELECT "pilot"."id", "pilot"."name"
 					FROM (
-						SELECT NULL AS "created at", CAST(? AS INTEGER) AS "id", NULL AS "is experienced", CAST(? AS VARCHAR(255)) AS "name", NULL AS "age", NULL AS "favourite colour", NULL AS "team", NULL AS "licence", NULL AS "hire date"
+						SELECT NULL AS "created at", CAST(? AS INTEGER) AS "id", NULL AS "person", NULL AS "is experienced", CAST(? AS VARCHAR(255)) AS "name", NULL AS "age", NULL AS "favourite colour", NULL AS "team", NULL AS "licence", NULL AS "hire date", NULL AS "pilot"
 					) AS "pilot"
 					WHERE #{sql}
 				"""
@@ -476,13 +479,15 @@ do ->
 					UPDATE "pilot"
 					SET "created at" = DEFAULT,
 						"id" = ?,
+						"person" = DEFAULT,
 						"is experienced" = DEFAULT,
 						"name" = ?,
 						"age" = DEFAULT,
 						"favourite colour" = DEFAULT,
 						"team" = DEFAULT,
 						"licence" = DEFAULT,
-						"hire date" = DEFAULT
+						"hire date" = DEFAULT,
+						"pilot" = DEFAULT
 					WHERE "pilot"."id" = 1
 					AND "pilot"."id" IN ((
 						SELECT "pilot"."id"
@@ -497,12 +502,12 @@ do ->
 	test '/pilot(1)/pilot__can_fly__plane?$filter=' + odata, (result) ->
 		it 'should select from pilot__can_fly__plane where "' + odata + '"', ->
 			expect(result.query).to.equal """
-				SELECT #{pilotCanFlyPlaneFields}
+				SELECT #{aliasPilotCanFlyPlaneFields}
 				FROM "pilot",
-					"pilot-can_fly-plane"
+					"pilot-can_fly-plane" AS "pilot.pilot-can_fly-plane"
 				WHERE "pilot"."id" = 1
 				AND #{sql}
-				AND "pilot"."id" = "pilot-can_fly-plane"."pilot"
+				AND "pilot"."id" = "pilot.pilot-can_fly-plane"."pilot"
 			"""
 
 methodTest('contains', 'name', "'et'")
@@ -544,11 +549,11 @@ test "/pilot?$filter=pilot__can_fly__plane/any(d:d/plane/name eq 'Concorde')", '
 			FROM "pilot"
 			WHERE EXISTS (
 				SELECT 1
-				FROM "pilot-can_fly-plane",
-					"plane"
-				WHERE "pilot"."id" = "pilot-can_fly-plane"."pilot"
-				AND "plane"."id" = "pilot-can_fly-plane"."plane"
-				AND "plane"."name" = ?
+				FROM "pilot-can_fly-plane" AS "pilot.pilot-can_fly-plane",
+					"plane" AS "pilot.pilot-can_fly-plane.plane"
+				WHERE "pilot"."id" = "pilot.pilot-can_fly-plane"."pilot"
+				AND "pilot.pilot-can_fly-plane.plane"."id" = "pilot.pilot-can_fly-plane"."plane"
+				AND "pilot.pilot-can_fly-plane.plane"."name" = ?
 			)
 		"""
 
@@ -559,11 +564,11 @@ test "/pilot/$count?$filter=pilot__can_fly__plane/any(d:d/plane/name eq 'Concord
 			FROM "pilot"
 			WHERE EXISTS (
 				SELECT 1
-				FROM "pilot-can_fly-plane",
-					"plane"
-				WHERE "pilot"."id" = "pilot-can_fly-plane"."pilot"
-				AND "plane"."id" = "pilot-can_fly-plane"."plane"
-				AND "plane"."name" = ?
+				FROM "pilot-can_fly-plane" AS "pilot.pilot-can_fly-plane",
+					"plane" AS "pilot.pilot-can_fly-plane.plane"
+				WHERE "pilot"."id" = "pilot.pilot-can_fly-plane"."pilot"
+				AND "pilot.pilot-can_fly-plane.plane"."id" = "pilot.pilot-can_fly-plane"."plane"
+				AND "pilot.pilot-can_fly-plane.plane"."name" = ?
 			)
 		"""
 
@@ -574,12 +579,12 @@ test "/pilot?$filter=pilot__can_fly__plane/all(d:d/plane/name eq 'Concorde')", '
 			FROM "pilot"
 			WHERE NOT EXISTS (
 				SELECT 1
-				FROM "pilot-can_fly-plane",
-					"plane"
+				FROM "pilot-can_fly-plane" AS "pilot.pilot-can_fly-plane",
+					"plane" AS "pilot.pilot-can_fly-plane.plane"
 				WHERE NOT (
-					"pilot"."id" = "pilot-can_fly-plane"."pilot"
-					AND "plane"."id" = "pilot-can_fly-plane"."plane"
-					AND "plane"."name" = ?
+					"pilot"."id" = "pilot.pilot-can_fly-plane"."pilot"
+					AND "pilot.pilot-can_fly-plane.plane"."id" = "pilot.pilot-can_fly-plane"."plane"
+					AND "pilot.pilot-can_fly-plane.plane"."name" = ?
 				)
 			)
 		"""
@@ -591,12 +596,12 @@ test "/pilot/$count?$filter=pilot__can_fly__plane/all(d:d/plane/name eq 'Concord
 			FROM "pilot"
 			WHERE NOT EXISTS (
 				SELECT 1
-				FROM "pilot-can_fly-plane",
-					"plane"
+				FROM "pilot-can_fly-plane" AS "pilot.pilot-can_fly-plane",
+					"plane" AS "pilot.pilot-can_fly-plane.plane"
 				WHERE NOT (
-					"pilot"."id" = "pilot-can_fly-plane"."pilot"
-					AND "plane"."id" = "pilot-can_fly-plane"."plane"
-					AND "plane"."name" = ?
+					"pilot"."id" = "pilot.pilot-can_fly-plane"."pilot"
+					AND "pilot.pilot-can_fly-plane.plane"."id" = "pilot.pilot-can_fly-plane"."plane"
+					AND "pilot.pilot-can_fly-plane.plane"."name" = ?
 				)
 			)
 	"""
@@ -606,13 +611,13 @@ test "/pilot?$filter=pilot__can_fly__plane/plane/any(d:d/name eq 'Concorde')", '
 		expect(result.query).to.equal """
 			SELECT #{pilotFields}
 			FROM "pilot",
-				"pilot-can_fly-plane"
-			WHERE "pilot"."id" = "pilot-can_fly-plane"."pilot"
+				"pilot-can_fly-plane" AS "pilot.pilot-can_fly-plane"
+			WHERE "pilot"."id" = "pilot.pilot-can_fly-plane"."pilot"
 			AND EXISTS (
 				SELECT 1
-				FROM "plane"
-				WHERE "plane"."id" = "pilot-can_fly-plane"."plane"
-				AND "plane"."name" = ?
+				FROM "plane" AS "pilot.pilot-can_fly-plane.plane"
+				WHERE "pilot.pilot-can_fly-plane.plane"."id" = "pilot.pilot-can_fly-plane"."plane"
+				AND "pilot.pilot-can_fly-plane.plane"."name" = ?
 			)
 		"""
 
@@ -621,13 +626,13 @@ test "/pilot/$count?$filter=pilot__can_fly__plane/plane/any(d:d/name eq 'Concord
 		expect(result.query).to.equal """
 			SELECT COUNT(*) AS "$count"
 			FROM "pilot",
-				"pilot-can_fly-plane"
-			WHERE "pilot"."id" = "pilot-can_fly-plane"."pilot"
+				"pilot-can_fly-plane" AS "pilot.pilot-can_fly-plane"
+			WHERE "pilot"."id" = "pilot.pilot-can_fly-plane"."pilot"
 			AND EXISTS (
 				SELECT 1
-				FROM "plane"
-				WHERE "plane"."id" = "pilot-can_fly-plane"."plane"
-				AND "plane"."name" = ?
+				FROM "plane" AS "pilot.pilot-can_fly-plane.plane"
+				WHERE "pilot.pilot-can_fly-plane.plane"."id" = "pilot.pilot-can_fly-plane"."plane"
+				AND "pilot.pilot-can_fly-plane.plane"."name" = ?
 			)
 		"""
 
@@ -636,14 +641,14 @@ test "/pilot?$filter=pilot__can_fly__plane/plane/all(d:d/name eq 'Concorde')", '
 		expect(result.query).to.equal """
 			SELECT #{pilotFields}
 			FROM "pilot",
-				"pilot-can_fly-plane"
-			WHERE "pilot"."id" = "pilot-can_fly-plane"."pilot"
+				"pilot-can_fly-plane" AS "pilot.pilot-can_fly-plane"
+			WHERE "pilot"."id" = "pilot.pilot-can_fly-plane"."pilot"
 			AND NOT EXISTS (
 				SELECT 1
-				FROM "plane"
+				FROM "plane" AS "pilot.pilot-can_fly-plane.plane"
 				WHERE NOT (
-					"plane"."id" = "pilot-can_fly-plane"."plane"
-					AND "plane"."name" = ?
+					"pilot.pilot-can_fly-plane.plane"."id" = "pilot.pilot-can_fly-plane"."plane"
+					AND "pilot.pilot-can_fly-plane.plane"."name" = ?
 				)
 			)
 		"""
@@ -653,14 +658,14 @@ test "/pilot/$count?$filter=pilot__can_fly__plane/plane/all(d:d/name eq 'Concord
 		expect(result.query).to.equal """
 			SELECT COUNT(*) AS "$count"
 			FROM "pilot",
-				"pilot-can_fly-plane"
-			WHERE "pilot"."id" = "pilot-can_fly-plane"."pilot"
+				"pilot-can_fly-plane" AS "pilot.pilot-can_fly-plane"
+			WHERE "pilot"."id" = "pilot.pilot-can_fly-plane"."pilot"
 			AND NOT EXISTS (
 				SELECT 1
-				FROM "plane"
+				FROM "plane" AS "pilot.pilot-can_fly-plane.plane"
 				WHERE NOT (
-					"plane"."id" = "pilot-can_fly-plane"."plane"
-					AND "plane"."name" = ?
+					"pilot.pilot-can_fly-plane.plane"."id" = "pilot.pilot-can_fly-plane"."plane"
+					AND "pilot.pilot-can_fly-plane.plane"."name" = ?
 				)
 			)
 		"""
@@ -688,11 +693,11 @@ do ->
 			expect(result.query).to.equal """
 				SELECT #{teamFields}
 				FROM "team",
-					"pilot",
-					"pilot-can_fly-plane",
-					"plane"
-				WHERE "team"."favourite colour" = "pilot"."team"
-				AND "pilot"."id" = "pilot-can_fly-plane"."pilot"
-				AND "plane"."id" = "pilot-can_fly-plane"."plane"
+					"pilot" AS "team.pilot",
+					"pilot-can_fly-plane" AS "team.pilot.pilot-can_fly-plane",
+					"plane" AS "team.pilot.pilot-can_fly-plane.plane"
+				WHERE "team"."favourite colour" = "team.pilot"."team"
+				AND "team.pilot"."id" = "team.pilot.pilot-can_fly-plane"."pilot"
+				AND "team.pilot.pilot-can_fly-plane.plane"."id" = "team.pilot.pilot-can_fly-plane"."plane"
 				AND #{sql}
 			"""
