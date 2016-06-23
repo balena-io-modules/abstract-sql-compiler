@@ -65,6 +65,14 @@ operandToSQL = (operand, resource = 'pilot') ->
 		fieldParts = operand.split('/')
 		if fieldParts.length > 1
 			mapping = clientModel.resourceToSQLMappings[fieldParts[fieldParts.length - 2]][fieldParts[fieldParts.length - 1]]
+			alias = resource+'.'+mapping[0]
+			if fieldParts.length > 2
+				part = clientModel.resourceToSQLMappings[fieldParts[0]][resource]
+				alias = part[1]+'.'+part[0]+'.'+mapping[0]
+				if fieldParts.length > 3
+					part = clientModel.resourceToSQLMappings[fieldParts[fieldParts.length - 3]][fieldParts[0]]
+					alias = resource+'.'+part[1]+'.'+part[0]+'.'+mapping[0]
+			mapping=[alias, mapping[1]]
 		else
 			mapping = clientModel.resourceToSQLMappings[resource][operand]
 		return '"' + mapping.join('"."') + '"'
@@ -228,18 +236,36 @@ createMethodCall = (method, args...) ->
 
 operandTest = (lhs, op, rhs) ->
 	{odata, sql, bindings} = createExpression(lhs, op, rhs)
+	if _.isString(lhs)
+		lFieldParts = lhs.split('/')
+	else
+		lFieldParts = []
+	if _.isString(rhs)
+		rFieldParts = rhs.split('/')
+	else
+		rFieldParts = []
+	if lFieldParts.length > 1 or rFieldParts.length > 1
+		from = '''
+			"pilot",
+				"pilot" AS "pilot.pilot"'''
+		where = '''
+			"pilot"."id" = "pilot.pilot"."pilot"
+			AND ''' + sql
+	else
+		from = '"pilot"'
+		where = sql
 	test "/pilot?$filter=#{odata}", 'GET', bindings, (result) ->
 		it 'should select from pilot where "' + odata + '"', ->
 			expect(result.query).to.equal '''
 				SELECT ''' + pilotFields + '\n' + '''
-				FROM "pilot"
-				WHERE ''' + sql
+				FROM ''' + from + '\n' + '''
+				WHERE ''' + where
 	test "/pilot/$count?$filter=#{odata}", 'GET', bindings, (result) ->
 		it 'should select count(*) from pilot where "' + odata + '"', ->
 			expect(result.query).to.equal '''
 				SELECT COUNT(*) AS "$count"
-				FROM "pilot"
-				WHERE ''' + sql
+				FROM ''' + from + '\n' + '''
+				WHERE ''' + where
 
 methodTest = (args...) ->
 	{odata, sql, bindings} = createMethodCall(args...)
@@ -314,8 +340,8 @@ do ->
 			expect(result.query).to.equal """
 				SELECT #{pilotFields}
 				FROM "pilot",
-					"pilot-can_fly-plane"
-				WHERE "pilot"."id" = "pilot-can_fly-plane"."pilot"
+					"pilot-can_fly-plane" AS "pilot.pilot-can_fly-plane"
+				WHERE "pilot"."id" = "pilot.pilot-can_fly-plane"."pilot"
 				AND #{sql}
 			"""
 
@@ -324,14 +350,14 @@ do ->
 	test '/pilot(1)/pilot__can_fly__plane?$filter=' + odata, (result) ->
 		it 'should select from pilot__can_fly__plane where "' + odata + '"', ->
 			expect(result.query).to.equal """
-				SELECT #{pilotCanFlyPlaneFields}
+				SELECT #{aliasPilotCanFlyPlaneFields}
 				FROM "pilot",
-					"pilot-can_fly-plane",
-					"plane"
+					"pilot-can_fly-plane" AS "pilot.pilot-can_fly-plane",
+					"plane" AS "pilot.pilot-can_fly-plane.plane"
 				WHERE "pilot"."id" = 1
-				AND "plane"."id" = "pilot-can_fly-plane"."plane"
-				AND #{sql}
-				AND "pilot"."id" = "pilot-can_fly-plane"."pilot"
+				AND "pilot.pilot-can_fly-plane.plane"."id" = "pilot.pilot-can_fly-plane"."plane"
+				AND "pilot.pilot-can_fly-plane.plane"."id" = 10
+				AND "pilot"."id" = "pilot.pilot-can_fly-plane"."pilot"
 			"""
 
 do ->
@@ -371,8 +397,8 @@ do ->
 			expect(result.query).to.equal """
 				SELECT #{pilotFields}
 				FROM "pilot",
-					"pilot-can_fly-plane",
-					"plane"
+					"pilot-can_fly-plane" AS "pilot.pilot-can_fly-plane",
+					"plane" AS "pilot.pilot-can_fly-plane.plane"
 				#{filterWhere.join('\n')}
 			"""
 
