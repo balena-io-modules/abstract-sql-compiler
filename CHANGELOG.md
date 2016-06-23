@@ -1,6 +1,10 @@
 * Added a test for a rule with numbered terms.
 * Added some tests from the sbvr-parser that were missing here.
 * Added a non-primitive concept type test to the pilots tests.
+* Added support for $count
+* Added tests for $count
+* Updated the client model for tests
+* Updated tests
 
 v2.0.0
 
