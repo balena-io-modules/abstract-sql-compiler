@@ -246,7 +246,7 @@
 				}
 			],
 			"idField": "id",
-			"referencedScheme": "id",
+			"referenceScheme": "id",
 			"actions": [
 				"view",
 				"add",
