@@ -186,7 +186,10 @@ export ometa AbstractSQLRules2SQL {
 		'Select'
 		[	end
 			{['1']}:fields
-		|	(	[	(	'Count'
+		|	(	[	(	SelectField(indent):field
+						anything:as
+						-> (field + ' AS "' + as + '"')
+					|	'Count'
 						'*'
 						-> 'COUNT(*)'
 					|	:table
@@ -204,6 +207,17 @@ export ometa AbstractSQLRules2SQL {
 			)*:fields
 		]
 		-> fields,
+
+	SelectField :indent =
+			Count
+		|	AnyValue(indent)
+		|	Null,
+
+	Count =
+		[	'Count'
+			'*'
+		]
+		-> 'COUNT(*)',
 
 	Table :indent =
 		'From'

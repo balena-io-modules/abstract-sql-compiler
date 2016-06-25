@@ -37,16 +37,20 @@ test "/pilot('TextKey')?$select=favourite_colour", 'GET', [['Text', 'TextKey']],
 test '/pilot?$select=pilot/name', (result) ->
 	it 'should select name from pilot', ->
 		expect(result.query).to.equal('''
-			SELECT "pilot"."name"
-			FROM "pilot"
+			SELECT "pilot.pilot"."name"
+			FROM "pilot",
+				"pilot" AS "pilot.pilot"
+			WHERE "pilot"."id" = "pilot.pilot"."pilot"
 		''')
 
 
 test '/pilot?$select=pilot/name,age', (result) ->
 	it 'should select name, age from pilot', ->
 		expect(result.query).to.equal('''
-			SELECT "pilot"."name", "pilot"."age"
-			FROM "pilot"
+			SELECT "pilot.pilot"."name", "pilot"."age"
+			FROM "pilot",
+				"pilot" AS "pilot.pilot"
+			WHERE "pilot"."id" = "pilot.pilot"."pilot"
 		''')
 
 
@@ -61,20 +65,20 @@ test '/pilot?$select=*', (result) ->
 test '/pilot?$select=licence/id', (result) ->
 	it 'should select licence/id for pilots', ->
 		expect(result.query).to.equal('''
-			SELECT "licence"."id"
+			SELECT "pilot.licence"."id"
 			FROM "pilot",
-				"licence"
-			WHERE "licence"."id" = "pilot"."licence"
+				"licence" AS "pilot.licence"
+			WHERE "pilot.licence"."id" = "pilot"."licence"
 		''')
 
 
 test '/pilot?$select=pilot__can_fly__plane/plane/id', (result) ->
 	it 'should select pilot__can_fly__plane/plane/id for pilots', ->
 		expect(result.query).to.equal('''
-			SELECT "plane"."id"
+			SELECT "pilot.pilot-can_fly-plane.plane"."id"
 			FROM "pilot",
-				"pilot-can_fly-plane",
-				"plane"
-			WHERE "pilot"."id" = "pilot-can_fly-plane"."pilot"
-			AND "plane"."id" = "pilot-can_fly-plane"."plane"
+				"pilot-can_fly-plane" AS "pilot.pilot-can_fly-plane",
+				"plane" AS "pilot.pilot-can_fly-plane.plane"
+			WHERE "pilot"."id" = "pilot.pilot-can_fly-plane"."pilot"
+			AND "pilot.pilot-can_fly-plane.plane"."id" = "pilot.pilot-can_fly-plane"."plane"
 		''')
