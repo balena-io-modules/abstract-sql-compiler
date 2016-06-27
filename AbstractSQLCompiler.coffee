@@ -52,7 +52,7 @@
 			defaultValue ?= ''
 			return dbType + defaultValue + necessity + index
 		else
-			throw "Unknown data type '#{dataType}' for engine: #{engine}"
+			throw new Error("Unknown data type '#{dataType}' for engine: #{engine}")
 
 	compileRule = do ->
 		optimiser = AbstractSQLOptimiser.createInstance()
@@ -111,7 +111,7 @@
 					delete schemaDependencyMap[tableName]
 		if schemaDependencyMap.length > 0
 			console.error('Failed to resolve all schema dependencies', schemaDependencyMap)
-			throw 'Failed to resolve all schema dependencies'
+			throw new Error('Failed to resolve all schema dependencies')
 		dropSchemaStatements = dropSchemaStatements.reverse()
 
 		ruleStatements = []

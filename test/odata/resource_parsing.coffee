@@ -42,7 +42,7 @@ test '/pilot(1)/licence', (result) ->
 			WHERE "pilot"."id" = 1
 			AND "pilot.licence"."id" = "pilot"."licence"
 		"""
-		
+
 
 
 test '/licence(1)/pilot', (result) ->
@@ -117,7 +117,7 @@ do ->
 	bindings = [
 		['Bind', ['pilot', 'name']]
 	]
-	test '/pilot', 'POST', bindings, {name: 'Peter'}, (result) ->
+	test '/pilot', 'POST', bindings, { name: 'Peter' }, (result) ->
 		it 'should insert/update the pilot with id 1', ->
 			expect(result.query).to.equal('''
 				INSERT INTO "pilot" ("name")
@@ -141,8 +141,8 @@ do ->
 					"is experienced" = ?
 				WHERE "pilot"."id" = 1
 			''')
-	test '/pilot(1)', 'PATCH', bindings, {is_experienced:true}, testFunc
-	test '/pilot(1)', 'MERGE', bindings, {is_experienced:true}, testFunc
+	test '/pilot(1)', 'PATCH', bindings, { is_experienced: true }, testFunc
+	test '/pilot(1)', 'MERGE', bindings, { is_experienced: true }, testFunc
 
 
 test '/pilot__can_fly__plane(1)', 'DELETE', (result) ->
@@ -174,7 +174,7 @@ do ->
 		['Bind', ['pilot__can_fly__plane', 'pilot']]
 		['Bind', ['pilot__can_fly__plane', 'plane']]
 	]
-	test '/pilot__can_fly__plane', 'POST', bindings, {pilot:2, plane:3}, (result) ->
+	test '/pilot__can_fly__plane', 'POST', bindings, { pilot: 2, plane: 3 }, (result) ->
 		it 'should insert/update the pilot-can_fly-plane with id 1', ->
 			expect(result.query).to.equal('''
 				INSERT INTO "pilot-can_fly-plane" ("pilot", "plane")
@@ -198,8 +198,8 @@ do ->
 					"id" = ?
 				WHERE "pilot-can_fly-plane"."id" = 1
 			''')
-	test '/pilot__can_fly__plane(1)', 'PATCH', bindings, {pilot:1}, testFunc
-	test '/pilot__can_fly__plane(1)', 'MERGE', bindings, {pilot:1}, testFunc
+	test '/pilot__can_fly__plane(1)', 'PATCH', bindings, { pilot: 1 }, testFunc
+	test '/pilot__can_fly__plane(1)', 'MERGE', bindings, { pilot: 1 }, testFunc
 
 
 test '/pilot(1)/$links/licence', (result) ->
@@ -238,7 +238,7 @@ test "/team('purple')", 'GET', [['Text', 'purple']], (result) ->
 			WHERE "team"."favourite colour" = ?
 		"""
 
-test '/team', 'POST', [['Bind', ['team', 'favourite_colour']]], {favourite_colour: 'purple'}, (result) ->
+test '/team', 'POST', [['Bind', ['team', 'favourite_colour']]], { favourite_colour: 'purple' }, (result) ->
 	it 'should insert a team', ->
 		expect(result.query).to.equal('''
 			INSERT INTO "team" ("favourite colour")
@@ -251,10 +251,10 @@ test '/pilot/$count/$count', (result) ->
 
 test '/pilot/$count', (result) ->
 	it 'should select count(*) from pilot', ->
-		expect(result.query).to.equal """
+		expect(result.query).to.equal '''
 			SELECT COUNT(*) AS "$count"
 			FROM "pilot"
-		"""
+		'''
 
 test '/pilot(5)/$count', (result) ->
 	it 'should fail because it is invalid', ->
@@ -266,61 +266,61 @@ test '/pilot?$filter=id eq 5/$count', (result) ->
 
 test '/pilot/$count?$filter=id gt 5', (result) ->
 	it 'should select count(*) from pilot where pilot/id > 5 ', ->
-		expect(result.query).to.equal """
+		expect(result.query).to.equal '''
 			SELECT COUNT(*) AS "$count"
 			FROM "pilot"
 			WHERE "pilot"."id" > 5
-		"""
+		'''
 
 test '/pilot/$count?$filter=id eq 5 or id eq 10', (result) ->
 	it 'should select count(*) from pilot where id in (5,10)', ->
-		expect(result.query).to.equal """
+		expect(result.query).to.equal '''
 			SELECT COUNT(*) AS "$count"
 			FROM "pilot"
 			WHERE "pilot"."id" IN (5, 10)
-		"""
+		'''
 
 test '/pilot(5)/licence/$count', (result) ->
 	it 'should select count(*) the licence from pilot where pilot/id', ->
-		expect(result.query).to.equal """
+		expect(result.query).to.equal '''
 			SELECT COUNT(*) AS "$count"
 			FROM "pilot",
 				"licence" AS "pilot.licence"
 			WHERE "pilot"."id" = 5
 			AND "pilot.licence"."id" = "pilot"."licence"
-		"""
+		'''
 
 test '/pilot/$count?$orderby=id asc', (result) ->
 	it 'should select count(*) from pilot and ignore orderby', ->
-		expect(result.query).to.equal """
+		expect(result.query).to.equal '''
 			SELECT COUNT(*) AS "$count"
 			FROM "pilot"
-		"""
+		'''
 
 test '/pilot/$count?$skip=5', (result) ->
 	it 'should select count(*) from pilot and ignore skip', ->
-		expect(result.query).to.equal """
+		expect(result.query).to.equal '''
 			SELECT COUNT(*) AS "$count"
 			FROM "pilot"
-		"""
+		'''
 
 test '/pilot/$count?$top=5', (result) ->
 	it 'should select count(*) from pilot and ignore top', ->
-		expect(result.query).to.equal """
+		expect(result.query).to.equal '''
 			SELECT COUNT(*) AS "$count"
 			FROM "pilot"
-		"""
+		'''
 
 test '/pilot/$count?$top=5&$skip=5', (result) ->
 	it 'should select count(*) from pilot and ignore top and skip', ->
-		expect(result.query).to.equal """
+		expect(result.query).to.equal '''
 			SELECT COUNT(*) AS "$count"
 			FROM "pilot"
-		"""
+		'''
 
 test '/pilot/$count?$select=id', (result) ->
 	it 'should select count(*) from pilot and ignore select', ->
-		expect(result.query).to.equal """
+		expect(result.query).to.equal '''
 			SELECT COUNT(*) AS "$count"
 			FROM "pilot"
-		"""
+		'''

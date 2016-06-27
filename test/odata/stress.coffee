@@ -1,7 +1,6 @@
 expect = require('chai').expect
 test = require('./test')
-clientModel = require('../client-model.json')
-{pilotFields} = require('./fields')
+{ pilotFields } = require('./fields')
 pilotFields = pilotFields.join(', ')
 
 filterIDs = [1..3]

@@ -1,6 +1,6 @@
 expect = require('chai').expect
 test = require('./test')
-{pilotFields} = require('./fields')
+{ pilotFields } = require('./fields')
 pilotFields = pilotFields.join(', ')
 
 test '/pilot?$select=name', (result) ->
@@ -17,7 +17,7 @@ test '/pilot?$select=favourite_colour', (result) ->
 			FROM "pilot"
 		''')
 
-test "/pilot(1)?$select=favourite_colour", (result) ->
+test '/pilot(1)?$select=favourite_colour', (result) ->
 	it 'should select from pilot with id', ->
 		expect(result.query).to.equal('''
 			SELECT "pilot"."favourite colour" AS "favourite_colour"
