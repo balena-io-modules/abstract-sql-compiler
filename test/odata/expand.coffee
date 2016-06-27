@@ -1,6 +1,6 @@
 expect = require('chai').expect
 test = require('./test')
-{ pilotFields, aliasLicenceFields, aliasPlaneFields, aliasPilotCanFlyPlaneFields } = require('./fields')
+{ pilotFields, aliasFields, aliasLicenceFields, aliasPlaneFields, aliasPilotCanFlyPlaneFields } = require('./fields')
 _ = require 'lodash'
 
 postgresAgg = (field) -> 'coalesce(array_to_json(array_agg(' + field + ")), '[]')"
@@ -400,3 +400,24 @@ do ->
 	test.postgres(urlCount, testFunc(postgresAgg))
 	test.mysql.skip(urlCount, testFunc(mysqlAgg))
 	test.websql.skip(urlCount, testFunc(websqlAgg))
+
+do ->
+	aliasedFields = aliasFields('pilot.pilot', pilotFields)
+	remainingPilotFields = _.reject(pilotFields, (field) -> field is '"pilot"."pilot"').join(', ')
+	testFunc = (aggFunc) -> (result) ->
+		it 'should select from pilot.*, aggregated pilot', ->
+			expect(result.query).to.equal """
+				SELECT (
+					SELECT #{aggFunc('"pilot.pilot".*')} AS "pilot"
+					FROM (
+						SELECT #{aliasedFields.join(', ')}
+						FROM "pilot" AS "pilot.pilot"
+						WHERE "pilot"."id" = "pilot.pilot"."pilot"
+					) AS "pilot.pilot"
+				) AS "pilot", #{remainingPilotFields}
+				FROM "pilot"
+			"""
+	url = '/pilot?$expand=pilot'
+	test.postgres(url, testFunc(postgresAgg))
+	test.mysql.skip(url, testFunc(mysqlAgg))
+	test.websql.skip(url, testFunc(websqlAgg))
