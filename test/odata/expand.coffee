@@ -1,6 +1,7 @@
 expect = require('chai').expect
 test = require('./test')
-{ pilotFields, pilotCanFlyPlaneFields, planeFields, licenceFields, aliasLicenceFields, aliasPlaneFields, aliasPilotCanFlyPlaneFields } = require('./fields')
+{ pilotFields, aliasLicenceFields, aliasPlaneFields, aliasPilotCanFlyPlaneFields } = require('./fields')
+_ = require 'lodash'
 
 postgresAgg = (field) -> 'coalesce(array_to_json(array_agg(' + field + ")), '[]')"
 mysqlAgg = websqlAgg = (field) -> "'[' || group_concat(" + field + ", ',') || ']'"

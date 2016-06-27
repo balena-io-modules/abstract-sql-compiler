@@ -2,7 +2,7 @@ expect = require('chai').expect
 test = require('./test')
 clientModel = require('../client-model.json')
 _ = require('lodash')
-{pilotFields, pilotCanFlyPlaneFields, teamFields, aliasPilotCanFlyPlaneFields} = require('./fields')
+{ pilotFields, pilotCanFlyPlaneFields, teamFields, aliasPilotCanFlyPlaneFields } = require('./fields')
 pilotFields = pilotFields.join(', ')
 pilotCanFlyPlaneFields = pilotCanFlyPlaneFields.join(', ')
 aliasPilotCanFlyPlaneFields = aliasPilotCanFlyPlaneFields.join(', ')
@@ -65,14 +65,14 @@ operandToSQL = (operand, resource = 'pilot') ->
 		fieldParts = operand.split('/')
 		if fieldParts.length > 1
 			mapping = clientModel.resourceToSQLMappings[fieldParts[fieldParts.length - 2]][fieldParts[fieldParts.length - 1]]
-			alias = resource+'.'+mapping[0]
+			alias = resource + '.' + mapping[0]
 			if fieldParts.length > 2
 				part = clientModel.resourceToSQLMappings[fieldParts[0]][resource]
-				alias = part[1]+'.'+part[0]+'.'+mapping[0]
+				alias = part[1] + '.' + part[0] + '.' + mapping[0]
 				if fieldParts.length > 3
 					part = clientModel.resourceToSQLMappings[fieldParts[fieldParts.length - 3]][fieldParts[0]]
-					alias = resource+'.'+part[1]+'.'+part[0]+'.'+mapping[0]
-			mapping=[alias, mapping[1]]
+					alias = resource + '.' + part[1] + '.' + part[0] + '.' + mapping[0]
+			mapping = [alias, mapping[1]]
 		else
 			mapping = clientModel.resourceToSQLMappings[resource][operand]
 		return '"' + mapping.join('"."') + '"'
@@ -83,7 +83,7 @@ operandToSQL = (operand, resource = 'pilot') ->
 		minute = operand.minute or 0
 		second = operand.second or 0
 		return "INTERVAL '#{sign}#{day} #{sign}#{hour}:#{minute}:#{second}'"
-	throw 'Unknown operand type: ' + operand
+	throw new Error('Unknown operand type: ' + operand)
 
 parseOperand = (operand) ->
 	return {
@@ -235,7 +235,7 @@ createMethodCall = (method, args...) ->
 			}
 
 operandTest = (lhs, op, rhs) ->
-	{odata, sql, bindings} = createExpression(lhs, op, rhs)
+	{ odata, sql, bindings } = createExpression(lhs, op, rhs)
 	if _.isString(lhs)
 		lFieldParts = lhs.split('/')
 	else
@@ -268,7 +268,7 @@ operandTest = (lhs, op, rhs) ->
 				WHERE ''' + where
 
 methodTest = (args...) ->
-	{odata, sql, bindings} = createMethodCall(args...)
+	{ odata, sql, bindings } = createMethodCall(args...)
 	test "/pilot?$filter=#{odata}", 'GET', bindings, (result) ->
 		it 'should select from pilot where "' + odata + '"', ->
 			expect(result.query).to.equal '''
@@ -298,8 +298,8 @@ do ->
 			2.5
 			-2.5
 			"'bar'"
-			"name"
-			"pilot/name"
+			'name'
+			'pilot/name'
 			new Date()
 			{ negative: true, day: 3, hour: 4, minute: 5, second: 6.7 }
 			true
@@ -334,7 +334,7 @@ do ->
 		operandTest(mathOp, 'gt', 10)
 
 do ->
-	{odata, sql} = createExpression('pilot__can_fly__plane/id', 'eq', 10)
+	{ odata, sql } = createExpression('pilot__can_fly__plane/id', 'eq', 10)
 	test "/pilot?$filter=#{odata}", (result) ->
 		it 'should select from pilot where "' + odata + '"', ->
 			expect(result.query).to.equal """
@@ -346,7 +346,7 @@ do ->
 			"""
 
 do ->
-	{odata, sql} = createExpression('plane/id', 'eq', 10)
+	{ odata } = createExpression('plane/id', 'eq', 10)
 	test '/pilot(1)/pilot__can_fly__plane?$filter=' + odata, (result) ->
 		it 'should select from pilot__can_fly__plane where "' + odata + '"', ->
 			expect(result.query).to.equal """
@@ -361,7 +361,7 @@ do ->
 			"""
 
 do ->
-	{odata, sql} = createExpression('pilot__can_fly__plane/plane/id', 'eq', 10)
+	{ odata, sql } = createExpression('pilot__can_fly__plane/plane/id', 'eq', 10)
 	name = 'Peter'
 	bindings = [
 		['Bind', ['pilot', 'name']]
@@ -452,7 +452,7 @@ do ->
 
 do ->
 	name = 'Peter'
-	{odata, sql, bindings: exprBindings} = createExpression('name', 'eq', "'#{name}'")
+	{ odata, sql, bindings: exprBindings } = createExpression('name', 'eq', "'#{name}'")
 	bindings = [
 		['Bind', ['pilot', 'name']]
 		exprBindings...
@@ -524,7 +524,7 @@ do ->
 
 do ->
 	oneEqOne = createExpression(1, 'eq', 1)
-	{odata, sql} = createExpression(oneEqOne, 'or', oneEqOne)
+	{ odata, sql } = createExpression(oneEqOne, 'or', oneEqOne)
 	test '/pilot(1)/pilot__can_fly__plane?$filter=' + odata, (result) ->
 		it 'should select from pilot__can_fly__plane where "' + odata + '"', ->
 			expect(result.query).to.equal """
@@ -585,7 +585,7 @@ test "/pilot?$filter=pilot__can_fly__plane/any(d:d/plane/name eq 'Concorde')", '
 
 test "/pilot/$count?$filter=pilot__can_fly__plane/any(d:d/plane/name eq 'Concorde')", 'GET', [['Text', 'Concorde']], (result) ->
 	it 'should select count(*) from pilot where ...', ->
-		expect(result.query).to.equal """
+		expect(result.query).to.equal '''
 			SELECT COUNT(*) AS "$count"
 			FROM "pilot"
 			WHERE EXISTS (
@@ -596,7 +596,7 @@ test "/pilot/$count?$filter=pilot__can_fly__plane/any(d:d/plane/name eq 'Concord
 				AND "pilot.pilot-can_fly-plane.plane"."id" = "pilot.pilot-can_fly-plane"."plane"
 				AND "pilot.pilot-can_fly-plane.plane"."name" = ?
 			)
-		"""
+		'''
 
 test "/pilot?$filter=pilot__can_fly__plane/all(d:d/plane/name eq 'Concorde')", 'GET', [['Text', 'Concorde']], (result) ->
 	it 'should select from pilot where ...', ->
@@ -617,7 +617,7 @@ test "/pilot?$filter=pilot__can_fly__plane/all(d:d/plane/name eq 'Concorde')", '
 
 test "/pilot/$count?$filter=pilot__can_fly__plane/all(d:d/plane/name eq 'Concorde')", 'GET', [['Text', 'Concorde']], (result) ->
 	it 'should select count(*) from pilot where ...', ->
-		expect(result.query).to.equal """
+		expect(result.query).to.equal '''
 			SELECT COUNT(*) AS "$count"
 			FROM "pilot"
 			WHERE NOT EXISTS (
@@ -630,7 +630,7 @@ test "/pilot/$count?$filter=pilot__can_fly__plane/all(d:d/plane/name eq 'Concord
 					AND "pilot.pilot-can_fly-plane.plane"."name" = ?
 				)
 			)
-	"""
+	'''
 
 test "/pilot?$filter=pilot__can_fly__plane/plane/any(d:d/name eq 'Concorde')", 'GET', [['Text', 'Concorde']], (result) ->
 	it 'should select from pilot where ...', ->
@@ -649,7 +649,7 @@ test "/pilot?$filter=pilot__can_fly__plane/plane/any(d:d/name eq 'Concorde')", '
 
 test "/pilot/$count?$filter=pilot__can_fly__plane/plane/any(d:d/name eq 'Concorde')", 'GET', [['Text', 'Concorde']], (result) ->
 	it 'should select count(*) from pilot where ...', ->
-		expect(result.query).to.equal """
+		expect(result.query).to.equal '''
 			SELECT COUNT(*) AS "$count"
 			FROM "pilot",
 				"pilot-can_fly-plane" AS "pilot.pilot-can_fly-plane"
@@ -660,7 +660,7 @@ test "/pilot/$count?$filter=pilot__can_fly__plane/plane/any(d:d/name eq 'Concord
 				WHERE "pilot.pilot-can_fly-plane.plane"."id" = "pilot.pilot-can_fly-plane"."plane"
 				AND "pilot.pilot-can_fly-plane.plane"."name" = ?
 			)
-		"""
+		'''
 
 test "/pilot?$filter=pilot__can_fly__plane/plane/all(d:d/name eq 'Concorde')", 'GET', [['Text', 'Concorde']], (result) ->
 	it 'should select from pilot where ...', ->
@@ -681,7 +681,7 @@ test "/pilot?$filter=pilot__can_fly__plane/plane/all(d:d/name eq 'Concorde')", '
 
 test "/pilot/$count?$filter=pilot__can_fly__plane/plane/all(d:d/name eq 'Concorde')", 'GET', [['Text', 'Concorde']], (result) ->
 	it 'should select count(*) from pilot where ...', ->
-		expect(result.query).to.equal """
+		expect(result.query).to.equal '''
 			SELECT COUNT(*) AS "$count"
 			FROM "pilot",
 				"pilot-can_fly-plane" AS "pilot.pilot-can_fly-plane"
@@ -694,15 +694,15 @@ test "/pilot/$count?$filter=pilot__can_fly__plane/plane/all(d:d/name eq 'Concord
 					AND "pilot.pilot-can_fly-plane.plane"."name" = ?
 				)
 			)
-		"""
+		'''
 
 # Switch operandToSQL permanently to using 'team' as the resource,
 # as we are switch to using that as our base resource from here on.
 operandToSQL = _.partialRight(operandToSQL, 'team')
 do ->
 	favouriteColour = 'purple'
-	{odata, sql, bindings} = createExpression('favourite_colour', 'eq', "'#{favouriteColour}'")
-	test '/team?$filter=' + odata, 'POST', [['Bind', ['team', 'favourite_colour']]].concat(bindings), {favourite_colour: favouriteColour}, (result) ->
+	{ odata, sql, bindings } = createExpression('favourite_colour', 'eq', "'#{favouriteColour}'")
+	test '/team?$filter=' + odata, 'POST', [['Bind', ['team', 'favourite_colour']]].concat(bindings), { favourite_colour: favouriteColour }, (result) ->
 		it 'should insert into team where "' + odata + '"', ->
 			expect(result.query).to.equal '''
 				INSERT INTO "team" ("favourite colour")
@@ -713,7 +713,7 @@ do ->
 				WHERE ''' + sql
 
 do ->
-	{odata, sql, bindings} = createExpression('pilot/pilot__can_fly__plane/plane/name', 'eq', "'Concorde'")
+	{ odata, sql, bindings } = createExpression('pilot/pilot__can_fly__plane/plane/name', 'eq', "'Concorde'")
 	test '/team?$filter=' + odata, 'GET', bindings, (result) ->
 		it 'should select from team where "' + odata + '"', ->
 			expect(result.query).to.equal """

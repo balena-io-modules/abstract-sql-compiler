@@ -4,7 +4,8 @@
   "description": "A translator for abstract sql into sql.",
   "main": "AbstractSQLCompiler.js",
   "scripts": {
-    "pretest": "npm run prepublish",
+    "lint": "resin-lint AbstractSQLCompiler.coffee test",
+    "pretest": "npm run lint && npm run prepublish",
     "test": "mocha",
     "prepublish": "coffee -c AbstractSQLCompiler.coffee && ometajs2js --input AbstractSQLOptimiser.ometajs --output AbstractSQLOptimiser.js && ometajs2js --input AbstractSQLRules2SQL.ometajs --output AbstractSQLRules2SQL.js"
   },
@@ -23,6 +24,7 @@
     "@resin/sbvr-parser": "0.0.23",
     "chai": "^3.0.0",
     "coffee-script": "~1.10.0",
-    "mocha": "^2.1.0"
+    "mocha": "^2.1.0",
+    "resin-lint": "^1.2.2"
   }
 }
