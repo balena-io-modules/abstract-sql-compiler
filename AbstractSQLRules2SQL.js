@@ -266,6 +266,10 @@
                         return this._or(function() {
                             this._form(function() {
                                 return field = this._or(function() {
+                                    field = this._applyWithArgs("SelectField", indent);
+                                    as = this.anything();
+                                    return field + ' AS "' + as + '"';
+                                }, function() {
                                     switch (this.anything()) {
                                       case "Count":
                                         this._applyWithArgs("exactly", "*");
@@ -302,6 +306,24 @@
                 });
             });
             return fields;
+        },
+        SelectField: function(indent) {
+            var $elf = this, _fromIdx = this.input.idx;
+            return this._or(function() {
+                return this._apply("Count");
+            }, function() {
+                return this._applyWithArgs("AnyValue", indent);
+            }, function() {
+                return this._apply("Null");
+            });
+        },
+        Count: function() {
+            var $elf = this, _fromIdx = this.input.idx;
+            this._form(function() {
+                this._applyWithArgs("exactly", "Count");
+                return this._applyWithArgs("exactly", "*");
+            });
+            return "COUNT(*)";
         },
         Table: function(indent) {
             var $elf = this, _fromIdx = this.input.idx, alias, from, nestedindent, query, table;

@@ -186,26 +186,24 @@
             return this._applyWithArgs("exactly", "Default");
         },
         Select: function() {
-            var $elf = this, _fromIdx = this.input.idx, as, fields, table, value;
+            var $elf = this, _fromIdx = this.input.idx, as, field, fields, table;
             this._form(function() {
                 this._applyWithArgs("exactly", "Select");
                 return this._form(function() {
                     return fields = this._many(function() {
                         return this._or(function() {
-                            return this._apply("Count");
+                            this._form(function() {
+                                field = this._apply("SelectField");
+                                return as = this.anything();
+                            });
+                            return [ field, as ];
+                        }, function() {
+                            return this._apply("SelectField");
                         }, function() {
                             return this._form(function() {
                                 table = this.anything();
                                 return this._applyWithArgs("exactly", "*");
                             });
-                        }, function() {
-                            this._form(function() {
-                                value = this._apply("AnyValue");
-                                return as = this.anything();
-                            });
-                            return [ value, as ];
-                        }, function() {
-                            return this._apply("AnyValue");
                         }, function() {
                             switch (this.anything()) {
                               case "*":
@@ -214,13 +212,21 @@
                               default:
                                 throw this._fail();
                             }
-                        }, function() {
-                            return this._apply("Null");
                         });
                     });
                 });
             });
             return [ [ "Select", fields ] ];
+        },
+        SelectField: function() {
+            var $elf = this, _fromIdx = this.input.idx;
+            return this._or(function() {
+                return this._apply("Count");
+            }, function() {
+                return this._apply("AnyValue");
+            }, function() {
+                return this._apply("Null");
+            });
         },
         Count: function() {
             var $elf = this, _fromIdx = this.input.idx;
