@@ -1,13 +1,11 @@
 expect = require('chai').expect
 test = require('./test')
-{ pilotFields, planeFields, licenceFields, teamFields, aliasPilotFields, aliasPlaneFields, aliasPilotLicenceFields, aliasLicenceFields } = require('./fields')
-pilotFields = pilotFields.join(', ')
-planeFields = planeFields.join(', ')
-licenceFields = licenceFields.join(', ')
-aliasPilotFields = aliasPilotFields.join(', ')
+{ pilotFields, teamFields, aliasFields, aliasPlaneFields, aliasPilotLicenceFields, aliasLicenceFields } = require('./fields')
+aliasPilotFields = aliasFields('plane.pilot-can_fly-plane.pilot', pilotFields).join(', ')
 aliasPlaneFields = aliasPlaneFields.join(', ')
 aliasPilotLicenceFields = aliasPilotLicenceFields.join(', ')
 aliasLicenceFields = aliasLicenceFields.join(', ')
+pilotFields = pilotFields.join(', ')
 teamFields = teamFields.join(', ')
 
 test '/pilot', (result) ->

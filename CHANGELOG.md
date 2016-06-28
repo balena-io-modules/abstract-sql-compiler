@@ -1,3 +1,5 @@
+* Added a test for a self-referential expand (`pilot?$expand=pilot`)
+
 v2.1.0
 
 * Added a test for a rule with numbered terms.
