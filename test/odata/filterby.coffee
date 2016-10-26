@@ -8,89 +8,103 @@ pilotCanFlyPlaneFields = pilotCanFlyPlaneFields.join(', ')
 aliasPilotCanFlyPlaneFields = aliasPilotCanFlyPlaneFields.join(', ')
 teamFields = teamFields.join(', ')
 
-operandToOData = (operand) ->
-	if operand.odata?
-		return operand.odata
-	if _.isDate(operand)
-		return "datetime'" + encodeURIComponent(operand.toISOString()) + "'"
-	if _.isObject(operand)
-		duration = []
-		t = false
-		if operand.negative
-			duration.push('-')
-		duration.push('P')
-		if operand.day?
-			duration.push(operand.day, 'D')
-		if operand.hour?
-			t = true
-			duration.push('T', operand.hour, 'H')
-		if operand.minute?
-			if not t
+parseOperandFactory = (defaultResource = 'pilot') ->
+	bindNo = 0
+	operandToOData = (operand) ->
+		if operand.odata?
+			return operand.odata
+		if _.isDate(operand)
+			return "datetime'" + encodeURIComponent(operand.toISOString()) + "'"
+		if _.isObject(operand)
+			duration = []
+			t = false
+			if operand.negative
+				duration.push('-')
+			duration.push('P')
+			if operand.day?
+				duration.push(operand.day, 'D')
+			if operand.hour?
 				t = true
-				duration.push('T')
-			duration.push(operand.minute, 'M')
-		if operand.second?
-			if not t
-				t = true
-				duration.push('T')
-			duration.push(operand.second, 'S')
-		if duration.length < 3
-			throw new Error('Duration must contain at least 1 component')
-		return "duration'#{duration.join('')}'"
-	return operand
-
-operandToBindings = (operand) ->
-	if operand.bindings?
-		return operand.bindings
-	if _.isDate(operand)
-		return [['Date', operand]]
-	if _.isString(operand) and operand.charAt(0) is "'"
-		return [['Text', decodeURIComponent(operand[1...-1])]]
-	return []
-
-operandToSQL = (operand, resource = 'pilot') ->
-	if operand.sql?
-		return operand.sql
-	if _.isBoolean(operand)
-		return Number(operand)
-	if _.isNumber(operand)
+				duration.push('T', operand.hour, 'H')
+			if operand.minute?
+				if not t
+					t = true
+					duration.push('T')
+				duration.push(operand.minute, 'M')
+			if operand.second?
+				if not t
+					t = true
+					duration.push('T')
+				duration.push(operand.second, 'S')
+			if duration.length < 3
+				throw new Error('Duration must contain at least 1 component')
+			return "duration'#{duration.join('')}'"
 		return operand
-	if _.isDate(operand)
-		return '?'
-	if _.isString(operand)
-		if operand is 'null'
-			return 'NULL'
-		if operand.charAt(0) is "'"
-			return '?'
-		fieldParts = operand.split('/')
-		if fieldParts.length > 1
-			mapping = clientModel.resourceToSQLMappings[fieldParts[fieldParts.length - 2]][fieldParts[fieldParts.length - 1]]
-			alias = resource + '.' + mapping[0]
-			if fieldParts.length > 2
-				part = clientModel.resourceToSQLMappings[fieldParts[0]][resource]
-				alias = part[1] + '.' + part[0] + '.' + mapping[0]
-				if fieldParts.length > 3
-					part = clientModel.resourceToSQLMappings[fieldParts[fieldParts.length - 3]][fieldParts[0]]
-					alias = resource + '.' + part[1] + '.' + part[0] + '.' + mapping[0]
-			mapping = [alias, mapping[1]]
-		else
-			mapping = clientModel.resourceToSQLMappings[resource][operand]
-		return '"' + mapping.join('"."') + '"'
-	if _.isObject(operand)
-		sign = if operand.negative then '-' else ''
-		day = operand.day or 0
-		hour = operand.hour or 0
-		minute = operand.minute or 0
-		second = operand.second or 0
-		return "INTERVAL '#{sign}#{day} #{sign}#{hour}:#{minute}:#{second}'"
-	throw new Error('Unknown operand type: ' + operand)
 
-parseOperand = (operand) ->
-	return {
-		sql: operandToSQL(operand)
-		bindings: operandToBindings(operand)
-		odata: operandToOData(operand)
-	}
+	operandToBindings = (operand) ->
+		if operand.bindings?
+			return operand.bindings
+		if _.isBoolean(operand) or
+				_.isNumber(operand) or
+				_.isDate(operand) or
+				(_.isString(operand) and operand.charAt(0) is "'")
+			return [['Bind', bindNo++]]
+		return []
+
+	operandToSQL = (operand, resource = defaultResource) ->
+		if operand.sql?
+			return operand.sql
+		if _.isBoolean(operand) or
+				_.isNumber(operand) or
+				_.isDate(operand)
+			return '?'
+		if _.isString(operand)
+			if operand is 'null'
+				return 'NULL'
+			if operand.charAt(0) is "'"
+				return '?'
+			fieldParts = operand.split('/')
+			if fieldParts.length > 1
+				mapping = clientModel.resourceToSQLMappings[fieldParts[fieldParts.length - 2]][fieldParts[fieldParts.length - 1]]
+				alias = resource + '.' + mapping[0]
+				if fieldParts.length > 2
+					part = clientModel.resourceToSQLMappings[fieldParts[0]][resource]
+					alias = part[1] + '.' + part[0] + '.' + mapping[0]
+					if fieldParts.length > 3
+						part = clientModel.resourceToSQLMappings[fieldParts[fieldParts.length - 3]][fieldParts[0]]
+						alias = resource + '.' + part[1] + '.' + part[0] + '.' + mapping[0]
+				mapping = [alias, mapping[1]]
+			else
+				mapping = clientModel.resourceToSQLMappings[resource][operand]
+			return '"' + mapping.join('"."') + '"'
+		if _.isObject(operand)
+			sign = if operand.negative then '-' else ''
+			day = operand.day or 0
+			hour = operand.hour or 0
+			minute = operand.minute or 0
+			second = operand.second or 0
+			return "INTERVAL '#{sign}#{day} #{sign}#{hour}:#{minute}:#{second}'"
+		throw new Error('Unknown operand type: ' + operand)
+
+	return (operand) ->
+		return {
+			sql: operandToSQL(operand)
+			bindings: operandToBindings(operand)
+			odata: operandToOData(operand)
+		}
+
+parseOperand = null
+run = do ->
+	running = false
+	(fn) ->
+		if not running
+			running = true
+			parseOperand = parseOperandFactory()
+			fn()
+			running = false
+		else
+			fn()
+
 
 sqlOps =
 	eq: ' ='
@@ -226,7 +240,7 @@ createMethodCall = (method, args...) ->
 				method = methodMaps[method]
 			switch method
 				when 'SUBSTRING'
-					args[1].sql++
+					args[1].sql += ' + 1'
 			sql = method + '(' + (arg.sql for arg in args).join(', ') + ')'
 			return {
 				sql: sql
@@ -235,52 +249,54 @@ createMethodCall = (method, args...) ->
 			}
 
 operandTest = (lhs, op, rhs) ->
-	{ odata, sql, bindings } = createExpression(lhs, op, rhs)
-	if _.isString(lhs)
-		lFieldParts = lhs.split('/')
-	else
-		lFieldParts = []
-	if _.isString(rhs)
-		rFieldParts = rhs.split('/')
-	else
-		rFieldParts = []
-	if lFieldParts.length > 1 or rFieldParts.length > 1
-		from = '''
-			"pilot",
-				"pilot" AS "pilot.pilot"'''
-		where = '''
-			"pilot"."id" = "pilot.pilot"."pilot"
-			AND ''' + sql
-	else
-		from = '"pilot"'
-		where = sql
-	test "/pilot?$filter=#{odata}", 'GET', bindings, (result) ->
-		it 'should select from pilot where "' + odata + '"', ->
-			expect(result.query).to.equal '''
-				SELECT ''' + pilotFields + '\n' + '''
-				FROM ''' + from + '\n' + '''
-				WHERE ''' + where
-	test "/pilot/$count?$filter=#{odata}", 'GET', bindings, (result) ->
-		it 'should select count(*) from pilot where "' + odata + '"', ->
-			expect(result.query).to.equal '''
-				SELECT COUNT(*) AS "$count"
-				FROM ''' + from + '\n' + '''
-				WHERE ''' + where
+	run ->
+		{ odata, sql, bindings } = createExpression(lhs, op, rhs)
+		if _.isString(lhs)
+			lFieldParts = lhs.split('/')
+		else
+			lFieldParts = []
+		if _.isString(rhs)
+			rFieldParts = rhs.split('/')
+		else
+			rFieldParts = []
+		if lFieldParts.length > 1 or rFieldParts.length > 1
+			from = '''
+				"pilot",
+					"pilot" AS "pilot.pilot"'''
+			where = '''
+				"pilot"."id" = "pilot.pilot"."pilot"
+				AND ''' + sql
+		else
+			from = '"pilot"'
+			where = sql
+		test "/pilot?$filter=#{odata}", 'GET', bindings, (result) ->
+			it 'should select from pilot where "' + odata + '"', ->
+				expect(result.query).to.equal '''
+					SELECT ''' + pilotFields + '\n' + '''
+					FROM ''' + from + '\n' + '''
+					WHERE ''' + where
+		test "/pilot/$count?$filter=#{odata}", 'GET', bindings, (result) ->
+			it 'should select count(*) from pilot where "' + odata + '"', ->
+				expect(result.query).to.equal '''
+					SELECT COUNT(*) AS "$count"
+					FROM ''' + from + '\n' + '''
+					WHERE ''' + where
 
 methodTest = (args...) ->
-	{ odata, sql, bindings } = createMethodCall(args...)
-	test "/pilot?$filter=#{odata}", 'GET', bindings, (result) ->
-		it 'should select from pilot where "' + odata + '"', ->
-			expect(result.query).to.equal '''
-				SELECT ''' + pilotFields + '\n' + '''
-				FROM "pilot"
-				WHERE ''' + sql
-	test "/pilot/$count?$filter=#{odata}", 'GET', bindings, (result) ->
-		it 'should select count(*) from pilot where "' + odata + '"', ->
-			expect(result.query).to.equal '''
-				SELECT COUNT(*) AS "$count"
-				FROM "pilot"
-				WHERE ''' + sql
+	run ->
+		{ odata, sql, bindings } = createMethodCall(args...)
+		test "/pilot?$filter=#{odata}", 'GET', bindings, (result) ->
+			it 'should select from pilot where "' + odata + '"', ->
+				expect(result.query).to.equal '''
+					SELECT ''' + pilotFields + '\n' + '''
+					FROM "pilot"
+					WHERE ''' + sql
+		test "/pilot/$count?$filter=#{odata}", 'GET', bindings, (result) ->
+			it 'should select count(*) from pilot where "' + odata + '"', ->
+				expect(result.query).to.equal '''
+					SELECT COUNT(*) AS "$count"
+					FROM "pilot"
+					WHERE ''' + sql
 
 # Test each combination of operands and operations
 do ->
@@ -311,7 +327,8 @@ do ->
 		describe op, ->
 			for lhs in operands
 				for rhs in operands
-					operandTest(lhs, op, rhs)
+					run ->
+						operandTest(lhs, op, rhs)
 
 do ->
 	left = createExpression('age', 'gt', 2)
@@ -330,12 +347,13 @@ do ->
 		'div'
 	]
 	for mathOp in mathOps
-		mathOp = createExpression('age', mathOp, 2)
-		operandTest(mathOp, 'gt', 10)
+		run ->
+			mathOp = createExpression('age', mathOp, 2)
+			operandTest(mathOp, 'gt', 10)
 
-do ->
-	{ odata, sql } = createExpression('pilot__can_fly__plane/id', 'eq', 10)
-	test "/pilot?$filter=#{odata}", (result) ->
+run ->
+	{ odata, bindings, sql } = createExpression('pilot__can_fly__plane/id', 'eq', 10)
+	test "/pilot?$filter=#{odata}", 'GET', bindings, (result) ->
 		it 'should select from pilot where "' + odata + '"', ->
 			expect(result.query).to.equal """
 				SELECT #{pilotFields}
@@ -345,27 +363,28 @@ do ->
 				AND #{sql}
 			"""
 
-do ->
-	{ odata } = createExpression('plane/id', 'eq', 10)
-	test '/pilot(1)/pilot__can_fly__plane?$filter=' + odata, (result) ->
+run ->
+	{ odata: keyOdata, bindings: keyBindings } = parseOperand(1)
+	{ odata, bindings } = createExpression('plane/id', 'eq', 10)
+	test '/pilot(' + keyOdata + ')/pilot__can_fly__plane?$filter=' + odata, 'GET', keyBindings.concat(bindings), (result) ->
 		it 'should select from pilot__can_fly__plane where "' + odata + '"', ->
 			expect(result.query).to.equal """
 				SELECT #{aliasPilotCanFlyPlaneFields}
 				FROM "pilot",
 					"pilot-can_fly-plane" AS "pilot.pilot-can_fly-plane",
 					"plane" AS "pilot.pilot-can_fly-plane.plane"
-				WHERE "pilot"."id" = 1
+				WHERE "pilot"."id" = ?
 				AND "pilot.pilot-can_fly-plane.plane"."id" = "pilot.pilot-can_fly-plane"."plane"
-				AND "pilot.pilot-can_fly-plane.plane"."id" = 10
+				AND "pilot.pilot-can_fly-plane.plane"."id" = ?
 				AND "pilot"."id" = "pilot.pilot-can_fly-plane"."pilot"
 			"""
 
-do ->
-	{ odata, sql } = createExpression('pilot__can_fly__plane/plane/id', 'eq', 10)
+run ->
+	{ odata, bindings, sql } = createExpression('pilot__can_fly__plane/plane/id', 'eq', 10)
 	name = 'Peter'
-	bindings = [
+	bodyBindings =  [
 		['Bind', ['pilot', 'name']]
-	]
+	].concat(bindings)
 	filterWhere = [
 		'WHERE "pilot"."id" = "pilot.pilot-can_fly-plane"."pilot"'
 		'AND "pilot.pilot-can_fly-plane.plane"."id" = "pilot.pilot-can_fly-plane"."plane"'
@@ -392,7 +411,7 @@ do ->
 		))
 	"""
 
-	test "/pilot?$filter=#{odata}", (result) ->
+	test "/pilot?$filter=#{odata}", 'GET', bindings, (result) ->
 		it "should select from pilot where '#{odata}'", ->
 			expect(result.query).to.equal """
 				SELECT #{pilotFields}
@@ -402,7 +421,7 @@ do ->
 				#{filterWhere.join('\n')}
 			"""
 
-	test "/pilot?$filter=#{odata}", 'PATCH', bindings, { name }, (result) ->
+	test "/pilot?$filter=#{odata}", 'PATCH', bodyBindings, { name }, (result) ->
 		it "should update pilot where '#{odata}'", ->
 			expect(result.query).to.equal """
 				UPDATE "pilot"
@@ -410,11 +429,11 @@ do ->
 				#{updateWhere}
 			"""
 
-	test "/pilot?$filter=#{odata}", 'POST', bindings, { name }, (result) ->
+	test "/pilot?$filter=#{odata}", 'POST', bodyBindings, { name }, (result) ->
 		it "should insert pilot where '#{odata}'", ->
 			insertTest(result)
 
-	test "/pilot?$filter=#{odata}", 'PUT', bindings, { name }, (result) ->
+	test "/pilot?$filter=#{odata}", 'PUT', bodyBindings, { name }, (result) ->
 		describe 'should upsert the pilot with id 1', ->
 			it 'should be an upsert', ->
 				expect(result).to.be.an.array
@@ -437,7 +456,7 @@ do ->
 					#{updateWhere}
 				"""
 
-	test "/pilot?$filter=#{odata}", 'DELETE', (result) ->
+	test "/pilot?$filter=#{odata}", 'DELETE', bindings, (result) ->
 		it 'should delete from pilot where "' + odata + '"', ->
 			expect(result.query).to.equal """
 				DELETE FROM "pilot"
@@ -450,7 +469,7 @@ do ->
 				))
 			"""
 
-do ->
+run ->
 	name = 'Peter'
 	{ odata, sql, bindings: exprBindings } = createExpression('name', 'eq', "'#{name}'")
 	bindings = [
@@ -468,18 +487,30 @@ do ->
 				WHERE #{sql}
 			"""
 
-	bindings = [
+run ->
+	name = 'Peter'
+	{ odata: keyOdata, bindings: keyBindings } = parseOperand(1)
+	{ odata, sql, bindings: exprBindings } = createExpression('name', 'eq', "'#{name}'")
+	bodyBindings = [
 		['Bind', ['pilot', 'id']]
 		['Bind', ['pilot', 'name']]
+	]
+	insertBindings = [
+		bodyBindings...
 		exprBindings...
 	]
-	test '/pilot(1)?$filter=' + odata, 'PATCH', bindings, { name }, (result) ->
+	updateBindings = [
+		bodyBindings...
+		keyBindings...
+		exprBindings...
+	]
+	test '/pilot(' + keyOdata + ')?$filter=' + odata, 'PATCH', updateBindings, { name }, (result) ->
 		it 'should update the pilot with id 1', ->
 			expect(result.query).to.equal """
 				UPDATE "pilot"
 				SET "id" = ?,
 					"name" = ?
-				WHERE "pilot"."id" = 1
+				WHERE "pilot"."id" = ?
 				AND "pilot"."id" IN ((
 					SELECT "pilot"."id"
 					FROM "pilot"
@@ -487,7 +518,7 @@ do ->
 				))
 			"""
 
-	test '/pilot(1)?$filter=' + odata, 'PUT', bindings, { name }, (result) ->
+	test '/pilot(' + keyOdata + ')?$filter=' + odata, 'PUT', [ insertBindings, updateBindings ], { name }, (result) ->
 		describe 'should upsert the pilot with id 1', ->
 			it 'should be an upsert', ->
 				expect(result).to.be.an.array
@@ -514,7 +545,7 @@ do ->
 						"licence" = DEFAULT,
 						"hire date" = DEFAULT,
 						"pilot" = DEFAULT
-					WHERE "pilot"."id" = 1
+					WHERE "pilot"."id" = ?
 					AND "pilot"."id" IN ((
 						SELECT "pilot"."id"
 						FROM "pilot"
@@ -522,16 +553,20 @@ do ->
 					))
 				"""
 
-do ->
-	oneEqOne = createExpression(1, 'eq', 1)
-	{ odata, sql } = createExpression(oneEqOne, 'or', oneEqOne)
-	test '/pilot(1)/pilot__can_fly__plane?$filter=' + odata, (result) ->
+run ->
+	{ odata: keyOdata, bindings: keyBindings } = parseOperand(1)
+	{ odata, bindings, sql } = createExpression(
+		createExpression(1, 'eq', 1)
+		'or'
+		createExpression(1, 'eq', 1)
+	)
+	test '/pilot(' + keyOdata + ')/pilot__can_fly__plane?$filter=' + odata, 'GET', keyBindings.concat(bindings), (result) ->
 		it 'should select from pilot__can_fly__plane where "' + odata + '"', ->
 			expect(result.query).to.equal """
 				SELECT #{aliasPilotCanFlyPlaneFields}
 				FROM "pilot",
 					"pilot-can_fly-plane" AS "pilot.pilot-can_fly-plane"
-				WHERE "pilot"."id" = 1
+				WHERE "pilot"."id" = ?
 				AND #{sql}
 				AND "pilot"."id" = "pilot.pilot-can_fly-plane"."pilot"
 			"""
@@ -539,36 +574,38 @@ do ->
 methodTest('contains', 'name', "'et'")
 methodTest('endswith', 'name', "'ete'")
 methodTest('startswith', 'name', "'P'")
-operandTest(createMethodCall('length', 'name'), 'eq', 4)
-operandTest(createMethodCall('indexof', 'name', "'Pe'"), 'eq', 0)
-operandTest(createMethodCall('substring', 'name', 1), 'eq', "'ete'")
-operandTest(createMethodCall('substring', 'name', 1, 2), 'eq', "'et'")
-operandTest(createMethodCall('tolower', 'name'), 'eq', "'pete'")
-operandTest(createMethodCall('tolower', 'licence/name'), 'eq', "'pete'")
-operandTest(createMethodCall('toupper', 'name'), 'eq', "'PETE'")
-do ->
+run -> operandTest(createMethodCall('length', 'name'), 'eq', 4)
+run -> operandTest(createMethodCall('indexof', 'name', "'Pe'"), 'eq', 0)
+run -> operandTest(createMethodCall('substring', 'name', 1), 'eq', "'ete'")
+run -> operandTest(createMethodCall('substring', 'name', 1, 2), 'eq', "'et'")
+run -> operandTest(createMethodCall('tolower', 'name'), 'eq', "'pete'")
+run -> operandTest(createMethodCall('tolower', 'licence/name'), 'eq', "'pete'")
+run -> operandTest(createMethodCall('toupper', 'name'), 'eq', "'PETE'")
+run ->
 	concat = createMethodCall('concat', 'name', "'%20'")
 	operandTest(createMethodCall('trim', concat), 'eq', "'Pete'")
+run ->
+	concat = createMethodCall('concat', 'name', "'%20'")
 	operandTest(concat, 'eq', "'Pete%20'")
-operandTest(createMethodCall('year', 'hire_date'), 'eq', 2011)
-operandTest(createMethodCall('month', 'hire_date'), 'eq', 10)
-operandTest(createMethodCall('day', 'hire_date'), 'eq', 3)
-operandTest(createMethodCall('hour', 'hire_date'), 'eq', 12)
-operandTest(createMethodCall('minute', 'hire_date'), 'eq', 10)
-operandTest(createMethodCall('second', 'hire_date'), 'eq', 25)
-operandTest(createMethodCall('fractionalseconds', 'hire_date'), 'eq', .222)
-operandTest(createMethodCall('date', 'hire_date'), 'eq', "'2011-10-03'")
-operandTest(createMethodCall('time', 'hire_date'), 'eq', "'12:10:25.222'")
-operandTest(createMethodCall('now'), 'eq', new Date('2012-12-03T07:16:23Z'))
-operandTest(createMethodCall('totalseconds', { negative: true, day: 3, hour: 4, minute: 5, second: 6.7 }), 'eq', -273906.7)
-operandTest(createMethodCall('round', 'age'), 'eq', 25)
-operandTest(createMethodCall('floor', 'age'), 'eq', 25)
-operandTest(createMethodCall('ceiling', 'age'), 'eq', 25)
+run -> operandTest(createMethodCall('year', 'hire_date'), 'eq', 2011)
+run -> operandTest(createMethodCall('month', 'hire_date'), 'eq', 10)
+run -> operandTest(createMethodCall('day', 'hire_date'), 'eq', 3)
+run -> operandTest(createMethodCall('hour', 'hire_date'), 'eq', 12)
+run -> operandTest(createMethodCall('minute', 'hire_date'), 'eq', 10)
+run -> operandTest(createMethodCall('second', 'hire_date'), 'eq', 25)
+run -> operandTest(createMethodCall('fractionalseconds', 'hire_date'), 'eq', .222)
+run -> operandTest(createMethodCall('date', 'hire_date'), 'eq', "'2011-10-03'")
+run -> operandTest(createMethodCall('time', 'hire_date'), 'eq', "'12:10:25.222'")
+run -> operandTest(createMethodCall('now'), 'eq', new Date('2012-12-03T07:16:23Z'))
+run -> operandTest(createMethodCall('totalseconds', { negative: true, day: 3, hour: 4, minute: 5, second: 6.7 }), 'eq', -273906.7)
+run -> operandTest(createMethodCall('round', 'age'), 'eq', 25)
+run -> operandTest(createMethodCall('floor', 'age'), 'eq', 25)
+run -> operandTest(createMethodCall('ceiling', 'age'), 'eq', 25)
 
 methodTest('substringof', "'Pete'", 'name')
-operandTest(createMethodCall('replace', 'name', "'ete'", "'at'"), 'eq', "'Pat'")
+run -> operandTest(createMethodCall('replace', 'name', "'ete'", "'at'"), 'eq', "'Pat'")
 
-test "/pilot?$filter=pilot__can_fly__plane/any(d:d/plane/name eq 'Concorde')", 'GET', [['Text', 'Concorde']], (result) ->
+test "/pilot?$filter=pilot__can_fly__plane/any(d:d/plane/name eq 'Concorde')", 'GET', [['Bind', 0]], (result) ->
 	it 'should select from pilot where ...', ->
 		expect(result.query).to.equal """
 			SELECT #{pilotFields}
@@ -583,7 +620,7 @@ test "/pilot?$filter=pilot__can_fly__plane/any(d:d/plane/name eq 'Concorde')", '
 			)
 		"""
 
-test "/pilot/$count?$filter=pilot__can_fly__plane/any(d:d/plane/name eq 'Concorde')", 'GET', [['Text', 'Concorde']], (result) ->
+test "/pilot/$count?$filter=pilot__can_fly__plane/any(d:d/plane/name eq 'Concorde')", 'GET', [['Bind', 0]], (result) ->
 	it 'should select count(*) from pilot where ...', ->
 		expect(result.query).to.equal '''
 			SELECT COUNT(*) AS "$count"
@@ -598,7 +635,7 @@ test "/pilot/$count?$filter=pilot__can_fly__plane/any(d:d/plane/name eq 'Concord
 			)
 		'''
 
-test "/pilot?$filter=pilot__can_fly__plane/all(d:d/plane/name eq 'Concorde')", 'GET', [['Text', 'Concorde']], (result) ->
+test "/pilot?$filter=pilot__can_fly__plane/all(d:d/plane/name eq 'Concorde')", 'GET', [['Bind', 0]], (result) ->
 	it 'should select from pilot where ...', ->
 		expect(result.query).to.equal """
 			SELECT #{pilotFields}
@@ -615,7 +652,7 @@ test "/pilot?$filter=pilot__can_fly__plane/all(d:d/plane/name eq 'Concorde')", '
 			)
 		"""
 
-test "/pilot/$count?$filter=pilot__can_fly__plane/all(d:d/plane/name eq 'Concorde')", 'GET', [['Text', 'Concorde']], (result) ->
+test "/pilot/$count?$filter=pilot__can_fly__plane/all(d:d/plane/name eq 'Concorde')", 'GET', [['Bind', 0]], (result) ->
 	it 'should select count(*) from pilot where ...', ->
 		expect(result.query).to.equal '''
 			SELECT COUNT(*) AS "$count"
@@ -632,7 +669,7 @@ test "/pilot/$count?$filter=pilot__can_fly__plane/all(d:d/plane/name eq 'Concord
 			)
 	'''
 
-test "/pilot?$filter=pilot__can_fly__plane/plane/any(d:d/name eq 'Concorde')", 'GET', [['Text', 'Concorde']], (result) ->
+test "/pilot?$filter=pilot__can_fly__plane/plane/any(d:d/name eq 'Concorde')", 'GET', [['Bind', 0]], (result) ->
 	it 'should select from pilot where ...', ->
 		expect(result.query).to.equal """
 			SELECT #{pilotFields}
@@ -647,7 +684,7 @@ test "/pilot?$filter=pilot__can_fly__plane/plane/any(d:d/name eq 'Concorde')", '
 			)
 		"""
 
-test "/pilot/$count?$filter=pilot__can_fly__plane/plane/any(d:d/name eq 'Concorde')", 'GET', [['Text', 'Concorde']], (result) ->
+test "/pilot/$count?$filter=pilot__can_fly__plane/plane/any(d:d/name eq 'Concorde')", 'GET', [['Bind', 0]], (result) ->
 	it 'should select count(*) from pilot where ...', ->
 		expect(result.query).to.equal '''
 			SELECT COUNT(*) AS "$count"
@@ -662,7 +699,7 @@ test "/pilot/$count?$filter=pilot__can_fly__plane/plane/any(d:d/name eq 'Concord
 			)
 		'''
 
-test "/pilot?$filter=pilot__can_fly__plane/plane/all(d:d/name eq 'Concorde')", 'GET', [['Text', 'Concorde']], (result) ->
+test "/pilot?$filter=pilot__can_fly__plane/plane/all(d:d/name eq 'Concorde')", 'GET', [['Bind', 0]], (result) ->
 	it 'should select from pilot where ...', ->
 		expect(result.query).to.equal """
 			SELECT #{pilotFields}
@@ -679,7 +716,7 @@ test "/pilot?$filter=pilot__can_fly__plane/plane/all(d:d/name eq 'Concorde')", '
 			)
 		"""
 
-test "/pilot/$count?$filter=pilot__can_fly__plane/plane/all(d:d/name eq 'Concorde')", 'GET', [['Text', 'Concorde']], (result) ->
+test "/pilot/$count?$filter=pilot__can_fly__plane/plane/all(d:d/name eq 'Concorde')", 'GET', [['Bind', 0]], (result) ->
 	it 'should select count(*) from pilot where ...', ->
 		expect(result.query).to.equal '''
 			SELECT COUNT(*) AS "$count"
@@ -696,10 +733,10 @@ test "/pilot/$count?$filter=pilot__can_fly__plane/plane/all(d:d/name eq 'Concord
 			)
 		'''
 
-# Switch operandToSQL permanently to using 'team' as the resource,
+# Switch parseOperandFactory permanently to using 'team' as the resource,
 # as we are switch to using that as our base resource from here on.
-operandToSQL = _.partialRight(operandToSQL, 'team')
-do ->
+parseOperandFactory = _.partialRight(parseOperandFactory, 'team')
+run ->
 	favouriteColour = 'purple'
 	{ odata, sql, bindings } = createExpression('favourite_colour', 'eq', "'#{favouriteColour}'")
 	test '/team?$filter=' + odata, 'POST', [['Bind', ['team', 'favourite_colour']]].concat(bindings), { favourite_colour: favouriteColour }, (result) ->
@@ -712,7 +749,7 @@ do ->
 				) AS "team"
 				WHERE ''' + sql
 
-do ->
+run ->
 	{ odata, sql, bindings } = createExpression('pilot/pilot__can_fly__plane/plane/name', 'eq', "'Concorde'")
 	test '/team?$filter=' + odata, 'GET', bindings, (result) ->
 		it 'should select from team where "' + odata + '"', ->

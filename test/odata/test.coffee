@@ -15,7 +15,9 @@ bindingsTest = (actualBindings, expectedBindings = false) ->
 		it 'should have matching bindings', ->
 			expect(actualBindings).to.deep.equal(expectedBindings)
 
+x = describe.only
 runExpectation = (describe, engine, input, method, expectedBindings, body, expectation) ->
+	# return if describe isnt x
 	if !expectation?
 		if !body?
 			if !expectedBindings?
@@ -30,17 +32,21 @@ runExpectation = (describe, engine, input, method, expectedBindings, body, expec
 
 	describe 'Parsing ' + method + ' ' + input, ->
 		try
-			input = ODataParser.matchAll(input, 'OData')
-			input = OData2AbstractSQL.match(input, 'Process', [method, body])
+			input = ODataParser.matchAll(input, 'Process')
+			input = OData2AbstractSQL.match(input.tree, 'Process', [method, body])
 			result = AbstractSQLCompiler[engine].compileRule(input)
-			if _.isArray(result)
-				for actualResult in result
-					bindingsTest(actualResult.bindings, expectedBindings)
-			else
-				bindingsTest(result.bindings, expectedBindings)
-			expectation(result)
 		catch e
 			expectation(e)
+			return
+		if _.isArray(result)
+			for actualResult, i in result
+				if expectedBindings[0][0] is 'Bind'
+					bindingsTest(actualResult.bindings, expectedBindings)
+				else
+					bindingsTest(actualResult.bindings, expectedBindings[i])
+		else
+			bindingsTest(result.bindings, expectedBindings)
+		expectation(result)
 
 bindRunExpectation = (engine) ->
 	bound = runExpectation.bind(null, describe, engine)

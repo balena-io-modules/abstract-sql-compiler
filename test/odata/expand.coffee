@@ -201,7 +201,7 @@ do ->
 					FROM (
 						SELECT #{fields}
 						FROM "licence" AS "pilot.licence"
-						WHERE "pilot.licence"."id" = 1
+						WHERE "pilot.licence"."id" = ?
 						AND "pilot.licence"."id" = "pilot"."licence"
 					) AS "pilot.licence"
 				) AS "licence", #{remainingPilotFields}
@@ -209,12 +209,12 @@ do ->
 			"""
 	url = '/pilot?$expand=licence($filter=id eq 1)'
 	urlCount = '/pilot?$expand=licence/$count($filter=id eq 1)'
-	test.postgres(url, testFunc(postgresAgg, aliasLicenceFields.join(', ')))
-	test.postgres(urlCount, testFunc(postgresAgg, 'COUNT(*) AS "$count"'))
-	test.mysql.skip(url, testFunc(mysqlAgg, aliasLicenceFields.join(', ')))
-	test.mysql.skip(urlCount, testFunc(mysqlAgg, 'COUNT(*) AS "$count"'))
-	test.websql.skip(url, testFunc(websqlAgg, aliasLicenceFields.join(', ')))
-	test.websql.skip(urlCount, testFunc(websqlAgg, 'COUNT(*) AS "$count'))
+	test.postgres(url, 'GET', [['Bind', 0]], testFunc(postgresAgg, aliasLicenceFields.join(', ')))
+	test.postgres(urlCount, 'GET', [['Bind', 0]], testFunc(postgresAgg, 'COUNT(*) AS "$count"'))
+	test.mysql.skip(url, 'GET', [['Bind', 0]], testFunc(mysqlAgg, aliasLicenceFields.join(', ')))
+	test.mysql.skip(urlCount, 'GET', [['Bind', 0]], testFunc(mysqlAgg, 'COUNT(*) AS "$count"'))
+	test.websql.skip(url, 'GET', [['Bind', 0]], testFunc(websqlAgg, aliasLicenceFields.join(', ')))
+	test.websql.skip(urlCount, 'GET', [['Bind', 0]], testFunc(websqlAgg, 'COUNT(*) AS "$count'))
 
 do ->
 	remainingPilotFields = _.reject(pilotFields, (field) -> field is '"pilot"."licence"').join(', ')
@@ -228,16 +228,16 @@ do ->
 						FROM "licence" AS "pilot.licence",
 							"pilot" AS "pilot.licence.pilot"
 						WHERE "pilot.licence"."id" = "pilot.licence.pilot"."licence"
-						AND "pilot.licence.pilot"."id" = 1
+						AND "pilot.licence.pilot"."id" = ?
 						AND "pilot.licence"."id" = "pilot"."licence"
 					) AS "pilot.licence"
 				) AS "licence", #{remainingPilotFields}
 				FROM "pilot"
 			"""
 	url = '/pilot?$expand=licence($filter=pilot/id eq 1)'
-	test.postgres(url, testFunc(postgresAgg))
-	test.mysql.skip(url, testFunc(mysqlAgg))
-	test.websql.skip(url, testFunc(websqlAgg))
+	test.postgres(url, 'GET', [['Bind', 0]], testFunc(postgresAgg))
+	test.mysql.skip(url, 'GET', [['Bind', 0]], testFunc(mysqlAgg))
+	test.websql.skip(url, 'GET', [['Bind', 0]], testFunc(websqlAgg))
 
 do ->
 	remainingPilotFields = _.reject(pilotFields, (field) -> field is '"pilot"."licence"').join(', ')
