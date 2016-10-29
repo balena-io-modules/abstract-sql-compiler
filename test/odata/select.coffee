@@ -17,15 +17,15 @@ test '/pilot?$select=favourite_colour', (result) ->
 			FROM "pilot"
 		''')
 
-test '/pilot(1)?$select=favourite_colour', (result) ->
+test '/pilot(1)?$select=favourite_colour', 'GET', [['Bind', 0]], (result) ->
 	it 'should select from pilot with id', ->
 		expect(result.query).to.equal('''
 			SELECT "pilot"."favourite colour" AS "favourite_colour"
 			FROM "pilot"
-			WHERE "pilot"."id" = 1
+			WHERE "pilot"."id" = ?
 		''')
 
-test "/pilot('TextKey')?$select=favourite_colour", 'GET', [['Text', 'TextKey']], (result) ->
+test "/pilot('TextKey')?$select=favourite_colour", 'GET', [['Bind', 0]], (result) ->
 	it 'should select favourite colour from pilot "TextKey"', ->
 		expect(result.query).to.equal('''
 			SELECT "pilot"."favourite colour" AS "favourite_colour"

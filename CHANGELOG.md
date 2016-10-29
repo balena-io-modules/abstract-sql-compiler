@@ -1,3 +1,4 @@
+* Added support for numbered binds.
 * Added a test for a self-referential expand (`pilot?$expand=pilot`)
 
 v2.1.0
