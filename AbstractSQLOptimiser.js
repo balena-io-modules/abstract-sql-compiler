@@ -395,8 +395,12 @@
             var $elf = this, _fromIdx = this.input.idx, field, tableName;
             return this._form(function() {
                 this._applyWithArgs("exactly", "Bind");
-                tableName = this.anything();
-                return field = this.anything();
+                return this._or(function() {
+                    return this._apply("number");
+                }, function() {
+                    tableName = this.anything();
+                    return field = this.anything();
+                });
             });
         },
         Null: function() {

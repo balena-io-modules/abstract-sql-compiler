@@ -464,13 +464,18 @@
             return '"' + table + '"."' + field + '"';
         },
         Bind: function() {
-            var $elf = this, _fromIdx = this.input.idx, field, tableName;
+            var $elf = this, _fromIdx = this.input.idx, bind, field, tableName;
             this._form(function() {
                 this._applyWithArgs("exactly", "Bind");
-                tableName = this.anything();
-                return field = this.anything();
+                return bind = this._or(function() {
+                    return this._apply("number");
+                }, function() {
+                    tableName = this.anything();
+                    field = this.anything();
+                    return [ tableName, field ];
+                });
             });
-            this.fieldOrderings.push([ "Bind", [ tableName, field ] ]);
+            this.fieldOrderings.push([ "Bind", bind ]);
             return "?";
         },
         Null: function() {
