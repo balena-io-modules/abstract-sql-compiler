@@ -1,3 +1,5 @@
+* Move dataTypeGen function to sbvr-types module
+
 v2.2.0
 
 * Added support for numbered binds.
