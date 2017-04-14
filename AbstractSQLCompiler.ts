@@ -53,36 +53,47 @@ export interface Relationship {
 }
 export interface AbstractSqlQuery extends Array<AbstractSqlQuery | string> {}
 export interface AbstractSqlModel {
-	synonyms: {
-		[ synonym: string ]: string
-	}
-	relationships: {
-		[ resourceName: string ]: Relationship
-	}
-	tables: {
-		[ resourceName: string ]: AbstractSqlTable
-	}
+	synonyms: ResourceMap<string>
+	relationships: ResourceMap<Relationship>
+	tables: ResourceMap<AbstractSqlTable>
 	rules: AbstractSqlQuery[]
 }
 export interface SqlModel {
-	synonyms: {
-		[ synonym: string ]: string
-	}
-	relationships: {
-		[ resourceName: string ]: Relationship
-	}
-	tables: {
-		[ resourceName: string ]: AbstractSqlTable
-	}
+	synonyms: ResourceMap<string>
+	relationships: ResourceMap<Relationship>
+	tables: ResourceMap<AbstractSqlTable>
 	rules: SqlRule[]
 	createSchema: string[]
 	dropSchema: string[]
+}
+
+export interface HasDependants {
+	[dependant: string]: true
+}
+
+export interface SchemaDependencyMap {
+	[tableName: string]: {
+		resourceName: string
+		primitive: AbstractSqlTable['primitive']
+		createSQL: string
+		dropSQL: string
+		depends: string[]
+	}
+}
+
+export interface ResourceMap<T> {
+	[ resourceName: string ]: T
 }
 
 export interface ModifiedFields {
 	table: string
 	fields?: {}[]
 }
+
+type ToSQLFn<T> = (element: T) => string | undefined
+type MatchFn<T> = (haystack:Array<T>, needle:T) => (T | undefined)
+interface Pair<T> { src: T, dst: T }
+interface Split<T> { inserted: Array<T>, deleted: Array<T>, modified: Array<Pair<T>> }
 
 export enum Engines {
 	postgres = 'postgres',
@@ -240,26 +251,17 @@ const compileRule = (abstractSQL: AbstractSqlQuery, engine: Engines) => {
 	return compiler.match(abstractSQL, 'Process')
 }
 
-const compileSchema = (abstractSqlModel: AbstractSqlModel, engine: Engines, ifNotExists: boolean): SqlModel => {
+const mkSchemaDependencyMap = (tables: ResourceMap<AbstractSqlTable>, engine: Engines, ifNotExists: boolean) => {
 	let ifNotExistsStr: string
 	if (ifNotExists) {
 		ifNotExistsStr = 'IF NOT EXISTS '
 	} else {
 		ifNotExistsStr = ''
 	}
-	const hasDependants: {
-		[dependant: string]: true
-	} = {}
-	const schemaDependencyMap: {
-		[resourceName: string]: {
-			resourceName: string
-			primitive: AbstractSqlTable['primitive']
-			createSQL: string
-			dropSQL: string
-			depends: string[]
-		}
-	} = {}
-	_.forOwn(abstractSqlModel.tables, (table, resourceName) => {
+	const hasDependants: HasDependants = {}
+	const schemaDependencyMap: SchemaDependencyMap = {}
+
+	_.forOwn(tables, (table, resourceName) => {
 		if (_.isString(table)) {
 			return
 		}
@@ -279,7 +281,7 @@ const compileSchema = (abstractSqlModel: AbstractSqlModel, engine: Engines, ifNo
 		}
 
 		for (const { fieldName, references } of foreignKeys) {
-			const referencedTable = abstractSqlModel.tables[references.resourceName]
+			const referencedTable = tables[references.resourceName]
 			createSQL += `FOREIGN KEY ("${fieldName}") REFERENCES "${referencedTable.name}" ("${references.fieldName}")\n,\t`
 		}
 		for (const index of table.indexes) {
@@ -294,6 +296,12 @@ const compileSchema = (abstractSqlModel: AbstractSqlModel, engine: Engines, ifNo
 			depends,
 		}
 	})
+
+	return { hasDependants, schemaDependencyMap }
+}
+
+const compileSchema = (abstractSqlModel: AbstractSqlModel, engine: Engines, ifNotExists: boolean): SqlModel => {
+	const { hasDependants, schemaDependencyMap } = mkSchemaDependencyMap(abstractSqlModel.tables, engine, ifNotExists)
 
 	const createSchemaStatements = []
 	let dropSchemaStatements = []
@@ -371,10 +379,150 @@ const compileSchema = (abstractSqlModel: AbstractSqlModel, engine: Engines, ifNo
 	}
 }
 
+const generateSplit = <T>(src:Array<T>, dst: Array<T>, matchFn: MatchFn<T>): Split<T> => {
+	let modified: Array<Pair<T>> = []
+	return _.reduce(src, (acc, value) => {
+		const match = matchFn(acc.inserted, value)
+		if (_.isUndefined(match)) {
+			return acc
+		} else {
+			acc.inserted = _.without(acc.inserted, match)
+			acc.deleted = _.without(acc.deleted, value)
+			acc.modified.push( { src: value, dst: match } )
+			return acc
+		}
+	}
+	, { inserted: dst, deleted: src, modified: modified } )
+}
+//  genDiff expects src and dst arrays formatted as described in
+//  genSplit, and three functions to be called in the case of
+//  insertion, deletion or modification.
+//  The match function describes how to find the corresponding T inside a T[].
+//  The result of the match function will be either the element that should be matched to
+//  the argument or undefined if no such element is found.
+const generateDiff = <T>(insFn: ToSQLFn<T>, delFn: ToSQLFn<T>, modFn: ToSQLFn<Pair<T>>, matchFn: MatchFn<T>, src: Array<T>, dst: Array<T>) => {
+	const split = generateSplit(src, dst, matchFn)
+
+	const diff = _.map(split.modified, modFn)
+	.concat(_.map(split.deleted, delFn))
+	.concat(_.map(split.inserted, insFn))
+
+	return _.reject(diff, _.isUndefined)
+}
+
+const diffFields = (src: AbstractSqlField[], dst: AbstractSqlField[], mappings: ResourceMap<string>, engine: Engines, ifNotExists: boolean) => {
+	let ifNotExistsStr: string
+	let ifExistsStr: string
+
+	if (ifNotExists) {
+		ifNotExistsStr = 'IF NOT EXISTS '
+		ifExistsStr = 'IF EXISTS '
+	} else {
+		ifNotExistsStr = ''
+		ifExistsStr = ''
+	}
+
+	const matchFn: MatchFn<AbstractSqlField> = (fieldArray, field) => {
+		let match = _.find(fieldArray, { fieldName: field.fieldName })
+		if (_.isUndefined(match)) {
+			if (_.isString(mappings[field.fieldName])) {
+				return _.find(fieldArray, { fieldName: mappings[field.fieldName] } )
+			}
+		} else {
+			return match
+		}
+	}
+
+	const insFn: ToSQLFn<AbstractSqlField> = (field) => {
+		// Columns are inserted as NULL for the time being, this is because we have no sensible way to automatically assign a default value
+		return 'ADD COLUMN ' + ifNotExistsStr + '"' + field.fieldName + '" ' + dataTypeGen(engine, field) + ';'
+
+	}
+
+	const delFn: ToSQLFn<AbstractSqlField> = (field) => {
+		return 'DROP COLUMN ' + ifExistsStr + '"' + field.fieldName + '";'
+	}
+
+	const modFn: ToSQLFn<Pair<AbstractSqlField>> = ({src, dst}) => {
+		if (_.isEqual(src, dst)) {
+			return
+		}
+		if (_.isEqual(_.omit(src, ['fieldName', 'references']), _.omit(dst, ['fieldName', 'references']))) {
+			return 'RENAME COLUMN "' + src.fieldName + '" TO "' + dst.fieldName + '";'
+		}
+		throw Error(`Can not migrate pre-existing field ${src.fieldName} to ${dst.fieldName}`)
+	}
+
+	return generateDiff(insFn, delFn, modFn, matchFn, src, dst)
+}
+
+const diffSchemas = (src: AbstractSqlModel, dst: AbstractSqlModel, engine: Engines, ifNotExists: boolean) => {
+	const srcSDM = mkSchemaDependencyMap(src.tables, engine, ifNotExists).schemaDependencyMap
+	const dstSDM = mkSchemaDependencyMap(dst.tables, engine, ifNotExists).schemaDependencyMap
+
+	const matchFn:MatchFn<AbstractSqlTable> = (tables, srcTable) => {
+		let match = _.find(tables, { name: srcTable.name })
+		if (_.isUndefined(match)) {
+			const relations = src.relationships[srcTable.name]
+			if (!_.isUndefined(relations)) {
+				return _.find(tables, (dstTable) => {
+					let verb = dstTable.name.split('-').slice(1, -1).join(' ')
+					return !_.isUndefined(relations[verb])
+				})
+			}
+			return relations
+		}
+		return match
+	}
+
+	const insFn: ToSQLFn<AbstractSqlTable> = (table) => {
+		if (!_.isString(table) && !table.primitive) {
+			return dstSDM[table.name].createSQL
+		}
+	}
+
+	const delFn: ToSQLFn<AbstractSqlTable> = (table) => {
+		if (!_.isString(table) && !table.primitive) {
+			return srcSDM[table.name].dropSQL
+		}
+	}
+
+	const modFn: ToSQLFn<Pair<AbstractSqlTable>> = ({ src: srcTbl, dst: dstTbl }) => {
+		if (_.isEqual(srcTbl, dstTbl)) {
+			return
+		} else if (_.isEqual(_.omit(srcTbl, 'fields'), _.omit(dstTbl, 'fields'))) {
+			const fields = diffFields(srcTbl.fields, dstTbl.fields, _.invert(src.synonyms), engine, ifNotExists)
+			const alterTbl = 'ALTER TABLE "' + srcTbl.name + '"\n\t'
+			return _.map(fields, (field) => alterTbl + field).join('\n')
+		} else {
+			const [srcResource, srcRest] = extractMappings(srcTbl.name)
+			const [dstResource, dstRest] = extractMappings(dstTbl.name)
+
+			const mappings = {
+				[srcResource]: dstRest,
+				[srcRest]: dstResource
+			}
+			const fields = diffFields(srcTbl.fields, dstTbl.fields, mappings, engine, ifNotExists)
+			const renameTable = `ALTER TABLE "${srcTbl.name}"\n\tRENAME TO "${dstTbl.name}";`
+			const alterTbl = 'ALTER TABLE "' + dstTbl.name + '"\n\t'
+			return _.concat(renameTable, _.map(fields, (field) => alterTbl + field)).join('\n')
+		}
+	}
+
+	return generateDiff(insFn, delFn, modFn, matchFn, _.values(src.tables), _.values(dst.tables))
+}
+
+const extractMappings = (resource:string):[string, string] => {
+	const resourceParts = resource.split('-')
+	const subject = resourceParts[0]
+	const rest = resourceParts.slice(1).join('-')
+	return [subject, rest]
+}
 const generateExport = (engine: Engines, ifNotExists: boolean) => {
 	return {
 		compileSchema: _.partial(compileSchema, _, engine, ifNotExists),
 		compileRule: _.partial(compileRule, _, engine),
+		diffSchemas: _.partial(diffSchemas, _, _, engine, ifNotExists),
 		dataTypeValidate,
 		getReferencedFields,
 		getModifiedFields,

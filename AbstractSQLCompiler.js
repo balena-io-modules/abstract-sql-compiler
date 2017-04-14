@@ -149,7 +149,7 @@ var compileRule = function (abstractSQL, engine) {
     compiler.engine = engine;
     return compiler.match(abstractSQL, 'Process');
 };
-var compileSchema = function (abstractSqlModel, engine, ifNotExists) {
+var mkSchemaDependencyMap = function (tables, engine, ifNotExists) {
     var ifNotExistsStr;
     if (ifNotExists) {
         ifNotExistsStr = 'IF NOT EXISTS ';
@@ -159,7 +159,7 @@ var compileSchema = function (abstractSqlModel, engine, ifNotExists) {
     }
     var hasDependants = {};
     var schemaDependencyMap = {};
-    _.forOwn(abstractSqlModel.tables, function (table, resourceName) {
+    _.forOwn(tables, function (table, resourceName) {
         if (_.isString(table)) {
             return;
         }
@@ -179,7 +179,7 @@ var compileSchema = function (abstractSqlModel, engine, ifNotExists) {
         }
         for (var _b = 0, foreignKeys_1 = foreignKeys; _b < foreignKeys_1.length; _b++) {
             var _c = foreignKeys_1[_b], fieldName = _c.fieldName, references = _c.references;
-            var referencedTable = abstractSqlModel.tables[references.resourceName];
+            var referencedTable = tables[references.resourceName];
             createSQL += "FOREIGN KEY (\"" + fieldName + "\") REFERENCES \"" + referencedTable.name + "\" (\"" + references.fieldName + "\")\n,\t";
         }
         for (var _d = 0, _e = table.indexes; _d < _e.length; _d++) {
@@ -195,6 +195,10 @@ var compileSchema = function (abstractSqlModel, engine, ifNotExists) {
             depends: depends
         };
     });
+    return { hasDependants: hasDependants, schemaDependencyMap: schemaDependencyMap };
+};
+var compileSchema = function (abstractSqlModel, engine, ifNotExists) {
+    var _a = mkSchemaDependencyMap(abstractSqlModel.tables, engine, ifNotExists), hasDependants = _a.hasDependants, schemaDependencyMap = _a.schemaDependencyMap;
     var createSchemaStatements = [];
     var dropSchemaStatements = [];
     var resourceNames = [];
@@ -203,8 +207,8 @@ var compileSchema = function (abstractSqlModel, engine, ifNotExists) {
             var resourceName = resourceNames_1[_i];
             var schemaInfo = schemaDependencyMap[resourceName];
             var unsolvedDependency = false;
-            for (var _a = 0, _b = schemaInfo.depends; _a < _b.length; _a++) {
-                var dependency = _b[_a];
+            for (var _b = 0, _c = schemaInfo.depends; _b < _c.length; _b++) {
+                var dependency = _c[_b];
                 if (dependency !== resourceName && schemaDependencyMap.hasOwnProperty(dependency)) {
                     unsolvedDependency = true;
                     break;
@@ -269,10 +273,132 @@ var compileSchema = function (abstractSqlModel, engine, ifNotExists) {
         rules: ruleStatements
     };
 };
+var generateSplit = function (src, dst, matchFn) {
+    var modified = [];
+    return _.reduce(src, function (acc, value) {
+        var match = matchFn(acc.inserted, value);
+        if (_.isUndefined(match)) {
+            return acc;
+        }
+        else {
+            acc.inserted = _.without(acc.inserted, match);
+            acc.deleted = _.without(acc.deleted, value);
+            acc.modified.push({ src: value, dst: match });
+            return acc;
+        }
+    }, { inserted: dst, deleted: src, modified: modified });
+};
+var generateDiff = function (insFn, delFn, modFn, matchFn, src, dst) {
+    var split = generateSplit(src, dst, matchFn);
+    var diff = _.map(split.modified, modFn)
+        .concat(_.map(split.deleted, delFn))
+        .concat(_.map(split.inserted, insFn));
+    return _.reject(diff, _.isUndefined);
+};
+var diffFields = function (src, dst, mappings, engine, ifNotExists) {
+    var ifNotExistsStr;
+    var ifExistsStr;
+    if (ifNotExists) {
+        ifNotExistsStr = 'IF NOT EXISTS ';
+        ifExistsStr = 'IF EXISTS ';
+    }
+    else {
+        ifNotExistsStr = '';
+        ifExistsStr = '';
+    }
+    var matchFn = function (fieldArray, field) {
+        var match = _.find(fieldArray, { fieldName: field.fieldName });
+        if (_.isUndefined(match)) {
+            if (_.isString(mappings[field.fieldName])) {
+                return _.find(fieldArray, { fieldName: mappings[field.fieldName] });
+            }
+        }
+        else {
+            return match;
+        }
+    };
+    var insFn = function (field) {
+        return 'ADD COLUMN ' + ifNotExistsStr + '"' + field.fieldName + '" ' + dataTypeGen(engine, field) + ';';
+    };
+    var delFn = function (field) {
+        return 'DROP COLUMN ' + ifExistsStr + '"' + field.fieldName + '";';
+    };
+    var modFn = function (_a) {
+        var src = _a.src, dst = _a.dst;
+        if (_.isEqual(src, dst)) {
+            return;
+        }
+        if (_.isEqual(_.omit(src, ['fieldName', 'references']), _.omit(dst, ['fieldName', 'references']))) {
+            return 'RENAME COLUMN "' + src.fieldName + '" TO "' + dst.fieldName + '";';
+        }
+        throw Error("Can not migrate pre-existing field " + src.fieldName + " to " + dst.fieldName);
+    };
+    return generateDiff(insFn, delFn, modFn, matchFn, src, dst);
+};
+var diffSchemas = function (src, dst, engine, ifNotExists) {
+    var srcSDM = mkSchemaDependencyMap(src.tables, engine, ifNotExists).schemaDependencyMap;
+    var dstSDM = mkSchemaDependencyMap(dst.tables, engine, ifNotExists).schemaDependencyMap;
+    var matchFn = function (tables, srcTable) {
+        var match = _.find(tables, { name: srcTable.name });
+        if (_.isUndefined(match)) {
+            var relations_1 = src.relationships[srcTable.name];
+            if (!_.isUndefined(relations_1)) {
+                return _.find(tables, function (dstTable) {
+                    var verb = dstTable.name.split('-').slice(1, -1).join(' ');
+                    return !_.isUndefined(relations_1[verb]);
+                });
+            }
+            return relations_1;
+        }
+        return match;
+    };
+    var insFn = function (table) {
+        if (!_.isString(table) && !table.primitive) {
+            return dstSDM[table.name].createSQL;
+        }
+    };
+    var delFn = function (table) {
+        if (!_.isString(table) && !table.primitive) {
+            return srcSDM[table.name].dropSQL;
+        }
+    };
+    var modFn = function (_a) {
+        var srcTbl = _a.src, dstTbl = _a.dst;
+        if (_.isEqual(srcTbl, dstTbl)) {
+            return;
+        }
+        else if (_.isEqual(_.omit(srcTbl, 'fields'), _.omit(dstTbl, 'fields'))) {
+            var fields = diffFields(srcTbl.fields, dstTbl.fields, _.invert(src.synonyms), engine, ifNotExists);
+            var alterTbl_1 = 'ALTER TABLE "' + srcTbl.name + '"\n\t';
+            return _.map(fields, function (field) { return alterTbl_1 + field; }).join('\n');
+        }
+        else {
+            var _b = extractMappings(srcTbl.name), srcResource = _b[0], srcRest = _b[1];
+            var _c = extractMappings(dstTbl.name), dstResource = _c[0], dstRest = _c[1];
+            var mappings = (_d = {},
+                _d[srcResource] = dstRest,
+                _d[srcRest] = dstResource,
+                _d);
+            var fields = diffFields(srcTbl.fields, dstTbl.fields, mappings, engine, ifNotExists);
+            var renameTable = "ALTER TABLE \"" + srcTbl.name + "\"\n\tRENAME TO \"" + dstTbl.name + "\";";
+            var alterTbl_2 = 'ALTER TABLE "' + dstTbl.name + '"\n\t';
+            return _.concat(renameTable, _.map(fields, function (field) { return alterTbl_2 + field; })).join('\n');
+        }
+        var _d;
+    };
+    return generateDiff(insFn, delFn, modFn, matchFn, _.values(src.tables), _.values(dst.tables));
+};
+var extractMappings = function (resource) {
+    var resourceParts = resource.split('-');
+    var subject = resourceParts[0];
+    var rest = resourceParts.slice(1).join('-');
+    return [subject, rest];
+};
 var generateExport = function (engine, ifNotExists) {
     return {
         compileSchema: _.partial(compileSchema, _, engine, ifNotExists),
         compileRule: _.partial(compileRule, _, engine),
+        diffSchemas: _.partial(diffSchemas, _, _, engine, ifNotExists),
         dataTypeValidate: dataTypeValidate,
         getReferencedFields: getReferencedFields,
         getModifiedFields: getModifiedFields
