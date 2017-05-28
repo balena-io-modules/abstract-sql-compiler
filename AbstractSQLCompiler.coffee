@@ -54,6 +54,62 @@
 		else
 			throw new Error("Unknown data type '#{dataType}' for engine: #{engine}")
 
+	getReferencedFields = (ruleBody) ->
+		tableAliases = {}
+		referencedFields = {}
+		recurse = (rulePart) ->
+			_.each rulePart, (part) ->
+				if _.isArray(part)
+					if part[0] is 'ReferencedField'
+						referencedFields[part[1]] ?= []
+						referencedFields[part[1]].push(part[2])
+						return
+					if part[0] is 'Field'
+						throw new Error('Cannot find queried fields for unreferenced fields')
+					if part[0] is 'From'
+						if _.isArray(part[1])
+							nested = part[1]
+							if _.isArray(nested[1])
+								throw new Error('Cannot handle aliased select queries')
+							table = nested[0]
+							alias = nested[1]
+							tableAliases[alias] = table
+					recurse(part)
+		recurse(ruleBody)
+
+		for alias, table of tableAliases
+			tableFields = referencedFields[table] ? []
+			aliasFields = referencedFields[alias] ? []
+			referencedFields[table] = tableFields.concat(aliasFields)
+
+		return referencedFields
+
+	getModifiedFields = do ->
+		checkQuery = (query) ->
+			queryType = query[0]
+			if queryType not in [ 'InsertQuery', 'UpdateQuery', 'DeleteQuery' ]
+				return
+
+			froms = _.filter(query, 0: 'From')
+			if froms.length isnt 1
+				return
+
+			table = froms[0][1]
+
+			if queryType in [ 'InsertQuery', 'DeleteQuery' ]
+				return { table }
+
+			fields = _.filter(query, 0: 'Fields')
+			fields = _.flatMap(fields, 1)
+			return { table, fields }
+
+		return (abstractSqlQuery) ->
+			if _.isArray(abstractSqlQuery[0])
+				_.map(abstractSqlQuery, checkQuery)
+			else
+				checkQuery(abstractSqlQuery)
+
+
 	compileRule = do ->
 		optimiser = AbstractSQLOptimiser.createInstance()
 		compiler = AbstractSQLRules2SQL.createInstance()
@@ -120,9 +176,15 @@
 				ruleBody = _.find(rule, 0: 'Body')[1]
 				ruleSE = _.find(rule, 0: 'StructuredEnglish')[1]
 				ruleSQL = compileRule(ruleBody, engine)
+				try
+					referencedFields = AbstractSQLCompiler.getReferencedFields(ruleBody)
+				catch e
+					console.warn('Error fetching referenced fields', e)
+
 				ruleStatements.push(
 					structuredEnglish: ruleSE
 					sql: ruleSQL
+					referencedFields: referencedFields
 				)
 		catch e
 			console.error('Failed to compile the rule', JSON.stringify(rule, null, '\t'))
@@ -146,3 +208,5 @@
 				compileSchema: _.partial(compileSchema, _, engine, ifNotExists)
 				compileRule: _.partial(compileRule, _, engine)
 				dataTypeValidate: dataTypeValidate
+				getReferencedFields: getReferencedFields
+				getModifiedFields: getModifiedFields
