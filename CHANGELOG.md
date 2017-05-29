@@ -1,3 +1,5 @@
+* Update coffeescript to ~1.12.6
+
 v2.2.0
 
 * Added support for numbered binds.
