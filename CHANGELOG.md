@@ -1,3 +1,5 @@
+v2.3.0
+
 * Add `getReferencedFields` and `getModifiedFields` functions.
 * Add `referencedFields` info to compiled rules.
 * Update coffeescript to ~1.12.6
