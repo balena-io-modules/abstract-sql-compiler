@@ -177,7 +177,7 @@
 				ruleSE = _.find(rule, 0: 'StructuredEnglish')[1]
 				ruleSQL = compileRule(ruleBody, engine)
 				try
-					referencedFields = AbstractSQLCompiler.getReferencedFields(ruleBody)
+					referencedFields = getReferencedFields(ruleBody)
 				catch e
 					console.warn('Error fetching referenced fields', e)
 
