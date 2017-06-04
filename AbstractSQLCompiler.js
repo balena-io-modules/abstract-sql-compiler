@@ -243,7 +243,7 @@
           })[1];
           ruleSQL = compileRule(ruleBody, engine);
           try {
-            referencedFields = AbstractSQLCompiler.getReferencedFields(ruleBody);
+            referencedFields = getReferencedFields(ruleBody);
           } catch (error) {
             e = error;
             console.warn('Error fetching referenced fields', e);

@@ -1,3 +1,7 @@
+v2.3.1
+
+* Fixed added referenced fields to rules
+
 v2.3.0
 
 * Add `getReferencedFields` and `getModifiedFields` functions.
