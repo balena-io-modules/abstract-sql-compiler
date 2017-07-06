@@ -154,7 +154,7 @@
 			for tableName in tableNames
 				schemaInfo = schemaDependencyMap[tableName]
 				unsolvedDependency = false
-				for dependency in schemaInfo.depends when dependency != schemaInfo.resourceName # Self-dependencies are ok.
+				for dependency in schemaInfo.depends when dependency != tableName # Self-dependencies are ok.
 					if schemaDependencyMap.hasOwnProperty(dependency)
 						unsolvedDependency = true
 						break
