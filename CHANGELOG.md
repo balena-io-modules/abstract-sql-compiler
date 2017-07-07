@@ -1,3 +1,5 @@
+* Fixed checking of dependencies when there is self-reference for a resource where the resource name and table name are different
+
 v2.3.1
 
 * Fixed added referenced fields to rules
