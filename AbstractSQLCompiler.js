@@ -206,7 +206,7 @@
           ref4 = schemaInfo.depends;
           for (m = 0, len4 = ref4.length; m < len4; m++) {
             dependency = ref4[m];
-            if (dependency !== schemaInfo.resourceName) {
+            if (dependency !== tableName) {
               if (schemaDependencyMap.hasOwnProperty(dependency)) {
                 unsolvedDependency = true;
                 break;
