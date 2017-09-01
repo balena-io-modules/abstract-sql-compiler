@@ -165,7 +165,7 @@
 						createSchemaStatements.push(schemaInfo.createSQL)
 						dropSchemaStatements.push(schemaInfo.dropSQL)
 					delete schemaDependencyMap[tableName]
-		if schemaDependencyMap.length > 0
+		if _.size(schemaDependencyMap) > 0
 			console.error('Failed to resolve all schema dependencies', schemaDependencyMap)
 			throw new Error('Failed to resolve all schema dependencies')
 		dropSchemaStatements = dropSchemaStatements.reverse()
