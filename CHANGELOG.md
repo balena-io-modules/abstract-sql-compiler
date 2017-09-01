@@ -1,3 +1,5 @@
+v2.3.3
+
 * Fixed checking for unresolved dependencies
 
 v2.3.2
