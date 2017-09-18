@@ -1,3 +1,7 @@
+v3.0.0
+
+* Changed API to pass rule bindings along with the compiled query.
+
 v2.3.3
 
 * Fixed checking for unresolved dependencies

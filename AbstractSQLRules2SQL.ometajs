@@ -738,5 +738,5 @@ export ometa AbstractSQLRules2SQL {
 			-> {query: query, bindings: this.fieldOrderings}
 		|	UpsertQuery('\n')
 		|	AnyValue('\n'):value
-			-> ('SELECT ' + value + ' AS "result";')
+			-> ({ query: 'SELECT ' + value + ' AS "result";', bindings: this.fieldOrderings })
 }

@@ -175,7 +175,7 @@
 			for rule in sqlModel.rules
 				ruleBody = _.find(rule, 0: 'Body')[1]
 				ruleSE = _.find(rule, 0: 'StructuredEnglish')[1]
-				ruleSQL = compileRule(ruleBody, engine)
+				{ query: ruleSQL, bindings: ruleBindings } = compileRule(ruleBody, engine)
 				try
 					referencedFields = getReferencedFields(ruleBody)
 				catch e
@@ -184,6 +184,7 @@
 				ruleStatements.push(
 					structuredEnglish: ruleSE
 					sql: ruleSQL
+					bindings: ruleBindings
 					referencedFields: referencedFields
 				)
 		catch e
