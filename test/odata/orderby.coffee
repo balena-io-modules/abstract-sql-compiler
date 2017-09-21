@@ -56,21 +56,21 @@ test '/pilot?$orderby=licence/id asc', (result) ->
 			SELECT ''' + pilotFields + '\n' + '''
 			FROM "pilot",
 				"licence" AS "pilot.licence"
-			WHERE "pilot.licence"."id" = "pilot"."licence"
+			WHERE "pilot"."licence" = "pilot.licence"."id"
 			ORDER BY "pilot.licence"."id" ASC
 		''')
 
 
-test '/pilot?$orderby=pilot__can_fly__plane/plane/id asc', (result) ->
+test '/pilot?$orderby=can_fly__plane/plane/id asc', (result) ->
 	it 'should order by pilot__can_fly__plane/plane/id asc', ->
 		expect(result.query).to.equal('''
 			SELECT ''' + pilotFields + '\n' + '''
 			FROM "pilot",
-				"pilot-can_fly-plane" AS "pilot.pilot-can_fly-plane",
-				"plane" AS "pilot.pilot-can_fly-plane.plane"
-			WHERE "pilot"."id" = "pilot.pilot-can_fly-plane"."pilot"
-			AND "pilot.pilot-can_fly-plane.plane"."id" = "pilot.pilot-can_fly-plane"."plane"
-			ORDER BY "pilot.pilot-can_fly-plane.plane"."id" ASC
+				"pilot-can fly-plane" AS "pilot.pilot-can fly-plane",
+				"plane" AS "pilot.pilot-can fly-plane.plane"
+			WHERE "pilot"."id" = "pilot.pilot-can fly-plane"."pilot"
+			AND "pilot.pilot-can fly-plane"."can fly-plane" = "pilot.pilot-can fly-plane.plane"."id"
+			ORDER BY "pilot.pilot-can fly-plane.plane"."id" ASC
 		''')
 
 

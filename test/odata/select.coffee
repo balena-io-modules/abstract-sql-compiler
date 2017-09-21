@@ -34,23 +34,23 @@ test "/pilot('TextKey')?$select=favourite_colour", 'GET', [['Bind', 0]], (result
 		''')
 
 
-test '/pilot?$select=pilot/name', (result) ->
+test '/pilot?$select=trained__pilot/name', (result) ->
 	it 'should select name from pilot', ->
 		expect(result.query).to.equal('''
-			SELECT "pilot.pilot"."name"
+			SELECT "pilot.trained-pilot"."name"
 			FROM "pilot",
-				"pilot" AS "pilot.pilot"
-			WHERE "pilot"."id" = "pilot.pilot"."pilot"
+				"pilot" AS "pilot.trained-pilot"
+			WHERE "pilot"."id" = "pilot.trained-pilot"."was trained by-pilot"
 		''')
 
 
-test '/pilot?$select=pilot/name,age', (result) ->
+test '/pilot?$select=trained__pilot/name,age', (result) ->
 	it 'should select name, age from pilot', ->
 		expect(result.query).to.equal('''
-			SELECT "pilot.pilot"."name", "pilot"."age"
+			SELECT "pilot.trained-pilot"."name", "pilot"."age"
 			FROM "pilot",
-				"pilot" AS "pilot.pilot"
-			WHERE "pilot"."id" = "pilot.pilot"."pilot"
+				"pilot" AS "pilot.trained-pilot"
+			WHERE "pilot"."id" = "pilot.trained-pilot"."was trained by-pilot"
 		''')
 
 
@@ -68,17 +68,17 @@ test '/pilot?$select=licence/id', (result) ->
 			SELECT "pilot.licence"."id"
 			FROM "pilot",
 				"licence" AS "pilot.licence"
-			WHERE "pilot.licence"."id" = "pilot"."licence"
+			WHERE "pilot"."licence" = "pilot.licence"."id"
 		''')
 
 
-test '/pilot?$select=pilot__can_fly__plane/plane/id', (result) ->
-	it 'should select pilot__can_fly__plane/plane/id for pilots', ->
+test '/pilot?$select=can_fly__plane/plane/id', (result) ->
+	it 'should select can_fly__plane/plane/id for pilots', ->
 		expect(result.query).to.equal('''
-			SELECT "pilot.pilot-can_fly-plane.plane"."id"
+			SELECT "pilot.pilot-can fly-plane.plane"."id"
 			FROM "pilot",
-				"pilot-can_fly-plane" AS "pilot.pilot-can_fly-plane",
-				"plane" AS "pilot.pilot-can_fly-plane.plane"
-			WHERE "pilot"."id" = "pilot.pilot-can_fly-plane"."pilot"
-			AND "pilot.pilot-can_fly-plane.plane"."id" = "pilot.pilot-can_fly-plane"."plane"
+				"pilot-can fly-plane" AS "pilot.pilot-can fly-plane",
+				"plane" AS "pilot.pilot-can fly-plane.plane"
+			WHERE "pilot"."id" = "pilot.pilot-can fly-plane"."pilot"
+			AND "pilot.pilot-can fly-plane"."can fly-plane" = "pilot.pilot-can fly-plane.plane"."id"
 		''')
