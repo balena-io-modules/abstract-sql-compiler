@@ -149,7 +149,7 @@
       };
     })();
     compileSchema = function(sqlModel, engine, ifNotExists) {
-      var createSQL, createSchemaStatements, dataType, defaultValue, dependency, depends, dropSQL, dropSchemaStatements, e, fieldName, foreignKey, foreignKeys, hasDependants, i, index, j, k, l, len, len1, len2, len3, len4, len5, m, n, ref, ref1, ref2, ref3, ref4, ref5, referencedFields, references, required, resourceName, rule, ruleBody, ruleSE, ruleSQL, ruleStatements, schemaDependencyMap, schemaInfo, table, tableName, tableNames, unsolvedDependency;
+      var createSQL, createSchemaStatements, dataType, defaultValue, dependency, depends, dropSQL, dropSchemaStatements, e, fieldName, foreignKey, foreignKeys, hasDependants, i, index, j, k, l, len, len1, len2, len3, len4, len5, m, n, ref, ref1, ref2, ref3, ref4, ref5, ref6, referencedFields, references, required, resourceName, rule, ruleBindings, ruleBody, ruleSE, ruleSQL, ruleStatements, schemaDependencyMap, schemaInfo, table, tableName, tableNames, unsolvedDependency;
       ifNotExists = ifNotExists ? 'IF NOT EXISTS ' : '';
       hasDependants = {};
       schemaDependencyMap = {};
@@ -241,7 +241,7 @@
           ruleSE = _.find(rule, {
             0: 'StructuredEnglish'
           })[1];
-          ruleSQL = compileRule(ruleBody, engine);
+          ref6 = compileRule(ruleBody, engine), ruleSQL = ref6.query, ruleBindings = ref6.bindings;
           try {
             referencedFields = getReferencedFields(ruleBody);
           } catch (error) {
@@ -251,6 +251,7 @@
           ruleStatements.push({
             structuredEnglish: ruleSE,
             sql: ruleSQL,
+            bindings: ruleBindings,
             referencedFields: referencedFields
           });
         }

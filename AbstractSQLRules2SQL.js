@@ -1139,7 +1139,10 @@
                 return this._applyWithArgs("UpsertQuery", "\n");
             }, function() {
                 value = this._applyWithArgs("AnyValue", "\n");
-                return "SELECT " + value + ' AS "result";';
+                return {
+                    query: "SELECT " + value + ' AS "result";',
+                    bindings: this.fieldOrderings
+                };
             });
         }
     });
