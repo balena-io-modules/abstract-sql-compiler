@@ -6,16 +6,16 @@ exports.pilotFields = pilotFields = [
 	'"pilot"."name"'
 	'"pilot"."age"'
 	'"pilot"."favourite colour" AS "favourite_colour"'
-	'"pilot"."team"'
+	'"pilot"."is on-team" AS "is_on__team"'
 	'"pilot"."licence"'
 	'"pilot"."hire date" AS "hire_date"'
-	'"pilot"."pilot"'
+	'"pilot"."was trained by-pilot" AS "was_trained_by__pilot"'
 ]
 exports.pilotCanFlyPlaneFields = pilotCanFlyPlaneFields = [
-	'"pilot-can_fly-plane"."created at" AS "created_at"'
-	'"pilot-can_fly-plane"."pilot"'
-	'"pilot-can_fly-plane"."plane"'
-	'"pilot-can_fly-plane"."id"'
+	'"pilot-can fly-plane"."created at" AS "created_at"'
+	'"pilot-can fly-plane"."pilot"'
+	'"pilot-can fly-plane"."can fly-plane" AS "can_fly__plane"'
+	'"pilot-can fly-plane"."id"'
 ]
 exports.licenceFields = licenceFields = [
 	'"licence"."created at" AS "created_at"'
@@ -36,7 +36,7 @@ exports.aliasFields = aliasFields = (alias, fields) ->
 	for field in fields
 		field.replace(/^".*?"/, '"' + alias + '"')
 
-exports.aliasPilotLicenceFields = aliasFields('licence.pilot', pilotFields)
+exports.aliasPilotLicenceFields = aliasFields('licence.is of-pilot', pilotFields)
 exports.aliasLicenceFields = aliasFields('pilot.licence', licenceFields)
-exports.aliasPlaneFields = aliasFields('pilot.pilot-can_fly-plane.plane', planeFields)
-exports.aliasPilotCanFlyPlaneFields = aliasFields('pilot.pilot-can_fly-plane', pilotCanFlyPlaneFields)
+exports.aliasPlaneFields = aliasFields('pilot.pilot-can fly-plane.plane', planeFields)
+exports.aliasPilotCanFlyPlaneFields = aliasFields('pilot.pilot-can fly-plane', pilotCanFlyPlaneFields)

@@ -1,7 +1,7 @@
 expect = require('chai').expect
 test = require('./test')
 { pilotFields, teamFields, aliasFields, aliasPlaneFields, aliasPilotLicenceFields, aliasLicenceFields } = require('./fields')
-aliasPilotFields = aliasFields('plane.pilot-can_fly-plane.pilot', pilotFields).join(', ')
+aliasPilotFields = aliasFields('plane.pilot-can fly-plane.pilot', pilotFields).join(', ')
 aliasPlaneFields = aliasPlaneFields.join(', ')
 aliasPilotLicenceFields = aliasPilotLicenceFields.join(', ')
 aliasLicenceFields = aliasLicenceFields.join(', ')
@@ -38,45 +38,45 @@ test '/pilot(1)/licence', 'GET', [['Bind', 0]], (result) ->
 			FROM "pilot",
 				"licence" AS "pilot.licence"
 			WHERE "pilot"."id" = ?
-			AND "pilot.licence"."id" = "pilot"."licence"
+			AND "pilot"."licence" = "pilot.licence"."id"
 		"""
 
 
 
-test '/licence(1)/pilot', 'GET', [['Bind', 0]], (result) ->
+test '/licence(1)/is_of__pilot', 'GET', [['Bind', 0]], (result) ->
 	it 'should select from the pilots of licence with id', ->
 		expect(result.query).to.equal """
 			SELECT #{aliasPilotLicenceFields}
 			FROM "licence",
-				"pilot" AS "licence.pilot"
+				"pilot" AS "licence.is of-pilot"
 			WHERE "licence"."id" = ?
-			AND "licence"."id" = "licence.pilot"."licence"
+			AND "licence"."id" = "licence.is of-pilot"."licence"
 		"""
 
 
-test '/pilot(1)/pilot__can_fly__plane/plane', 'GET', [['Bind', 0]], (result) ->
+test '/pilot(1)/can_fly__plane/plane', 'GET', [['Bind', 0]], (result) ->
 	it 'should select from the plane of pilot with id', ->
 		expect(result.query).to.equal """
 			SELECT #{aliasPlaneFields}
 			FROM "pilot",
-				"pilot-can_fly-plane" AS "pilot.pilot-can_fly-plane",
-				"plane" AS "pilot.pilot-can_fly-plane.plane"
+				"pilot-can fly-plane" AS "pilot.pilot-can fly-plane",
+				"plane" AS "pilot.pilot-can fly-plane.plane"
 			WHERE "pilot"."id" = ?
-			AND "pilot.pilot-can_fly-plane.plane"."id" = "pilot.pilot-can_fly-plane"."plane"
-			AND "pilot"."id" = "pilot.pilot-can_fly-plane"."pilot"
+			AND "pilot.pilot-can fly-plane"."can fly-plane" = "pilot.pilot-can fly-plane.plane"."id"
+			AND "pilot"."id" = "pilot.pilot-can fly-plane"."pilot"
 		"""
 
 
-test '/plane(1)/pilot__can_fly__plane/pilot', 'GET', [['Bind', 0]], (result) ->
+test '/plane(1)/can_be_flown_by__pilot/pilot', 'GET', [['Bind', 0]], (result) ->
 	it 'should select from the pilots of plane with id', ->
 		expect(result.query).to.equal """
 			SELECT #{aliasPilotFields}
 			FROM "plane",
-				"pilot-can_fly-plane" AS "plane.pilot-can_fly-plane",
-				"pilot" AS "plane.pilot-can_fly-plane.pilot"
+				"pilot-can fly-plane" AS "plane.pilot-can fly-plane",
+				"pilot" AS "plane.pilot-can fly-plane.pilot"
 			WHERE "plane"."id" = ?
-			AND "plane.pilot-can_fly-plane.pilot"."id" = "plane.pilot-can_fly-plane"."pilot"
-			AND "plane"."id" = "plane.pilot-can_fly-plane"."plane"
+			AND "plane.pilot-can fly-plane"."pilot" = "plane.pilot-can fly-plane.pilot"."id"
+			AND "plane"."id" = "plane.pilot-can fly-plane"."can fly-plane"
 		"""
 
 
@@ -112,10 +112,10 @@ do ->
 					"name" = DEFAULT,
 					"age" = DEFAULT,
 					"favourite colour" = DEFAULT,
-					"team" = DEFAULT,
+					"is on-team" = DEFAULT,
 					"licence" = DEFAULT,
 					"hire date" = DEFAULT,
-					"pilot" = DEFAULT
+					"was trained by-pilot" = DEFAULT
 				WHERE "pilot"."id" = ?
 			''')
 	bindings = [
@@ -153,60 +153,60 @@ do ->
 test '/pilot__can_fly__plane(1)', 'DELETE', [['Bind', 0]], (result) ->
 	it 'should delete the pilot with id 1', ->
 		expect(result.query).to.equal('''
-			DELETE FROM "pilot-can_fly-plane"
-			WHERE "pilot-can_fly-plane"."id" = ?
+			DELETE FROM "pilot-can fly-plane"
+			WHERE "pilot-can fly-plane"."id" = ?
 		''')
 
 do ->
 	bindings = [
-		[['Bind', ['pilot__can_fly__plane', 'id']]]
+		[['Bind', ['pilot-can fly-plane', 'id']]]
 		[
-			['Bind', ['pilot__can_fly__plane', 'id']]
+			['Bind', ['pilot-can fly-plane', 'id']]
 			['Bind', 0]
 		]
 	]
 	test '/pilot__can_fly__plane(1)', 'PUT', bindings, (result) ->
-		it 'should insert/update the pilot-can_fly-plane with id 1', ->
+		it 'should insert/update the pilot-can fly-plane with id 1', ->
 			expect(result[0].query).to.equal('''
-				INSERT INTO "pilot-can_fly-plane" ("id")
+				INSERT INTO "pilot-can fly-plane" ("id")
 				VALUES (?)
 			''')
 			expect(result[1].query).to.equal('''
-				UPDATE "pilot-can_fly-plane"
+				UPDATE "pilot-can fly-plane"
 				SET "created at" = DEFAULT,
 					"pilot" = DEFAULT,
-					"plane" = DEFAULT,
+					"can fly-plane" = DEFAULT,
 					"id" = ?
-				WHERE "pilot-can_fly-plane"."id" = ?
+				WHERE "pilot-can fly-plane"."id" = ?
 			''')
 	bindings = [
-		['Bind', ['pilot__can_fly__plane', 'pilot']]
-		['Bind', ['pilot__can_fly__plane', 'plane']]
+		['Bind', ['pilot-can fly-plane', 'pilot']]
+		['Bind', ['pilot-can fly-plane', 'can_fly__plane']]
 	]
-	test '/pilot__can_fly__plane', 'POST', bindings, { pilot: 2, plane: 3 }, (result) ->
-		it 'should insert/update the pilot-can_fly-plane with id 1', ->
+	test '/pilot__can_fly__plane', 'POST', bindings, { pilot: 2, can_fly__plane: 3 }, (result) ->
+		it 'should insert/update the pilot-can fly-plane with id 1', ->
 			expect(result.query).to.equal('''
-				INSERT INTO "pilot-can_fly-plane" ("pilot", "plane")
+				INSERT INTO "pilot-can fly-plane" ("pilot", "can fly-plane")
 				VALUES (?, ?)
 			''')
 	test '/pilot__can_fly__plane', 'POST', (result) ->
-		it 'should insert a "pilot-can_fly-plane" with default values', ->
+		it 'should insert a "pilot-can fly-plane" with default values', ->
 			expect(result.query).to.equal('''
-				INSERT INTO "pilot-can_fly-plane" DEFAULT VALUES
+				INSERT INTO "pilot-can fly-plane" DEFAULT VALUES
 			''')
 do ->
 	bindings = [
-		['Bind', ['pilot__can_fly__plane', 'pilot']]
-		['Bind', ['pilot__can_fly__plane', 'id']]
+		['Bind', ['pilot-can fly-plane', 'pilot']]
+		['Bind', ['pilot-can fly-plane', 'id']]
 		['Bind', 0]
 	]
 	testFunc = (result) ->
 		it 'should insert/update the pilot with id 1', ->
 			expect(result.query).to.equal('''
-				UPDATE "pilot-can_fly-plane"
+				UPDATE "pilot-can fly-plane"
 				SET "pilot" = ?,
 					"id" = ?
-				WHERE "pilot-can_fly-plane"."id" = ?
+				WHERE "pilot-can fly-plane"."id" = ?
 			''')
 	test '/pilot__can_fly__plane(1)', 'PATCH', bindings, { pilot: 1 }, testFunc
 	test '/pilot__can_fly__plane(1)', 'MERGE', bindings, { pilot: 1 }, testFunc
@@ -221,14 +221,14 @@ test '/pilot(1)/$links/licence', 'GET', [['Bind', 0]], (result) ->
 		''')
 
 
-test '/pilot(1)/pilot__can_fly__plane/$links/plane', 'GET', [['Bind', 0]], (result) ->
+test '/pilot(1)/can_fly__plane/$links/plane', 'GET', [['Bind', 0]], (result) ->
 	it 'should select the list of plane ids, for generating the links', ->
 		expect(result.query).to.equal('''
-			SELECT "pilot.pilot-can_fly-plane"."plane" AS "plane"
+			SELECT "pilot.pilot-can fly-plane"."can fly-plane" AS "plane"
 			FROM "pilot",
-				"pilot-can_fly-plane" AS "pilot.pilot-can_fly-plane"
+				"pilot-can fly-plane" AS "pilot.pilot-can fly-plane"
 			WHERE "pilot"."id" = ?
-			AND "pilot"."id" = "pilot.pilot-can_fly-plane"."pilot"
+			AND "pilot"."id" = "pilot.pilot-can fly-plane"."pilot"
 		''')
 
 
@@ -297,7 +297,7 @@ test '/pilot(5)/licence/$count', 'GET', [['Bind', 0]], (result) ->
 			FROM "pilot",
 				"licence" AS "pilot.licence"
 			WHERE "pilot"."id" = ?
-			AND "pilot.licence"."id" = "pilot"."licence"
+			AND "pilot"."licence" = "pilot.licence"."id"
 		'''
 
 test '/pilot/$count?$orderby=id asc', (result) ->

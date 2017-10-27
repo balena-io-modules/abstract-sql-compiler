@@ -1,7 +1,8 @@
 expect = require('chai').expect
 test = require('./test')
-clientModel = require('../client-model.json')
+clientModel = test.clientModel
 _ = require('lodash')
+{ odataNameToSqlName } = require('@resin/odata-to-abstract-sql')
 { pilotFields, pilotCanFlyPlaneFields, teamFields, aliasPilotCanFlyPlaneFields } = require('./fields')
 pilotFields = pilotFields.join(', ')
 pilotCanFlyPlaneFields = pilotCanFlyPlaneFields.join(', ')
@@ -65,17 +66,21 @@ parseOperandFactory = (defaultResource = 'pilot') ->
 				return '?'
 			fieldParts = operand.split('/')
 			if fieldParts.length > 1
-				mapping = clientModel.resourceToSQLMappings[fieldParts[fieldParts.length - 2]][fieldParts[fieldParts.length - 1]]
-				alias = resource + '.' + mapping[0]
-				if fieldParts.length > 2
-					part = clientModel.resourceToSQLMappings[fieldParts[0]][resource]
-					alias = part[1] + '.' + part[0] + '.' + mapping[0]
-					if fieldParts.length > 3
-						part = clientModel.resourceToSQLMappings[fieldParts[fieldParts.length - 3]][fieldParts[0]]
-						alias = resource + '.' + part[1] + '.' + part[0] + '.' + mapping[0]
-				mapping = [alias, mapping[1]]
+				alias = resource
+				previousResource = resource
+				for resourceName in fieldParts[...-1]
+					sqlName = odataNameToSqlName(resourceName)
+					sqlNameParts = sqlName.split('-')
+					mapping = _.get(clientModel.relationships[previousResource], sqlNameParts.join('.')).$
+					refTable = mapping[1][0]
+					if sqlNameParts.length > 1 and not _.includes(refTable, '-')
+						alias = "#{alias}.#{sqlNameParts[0]}-#{refTable}"
+					else
+						alias = "#{alias}.#{refTable}"
+					previousResource = refTable
+				mapping = [alias, _.last(fieldParts)]
 			else
-				mapping = clientModel.resourceToSQLMappings[resource][operand]
+				mapping = [resource, odataNameToSqlName(operand)]
 			return '"' + mapping.join('"."') + '"'
 		if _.isObject(operand)
 			sign = if operand.negative then '-' else ''
@@ -262,9 +267,9 @@ operandTest = (lhs, op, rhs) ->
 		if lFieldParts.length > 1 or rFieldParts.length > 1
 			from = '''
 				"pilot",
-					"pilot" AS "pilot.pilot"'''
+					"pilot" AS "pilot.trained-pilot"'''
 			where = '''
-				"pilot"."id" = "pilot.pilot"."pilot"
+				"pilot"."id" = "pilot.trained-pilot"."was trained by-pilot"
 				AND ''' + sql
 		else
 			from = '"pilot"'
@@ -315,7 +320,7 @@ do ->
 			-2.5
 			"'bar'"
 			'name'
-			'pilot/name'
+			'trained__pilot/name'
 			new Date()
 			{ negative: true, day: 3, hour: 4, minute: 5, second: 6.7 }
 			true
@@ -352,60 +357,60 @@ do ->
 			operandTest(mathOp, 'gt', 10)
 
 run ->
-	{ odata, bindings, sql } = createExpression('pilot__can_fly__plane/id', 'eq', 10)
+	{ odata, bindings, sql } = createExpression('can_fly__plane/id', 'eq', 10)
 	test "/pilot?$filter=#{odata}", 'GET', bindings, (result) ->
 		it 'should select from pilot where "' + odata + '"', ->
 			expect(result.query).to.equal """
 				SELECT #{pilotFields}
 				FROM "pilot",
-					"pilot-can_fly-plane" AS "pilot.pilot-can_fly-plane"
-				WHERE "pilot"."id" = "pilot.pilot-can_fly-plane"."pilot"
+					"pilot-can fly-plane" AS "pilot.pilot-can fly-plane"
+				WHERE "pilot"."id" = "pilot.pilot-can fly-plane"."pilot"
 				AND #{sql}
 			"""
 
 run ->
 	{ odata: keyOdata, bindings: keyBindings } = parseOperand(1)
-	{ odata, bindings } = createExpression('plane/id', 'eq', 10)
-	test '/pilot(' + keyOdata + ')/pilot__can_fly__plane?$filter=' + odata, 'GET', keyBindings.concat(bindings), (result) ->
+	{ odata, bindings } = createExpression('can_fly__plane/id', 'eq', 10)
+	test '/pilot(' + keyOdata + ')/can_fly__plane?$filter=' + odata, 'GET', keyBindings.concat(bindings), (result) ->
 		it 'should select from pilot__can_fly__plane where "' + odata + '"', ->
 			expect(result.query).to.equal """
 				SELECT #{aliasPilotCanFlyPlaneFields}
 				FROM "pilot",
-					"pilot-can_fly-plane" AS "pilot.pilot-can_fly-plane",
-					"plane" AS "pilot.pilot-can_fly-plane.plane"
+					"pilot-can fly-plane" AS "pilot.pilot-can fly-plane",
+					"plane" AS "pilot.pilot-can fly-plane.can fly-plane"
 				WHERE "pilot"."id" = ?
-				AND "pilot.pilot-can_fly-plane.plane"."id" = "pilot.pilot-can_fly-plane"."plane"
-				AND "pilot.pilot-can_fly-plane.plane"."id" = ?
-				AND "pilot"."id" = "pilot.pilot-can_fly-plane"."pilot"
+				AND "pilot.pilot-can fly-plane"."can fly-plane" = "pilot.pilot-can fly-plane.can fly-plane"."id"
+				AND "pilot.pilot-can fly-plane.can fly-plane"."id" = ?
+				AND "pilot"."id" = "pilot.pilot-can fly-plane"."pilot"
 			"""
 
 run ->
-	{ odata, bindings, sql } = createExpression('pilot__can_fly__plane/plane/id', 'eq', 10)
+	{ odata, bindings, sql } = createExpression('can_fly__plane/plane/id', 'eq', 10)
 	name = 'Peter'
 	bodyBindings =  [
 		['Bind', ['pilot', 'name']]
 	].concat(bindings)
 	filterWhere = [
-		'WHERE "pilot"."id" = "pilot.pilot-can_fly-plane"."pilot"'
-		'AND "pilot.pilot-can_fly-plane.plane"."id" = "pilot.pilot-can_fly-plane"."plane"'
+		'WHERE "pilot"."id" = "pilot.pilot-can fly-plane"."pilot"'
+		'AND "pilot.pilot-can fly-plane"."can fly-plane" = "pilot.pilot-can fly-plane.plane"."id"'
 		"AND #{sql}"
 	]
 	insertTest = (result) ->
 		expect(result.query).to.equal """
 			INSERT INTO "pilot" ("name")
 			SELECT "pilot"."name"
-			FROM "pilot-can_fly-plane" AS "pilot.pilot-can_fly-plane",
-				"plane" AS "pilot.pilot-can_fly-plane.plane",
+			FROM "pilot-can fly-plane" AS "pilot.pilot-can fly-plane",
+				"plane" AS "pilot.pilot-can fly-plane.plane",
 				(
-				SELECT NULL AS "created at", NULL AS "id", NULL AS "person", NULL AS "is experienced", CAST(? AS VARCHAR(255)) AS "name", NULL AS "age", NULL AS "favourite colour", NULL AS "team", NULL AS "licence", NULL AS "hire date", NULL AS "pilot"
+				SELECT NULL AS "created at", NULL AS "id", NULL AS "person", NULL AS "is experienced", CAST(? AS VARCHAR(255)) AS "name", NULL AS "age", NULL AS "favourite colour", NULL AS "is on-team", NULL AS "licence", NULL AS "hire date", NULL AS "was trained by-pilot"
 			) AS "pilot"
 			#{filterWhere.join('\n')}
 		"""
 	updateWhere = """
 		WHERE "pilot"."id" IN ((
 			SELECT "pilot"."id"
-			FROM "pilot-can_fly-plane" AS "pilot.pilot-can_fly-plane",
-				"plane" AS "pilot.pilot-can_fly-plane.plane",
+			FROM "pilot-can fly-plane" AS "pilot.pilot-can fly-plane",
+				"plane" AS "pilot.pilot-can fly-plane.plane",
 				"pilot"
 			#{filterWhere.join('\n\t')}
 		))
@@ -416,8 +421,8 @@ run ->
 			expect(result.query).to.equal """
 				SELECT #{pilotFields}
 				FROM "pilot",
-					"pilot-can_fly-plane" AS "pilot.pilot-can_fly-plane",
-					"plane" AS "pilot.pilot-can_fly-plane.plane"
+					"pilot-can fly-plane" AS "pilot.pilot-can fly-plane",
+					"plane" AS "pilot.pilot-can fly-plane.plane"
 				#{filterWhere.join('\n')}
 			"""
 
@@ -449,10 +454,10 @@ run ->
 						"name" = ?,
 						"age" = DEFAULT,
 						"favourite colour" = DEFAULT,
-						"team" = DEFAULT,
+						"is on-team" = DEFAULT,
 						"licence" = DEFAULT,
 						"hire date" = DEFAULT,
-						"pilot" = DEFAULT
+						"was trained by-pilot" = DEFAULT
 					#{updateWhere}
 				"""
 
@@ -462,8 +467,8 @@ run ->
 				DELETE FROM "pilot"
 				WHERE "pilot"."id" IN ((
 					SELECT "pilot"."id"
-					FROM "pilot-can_fly-plane" AS "pilot.pilot-can_fly-plane",
-						"plane" AS "pilot.pilot-can_fly-plane.plane",
+					FROM "pilot-can fly-plane" AS "pilot.pilot-can fly-plane",
+						"plane" AS "pilot.pilot-can fly-plane.plane",
 						"pilot"
 					#{filterWhere.join('\n\t')}
 				))
@@ -482,7 +487,7 @@ run ->
 				INSERT INTO "pilot" ("name")
 				SELECT "pilot"."name"
 				FROM (
-					SELECT NULL AS "created at", NULL AS "id", NULL AS "person", NULL AS "is experienced", CAST(? AS VARCHAR(255)) AS "name", NULL AS "age", NULL AS "favourite colour", NULL AS "team", NULL AS "licence", NULL AS "hire date", NULL AS "pilot"
+					SELECT NULL AS "created at", NULL AS "id", NULL AS "person", NULL AS "is experienced", CAST(? AS VARCHAR(255)) AS "name", NULL AS "age", NULL AS "favourite colour", NULL AS "is on-team", NULL AS "licence", NULL AS "hire date", NULL AS "was trained by-pilot"
 				) AS "pilot"
 				WHERE #{sql}
 			"""
@@ -527,7 +532,7 @@ run ->
 					INSERT INTO "pilot" ("id", "name")
 					SELECT "pilot"."id", "pilot"."name"
 					FROM (
-						SELECT NULL AS "created at", CAST(? AS INTEGER) AS "id", NULL AS "person", NULL AS "is experienced", CAST(? AS VARCHAR(255)) AS "name", NULL AS "age", NULL AS "favourite colour", NULL AS "team", NULL AS "licence", NULL AS "hire date", NULL AS "pilot"
+						SELECT NULL AS "created at", CAST(? AS INTEGER) AS "id", NULL AS "person", NULL AS "is experienced", CAST(? AS VARCHAR(255)) AS "name", NULL AS "age", NULL AS "favourite colour", NULL AS "is on-team", NULL AS "licence", NULL AS "hire date", NULL AS "was trained by-pilot"
 					) AS "pilot"
 					WHERE #{sql}
 				"""
@@ -541,10 +546,10 @@ run ->
 						"name" = ?,
 						"age" = DEFAULT,
 						"favourite colour" = DEFAULT,
-						"team" = DEFAULT,
+						"is on-team" = DEFAULT,
 						"licence" = DEFAULT,
 						"hire date" = DEFAULT,
-						"pilot" = DEFAULT
+						"was trained by-pilot" = DEFAULT
 					WHERE "pilot"."id" = ?
 					AND "pilot"."id" IN ((
 						SELECT "pilot"."id"
@@ -560,15 +565,15 @@ run ->
 		'or'
 		createExpression(1, 'eq', 1)
 	)
-	test '/pilot(' + keyOdata + ')/pilot__can_fly__plane?$filter=' + odata, 'GET', keyBindings.concat(bindings), (result) ->
+	test '/pilot(' + keyOdata + ')/can_fly__plane?$filter=' + odata, 'GET', keyBindings.concat(bindings), (result) ->
 		it 'should select from pilot__can_fly__plane where "' + odata + '"', ->
 			expect(result.query).to.equal """
 				SELECT #{aliasPilotCanFlyPlaneFields}
 				FROM "pilot",
-					"pilot-can_fly-plane" AS "pilot.pilot-can_fly-plane"
+					"pilot-can fly-plane" AS "pilot.pilot-can fly-plane"
 				WHERE "pilot"."id" = ?
 				AND #{sql}
-				AND "pilot"."id" = "pilot.pilot-can_fly-plane"."pilot"
+				AND "pilot"."id" = "pilot.pilot-can fly-plane"."pilot"
 			"""
 
 methodTest('contains', 'name', "'et'")
@@ -605,131 +610,123 @@ run -> operandTest(createMethodCall('ceiling', 'age'), 'eq', 25)
 methodTest('substringof', "'Pete'", 'name')
 run -> operandTest(createMethodCall('replace', 'name', "'ete'", "'at'"), 'eq', "'Pat'")
 
-test "/pilot?$filter=pilot__can_fly__plane/any(d:d/plane/name eq 'Concorde')", 'GET', [['Bind', 0]], (result) ->
+test "/pilot?$filter=can_fly__plane/any(d:d/plane/name eq 'Concorde')", 'GET', [['Bind', 0]], (result) ->
 	it 'should select from pilot where ...', ->
 		expect(result.query).to.equal """
 			SELECT #{pilotFields}
 			FROM "pilot"
 			WHERE EXISTS (
 				SELECT 1
-				FROM "pilot-can_fly-plane" AS "pilot.pilot-can_fly-plane",
-					"plane" AS "pilot.pilot-can_fly-plane.plane"
-				WHERE "pilot"."id" = "pilot.pilot-can_fly-plane"."pilot"
-				AND "pilot.pilot-can_fly-plane.plane"."id" = "pilot.pilot-can_fly-plane"."plane"
-				AND "pilot.pilot-can_fly-plane.plane"."name" = ?
+				FROM "pilot-can fly-plane" AS "pilot.pilot-can fly-plane",
+					"plane" AS "pilot.pilot-can fly-plane.plane"
+				WHERE "pilot"."id" = "pilot.pilot-can fly-plane"."pilot"
+				AND "pilot.pilot-can fly-plane"."can fly-plane" = "pilot.pilot-can fly-plane.plane"."id"
+				AND "pilot.pilot-can fly-plane.plane"."name" = ?
 			)
 		"""
 
-test "/pilot/$count?$filter=pilot__can_fly__plane/any(d:d/plane/name eq 'Concorde')", 'GET', [['Bind', 0]], (result) ->
+test "/pilot/$count?$filter=can_fly__plane/any(d:d/plane/name eq 'Concorde')", 'GET', [['Bind', 0]], (result) ->
 	it 'should select count(*) from pilot where ...', ->
 		expect(result.query).to.equal '''
 			SELECT COUNT(*) AS "$count"
 			FROM "pilot"
 			WHERE EXISTS (
 				SELECT 1
-				FROM "pilot-can_fly-plane" AS "pilot.pilot-can_fly-plane",
-					"plane" AS "pilot.pilot-can_fly-plane.plane"
-				WHERE "pilot"."id" = "pilot.pilot-can_fly-plane"."pilot"
-				AND "pilot.pilot-can_fly-plane.plane"."id" = "pilot.pilot-can_fly-plane"."plane"
-				AND "pilot.pilot-can_fly-plane.plane"."name" = ?
+				FROM "pilot-can fly-plane" AS "pilot.pilot-can fly-plane",
+					"plane" AS "pilot.pilot-can fly-plane.plane"
+				WHERE "pilot"."id" = "pilot.pilot-can fly-plane"."pilot"
+				AND "pilot.pilot-can fly-plane"."can fly-plane" = "pilot.pilot-can fly-plane.plane"."id"
+				AND "pilot.pilot-can fly-plane.plane"."name" = ?
 			)
 		'''
 
-test "/pilot?$filter=pilot__can_fly__plane/all(d:d/plane/name eq 'Concorde')", 'GET', [['Bind', 0]], (result) ->
+test "/pilot?$filter=can_fly__plane/all(d:d/plane/name eq 'Concorde')", 'GET', [['Bind', 0]], (result) ->
 	it 'should select from pilot where ...', ->
 		expect(result.query).to.equal """
 			SELECT #{pilotFields}
 			FROM "pilot"
 			WHERE NOT EXISTS (
 				SELECT 1
-				FROM "pilot-can_fly-plane" AS "pilot.pilot-can_fly-plane",
-					"plane" AS "pilot.pilot-can_fly-plane.plane"
-				WHERE NOT (
-					"pilot"."id" = "pilot.pilot-can_fly-plane"."pilot"
-					AND "pilot.pilot-can_fly-plane.plane"."id" = "pilot.pilot-can_fly-plane"."plane"
-					AND "pilot.pilot-can_fly-plane.plane"."name" = ?
-				)
+				FROM "pilot-can fly-plane" AS "pilot.pilot-can fly-plane",
+					"plane" AS "pilot.pilot-can fly-plane.plane"
+				WHERE "pilot"."id" = "pilot.pilot-can fly-plane"."pilot"
+				AND "pilot.pilot-can fly-plane"."can fly-plane" = "pilot.pilot-can fly-plane.plane"."id"
+				AND "pilot.pilot-can fly-plane.plane"."name" != ?
 			)
 		"""
 
-test "/pilot/$count?$filter=pilot__can_fly__plane/all(d:d/plane/name eq 'Concorde')", 'GET', [['Bind', 0]], (result) ->
+test "/pilot/$count?$filter=can_fly__plane/all(d:d/plane/name eq 'Concorde')", 'GET', [['Bind', 0]], (result) ->
 	it 'should select count(*) from pilot where ...', ->
 		expect(result.query).to.equal '''
 			SELECT COUNT(*) AS "$count"
 			FROM "pilot"
 			WHERE NOT EXISTS (
 				SELECT 1
-				FROM "pilot-can_fly-plane" AS "pilot.pilot-can_fly-plane",
-					"plane" AS "pilot.pilot-can_fly-plane.plane"
-				WHERE NOT (
-					"pilot"."id" = "pilot.pilot-can_fly-plane"."pilot"
-					AND "pilot.pilot-can_fly-plane.plane"."id" = "pilot.pilot-can_fly-plane"."plane"
-					AND "pilot.pilot-can_fly-plane.plane"."name" = ?
-				)
+				FROM "pilot-can fly-plane" AS "pilot.pilot-can fly-plane",
+					"plane" AS "pilot.pilot-can fly-plane.plane"
+				WHERE "pilot"."id" = "pilot.pilot-can fly-plane"."pilot"
+				AND "pilot.pilot-can fly-plane"."can fly-plane" = "pilot.pilot-can fly-plane.plane"."id"
+				AND "pilot.pilot-can fly-plane.plane"."name" != ?
 			)
 	'''
 
-test "/pilot?$filter=pilot__can_fly__plane/plane/any(d:d/name eq 'Concorde')", 'GET', [['Bind', 0]], (result) ->
+test "/pilot?$filter=can_fly__plane/plane/any(d:d/name eq 'Concorde')", 'GET', [['Bind', 0]], (result) ->
 	it 'should select from pilot where ...', ->
 		expect(result.query).to.equal """
 			SELECT #{pilotFields}
 			FROM "pilot",
-				"pilot-can_fly-plane" AS "pilot.pilot-can_fly-plane"
-			WHERE "pilot"."id" = "pilot.pilot-can_fly-plane"."pilot"
+				"pilot-can fly-plane" AS "pilot.pilot-can fly-plane"
+			WHERE "pilot"."id" = "pilot.pilot-can fly-plane"."pilot"
 			AND EXISTS (
 				SELECT 1
-				FROM "plane" AS "pilot.pilot-can_fly-plane.plane"
-				WHERE "pilot.pilot-can_fly-plane.plane"."id" = "pilot.pilot-can_fly-plane"."plane"
-				AND "pilot.pilot-can_fly-plane.plane"."name" = ?
+				FROM "plane" AS "pilot.pilot-can fly-plane.plane"
+				WHERE "pilot.pilot-can fly-plane"."can fly-plane" = "pilot.pilot-can fly-plane.plane"."id"
+				AND "pilot.pilot-can fly-plane.plane"."name" = ?
 			)
 		"""
 
-test "/pilot/$count?$filter=pilot__can_fly__plane/plane/any(d:d/name eq 'Concorde')", 'GET', [['Bind', 0]], (result) ->
+test "/pilot/$count?$filter=can_fly__plane/plane/any(d:d/name eq 'Concorde')", 'GET', [['Bind', 0]], (result) ->
 	it 'should select count(*) from pilot where ...', ->
 		expect(result.query).to.equal '''
 			SELECT COUNT(*) AS "$count"
 			FROM "pilot",
-				"pilot-can_fly-plane" AS "pilot.pilot-can_fly-plane"
-			WHERE "pilot"."id" = "pilot.pilot-can_fly-plane"."pilot"
+				"pilot-can fly-plane" AS "pilot.pilot-can fly-plane"
+			WHERE "pilot"."id" = "pilot.pilot-can fly-plane"."pilot"
 			AND EXISTS (
 				SELECT 1
-				FROM "plane" AS "pilot.pilot-can_fly-plane.plane"
-				WHERE "pilot.pilot-can_fly-plane.plane"."id" = "pilot.pilot-can_fly-plane"."plane"
-				AND "pilot.pilot-can_fly-plane.plane"."name" = ?
+				FROM "plane" AS "pilot.pilot-can fly-plane.plane"
+				WHERE "pilot.pilot-can fly-plane"."can fly-plane" = "pilot.pilot-can fly-plane.plane"."id"
+				AND "pilot.pilot-can fly-plane.plane"."name" = ?
 			)
 		'''
 
-test "/pilot?$filter=pilot__can_fly__plane/plane/all(d:d/name eq 'Concorde')", 'GET', [['Bind', 0]], (result) ->
+test "/pilot?$filter=can_fly__plane/plane/all(d:d/name eq 'Concorde')", 'GET', [['Bind', 0]], (result) ->
 	it 'should select from pilot where ...', ->
 		expect(result.query).to.equal """
 			SELECT #{pilotFields}
 			FROM "pilot",
-				"pilot-can_fly-plane" AS "pilot.pilot-can_fly-plane"
-			WHERE "pilot"."id" = "pilot.pilot-can_fly-plane"."pilot"
+				"pilot-can fly-plane" AS "pilot.pilot-can fly-plane"
+			WHERE "pilot"."id" = "pilot.pilot-can fly-plane"."pilot"
 			AND NOT EXISTS (
 				SELECT 1
-				FROM "plane" AS "pilot.pilot-can_fly-plane.plane"
-				WHERE NOT (
-					"pilot.pilot-can_fly-plane.plane"."id" = "pilot.pilot-can_fly-plane"."plane"
-					AND "pilot.pilot-can_fly-plane.plane"."name" = ?
-				)
+				FROM "plane" AS "pilot.pilot-can fly-plane.plane"
+				WHERE "pilot.pilot-can fly-plane"."can fly-plane" = "pilot.pilot-can fly-plane.plane"."id"
+				AND "pilot.pilot-can fly-plane.plane"."name" != ?
 			)
 		"""
 
-test "/pilot/$count?$filter=pilot__can_fly__plane/plane/all(d:d/name eq 'Concorde')", 'GET', [['Bind', 0]], (result) ->
+test "/pilot/$count?$filter=can_fly__plane/plane/all(d:d/name eq 'Concorde')", 'GET', [['Bind', 0]], (result) ->
 	it 'should select count(*) from pilot where ...', ->
 		expect(result.query).to.equal '''
 			SELECT COUNT(*) AS "$count"
 			FROM "pilot",
-				"pilot-can_fly-plane" AS "pilot.pilot-can_fly-plane"
-			WHERE "pilot"."id" = "pilot.pilot-can_fly-plane"."pilot"
+				"pilot-can fly-plane" AS "pilot.pilot-can fly-plane"
+			WHERE "pilot"."id" = "pilot.pilot-can fly-plane"."pilot"
 			AND NOT EXISTS (
 				SELECT 1
-				FROM "plane" AS "pilot.pilot-can_fly-plane.plane"
-				WHERE NOT (
-					"pilot.pilot-can_fly-plane.plane"."id" = "pilot.pilot-can_fly-plane"."plane"
-					AND "pilot.pilot-can_fly-plane.plane"."name" = ?
-				)
+				FROM "plane" AS "pilot.pilot-can fly-plane.plane"
+				WHERE "pilot.pilot-can fly-plane"."can fly-plane" = "pilot.pilot-can fly-plane.plane"."id"
+				AND "pilot.pilot-can fly-plane.plane"."name" != ?
 			)
 		'''
 
@@ -750,17 +747,17 @@ run ->
 				WHERE ''' + sql
 
 run ->
-	{ odata, sql, bindings } = createExpression('pilot/pilot__can_fly__plane/plane/name', 'eq', "'Concorde'")
+	{ odata, sql, bindings } = createExpression('includes__pilot/can_fly__plane/plane/name', 'eq', "'Concorde'")
 	test '/team?$filter=' + odata, 'GET', bindings, (result) ->
 		it 'should select from team where "' + odata + '"', ->
 			expect(result.query).to.equal """
 				SELECT #{teamFields}
 				FROM "team",
-					"pilot" AS "team.pilot",
-					"pilot-can_fly-plane" AS "team.pilot.pilot-can_fly-plane",
-					"plane" AS "team.pilot.pilot-can_fly-plane.plane"
-				WHERE "team"."favourite colour" = "team.pilot"."team"
-				AND "team.pilot"."id" = "team.pilot.pilot-can_fly-plane"."pilot"
-				AND "team.pilot.pilot-can_fly-plane.plane"."id" = "team.pilot.pilot-can_fly-plane"."plane"
+					"pilot" AS "team.includes-pilot",
+					"pilot-can fly-plane" AS "team.includes-pilot.pilot-can fly-plane",
+					"plane" AS "team.includes-pilot.pilot-can fly-plane.plane"
+				WHERE "team"."favourite colour" = "team.includes-pilot"."is on-team"
+				AND "team.includes-pilot"."id" = "team.includes-pilot.pilot-can fly-plane"."pilot"
+				AND "team.includes-pilot.pilot-can fly-plane"."can fly-plane" = "team.includes-pilot.pilot-can fly-plane.plane"."id"
 				AND #{sql}
 			"""

@@ -1,11 +1,33 @@
+fs = require('fs')
 require('ometa-js')
 ODataParser = require('@resin/odata-parser').ODataParser.createInstance()
 OData2AbstractSQL = require('@resin/odata-to-abstract-sql').OData2AbstractSQL.createInstance()
-OData2AbstractSQL.clientModel = require('../client-model.json')
+sbvrModel = fs.readFileSync(require.resolve('../model.sbvr'), 'utf8')
+
 AbstractSQLCompiler = require('../..')
 
 expect = require('chai').expect
 _ = require('lodash')
+
+generateClientModel = (input) ->
+	sbvrTypes = require '@resin/sbvr-types'
+	typeVocab = fs.readFileSync(require.resolve('@resin/sbvr-types/Type.sbvr'), 'utf8')
+
+	SBVRParser = require('@resin/sbvr-parser').SBVRParser.createInstance()
+	SBVRParser.enableReusingMemoizations(SBVRParser._sideEffectingRules)
+	SBVRParser.AddCustomAttribute('Database ID Field:')
+	SBVRParser.AddCustomAttribute('Database Table Name:')
+	SBVRParser.AddBuiltInVocab(typeVocab)
+
+	LF2AbstractSQL = require('@resin/lf-to-abstract-sql')
+	LF2AbstractSQLTranslator = LF2AbstractSQL.createTranslator(sbvrTypes)
+
+	lf = SBVRParser.matchAll(input, 'Process')
+	abstractSql = LF2AbstractSQLTranslator(lf, 'Process')
+	return abstractSql
+
+clientModel = generateClientModel(sbvrModel)
+OData2AbstractSQL.setClientModel(clientModel)
 
 bindingsTest = (actualBindings, expectedBindings = false) ->
 	if expectedBindings is false
@@ -33,8 +55,9 @@ runExpectation = (describe, engine, input, method, expectedBindings, body, expec
 	describe 'Parsing ' + method + ' ' + input, ->
 		try
 			input = ODataParser.matchAll(input, 'Process')
-			input = OData2AbstractSQL.match(input.tree, 'Process', [method, body])
-			result = AbstractSQLCompiler[engine].compileRule(input)
+			{ tree, extraBodyVars } = OData2AbstractSQL.match(input.tree, 'Process', [method, _.keys(body)])
+			_.assign(body, extraBodyVars)
+			result = AbstractSQLCompiler[engine].compileRule(tree)
 		catch e
 			expectation(e)
 			return
@@ -55,6 +78,8 @@ bindRunExpectation = (engine) ->
 	return bound
 
 module.exports = bindRunExpectation('postgres')
+module.exports.clientModel = clientModel
 module.exports.postgres = bindRunExpectation('postgres')
 module.exports.mysql = bindRunExpectation('mysql')
 module.exports.websql = bindRunExpectation('websql')
+
