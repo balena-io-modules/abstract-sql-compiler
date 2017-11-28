@@ -47,49 +47,60 @@
             return indent + "	";
         },
         SelectQuery: function(indent) {
-            var $elf = this, _fromIdx = this.input.idx, fields, from, groupBy, limit, nestedIndent, offset, orderBy, table, tables, where;
+            var $elf = this, _fromIdx = this.input.idx, fields, first, from, groupBy, limit, nestedIndent, offset, orderBy, rest, table, tables, where;
             nestedIndent = this._applyWithArgs("NestedIndent", indent);
-            tables = [];
-            where = "";
-            groupBy = "";
-            orderBy = "";
-            limit = "";
-            offset = "";
-            this._form(function() {
-                this._applyWithArgs("exactly", "SelectQuery");
-                return this._many(function() {
-                    return this._form(function() {
-                        return this._or(function() {
-                            return fields = this._applyWithArgs("Select", indent);
-                        }, function() {
-                            table = this._applyWithArgs("Table", indent);
-                            return tables.push(table);
-                        }, function() {
-                            where = this._applyWithArgs("Where", indent);
-                            return where = indent + where;
-                        }, function() {
-                            groupBy = this._applyWithArgs("GroupBy", indent);
-                            return groupBy = indent + groupBy;
-                        }, function() {
-                            orderBy = this._applyWithArgs("OrderBy", indent);
-                            return orderBy = indent + orderBy;
-                        }, function() {
-                            limit = this._applyWithArgs("Limit", indent);
-                            return limit = indent + limit;
-                        }, function() {
-                            offset = this._applyWithArgs("Offset", indent);
-                            return offset = indent + offset;
+            return this._or(function() {
+                this._form(function() {
+                    this._applyWithArgs("exactly", "UnionQuery");
+                    first = this._applyWithArgs("SelectQuery", nestedIndent);
+                    return rest = this._many1(function() {
+                        return this._applyWithArgs("SelectQuery", nestedIndent);
+                    });
+                });
+                return [ first ].concat(rest).join(indent + "UNION" + indent);
+            }, function() {
+                tables = [];
+                where = "";
+                groupBy = "";
+                orderBy = "";
+                limit = "";
+                offset = "";
+                this._form(function() {
+                    this._applyWithArgs("exactly", "SelectQuery");
+                    return this._many(function() {
+                        return this._form(function() {
+                            return this._or(function() {
+                                return fields = this._applyWithArgs("Select", indent);
+                            }, function() {
+                                table = this._applyWithArgs("Table", indent);
+                                return tables.push(table);
+                            }, function() {
+                                where = this._applyWithArgs("Where", indent);
+                                return where = indent + where;
+                            }, function() {
+                                groupBy = this._applyWithArgs("GroupBy", indent);
+                                return groupBy = indent + groupBy;
+                            }, function() {
+                                orderBy = this._applyWithArgs("OrderBy", indent);
+                                return orderBy = indent + orderBy;
+                            }, function() {
+                                limit = this._applyWithArgs("Limit", indent);
+                                return limit = indent + limit;
+                            }, function() {
+                                offset = this._applyWithArgs("Offset", indent);
+                                return offset = indent + offset;
+                            });
                         });
                     });
                 });
+                from = this._or(function() {
+                    this._pred(tables.length);
+                    return indent + "FROM " + tables.join("," + nestedIndent);
+                }, function() {
+                    return "";
+                });
+                return "SELECT " + fields.join(", ") + from + where + groupBy + orderBy + limit + offset;
             });
-            from = this._or(function() {
-                this._pred(tables.length);
-                return indent + "FROM " + tables.join("," + nestedIndent);
-            }, function() {
-                return "";
-            });
-            return "SELECT " + fields.join(", ") + from + where + groupBy + orderBy + limit + offset;
         },
         DeleteQuery: function(indent) {
             var $elf = this, _fromIdx = this.input.idx, table, tables, where;
