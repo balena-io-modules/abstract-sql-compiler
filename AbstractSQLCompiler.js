@@ -27,11 +27,14 @@ var dataTypeValidate = function (value, field) {
             return Promise.resolve(null);
         }
     }
-    else if (validateTypes[dataType] != null) {
-        return validateTypes[dataType](value, required);
-    }
     else {
-        return Promise.reject('is an unsupported type: ' + dataType);
+        var validateFn = validateTypes[dataType];
+        if (validateFn != null) {
+            return validateFn(value, required);
+        }
+        else {
+            return Promise.reject('is an unsupported type: ' + dataType);
+        }
     }
 };
 var dataTypeGen = function (engine, _a) {

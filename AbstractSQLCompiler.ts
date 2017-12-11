@@ -1,7 +1,15 @@
 import { AbstractSQLOptimiser } from './AbstractSQLOptimiser'
 import { AbstractSQLRules2SQL, Binding, SqlResult } from './AbstractSQLRules2SQL'
 export { Binding, SqlResult } from './AbstractSQLRules2SQL'
-const sbvrTypes = require('@resin/sbvr-types')
+type DatabaseType = string | ((necessity: string, index: string) => string)
+const sbvrTypes: {
+	[dataType: string]: {
+		types: {
+			[engine: string]: DatabaseType
+		}
+		validate(value: any, required: boolean, cb: (err: any, value: any) => void): void
+	}
+} = require('@resin/sbvr-types')
 import * as _ from 'lodash'
 import * as Promise from 'bluebird'
 
@@ -104,10 +112,13 @@ const dataTypeValidate: EngineInstance['dataTypeValidate'] = (value, field) => {
 		} else {
 			return Promise.resolve(null)
 		}
-	} else if (validateTypes[dataType] != null) {
-		return validateTypes[dataType](value, required)
 	} else {
-		return Promise.reject('is an unsupported type: ' + dataType)
+		const validateFn = validateTypes[dataType]
+		if (validateFn != null) {
+			return validateFn(value, required)
+		} else {
+			return Promise.reject('is an unsupported type: ' + dataType)
+		}
 	}
 }
 
@@ -128,7 +139,7 @@ const dataTypeGen = (engine: Engines, { dataType, required, index, defaultValue 
 	} else if (index !== '') {
 		index = ' ' + index
 	}
-	const dbType = _.get(sbvrTypes, [dataType, 'types', engine])
+	const dbType: DatabaseType = _.get(sbvrTypes, [dataType, 'types', engine])
 	if (dbType != null) {
 		if (_.isFunction(dbType)) {
 			return dbType(requiredStr, index)

@@ -1,6 +1,6 @@
 {
   "name": "@resin/abstract-sql-compiler",
-  "version": "3.2.0",
+  "version": "3.2.1",
   "description": "A translator for abstract sql into sql.",
   "main": "AbstractSQLCompiler.js",
   "types": "AbstractSQLCompiler.ts",
@@ -13,10 +13,10 @@
   "author": "",
   "dependencies": {
     "@resin/sbvr-types": "^1.0.0",
-    "@types/bluebird": "^3.5.11",
-    "@types/lodash": "^4.14.74",
-    "@types/node": "^8.0.29",
-    "bluebird": "^3.0.6",
+    "@types/bluebird": "3.5.18",
+    "@types/lodash": "4.14.77",
+    "@types/node": "8.0.53",
+    "bluebird": "^3.5.1",
     "lodash": "^4.0.0",
     "ometa-js": "^1.4.1"
   },
@@ -31,6 +31,6 @@
     "coffee-script": "^1.12.7",
     "mocha": "^2.1.0",
     "resin-lint": "^1.2.2",
-    "typescript": "^2.5.2"
+    "typescript": "2.6.2"
   }
 }
