@@ -441,7 +441,7 @@ run ->
 	test "/pilot?$filter=#{odata}", 'PUT', bodyBindings, { name }, (result) ->
 		describe 'should upsert the pilot with id 1', ->
 			it 'should be an upsert', ->
-				expect(result).to.be.an.array
+				expect(result).to.be.an('array')
 			it 'that inserts', ->
 				insertTest(result[0])
 			it 'and updates', ->
@@ -526,7 +526,7 @@ run ->
 	test '/pilot(' + keyOdata + ')?$filter=' + odata, 'PUT', [ insertBindings, updateBindings ], { name }, (result) ->
 		describe 'should upsert the pilot with id 1', ->
 			it 'should be an upsert', ->
-				expect(result).to.be.an.array
+				expect(result).to.be.an('array')
 			it 'that inserts', ->
 				expect(result[0].query).to.equal """
 					INSERT INTO "pilot" ("id", "name")
