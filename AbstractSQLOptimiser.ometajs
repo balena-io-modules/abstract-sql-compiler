@@ -6,7 +6,12 @@ ometa AbstractSQLValidator {
 		SelectQuery,
 
 	SelectQuery =
-		[	'SelectQuery'
+		[	'UnionQuery'
+			SelectQuery:first
+			SelectQuery+:rest
+		]
+		-> [ 'UnionQuery', first ].concat(rest)
+	|	[	'SelectQuery'
 			{['SelectQuery']}:query
 			(	(	?(select==null)
 					Select:select

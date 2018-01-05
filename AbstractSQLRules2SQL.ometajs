@@ -54,33 +54,40 @@ export ometa AbstractSQLRules2SQL {
 
 	SelectQuery :indent =
 		NestedIndent(indent):nestedIndent
-		{[]}:tables
-		{''}:where
-		{''}:groupBy
-		{''}:orderBy
-		{''}:limit
-		{''}:offset
-		[	'SelectQuery'
-			[	Select(indent):fields
-			|	Table(indent):table
-				{tables.push(table)}
-			|	Where(indent):where
-				{indent + where}:where
-			|	GroupBy(indent):groupBy
-				{indent + groupBy}:groupBy
-			|	OrderBy(indent):orderBy
-				{indent + orderBy}:orderBy
-			|	Limit(indent):limit
-				{indent + limit}:limit
-			|	Offset(indent):offset
-				{indent + offset}:offset
-			]*
-		]
-		(	?tables.length
-			-> (indent + 'FROM ' + tables.join(',' + nestedIndent))
-		|	-> ''
-		):from
-		-> ('SELECT ' + fields.join(', ') + from + where + groupBy + orderBy + limit + offset),
+		(
+			[	'UnionQuery'
+				SelectQuery(nestedIndent):first
+				SelectQuery(nestedIndent)+:rest
+			]
+			-> [first].concat(rest).join(indent + 'UNION' + indent)
+		|	{[]}:tables
+			{''}:where
+			{''}:groupBy
+			{''}:orderBy
+			{''}:limit
+			{''}:offset
+			[	'SelectQuery'
+				[	Select(indent):fields
+				|	Table(indent):table
+					{tables.push(table)}
+				|	Where(indent):where
+					{indent + where}:where
+				|	GroupBy(indent):groupBy
+					{indent + groupBy}:groupBy
+				|	OrderBy(indent):orderBy
+					{indent + orderBy}:orderBy
+				|	Limit(indent):limit
+					{indent + limit}:limit
+				|	Offset(indent):offset
+					{indent + offset}:offset
+				]*
+			]
+			(	?tables.length
+				-> (indent + 'FROM ' + tables.join(',' + nestedIndent))
+			|	-> ''
+			):from
+			-> ('SELECT ' + fields.join(', ') + from + where + groupBy + orderBy + limit + offset)
+		),
 
 	DeleteQuery :indent =
 		{[]}:tables

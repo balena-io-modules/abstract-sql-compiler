@@ -9,39 +9,50 @@
             return this._apply("SelectQuery");
         },
         SelectQuery: function() {
-            var $elf = this, _fromIdx = this.input.idx, from, groupBy, limit, offset, orderBy, query, queryPart, select, where;
-            this._form(function() {
-                this._applyWithArgs("exactly", "SelectQuery");
-                query = [ "SelectQuery" ];
-                this._many1(function() {
-                    queryPart = this._or(function() {
-                        this._pred(null == select);
-                        return select = this._apply("Select");
-                    }, function() {
-                        return from = this._apply("Table");
-                    }, function() {
-                        return this._apply("Join");
-                    }, function() {
-                        this._pred(null == where);
-                        return where = this._apply("Where");
-                    }, function() {
-                        this._pred(null == groupBy);
-                        return groupBy = this._apply("GroupBy");
-                    }, function() {
-                        this._pred(null == orderBy);
-                        return orderBy = this._apply("OrderBy");
-                    }, function() {
-                        this._pred(null == limit);
-                        return limit = this._apply("Limit");
-                    }, function() {
-                        this._pred(null == offset);
-                        return offset = this._apply("Offset");
+            var $elf = this, _fromIdx = this.input.idx, first, from, groupBy, limit, offset, orderBy, query, queryPart, rest, select, where;
+            return this._or(function() {
+                this._form(function() {
+                    this._applyWithArgs("exactly", "UnionQuery");
+                    first = this._apply("SelectQuery");
+                    return rest = this._many1(function() {
+                        return this._apply("SelectQuery");
                     });
-                    return query = query.concat(queryPart);
                 });
-                return this._pred(null != select);
+                return [ "UnionQuery", first ].concat(rest);
+            }, function() {
+                this._form(function() {
+                    this._applyWithArgs("exactly", "SelectQuery");
+                    query = [ "SelectQuery" ];
+                    this._many1(function() {
+                        queryPart = this._or(function() {
+                            this._pred(null == select);
+                            return select = this._apply("Select");
+                        }, function() {
+                            return from = this._apply("Table");
+                        }, function() {
+                            return this._apply("Join");
+                        }, function() {
+                            this._pred(null == where);
+                            return where = this._apply("Where");
+                        }, function() {
+                            this._pred(null == groupBy);
+                            return groupBy = this._apply("GroupBy");
+                        }, function() {
+                            this._pred(null == orderBy);
+                            return orderBy = this._apply("OrderBy");
+                        }, function() {
+                            this._pred(null == limit);
+                            return limit = this._apply("Limit");
+                        }, function() {
+                            this._pred(null == offset);
+                            return offset = this._apply("Offset");
+                        });
+                        return query = query.concat(queryPart);
+                    });
+                    return this._pred(null != select);
+                });
+                return query;
             });
-            return query;
         },
         DeleteQuery: function() {
             var $elf = this, _fromIdx = this.input.idx, query, queryPart, table, where;
