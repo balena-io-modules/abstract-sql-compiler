@@ -3,40 +3,40 @@ test = require('./test')
 { pilotFields } = require('./fields')
 pilotFields = pilotFields.join(', ')
 
-test '/pilot?$select=name', (result) ->
+test '/pilot?$select=name', (result, sqlEquals) ->
 	it 'should select name from pilot', ->
-		expect(result.query).to.equal('''
+		sqlEquals(result.query, '''
 			SELECT "pilot"."name"
 			FROM "pilot"
 		''')
 
-test '/pilot?$select=favourite_colour', (result) ->
+test '/pilot?$select=favourite_colour', (result, sqlEquals) ->
 	it 'should select favourite_colour from pilot', ->
-		expect(result.query).to.equal('''
+		sqlEquals(result.query, '''
 			SELECT "pilot"."favourite colour" AS "favourite_colour"
 			FROM "pilot"
 		''')
 
-test '/pilot(1)?$select=favourite_colour', 'GET', [['Bind', 0]], (result) ->
+test '/pilot(1)?$select=favourite_colour', 'GET', [['Bind', 0]], (result, sqlEquals) ->
 	it 'should select from pilot with id', ->
-		expect(result.query).to.equal('''
+		sqlEquals(result.query, '''
 			SELECT "pilot"."favourite colour" AS "favourite_colour"
 			FROM "pilot"
 			WHERE "pilot"."id" = ?
 		''')
 
-test "/pilot('TextKey')?$select=favourite_colour", 'GET', [['Bind', 0]], (result) ->
+test "/pilot('TextKey')?$select=favourite_colour", 'GET', [['Bind', 0]], (result, sqlEquals) ->
 	it 'should select favourite colour from pilot "TextKey"', ->
-		expect(result.query).to.equal('''
+		sqlEquals(result.query, '''
 			SELECT "pilot"."favourite colour" AS "favourite_colour"
 			FROM "pilot"
 			WHERE "pilot"."id" = ?
 		''')
 
 
-test '/pilot?$select=trained__pilot/name', (result) ->
+test '/pilot?$select=trained__pilot/name', (result, sqlEquals) ->
 	it 'should select name from pilot', ->
-		expect(result.query).to.equal('''
+		sqlEquals(result.query, '''
 			SELECT "pilot.trained-pilot"."name"
 			FROM "pilot",
 				"pilot" AS "pilot.trained-pilot"
@@ -44,9 +44,9 @@ test '/pilot?$select=trained__pilot/name', (result) ->
 		''')
 
 
-test '/pilot?$select=trained__pilot/name,age', (result) ->
+test '/pilot?$select=trained__pilot/name,age', (result, sqlEquals) ->
 	it 'should select name, age from pilot', ->
-		expect(result.query).to.equal('''
+		sqlEquals(result.query, '''
 			SELECT "pilot.trained-pilot"."name", "pilot"."age"
 			FROM "pilot",
 				"pilot" AS "pilot.trained-pilot"
@@ -54,17 +54,17 @@ test '/pilot?$select=trained__pilot/name,age', (result) ->
 		''')
 
 
-test '/pilot?$select=*', (result) ->
+test '/pilot?$select=*', (result, sqlEquals) ->
 	it 'should select * from pilot', ->
-		expect(result.query).to.equal('''
+		sqlEquals(result.query, '''
 			SELECT ''' + pilotFields + '\n' + '''
 			FROM "pilot"
 		''')
 
 
-test '/pilot?$select=licence/id', (result) ->
+test '/pilot?$select=licence/id', (result, sqlEquals) ->
 	it 'should select licence/id for pilots', ->
-		expect(result.query).to.equal('''
+		sqlEquals(result.query, '''
 			SELECT "pilot.licence"."id"
 			FROM "pilot",
 				"licence" AS "pilot.licence"
@@ -72,9 +72,9 @@ test '/pilot?$select=licence/id', (result) ->
 		''')
 
 
-test '/pilot?$select=can_fly__plane/plane/id', (result) ->
+test '/pilot?$select=can_fly__plane/plane/id', (result, sqlEquals) ->
 	it 'should select can_fly__plane/plane/id for pilots', ->
-		expect(result.query).to.equal('''
+		sqlEquals(result.query, '''
 			SELECT "pilot.pilot-can fly-plane.plane"."id"
 			FROM "pilot",
 				"pilot-can fly-plane" AS "pilot.pilot-can fly-plane",

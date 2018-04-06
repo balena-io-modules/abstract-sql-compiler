@@ -8,9 +8,9 @@ mysqlAgg = websqlAgg = (field) -> "'[' || group_concat(" + field + ", ',') || ']
 
 do ->
 	remainingPilotFields = _.reject(pilotFields, (field) -> field is '"pilot"."licence"').join(', ')
-	testFunc = (aggFunc, fields) -> (result) ->
+	testFunc = (aggFunc, fields) -> (result, sqlEquals) ->
 		it 'should select from pilot.*, aggregated licence', ->
-			expect(result.query).to.equal """
+			sqlEquals result.query, """
 				SELECT (
 					SELECT #{aggFunc('"pilot.licence".*')} AS "licence"
 					FROM (
@@ -32,9 +32,9 @@ do ->
 
 do ->
 	remainingAliasPilotCanFlyFields = _.reject(aliasPilotCanFlyPlaneFields, (field) -> field is '"pilot.pilot-can fly-plane"."can fly-plane"').join(', ')
-	testFunc = (aggFunc) -> (result) ->
+	testFunc = (aggFunc) -> (result, sqlEquals) ->
 		it 'should select from pilot.*, aggregated(pilot-can fly-plane, aggregated plane)', ->
-			expect(result.query).to.equal """
+			sqlEquals result.query, """
 				SELECT (
 					SELECT #{aggFunc('"pilot.pilot-can fly-plane".*')} AS "can_fly__plane"
 					FROM (
@@ -60,9 +60,9 @@ do ->
 do ->
 	remainingAliasPilotCanFlyFields = _.reject(aliasPilotCanFlyPlaneFields, (field) -> field is '"pilot.pilot-can fly-plane"."can fly-plane"').join(', ')
 	remainingPilotFields = _.reject(pilotFields, (field) -> field is '"pilot"."licence"').join(', ')
-	testFunc = (aggFunc) -> (result) ->
+	testFunc = (aggFunc) -> (result, sqlEquals) ->
 		it 'should select from pilot.*, aggregated(pilot-can fly-plane, aggregated plane), aggregated licence', ->
-			expect(result.query).to.equal """
+			sqlEquals result.query, """
 				SELECT (
 					SELECT #{aggFunc('"pilot.pilot-can fly-plane".*')} AS "can_fly__plane"
 					FROM (
@@ -93,9 +93,9 @@ do ->
 		test.websql.skip(url, testFunc(websqlAgg))
 
 do ->
-	testFunc = (aggFunc) -> (result) ->
+	testFunc = (aggFunc) -> (result, sqlEquals) ->
 		it 'should select from pilot.*, aggregated(pilot-can fly-plane, aggregated plane), aggregated licence', ->
-			expect(result.query).to.equal """
+			sqlEquals result.query, """
 				SELECT (
 					SELECT #{aggFunc('"pilot.licence".*')} AS "licence"
 					FROM (
@@ -113,9 +113,9 @@ do ->
 
 do ->
 	remainingAliasPilotCanFlyFields = _.reject(aliasPilotCanFlyPlaneFields, (field) -> field is '"pilot.pilot-can fly-plane"."can fly-plane"').join(', ')
-	testFunc = (aggFunc) -> (result) ->
+	testFunc = (aggFunc) -> (result, sqlEquals) ->
 		it 'should select from pilot.*, aggregated(pilot-can fly-plane, aggregated plane)', ->
-			expect(result.query).to.equal """
+			sqlEquals result.query, """
 				SELECT (
 					SELECT #{aggFunc('"pilot.pilot-can fly-plane".*')} AS "can_fly__plane"
 					FROM (
@@ -140,9 +140,9 @@ do ->
 
 do ->
 	remainingAliasPilotCanFlyFields = _.reject(aliasPilotCanFlyPlaneFields, (field) -> field is '"pilot.pilot-can fly-plane"."can fly-plane"').join(', ')
-	testFunc = (aggFunc) -> (result) ->
+	testFunc = (aggFunc) -> (result, sqlEquals) ->
 		it 'should select from pilot.*, aggregated(pilot-can fly-plane, aggregated plane), aggregated licence', ->
-			expect(result.query).to.equal """
+			sqlEquals result.query, """
 				SELECT (
 					SELECT #{aggFunc('"pilot.pilot-can fly-plane".*')} AS "can_fly__plane"
 					FROM (
@@ -173,9 +173,9 @@ do ->
 		test.websql.skip(url, testFunc(websqlAgg))
 
 do ->
-	testFunc = (aggFunc) -> (result) ->
+	testFunc = (aggFunc) -> (result, sqlEquals) ->
 		it 'should select from pilot.*, aggregated(pilot-can fly-plane, aggregated plane)', ->
-			expect(result.query).to.equal """
+			sqlEquals result.query, """
 				SELECT (
 					SELECT #{aggFunc('"pilot.pilot-can fly-plane".*')} AS "can_fly__plane"
 					FROM (
@@ -193,9 +193,9 @@ do ->
 
 do ->
 	remainingPilotFields = _.reject(pilotFields, (field) -> field is '"pilot"."licence"').join(', ')
-	testFunc = (aggFunc, fields) -> (result) ->
+	testFunc = (aggFunc, fields) -> (result, sqlEquals) ->
 		it 'should select from pilot.*, aggregated licence', ->
-			expect(result.query).to.equal """
+			sqlEquals result.query, """
 				SELECT (
 					SELECT #{aggFunc('"pilot.licence".*')} AS "licence"
 					FROM (
@@ -218,9 +218,9 @@ do ->
 
 do ->
 	remainingPilotFields = _.reject(pilotFields, (field) -> field is '"pilot"."licence"').join(', ')
-	testFunc = (aggFunc) -> (result) ->
+	testFunc = (aggFunc) -> (result, sqlEquals) ->
 		it 'should select from pilot.*, aggregated licence', ->
-			expect(result.query).to.equal """
+			sqlEquals result.query, """
 				SELECT (
 					SELECT #{aggFunc('"pilot.licence".*')} AS "licence"
 					FROM (
@@ -241,9 +241,9 @@ do ->
 
 do ->
 	remainingPilotFields = _.reject(pilotFields, (field) -> field is '"pilot"."licence"').join(', ')
-	testFunc = (aggFunc) -> (result) ->
+	testFunc = (aggFunc) -> (result, sqlEquals) ->
 		it 'should select from pilot.*, aggregated licence', ->
-			expect(result.query).to.equal """
+			sqlEquals result.query, """
 				SELECT (
 					SELECT #{aggFunc('"pilot.licence".*')} AS "licence"
 					FROM (
@@ -262,9 +262,9 @@ do ->
 
 do ->
 	remainingPilotFields = _.reject(pilotFields, (field) -> field is '"pilot"."licence"').join(', ')
-	testFunc = (aggFunc) -> (result) ->
+	testFunc = (aggFunc) -> (result, sqlEquals) ->
 		it 'should select from pilot.*, aggregated count(*) licence and ignore orderby', ->
-			expect(result.query).to.equal """
+			sqlEquals result.query, """
 				SELECT (
 					SELECT #{aggFunc('"pilot.licence".*')} AS "licence"
 					FROM (
@@ -283,9 +283,9 @@ do ->
 
 do ->
 	remainingPilotFields = _.reject(pilotFields, (field) -> field is '"pilot"."licence"').join(', ')
-	testFunc = (aggFunc) -> (result) ->
+	testFunc = (aggFunc) -> (result, sqlEquals) ->
 		it 'should select from pilot.*, aggregated licence', ->
-			expect(result.query).to.equal """
+			sqlEquals result.query, """
 				SELECT (
 					SELECT #{aggFunc('"pilot.licence".*')} AS "licence"
 					FROM (
@@ -304,9 +304,9 @@ do ->
 
 do ->
 	remainingPilotFields = _.reject(pilotFields, (field) -> field is '"pilot"."licence"').join(', ')
-	testFunc = (aggFunc) -> (result) ->
+	testFunc = (aggFunc) -> (result, sqlEquals) ->
 		it 'should select from pilot.*, aggregated count(*) licence and ignore top', ->
-			expect(result.query).to.equal """
+			sqlEquals result.query, """
 				SELECT (
 					SELECT #{aggFunc('"pilot.licence".*')} AS "licence"
 					FROM (
@@ -324,9 +324,9 @@ do ->
 
 do ->
 	remainingPilotFields = _.reject(pilotFields, (field) -> field is '"pilot"."licence"').join(', ')
-	testFunc = (aggFunc) -> (result) ->
+	testFunc = (aggFunc) -> (result, sqlEquals) ->
 		it 'should select from pilot.*, aggregated licence', ->
-			expect(result.query).to.equal """
+			sqlEquals result.query, """
 				SELECT (
 					SELECT #{aggFunc('"pilot.licence".*')} AS "licence"
 					FROM (
@@ -345,9 +345,9 @@ do ->
 
 do ->
 	remainingPilotFields = _.reject(pilotFields, (field) -> field is '"pilot"."licence"').join(', ')
-	testFunc = (aggFunc) -> (result) ->
+	testFunc = (aggFunc) -> (result, sqlEquals) ->
 		it 'should select from pilot.*, aggregated count(*) licence and ignore skip', ->
-			expect(result.query).to.equal """
+			sqlEquals result.query, """
 				SELECT (
 					SELECT #{aggFunc('"pilot.licence".*')} AS "licence"
 					FROM (
@@ -364,9 +364,9 @@ do ->
 	test.websql.skip(urlCount, testFunc(websqlAgg))
 
 do ->
-	testFunc = (aggFunc) -> (result) ->
+	testFunc = (aggFunc) -> (result, sqlEquals) ->
 		it 'should select from pilot.*, aggregated(pilot-can fly-plane, aggregated plane)', ->
-			expect(result.query).to.equal """
+			sqlEquals result.query, """
 				SELECT (
 					SELECT #{aggFunc('"pilot.pilot-can fly-plane".*')} AS "can_fly__plane"
 					FROM (
@@ -383,9 +383,9 @@ do ->
 	test.websql.skip(url, testFunc(websqlAgg))
 
 do ->
-	testFunc = (aggFunc) -> (result) ->
+	testFunc = (aggFunc) -> (result, sqlEquals) ->
 		it 'should select from pilot.*, aggregated count(*) pilot-can fly-plane and ignore select', ->
-			expect(result.query).to.equal """
+			sqlEquals result.query, """
 				SELECT (
 					SELECT #{aggFunc('"pilot.pilot-can fly-plane".*')} AS "can_fly__plane"
 					FROM (
@@ -404,9 +404,9 @@ do ->
 do ->
 	aliasedFields = aliasFields('pilot.trained-pilot', pilotFields)
 	remainingPilotFields = _.reject(pilotFields, (field) -> field is '"pilot"."trained-pilot"').join(', ')
-	testFunc = (aggFunc) -> (result) ->
+	testFunc = (aggFunc) -> (result, sqlEquals) ->
 		it 'should select from pilot.*, aggregated pilot', ->
-			expect(result.query).to.equal """
+			sqlEquals result.query, """
 				SELECT (
 					SELECT #{aggFunc('"pilot.trained-pilot".*')} AS "trained__pilot"
 					FROM (

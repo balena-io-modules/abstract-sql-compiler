@@ -231,14 +231,6 @@
                 return this._form(function() {
                     return values = this._many(function() {
                         return this._or(function() {
-                            switch (this.anything()) {
-                              case "?":
-                                return "?";
-
-                              default:
-                                throw this._fail();
-                            }
-                        }, function() {
                             this._apply("true");
                             return 1;
                         }, function() {
@@ -486,8 +478,7 @@
                     return [ tableName, field ];
                 });
             });
-            this.fieldOrderings.push([ "Bind", bind ]);
-            return "?";
+            return this._applyWithArgs("AddBind", [ "Bind", bind ]);
         },
         Null: function() {
             var $elf = this, _fromIdx = this.input.idx, next;
@@ -556,8 +547,7 @@
                 }).call(this);
                 return text = this.anything();
             });
-            this.fieldOrderings.push([ "Text", text ]);
-            return "?";
+            return this._applyWithArgs("AddBind", [ "Text", text ]);
         },
         Concat: function(indent) {
             var $elf = this, _fromIdx = this.input.idx, comparators;
@@ -579,7 +569,7 @@
                 });
             });
             return this._or(function() {
-                this._pred("mysql" == this.engine);
+                this._pred("mysql" === this.engine);
                 return "CONCAT(" + comparators.join(", ") + ")";
             }, function() {
                 return "(" + comparators.join(" || ") + ")";
@@ -638,7 +628,7 @@
                 return n = this._apply("NumericValue");
             });
             return this._or(function() {
-                this._pred("websql" == this.engine);
+                this._pred("websql" === this.engine);
                 return "SUBSTRING(" + string + ", -" + n + ")";
             }, function() {
                 return "RIGHT(" + string + ", " + n + ")";
@@ -745,7 +735,7 @@
                 return text = this._applyWithArgs("TextValue", indent);
             });
             return this._or(function() {
-                this._pred("mysql" == this.engine);
+                this._pred("mysql" === this.engine);
                 return "CHAR_LENGTH(" + text + ")";
             }, function() {
                 return "LENGTH(" + text + ")";
@@ -759,7 +749,7 @@
                 return needle = this._apply("TextValue");
             });
             return this._or(function() {
-                this._pred("postgres" == this.engine);
+                this._pred("postgres" === this.engine);
                 return "STRPOS(" + haystack + ", " + needle + ")";
             }, function() {
                 return "INSTR(" + haystack + ", " + needle + ")";
@@ -798,7 +788,7 @@
                 return date = this._apply("DateValue");
             });
             return this._or(function() {
-                this._pred("websql" == this.engine);
+                this._pred("websql" === this.engine);
                 return websqlDateFormats[part](date);
             }, function() {
                 return dateFormats[part](date);
@@ -811,10 +801,10 @@
                 return duration = this._applyWithArgs("DurationValue", indent);
             });
             return this._or(function() {
-                this._pred("postgres" == this.engine);
+                this._pred("postgres" === this.engine);
                 return "EXTRACT(EPOCH FROM " + duration + ")";
             }, function() {
-                this._pred("mysql" == this.engine);
+                this._pred("mysql" === this.engine);
                 return "(TIMESTAMPDIFF(MICROSECOND, FROM_UNIXTIME(0), FROM_UNIXTIME(0) + " + duration + ") / 1000000)";
             }, function() {
                 return function() {
@@ -1032,8 +1022,7 @@
                 this._applyWithArgs("exactly", "Date");
                 return date = this.anything();
             });
-            this.fieldOrderings.push([ "Date", date ]);
-            return "?";
+            return this._applyWithArgs("AddBind", [ "Date", date ]);
         },
         ToDate: function(indent) {
             var $elf = this, _fromIdx = this.input.idx, date;
@@ -1050,7 +1039,7 @@
                 return date = this._apply("DateValue");
             });
             return this._or(function() {
-                this._pred("postgres" == this.engine);
+                this._pred("postgres" === this.engine);
                 return "CAST(" + date + " AS TIME)";
             }, function() {
                 return "TIME(" + date + ")";
@@ -1093,7 +1082,7 @@
             });
             field = '"' + table + '".' + field;
             return this._or(function() {
-                this._pred("postgres" == this.engine);
+                this._pred("postgres" === this.engine);
                 return "coalesce(array_to_json(array_agg(" + field + ")), '[]')";
             }, function() {
                 return function() {
@@ -1119,14 +1108,14 @@
             duration = _(duration).pick("negative", "day", "hour", "minute", "second").omitBy(_.isNil).value();
             this._pred(!_(duration).omit("negative").isEmpty());
             return this._or(function() {
-                this._pred("websql" == this.engine);
+                this._pred("websql" === this.engine);
                 return function() {
                     throw new Error("Durations not supported on: " + this.engine);
                 }.call(this);
             }, function() {
                 return "INTERVAL '" + (duration.negative ? "-" : "") + (duration.day || "0") + " " + (duration.negative ? "-" : "") + (duration.hour || "0") + ":" + (duration.minute || "0") + ":" + Number(duration.second).toLocaleString("en", {
                     minimumFractionDigits: 1
-                }) + "'" + ("mysql" == this.engine ? " DAY_MICROSECOND" : "");
+                }) + "'" + ("mysql" === this.engine ? " DAY_MICROSECOND" : "");
             });
         },
         Process: function() {
@@ -1157,4 +1146,8 @@
             });
         }
     });
+    AbstractSQLRules2SQL.AddBind = function(bind) {
+        this.fieldOrderings.push(bind);
+        return "postgres" === this.engine ? "$" + this.fieldOrderings.length : "?";
+    };
 });

@@ -37,6 +37,18 @@ bindingsTest = (actualBindings, expectedBindings = false) ->
 		it 'should have matching bindings', ->
 			expect(actualBindings).to.deep.equal(expectedBindings)
 
+equals = (actual, expected) ->
+	expect(actual).to.equal(expected)
+sqlEquals =
+	websql: equals
+	mysql: equals
+	postgres: (actual, expected) ->
+		num = 1
+		while _.includes(expected, '?')
+			expected = expected.replace('?', '$' + num)
+			num++
+		equals(actual, expected)
+
 x = describe.only
 runExpectation = (describe, engine, input, method, expectedBindings, body, expectation) ->
 	# return if describe isnt x
@@ -69,7 +81,7 @@ runExpectation = (describe, engine, input, method, expectedBindings, body, expec
 					bindingsTest(actualResult.bindings, expectedBindings[i])
 		else
 			bindingsTest(result.bindings, expectedBindings)
-		expectation(result)
+		expectation(result, sqlEquals[engine])
 
 bindRunExpectation = (engine) ->
 	bound = runExpectation.bind(null, describe, engine)
