@@ -44,7 +44,7 @@
     }, AbstractSQLRules2SQL = exports.AbstractSQLRules2SQL = OMeta._extend({
         NestedIndent: function(indent) {
             var $elf = this, _fromIdx = this.input.idx;
-            return indent + "	";
+            return indent + "\t";
         },
         SelectQuery: function(indent) {
             var $elf = this, _fromIdx = this.input.idx, fields, first, from, groupBy, limit, nestedIndent, offset, orderBy, rest, table, tables, where;
@@ -350,7 +350,12 @@
                         return "(" + nestedindent + query + indent + ")";
                     }, function() {
                         table = this.anything();
-                        return '"' + table + '"';
+                        return this._or(function() {
+                            this._pred(!_.isNull(this.namespace));
+                            return '"' + this.namespace + '"."' + table + '"';
+                        }, function() {
+                            return '"' + table + '"';
+                        });
                     });
                     return alias = this.anything();
                 });
@@ -360,7 +365,12 @@
                 return "(" + nestedindent + query + indent + ")";
             }, function() {
                 table = this.anything();
-                return '"' + table + '"';
+                return this._or(function() {
+                    this._pred(!_.isNull(this.namespace));
+                    return '"' + this.namespace + '"."' + table + '"';
+                }, function() {
+                    return '"' + table + '"';
+                });
             });
         },
         Where: function(indent) {
@@ -1129,10 +1139,11 @@
                 }) + "'" + ("mysql" == this.engine ? " DAY_MICROSECOND" : "");
             });
         },
-        Process: function() {
+        Process: function(namespace) {
             var $elf = this, _fromIdx = this.input.idx, query, value;
             return this._or(function() {
                 this.fieldOrderings = [];
+                this.namespace = namespace || null;
                 query = this._or(function() {
                     return this._applyWithArgs("SelectQuery", "\n");
                 }, function() {

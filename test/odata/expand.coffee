@@ -30,6 +30,28 @@ do ->
 	test.websql.skip(url, testFunc(websqlAgg, aliasLicenceFields.join(', ')))
 	test.websql.skip(urlCount, testFunc(websqlAgg, 'COUNT(*) AS "$count"'))
 
+
+do ->
+	remainingPilotFields = _.reject(pilotFields, (field) -> field is '"pilot"."licence"').join(', ')
+	testFunc = (aggFunc, fields) -> (result) ->
+		it 'should select from pilot.*, aggregated licence', ->
+			expect(result.query).to.equal """
+				SELECT (
+					SELECT #{aggFunc('"pilot.licence".*')} AS "licence"
+					FROM (
+						SELECT #{fields}
+						FROM "v1"."licence" AS "pilot.licence"
+						WHERE "pilot"."licence" = "pilot.licence"."id"
+					) AS "pilot.licence"
+				) AS "licence", #{remainingPilotFields}
+				FROM "v1"."pilot"
+			"""
+	url = '/pilot?$expand=licence'
+	urlCount = '/pilot?$expand=licence/$count'
+	test.namespace('v1') url, testFunc(postgresAgg, aliasLicenceFields.join(', '))
+	test.namespace('v1') urlCount, testFunc(postgresAgg, 'COUNT(*) AS "$count"')
+
+
 do ->
 	remainingAliasPilotCanFlyFields = _.reject(aliasPilotCanFlyPlaneFields, (field) -> field is '"pilot.pilot-can fly-plane"."can fly-plane"').join(', ')
 	testFunc = (aggFunc) -> (result) ->

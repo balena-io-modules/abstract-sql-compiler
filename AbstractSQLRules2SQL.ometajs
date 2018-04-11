@@ -233,7 +233,10 @@ export ometa AbstractSQLRules2SQL {
 			[	(	SelectQuery(nestedindent):query
 					-> ('(' + nestedindent + query + indent + ')')
 				|	anything:table
-					-> ('"' + table + '"')
+					(	?(!_.isNull(this.namespace))
+						-> ('"' + this.namespace + '"."' + table + '"')
+					|	-> ('"' + table + '"')
+				 	)
 				):from
 				anything:alias
 			]
@@ -241,7 +244,10 @@ export ometa AbstractSQLRules2SQL {
 		|	SelectQuery(nestedindent):query
 			-> ('(' + nestedindent + query + indent + ')')
 		|	anything:table
-			-> ('"' + table + '"')
+			(	?(!_.isNull(this.namespace))
+				-> ('"' + this.namespace + '"."' + table + '"')
+			|	-> ('"' + table + '"')
+			)
 		),
 
 	Where :indent =
@@ -735,8 +741,9 @@ export ometa AbstractSQLRules2SQL {
 			)
 		),
 
-	Process =
+	Process :namespace =
 			{this.fieldOrderings = []}
+			{this.namespace = namespace || null}
 			(	SelectQuery('\n')
 			|	InsertQuery('\n')
 			|	UpdateQuery('\n')

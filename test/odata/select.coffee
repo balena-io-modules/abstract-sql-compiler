@@ -10,6 +10,13 @@ test '/pilot?$select=name', (result) ->
 			FROM "pilot"
 		''')
 
+test.namespace('v1') '/pilot?$select=name', (result) ->
+	it 'should select name from pilot', ->
+		expect(result.query).to.equal('''
+			SELECT "pilot"."name"
+			FROM "v1"."pilot"
+		''')
+
 test '/pilot?$select=favourite_colour', (result) ->
 	it 'should select favourite_colour from pilot', ->
 		expect(result.query).to.equal('''
@@ -43,6 +50,16 @@ test '/pilot?$select=trained__pilot/name', (result) ->
 			WHERE "pilot"."id" = "pilot.trained-pilot"."was trained by-pilot"
 		''')
 
+
+
+test.namespace('v1') '/pilot?$select=trained__pilot/name', (result) ->
+	it 'should select name from pilot', ->
+		expect(result.query).to.equal('''
+			SELECT "pilot.trained-pilot"."name"
+			FROM "v1"."pilot",
+				"v1"."pilot" AS "pilot.trained-pilot"
+			WHERE "pilot"."id" = "pilot.trained-pilot"."was trained by-pilot"
+		''')
 
 test '/pilot?$select=trained__pilot/name,age', (result) ->
 	it 'should select name, age from pilot', ->

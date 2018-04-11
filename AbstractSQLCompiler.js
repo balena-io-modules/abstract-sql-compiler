@@ -144,10 +144,11 @@ var getModifiedFields = function (abstractSqlQuery) {
 };
 var optimiser = AbstractSQLOptimiser_1.AbstractSQLOptimiser.createInstance();
 var compiler = AbstractSQLRules2SQL_1.AbstractSQLRules2SQL.createInstance();
-var compileRule = function (abstractSQL, engine) {
+var compileRule = function (abstractSQL, engine, vocab) {
+    var vocabulary = vocab || null;
     abstractSQL = optimiser.match(abstractSQL, 'Process');
     compiler.engine = engine;
-    return compiler.match(abstractSQL, 'Process');
+    return compiler.match(abstractSQL, 'Process', [vocabulary]);
 };
 var compileSchema = function (abstractSqlModel, engine, ifNotExists) {
     var ifNotExistsStr;
@@ -271,7 +272,7 @@ var compileSchema = function (abstractSqlModel, engine, ifNotExists) {
 var generateExport = function (engine, ifNotExists) {
     return {
         compileSchema: _.partial(compileSchema, _, engine, ifNotExists),
-        compileRule: _.partial(compileRule, _, engine),
+        compileRule: _.partial(compileRule, _, engine, _),
         dataTypeValidate: dataTypeValidate,
         getReferencedFields: getReferencedFields,
         getModifiedFields: getModifiedFields
