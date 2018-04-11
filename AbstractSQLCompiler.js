@@ -277,7 +277,7 @@ var generateSplit = function (src, dst, matchFn) {
     var modified = [];
     return _.reduce(src, function (acc, value) {
         var match = matchFn(acc.inserted, value);
-        if (_.isUndefined(match)) {
+        if (match == null) {
             return acc;
         }
         else {
@@ -293,7 +293,7 @@ var generateDiff = function (insFn, delFn, modFn, matchFn, src, dst) {
     var diff = _.map(split.modified, modFn)
         .concat(_.map(split.deleted, delFn))
         .concat(_.map(split.inserted, insFn));
-    return _.reject(diff, _.isUndefined);
+    return _.reject(diff, _.isNil);
 };
 var diffFields = function (src, dst, mappings, engine, ifNotExists) {
     var ifNotExistsStr;
@@ -308,13 +308,13 @@ var diffFields = function (src, dst, mappings, engine, ifNotExists) {
     }
     var matchFn = function (fieldArray, field) {
         var match = _.find(fieldArray, { fieldName: field.fieldName });
-        if (_.isUndefined(match)) {
+        if (match != null) {
+            return match;
+        }
+        else {
             if (_.isString(mappings[field.fieldName])) {
                 return _.find(fieldArray, { fieldName: mappings[field.fieldName] });
             }
-        }
-        else {
-            return match;
         }
     };
     var insFn = function (field) {
@@ -331,7 +331,7 @@ var diffFields = function (src, dst, mappings, engine, ifNotExists) {
         if (_.isEqual(_.omit(src, ['fieldName', 'references']), _.omit(dst, ['fieldName', 'references']))) {
             return 'RENAME COLUMN "' + src.fieldName + '" TO "' + dst.fieldName + '";';
         }
-        throw Error("Can not migrate pre-existing field " + src.fieldName + " to " + dst.fieldName);
+        throw Error("Can not migrate pre-existing field " + src.fieldName + " of type " + src.dataType + " to " + dst.fieldName + " of type " + dst.dataType);
     };
     return generateDiff(insFn, delFn, modFn, matchFn, src, dst);
 };
@@ -340,17 +340,21 @@ var diffSchemas = function (src, dst, engine, ifNotExists) {
     var dstSDM = mkSchemaDependencyMap(dst.tables, engine, ifNotExists).schemaDependencyMap;
     var matchFn = function (tables, srcTable) {
         var match = _.find(tables, { name: srcTable.name });
-        if (_.isUndefined(match)) {
+        if (match != null) {
+            return match;
+        }
+        else {
             var relations_1 = src.relationships[srcTable.name];
-            if (!_.isUndefined(relations_1)) {
+            if (relations_1 == null) {
+                return;
+            }
+            else {
                 return _.find(tables, function (dstTable) {
                     var verb = dstTable.name.split('-').slice(1, -1).join(' ');
-                    return !_.isUndefined(relations_1[verb]);
+                    return relations_1[verb] != null;
                 });
             }
-            return relations_1;
         }
-        return match;
     };
     var insFn = function (table) {
         if (!_.isString(table) && !table.primitive) {
@@ -389,10 +393,8 @@ var diffSchemas = function (src, dst, engine, ifNotExists) {
     return generateDiff(insFn, delFn, modFn, matchFn, _.values(src.tables), _.values(dst.tables));
 };
 var extractMappings = function (resource) {
-    var resourceParts = resource.split('-');
-    var subject = resourceParts[0];
-    var rest = resourceParts.slice(1).join('-');
-    return [subject, rest];
+    var _a = resource.split('-'), subject = _a[0], rest = _a.slice(1);
+    return [subject, rest.join('-')];
 };
 var generateExport = function (engine, ifNotExists) {
     return {

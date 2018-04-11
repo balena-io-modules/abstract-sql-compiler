@@ -29,7 +29,8 @@ module.exports = exports = (builtInVocab = false) ->
 			expectation(result)
 
 	runMigration = (describe, src, dst, expectation) ->
-		it 'Migration: \n\nVocabulary: src\n' + src + '\n\nVocabulary: dst\n' + dst, ->
+		describe 'Migration', ->
+		it 'Vocabulary: src\n' + src + '\n\nVocabulary: dst\n' + dst, ->
 			SBVRParser.reset()
 			srcLf = SBVRParser.matchAll(src, 'Process')
 			srcSchema = LF2AbstractSQLTranslator(srcLf, 'Process')
