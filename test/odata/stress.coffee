@@ -10,17 +10,17 @@ filterBinds = _.map filterIDs, (n, i) ->
 	return ['Bind', i]
 
 filterString = filterIDs.map((i) -> 'id eq ' + i).join(' or ')
-test '/pilot?$filter=' + filterString, 'GET', filterBinds, (result) ->
+test '/pilot?$filter=' + filterString, 'GET', filterBinds, (result, sqlEquals) ->
 	it 'should select from pilot with a long IN clause', ->
-		expect(result.query).to.equal '''
+		sqlEquals result.query, '''
 			SELECT ''' + pilotFields + '\n' + '''
 			FROM "pilot"
 			WHERE "pilot"."id" IN (''' + filterBindsString + ')'
 
 filterString = filterIDs.map((i) -> 'id ne ' + i).join(' and ')
-test '/pilot?$filter=' + filterString, 'GET', filterBinds, (result) ->
+test '/pilot?$filter=' + filterString, 'GET', filterBinds, (result, sqlEquals) ->
 	it 'should select from pilot with a long NOT IN clause', ->
-		expect(result.query).to.equal '''
+		sqlEquals result.query, '''
 			SELECT ''' + pilotFields + '\n' + '''
 			FROM "pilot"
 			WHERE "pilot"."id" NOT IN (''' + filterBindsString + ')'

@@ -170,8 +170,7 @@ export ometa AbstractSQLRules2SQL {
 	Values :indent =
 		'Values'
 		(	SelectQuery(indent):values
-		|	[	(	'?'
-				|	true
+		|	[	(	true
 					-> 1
 				|	false
 					-> 0
@@ -322,8 +321,8 @@ export ometa AbstractSQLRules2SQL {
 				-> [tableName, field]
 			):bind
 		]
-		{this.fieldOrderings.push(['Bind', bind])}
-		-> '?',
+		AddBind(['Bind', bind])
+	,
 
 	Null =
 		:next
@@ -369,8 +368,8 @@ export ometa AbstractSQLRules2SQL {
 			)
 			:text
 		]
-		{this.fieldOrderings.push(['Text', text])}
-		-> '?',
+		AddBind(['Text', text])
+	,
 
 	Concat :indent =
 		[	(	'Concat'
@@ -378,7 +377,7 @@ export ometa AbstractSQLRules2SQL {
 			)
 			TextValue(indent)+:comparators
 		]
-		(	?(this.engine == 'mysql')
+		(	?(this.engine === 'mysql')
 			-> ('CONCAT(' + comparators.join(', ') + ')')
 		|	-> ('(' + comparators.join(' || ') + ')')
 		),
@@ -421,7 +420,7 @@ export ometa AbstractSQLRules2SQL {
 			TextValue:string
 			NumericValue:n
 		]
-		(	?(this.engine == 'websql')
+		(	?(this.engine === 'websql')
 			-> ('SUBSTRING(' + string + ', -' + n + ')')
 		|	-> ('RIGHT(' + string + ', ' + n + ')')
 		),
@@ -484,7 +483,7 @@ export ometa AbstractSQLRules2SQL {
 		[	'CharacterLength'
 			TextValue(indent):text
 		]
-		(	?(this.engine == 'mysql')
+		(	?(this.engine === 'mysql')
 			-> ('CHAR_LENGTH(' + text + ')')
 		|	-> ('LENGTH(' + text + ')')
 		),
@@ -494,7 +493,7 @@ export ometa AbstractSQLRules2SQL {
 			TextValue:haystack
 			TextValue:needle
 		]
-		(	?(this.engine == 'postgres')
+		(	?(this.engine === 'postgres')
 			-> ('STRPOS(' + haystack + ', ' + needle + ')')
 		|	-> ('INSTR(' + haystack + ', ' + needle + ')')
 		),
@@ -510,7 +509,7 @@ export ometa AbstractSQLRules2SQL {
 			):part
 			DateValue:date
 		]
-		(	?(this.engine == 'websql')
+		(	?(this.engine === 'websql')
 			-> websqlDateFormats[part](date)
 		|	-> dateFormats[part](date)
 		),
@@ -519,9 +518,9 @@ export ometa AbstractSQLRules2SQL {
 		[	'Totalseconds'
 			DurationValue(indent):duration
 		]
-		(	?(this.engine == 'postgres')
+		(	?(this.engine === 'postgres')
 			-> ('EXTRACT(EPOCH FROM ' + duration + ')')
-		|	?(this.engine == 'mysql')
+		|	?(this.engine === 'mysql')
 			-> ('(TIMESTAMPDIFF(MICROSECOND, FROM_UNIXTIME(0), FROM_UNIXTIME(0) + ' + duration + ') / 1000000)')
 		|	{throw new Error('TotalSeconds not supported on: ' + this.engine)}
 		),
@@ -659,8 +658,8 @@ export ometa AbstractSQLRules2SQL {
 		[	'Date'
 			anything:date
 		]
-		{this.fieldOrderings.push(['Date', date])}
-		-> '?',
+		AddBind(['Date', date])
+	,
 
 	ToDate :indent =
 		[	'ToDate'
@@ -672,7 +671,7 @@ export ometa AbstractSQLRules2SQL {
 		[	'ToTime'
 			DateValue:date
 		]
-		(	?(this.engine == 'postgres')
+		(	?(this.engine === 'postgres')
 			-> ('CAST(' + date + ' AS TIME)')
 		|	-> ('TIME(' + date + ')')
 		),
@@ -696,7 +695,7 @@ export ometa AbstractSQLRules2SQL {
 			]
 		]
 		{'"' + table + '".' + field}:field
-		(	?(this.engine == 'postgres')
+		(	?(this.engine === 'postgres')
 			-> ('coalesce(array_to_json(array_agg(' + field + ")), '[]')")
 		|	{throw new Error('AggregateJSON not supported on: ' + this.engine)}
 			// -> ("'[' || group_concat(" + field + ", ',') || ']'")
@@ -718,7 +717,7 @@ export ometa AbstractSQLRules2SQL {
 			.value()
 		}:duration
 		?(!_(duration).omit('negative').isEmpty())
-		(	?(this.engine == 'websql')
+		(	?(this.engine === 'websql')
 			{throw new Error('Durations not supported on: ' + this.engine)}
 		|	-> (
 				"INTERVAL '" +
@@ -731,7 +730,7 @@ export ometa AbstractSQLRules2SQL {
 				// Force seconds to be at least 0.0 - required for mysql
 				Number(duration.second).toLocaleString('en', { minimumFractionDigits: 1 }) +
 				"'" +
-				(this.engine == 'mysql' ? ' DAY_MICROSECOND' : '')
+				(this.engine === 'mysql' ? ' DAY_MICROSECOND' : '')
 			)
 		),
 
@@ -747,3 +746,12 @@ export ometa AbstractSQLRules2SQL {
 		|	AnyValue('\n'):value
 			-> ({ query: 'SELECT ' + value + ' AS "result";', bindings: this.fieldOrderings })
 }
+
+AbstractSQLRules2SQL.AddBind = function(bind) {
+	this.fieldOrderings.push(bind);
+	if (this.engine === 'postgres') {
+		return '$' + this.fieldOrderings.length;
+	} else {
+		return '?';
+	}
+};
