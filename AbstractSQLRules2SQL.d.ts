@@ -8,6 +8,6 @@ export interface SqlResult {
 export var AbstractSQLRules2SQL: {
 	createInstance: () => {
 		engine: Engines
-		match: (abstractSQL: AbstractSqlQuery, rule: 'Process') => SqlResult | SqlResult[]
+		match: (abstractSQL: AbstractSqlQuery, rule: 'Process', args: (null | string)[]) => SqlResult | SqlResult[]
 	}
 }

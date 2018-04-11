@@ -63,6 +63,7 @@ export interface AbstractSqlModel {
 		[ resourceName: string ]: AbstractSqlTable
 	}
 	rules: AbstractSqlQuery[]
+	schema: string
 }
 export interface SqlModel {
 	synonyms: {
@@ -91,7 +92,7 @@ export enum Engines {
 }
 export interface EngineInstance {
 	compileSchema: (abstractSqlModel: AbstractSqlModel) => SqlModel,
-	compileRule: (abstractSQL: AbstractSqlQuery) => SqlResult | SqlResult[],
+	compileRule: (abstractSQL: AbstractSqlQuery, vocab?: string) => SqlResult | SqlResult[],
 	dataTypeValidate: (value: any, field: AbstractSqlField) => any,
 	getReferencedFields: (ruleBody: AbstractSqlQuery) => ReferencedFields,
 	getModifiedFields: (abstractSqlQuery: AbstractSqlQuery) => undefined | ModifiedFields | Array<undefined | ModifiedFields>,
@@ -234,10 +235,11 @@ const getModifiedFields: EngineInstance['getModifiedFields'] = (abstractSqlQuery
 
 const optimiser = AbstractSQLOptimiser.createInstance()
 const compiler = AbstractSQLRules2SQL.createInstance()
-const compileRule = (abstractSQL: AbstractSqlQuery, engine: Engines) => {
+const compileRule = (abstractSQL: AbstractSqlQuery, engine: Engines, vocab?: string) => {
+	const vocabulary = vocab || null
 	abstractSQL = optimiser.match(abstractSQL, 'Process')
 	compiler.engine = engine
-	return compiler.match(abstractSQL, 'Process')
+	return compiler.match(abstractSQL, 'Process', [vocabulary])
 }
 
 const compileSchema = (abstractSqlModel: AbstractSqlModel, engine: Engines, ifNotExists: boolean): SqlModel => {
@@ -373,7 +375,7 @@ const compileSchema = (abstractSqlModel: AbstractSqlModel, engine: Engines, ifNo
 const generateExport = (engine: Engines, ifNotExists: boolean) => {
 	return {
 		compileSchema: _.partial(compileSchema, _, engine, ifNotExists),
-		compileRule: _.partial(compileRule, _, engine),
+		compileRule: _.partial(compileRule, _, engine, _),
 		dataTypeValidate,
 		getReferencedFields,
 		getModifiedFields,

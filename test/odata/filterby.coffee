@@ -492,6 +492,17 @@ run ->
 				WHERE #{sql}
 			"""
 
+	test.namespace('v1') "/pilot?$filter=#{odata}", 'POST', bindings, { name }, (result) ->
+		it "should insert into pilot where '#{odata}'", ->
+			expect(result.query).to.equal """
+				INSERT INTO "v1"."pilot" ("name")
+				SELECT "pilot"."name"
+				FROM (
+					SELECT NULL AS "created at", NULL AS "id", NULL AS "person", NULL AS "is experienced", CAST(? AS VARCHAR(255)) AS "name", NULL AS "age", NULL AS "favourite colour", NULL AS "is on-team", NULL AS "licence", NULL AS "hire date", NULL AS "was trained by-pilot"
+				) AS "pilot"
+				WHERE #{sql}
+			"""
+
 run ->
 	name = 'Peter'
 	{ odata: keyOdata, bindings: keyBindings } = parseOperand(1)
@@ -519,6 +530,20 @@ run ->
 				AND "pilot"."id" IN ((
 					SELECT "pilot"."id"
 					FROM "pilot"
+					WHERE #{sql}
+				))
+			"""
+
+	test.namespace('v1') '/pilot(' + keyOdata + ')?$filter=' + odata, 'PATCH', updateBindings, { name }, (result) ->
+		it 'should update the pilot with id 1', ->
+			expect(result.query).to.equal """
+				UPDATE "v1"."pilot"
+				SET "id" = ?,
+					"name" = ?
+				WHERE "pilot"."id" = ?
+				AND "pilot"."id" IN ((
+					SELECT "pilot"."id"
+					FROM "v1"."pilot"
 					WHERE #{sql}
 				))
 			"""

@@ -38,7 +38,7 @@ bindingsTest = (actualBindings, expectedBindings = false) ->
 			expect(actualBindings).to.deep.equal(expectedBindings)
 
 x = describe.only
-runExpectation = (describe, engine, input, method, expectedBindings, body, expectation) ->
+runExpectation = (describe, engine, namespace, input, method, expectedBindings, body, expectation) ->
 	# return if describe isnt x
 	if !expectation?
 		if !body?
@@ -51,13 +51,17 @@ runExpectation = (describe, engine, input, method, expectedBindings, body, expec
 		else
 			expectation = body
 		body = {}
+	if namespace
+		description = "Parsing #{method} #{input} #{namespace}"
+	else
+		description = "Parsing #{method} #{input}"
 
-	describe 'Parsing ' + method + ' ' + input, ->
+	describe description, ->
 		try
 			input = ODataParser.matchAll(input, 'Process')
 			{ tree, extraBodyVars } = OData2AbstractSQL.match(input.tree, 'Process', [method, _.keys(body)])
 			_.assign(body, extraBodyVars)
-			result = AbstractSQLCompiler[engine].compileRule(tree)
+			result = AbstractSQLCompiler[engine].compileRule(tree, namespace)
 		catch e
 			expectation(e)
 			return
@@ -71,10 +75,10 @@ runExpectation = (describe, engine, input, method, expectedBindings, body, expec
 			bindingsTest(result.bindings, expectedBindings)
 		expectation(result)
 
-bindRunExpectation = (engine) ->
-	bound = runExpectation.bind(null, describe, engine)
-	bound.skip = runExpectation.bind(null, describe.skip, engine)
-	bound.only = runExpectation.bind(null, describe.only, engine)
+bindRunExpectation = (engine, namespace = null) ->
+	bound = runExpectation.bind(null, describe, engine, namespace)
+	bound.skip = runExpectation.bind(null, describe.skip, engine, namespace)
+	bound.only = runExpectation.bind(null, describe.only, engine, namespace)
 	return bound
 
 module.exports = bindRunExpectation('postgres')
@@ -82,4 +86,4 @@ module.exports.clientModel = clientModel
 module.exports.postgres = bindRunExpectation('postgres')
 module.exports.mysql = bindRunExpectation('mysql')
 module.exports.websql = bindRunExpectation('websql')
-
+module.exports.namespace = (v) -> bindRunExpectation('postgres', v)
