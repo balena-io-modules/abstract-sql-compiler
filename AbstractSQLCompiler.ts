@@ -380,10 +380,10 @@ const compileSchema = (abstractSqlModel: AbstractSqlModel, engine: Engines, ifNo
 }
 
 const generateSplit = <T>(src:Array<T>, dst: Array<T>, matchFn: MatchFn<T>): Split<T> => {
-	let modified: Array<Pair<T>> = []
+	const modified: Array<Pair<T>> = []
 	return _.reduce(src, (acc, value) => {
 		const match = matchFn(acc.inserted, value)
-		if (_.isUndefined(match)) {
+		if (match == null) {
 			return acc
 		} else {
 			acc.inserted = _.without(acc.inserted, match)
@@ -407,7 +407,7 @@ const generateDiff = <T>(insFn: ToSQLFn<T>, delFn: ToSQLFn<T>, modFn: ToSQLFn<Pa
 	.concat(_.map(split.deleted, delFn))
 	.concat(_.map(split.inserted, insFn))
 
-	return _.reject(diff, _.isUndefined)
+	return _.reject(diff, _.isNil)
 }
 
 const diffFields = (src: AbstractSqlField[], dst: AbstractSqlField[], mappings: ResourceMap<string>, engine: Engines, ifNotExists: boolean) => {
@@ -423,20 +423,19 @@ const diffFields = (src: AbstractSqlField[], dst: AbstractSqlField[], mappings: 
 	}
 
 	const matchFn: MatchFn<AbstractSqlField> = (fieldArray, field) => {
-		let match = _.find(fieldArray, { fieldName: field.fieldName })
-		if (_.isUndefined(match)) {
+		const match = _.find(fieldArray, { fieldName: field.fieldName })
+		if (match != null) {
+			return match
+		}
+		else {
 			if (_.isString(mappings[field.fieldName])) {
 				return _.find(fieldArray, { fieldName: mappings[field.fieldName] } )
 			}
-		} else {
-			return match
 		}
 	}
 
 	const insFn: ToSQLFn<AbstractSqlField> = (field) => {
-		// Columns are inserted as NULL for the time being, this is because we have no sensible way to automatically assign a default value
 		return 'ADD COLUMN ' + ifNotExistsStr + '"' + field.fieldName + '" ' + dataTypeGen(engine, field) + ';'
-
 	}
 
 	const delFn: ToSQLFn<AbstractSqlField> = (field) => {
@@ -450,7 +449,7 @@ const diffFields = (src: AbstractSqlField[], dst: AbstractSqlField[], mappings: 
 		if (_.isEqual(_.omit(src, ['fieldName', 'references']), _.omit(dst, ['fieldName', 'references']))) {
 			return 'RENAME COLUMN "' + src.fieldName + '" TO "' + dst.fieldName + '";'
 		}
-		throw Error(`Can not migrate pre-existing field ${src.fieldName} to ${dst.fieldName}`)
+		throw Error(`Can not migrate pre-existing field ${src.fieldName} of type ${src.dataType} to ${dst.fieldName} of type ${dst.dataType}`)
 	}
 
 	return generateDiff(insFn, delFn, modFn, matchFn, src, dst)
@@ -461,18 +460,21 @@ const diffSchemas = (src: AbstractSqlModel, dst: AbstractSqlModel, engine: Engin
 	const dstSDM = mkSchemaDependencyMap(dst.tables, engine, ifNotExists).schemaDependencyMap
 
 	const matchFn:MatchFn<AbstractSqlTable> = (tables, srcTable) => {
-		let match = _.find(tables, { name: srcTable.name })
-		if (_.isUndefined(match)) {
+		const match = _.find(tables, { name: srcTable.name })
+		if (match != null) {
+			return match
+		} else {
 			const relations = src.relationships[srcTable.name]
-			if (!_.isUndefined(relations)) {
+			if (relations == null) {
+				return
+			} else {
 				return _.find(tables, (dstTable) => {
-					let verb = dstTable.name.split('-').slice(1, -1).join(' ')
-					return !_.isUndefined(relations[verb])
+					const verb = dstTable.name.split('-').slice(1, -1).join(' ')
+					return relations[verb] != null
 				})
 			}
-			return relations
+
 		}
-		return match
 	}
 
 	const insFn: ToSQLFn<AbstractSqlTable> = (table) => {
@@ -513,10 +515,8 @@ const diffSchemas = (src: AbstractSqlModel, dst: AbstractSqlModel, engine: Engin
 }
 
 const extractMappings = (resource:string):[string, string] => {
-	const resourceParts = resource.split('-')
-	const subject = resourceParts[0]
-	const rest = resourceParts.slice(1).join('-')
-	return [subject, rest]
+	const [ subject, ...rest ] = resource.split('-')
+	return [ subject, rest.join('-') ]
 }
 const generateExport = (engine: Engines, ifNotExists: boolean) => {
 	return {

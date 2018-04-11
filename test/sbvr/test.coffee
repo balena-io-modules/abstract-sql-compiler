@@ -29,7 +29,8 @@ module.exports = exports = (builtInVocab = false) ->
 			expectation(result)
 
 	runMigration = (describe, src, dst, expectation) ->
-		it 'Migration: \n\nVocabulary: src\n' + src + '\n\nVocabulary: dst\n' + dst, ->
+		describe 'Migration', ->
+		it 'Vocabulary: src\n' + src + '\n\nVocabulary: dst\n' + dst, ->
 			SBVRParser.reset()
 			srcLf = SBVRParser.matchAll(src, 'Process')
 			srcSchema = LF2AbstractSQLTranslator(srcLf, 'Process')
@@ -39,7 +40,7 @@ module.exports = exports = (builtInVocab = false) ->
 			dstSchema = LF2AbstractSQLTranslator(dstLf, 'Process')
 
 			migration = AbstractSQLCompiler.postgres.diffSchemas(srcSchema, dstSchema)
-			
+
 			expect(migration).to.deep.equal(expectation)
 
 	runSchema = (describe, input, expectation) ->
