@@ -1177,7 +1177,7 @@
                     conditions = [];
                     return this._many1(function() {
                         return this._or(function() {
-                            or = this._apply("Or");
+                            or = AbstractSQLValidator._superApplyWithArgs(this, "Or");
                             conditions = conditions.concat(or.slice(1));
                             return this._apply("SetHelped");
                         }, function() {

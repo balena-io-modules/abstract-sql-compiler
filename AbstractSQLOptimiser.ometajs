@@ -813,7 +813,7 @@ export ometa AbstractSQLOptimiser <: AbstractSQLValidator {
 		|	// Collapse nested ORs.
 			[	'Or'
 				{[]}:conditions
-				(	Or:or
+				(	^Or:or
 					{conditions.concat(or.slice(1))}:conditions
 					SetHelped
 				|	BooleanValue:bool
