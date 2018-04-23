@@ -797,23 +797,42 @@ export ometa AbstractSQLOptimiser <: AbstractSQLValidator {
 	Or =
 			// Optimise id = 1 OR id = 2 OR id = 3 -> id IN [1, 2, 3]
 			[	'Or'
-				FieldEquals:firstBool
-				(	FieldEquals:secondBool
-					?_.isEqual(firstBool[1], secondBool[1])
-					-> secondBool[2]
-				)+:inVals
-				BooleanValue*:otherBools
+				{{}}:fieldBuckets
+				{[]}:others
+				(	FieldEquals:fieldBool
+					{
+						fieldBuckets[fieldBool[1]] = fieldBuckets[fieldBool[1]] || []
+						fieldBuckets[fieldBool[1]].push(fieldBool)
+					}
+				|	BooleanValue:bool
+					{others.push(bool)}
+				)+
 			]
+			// Make sure we have at least some fields entries for potential optimisation
+			?(_.size(fieldBuckets) > 0)
+			{false}:helped
+			{
+				_.map(fieldBuckets, function(fields) {
+					if (fields.length === 1) {
+						return fields[0]
+					} else {
+						helped = true
+						return ['In', fields[0][1]].concat(_.map(fields, 2))
+					}
+				})
+			}:fields
+			// Make sure we actually hit an optimisation case
+			?helped
 			SetHelped
-			{['In', firstBool[1], firstBool[2]].concat(inVals)}:inStatement
-			(	?(otherBools.length > 0)
-				-> ['Or', inStatement].concat(otherBools)
-			|	-> inStatement
+			{['Or'].concat(fields, others)}:or
+			(	?(or.length > 2)
+				-> or
+			|	-> or[1]
 			)
 		|	// Collapse nested ORs.
 			[	'Or'
 				{[]}:conditions
-				(	Or:or
+				(	^Or:or
 					{conditions.concat(or.slice(1))}:conditions
 					SetHelped
 				|	BooleanValue:bool

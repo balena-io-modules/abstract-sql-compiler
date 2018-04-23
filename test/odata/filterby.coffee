@@ -640,6 +640,42 @@ test "/pilot/$count?$filter=can_fly__plane/any(d:d/plane/name eq 'Concorde')", '
 			)
 		'''
 
+test "/pilot?$filter=can_fly__plane/any(d:d/plane/name eq 'Concorde') or (id eq 5 or id eq 10) or (name eq 'Peter' or name eq 'Harry')", 'GET', [['Bind', 1], ['Bind', 2], ['Bind', 3], ['Bind', 4], ['Bind', 0]], (result, sqlEquals) ->
+	it 'should select count(*) from pilot where id in (5,10)', ->
+		sqlEquals result.query, """
+			SELECT #{pilotFields}
+			FROM "pilot"
+			WHERE ("pilot"."id" IN (?, ?)
+			OR "pilot"."name" IN (?, ?)
+			OR EXISTS (
+				SELECT 1
+				FROM "pilot-can fly-plane" AS "pilot.pilot-can fly-plane",
+					"plane" AS "pilot.pilot-can fly-plane.plane"
+				WHERE "pilot"."id" = "pilot.pilot-can fly-plane"."pilot"
+				AND "pilot.pilot-can fly-plane"."can fly-plane" = "pilot.pilot-can fly-plane.plane"."id"
+				AND "pilot.pilot-can fly-plane.plane"."name" = ?
+			))
+		"""
+
+test "/pilot?$filter=not(can_fly__plane/any(d:d/plane/name eq 'Concorde') or (id eq 5 or id eq 10) or (name eq 'Peter' or name eq 'Harry'))", 'GET', [['Bind', 1], ['Bind', 2], ['Bind', 3], ['Bind', 4], ['Bind', 0]], (result, sqlEquals) ->
+	it 'should select count(*) from pilot where id in (5,10)', ->
+		sqlEquals result.query, """
+			SELECT #{pilotFields}
+			FROM "pilot"
+			WHERE NOT (
+				("pilot"."id" IN (?, ?)
+				OR "pilot"."name" IN (?, ?)
+				OR EXISTS (
+					SELECT 1
+					FROM "pilot-can fly-plane" AS "pilot.pilot-can fly-plane",
+						"plane" AS "pilot.pilot-can fly-plane.plane"
+					WHERE "pilot"."id" = "pilot.pilot-can fly-plane"."pilot"
+					AND "pilot.pilot-can fly-plane"."can fly-plane" = "pilot.pilot-can fly-plane.plane"."id"
+					AND "pilot.pilot-can fly-plane.plane"."name" = ?
+				))
+			)
+		"""
+
 test "/pilot?$filter=can_fly__plane/all(d:d/plane/name eq 'Concorde')", 'GET', [['Bind', 0]], (result, sqlEquals) ->
 	it 'should select from pilot where ...', ->
 		sqlEquals result.query, """
