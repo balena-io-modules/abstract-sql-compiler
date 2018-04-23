@@ -1149,27 +1149,40 @@
             return [ "Equals", comp1, comp2 ];
         },
         Or: function() {
-            var $elf = this, _fromIdx = this.input.idx, bool, conditions, firstBool, inStatement, inVals, or, otherBools, secondBool;
+            var $elf = this, _fromIdx = this.input.idx, bool, conditions, fieldBool, fieldBuckets, fields, helped, or, others;
             return this._or(function() {
                 this._form(function() {
                     this._applyWithArgs("exactly", "Or");
-                    firstBool = this._apply("FieldEquals");
-                    inVals = this._many1(function() {
-                        secondBool = this._apply("FieldEquals");
-                        this._pred(_.isEqual(firstBool[1], secondBool[1]));
-                        return secondBool[2];
-                    });
-                    return otherBools = this._many(function() {
-                        return this._apply("BooleanValue");
+                    fieldBuckets = {};
+                    others = [];
+                    return this._many1(function() {
+                        return this._or(function() {
+                            fieldBool = this._apply("FieldEquals");
+                            return function() {
+                                fieldBuckets[fieldBool[1]] = fieldBuckets[fieldBool[1]] || [];
+                                return fieldBuckets[fieldBool[1]].push(fieldBool);
+                            }.call(this);
+                        }, function() {
+                            bool = this._apply("BooleanValue");
+                            return others.push(bool);
+                        });
                     });
                 });
+                this._pred(_.size(fieldBuckets) > 0);
+                helped = !1;
+                fields = _.map(fieldBuckets, function(fields) {
+                    if (1 === fields.length) return fields[0];
+                    helped = !0;
+                    return [ "In", fields[0][1] ].concat(_.map(fields, 2));
+                });
+                this._pred(helped);
                 this._apply("SetHelped");
-                inStatement = [ "In", firstBool[1], firstBool[2] ].concat(inVals);
+                or = [ "Or" ].concat(fields, others);
                 return this._or(function() {
-                    this._pred(otherBools.length > 0);
-                    return [ "Or", inStatement ].concat(otherBools);
+                    this._pred(or.length > 2);
+                    return or;
                 }, function() {
-                    return inStatement;
+                    return or[1];
                 });
             }, function() {
                 this._form(function() {
@@ -1177,7 +1190,7 @@
                     conditions = [];
                     return this._many1(function() {
                         return this._or(function() {
-                            or = this._apply("Or");
+                            or = AbstractSQLValidator._superApplyWithArgs(this, "Or");
                             conditions = conditions.concat(or.slice(1));
                             return this._apply("SetHelped");
                         }, function() {
