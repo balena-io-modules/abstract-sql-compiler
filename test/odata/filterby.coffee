@@ -402,16 +402,16 @@ run ->
 			FROM "pilot-can fly-plane" AS "pilot.pilot-can fly-plane",
 				"plane" AS "pilot.pilot-can fly-plane.plane",
 				(
-				SELECT NULL AS "created at", NULL AS "id", NULL AS "person", NULL AS "is experienced", CAST(? AS VARCHAR(255)) AS "name", NULL AS "age", NULL AS "favourite colour", NULL AS "is on-team", NULL AS "licence", NULL AS "hire date", NULL AS "was trained by-pilot"
+				SELECT CAST(NULL AS TIMESTAMP) AS "created at", CAST(NULL AS INTEGER) AS "id", CAST(NULL AS INTEGER) AS "person", CAST(NULL AS INTEGER) AS "is experienced", CAST(? AS VARCHAR(255)) AS "name", CAST(NULL AS INTEGER) AS "age", CAST(NULL AS INTEGER) AS "favourite colour", CAST(NULL AS INTEGER) AS "is on-team", CAST(NULL AS INTEGER) AS "licence", CAST(NULL AS TIMESTAMP) AS "hire date", CAST(NULL AS INTEGER) AS "was trained by-pilot"
 			) AS "pilot"
 			#{filterWhere.join('\n')}
 		"""
 	updateWhere = """
 		WHERE "pilot"."id" IN ((
 			SELECT "pilot"."id"
-			FROM "pilot-can fly-plane" AS "pilot.pilot-can fly-plane",
-				"plane" AS "pilot.pilot-can fly-plane.plane",
-				"pilot"
+			FROM "pilot",
+				"pilot-can fly-plane" AS "pilot.pilot-can fly-plane",
+				"plane" AS "pilot.pilot-can fly-plane.plane"
 			#{filterWhere.join('\n\t')}
 		))
 	"""
@@ -467,9 +467,9 @@ run ->
 				DELETE FROM "pilot"
 				WHERE "pilot"."id" IN ((
 					SELECT "pilot"."id"
-					FROM "pilot-can fly-plane" AS "pilot.pilot-can fly-plane",
-						"plane" AS "pilot.pilot-can fly-plane.plane",
-						"pilot"
+					FROM "pilot",
+						"pilot-can fly-plane" AS "pilot.pilot-can fly-plane",
+						"plane" AS "pilot.pilot-can fly-plane.plane"
 					#{filterWhere.join('\n\t')}
 				))
 			"""
@@ -487,7 +487,7 @@ run ->
 				INSERT INTO "pilot" ("name")
 				SELECT "pilot"."name"
 				FROM (
-					SELECT NULL AS "created at", NULL AS "id", NULL AS "person", NULL AS "is experienced", CAST(? AS VARCHAR(255)) AS "name", NULL AS "age", NULL AS "favourite colour", NULL AS "is on-team", NULL AS "licence", NULL AS "hire date", NULL AS "was trained by-pilot"
+					SELECT CAST(NULL AS TIMESTAMP) AS "created at", CAST(NULL AS INTEGER) AS "id", CAST(NULL AS INTEGER) AS "person", CAST(NULL AS INTEGER) AS "is experienced", CAST(? AS VARCHAR(255)) AS "name", CAST(NULL AS INTEGER) AS "age", CAST(NULL AS INTEGER) AS "favourite colour", CAST(NULL AS INTEGER) AS "is on-team", CAST(NULL AS INTEGER) AS "licence", CAST(NULL AS TIMESTAMP) AS "hire date", CAST(NULL AS INTEGER) AS "was trained by-pilot"
 				) AS "pilot"
 				WHERE #{sql}
 			"""
@@ -532,7 +532,7 @@ run ->
 					INSERT INTO "pilot" ("id", "name")
 					SELECT "pilot"."id", "pilot"."name"
 					FROM (
-						SELECT NULL AS "created at", CAST(? AS INTEGER) AS "id", NULL AS "person", NULL AS "is experienced", CAST(? AS VARCHAR(255)) AS "name", NULL AS "age", NULL AS "favourite colour", NULL AS "is on-team", NULL AS "licence", NULL AS "hire date", NULL AS "was trained by-pilot"
+						SELECT CAST(NULL AS TIMESTAMP) AS "created at", CAST(? AS INTEGER) AS "id", CAST(NULL AS INTEGER) AS "person", CAST(NULL AS INTEGER) AS "is experienced", CAST(? AS VARCHAR(255)) AS "name", CAST(NULL AS INTEGER) AS "age", CAST(NULL AS INTEGER) AS "favourite colour", CAST(NULL AS INTEGER) AS "is on-team", CAST(NULL AS INTEGER) AS "licence", CAST(NULL AS TIMESTAMP) AS "hire date", CAST(NULL AS INTEGER) AS "was trained by-pilot"
 					) AS "pilot"
 					WHERE #{sql}
 				"""
@@ -778,7 +778,7 @@ run ->
 				INSERT INTO "team" ("favourite colour")
 				SELECT "team"."favourite colour"
 				FROM (
-					SELECT NULL AS "created at", CAST(? AS INTEGER) AS "favourite colour"
+					SELECT CAST(NULL AS TIMESTAMP) AS "created at", CAST(? AS INTEGER) AS "favourite colour"
 				) AS "team"
 				WHERE ''' + sql
 
