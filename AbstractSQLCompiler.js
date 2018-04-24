@@ -173,20 +173,21 @@ var compileSchema = function (abstractSqlModel, engine, ifNotExists) {
             createSQL += '"' + fieldName + '" ' + dataTypeGen(engine, field) + '\n,\t';
             if (_.includes(['ForeignKey', 'ConceptType'], dataType) && references != null) {
                 foreignKeys.push({ fieldName: fieldName, references: references });
-                depends.push(references.tableName);
-                hasDependants[references.tableName] = true;
+                depends.push(references.resourceName);
+                hasDependants[references.resourceName] = true;
             }
         }
         for (var _b = 0, foreignKeys_1 = foreignKeys; _b < foreignKeys_1.length; _b++) {
             var _c = foreignKeys_1[_b], fieldName = _c.fieldName, references = _c.references;
-            createSQL += "FOREIGN KEY (\"" + fieldName + "\") REFERENCES \"" + references.tableName + "\" (\"" + references.fieldName + "\")\n,\t";
+            var referencedTable = abstractSqlModel.tables[references.resourceName];
+            createSQL += "FOREIGN KEY (\"" + fieldName + "\") REFERENCES \"" + referencedTable.name + "\" (\"" + references.fieldName + "\")\n,\t";
         }
         for (var _d = 0, _e = table.indexes; _d < _e.length; _d++) {
             var index = _e[_d];
             createSQL += index.type + '("' + index.fields.join('", "') + '")\n,\t';
         }
         createSQL = createSQL.slice(0, -2) + ');';
-        schemaDependencyMap[table.name] = {
+        schemaDependencyMap[table.resourceName] = {
             resourceName: resourceName,
             primitive: table.primitive,
             createSQL: createSQL,
@@ -196,28 +197,28 @@ var compileSchema = function (abstractSqlModel, engine, ifNotExists) {
     });
     var createSchemaStatements = [];
     var dropSchemaStatements = [];
-    var tableNames = [];
-    while (tableNames.length !== (tableNames = Object.keys(schemaDependencyMap)).length && tableNames.length > 0) {
-        for (var _i = 0, tableNames_1 = tableNames; _i < tableNames_1.length; _i++) {
-            var tableName = tableNames_1[_i];
-            var schemaInfo = schemaDependencyMap[tableName];
+    var resourceNames = [];
+    while (resourceNames.length !== (resourceNames = Object.keys(schemaDependencyMap)).length && resourceNames.length > 0) {
+        for (var _i = 0, resourceNames_1 = resourceNames; _i < resourceNames_1.length; _i++) {
+            var resourceName = resourceNames_1[_i];
+            var schemaInfo = schemaDependencyMap[resourceName];
             var unsolvedDependency = false;
             for (var _a = 0, _b = schemaInfo.depends; _a < _b.length; _a++) {
                 var dependency = _b[_a];
-                if (dependency !== tableName && schemaDependencyMap.hasOwnProperty(dependency)) {
+                if (dependency !== resourceName && schemaDependencyMap.hasOwnProperty(dependency)) {
                     unsolvedDependency = true;
                     break;
                 }
             }
             if (unsolvedDependency === false) {
-                if (schemaInfo.primitive === false || hasDependants[tableName] != null) {
+                if (schemaInfo.primitive === false || hasDependants[resourceName] != null) {
                     if (schemaInfo.primitive !== false) {
                         console.warn("We're adding a primitive table??", schemaInfo.resourceName);
                     }
                     createSchemaStatements.push(schemaInfo.createSQL);
                     dropSchemaStatements.push(schemaInfo.dropSQL);
                 }
-                delete schemaDependencyMap[tableName];
+                delete schemaDependencyMap[resourceName];
             }
         }
     }
