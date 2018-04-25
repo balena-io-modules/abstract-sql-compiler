@@ -19,7 +19,7 @@ export interface AbstractSqlField {
 	required: boolean
 	index: string
 	references?: {
-		tableName: string
+		resourceName: string
 		fieldName: string
 	}
 	defaultValue?: string
@@ -251,7 +251,7 @@ const compileSchema = (abstractSqlModel: AbstractSqlModel, engine: Engines, ifNo
 		[dependant: string]: true
 	} = {}
 	const schemaDependencyMap: {
-		[tableName: string]: {
+		[resourceName: string]: {
 			resourceName: string
 			primitive: AbstractSqlTable['primitive']
 			createSQL: string
@@ -273,19 +273,20 @@ const compileSchema = (abstractSqlModel: AbstractSqlModel, engine: Engines, ifNo
 			createSQL += '"' + fieldName + '" ' + dataTypeGen(engine, field) + '\n,\t'
 			if (_.includes([ 'ForeignKey', 'ConceptType' ], dataType) && references != null) {
 				foreignKeys.push({ fieldName, references })
-				depends.push(references.tableName)
-				hasDependants[references.tableName] = true
+				depends.push(references.resourceName)
+				hasDependants[references.resourceName] = true
 			}
 		}
 
 		for (const { fieldName, references } of foreignKeys) {
-			createSQL += `FOREIGN KEY ("${fieldName}") REFERENCES "${references.tableName}" ("${references.fieldName}")\n,\t`
+			const referencedTable = abstractSqlModel.tables[references.resourceName]
+			createSQL += `FOREIGN KEY ("${fieldName}") REFERENCES "${referencedTable.name}" ("${references.fieldName}")\n,\t`
 		}
 		for (const index of table.indexes) {
 			createSQL += index.type + '("' + index.fields.join('", "') + '")\n,\t'
 		}
 		createSQL = createSQL.slice(0, -2) + ');'
-		schemaDependencyMap[table.name] = {
+		schemaDependencyMap[table.resourceName] = {
 			resourceName,
 			primitive: table.primitive,
 			createSQL,
@@ -296,27 +297,27 @@ const compileSchema = (abstractSqlModel: AbstractSqlModel, engine: Engines, ifNo
 
 	const createSchemaStatements = []
 	let dropSchemaStatements = []
-	let tableNames: string[] = []
-	while (tableNames.length !== (tableNames = Object.keys(schemaDependencyMap)).length && tableNames.length > 0) {
-		for(const tableName of tableNames) {
-			const schemaInfo = schemaDependencyMap[tableName]
+	let resourceNames: string[] = []
+	while (resourceNames.length !== (resourceNames = Object.keys(schemaDependencyMap)).length && resourceNames.length > 0) {
+		for(const resourceName of resourceNames) {
+			const schemaInfo = schemaDependencyMap[resourceName]
 			let unsolvedDependency = false
 			for (const dependency of schemaInfo.depends) {
 				// Self-dependencies are ok.
-				if (dependency !== tableName && schemaDependencyMap.hasOwnProperty(dependency)) {
+				if (dependency !== resourceName && schemaDependencyMap.hasOwnProperty(dependency)) {
 					unsolvedDependency = true
 					break
 				}
 			}
 			if (unsolvedDependency === false) {
-				if (schemaInfo.primitive === false || hasDependants[tableName] != null) {
+				if (schemaInfo.primitive === false || hasDependants[resourceName] != null) {
 					if (schemaInfo.primitive !== false) {
 						console.warn("We're adding a primitive table??", schemaInfo.resourceName)
 					}
 					createSchemaStatements.push(schemaInfo.createSQL)
 					dropSchemaStatements.push(schemaInfo.dropSQL)
 				}
-				delete schemaDependencyMap[tableName]
+				delete schemaDependencyMap[resourceName]
 			}
 		}
 	}
