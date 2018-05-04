@@ -44,7 +44,7 @@
     }, AbstractSQLRules2SQL = exports.AbstractSQLRules2SQL = OMeta._extend({
         NestedIndent: function(indent) {
             var $elf = this, _fromIdx = this.input.idx;
-            return indent + "	";
+            return indent + "\t";
         },
         SelectQuery: function(indent) {
             var $elf = this, _fromIdx = this.input.idx, fields, first, from, groupBy, limit, nestedIndent, offset, orderBy, rest, table, tables, where;
