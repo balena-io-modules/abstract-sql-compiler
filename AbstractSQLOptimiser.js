@@ -1119,7 +1119,8 @@
             this._pred(!_(duration).omit("negative").isEmpty());
             return [ "Duration", duration ];
         }
-    }), AbstractSQLOptimiser = exports.AbstractSQLOptimiser = AbstractSQLValidator._extend({
+    });
+    (exports.AbstractSQLOptimiser = AbstractSQLValidator._extend({
         FieldNotEquals: function() {
             var $elf = this, _fromIdx = this.input.idx, comp1, comp2;
             this._form(function() {
@@ -1190,7 +1191,7 @@
                     conditions = [];
                     return this._many1(function() {
                         return this._or(function() {
-                            or = AbstractSQLValidator._superApplyWithArgs(this, "Or");
+                            or = AbstractSQLValidator._superApply(this, "Or");
                             conditions = conditions.concat(or.slice(1));
                             return this._apply("SetHelped");
                         }, function() {
@@ -1201,7 +1202,7 @@
                 });
                 return [ "Or" ].concat(conditions);
             }, function() {
-                return AbstractSQLValidator._superApplyWithArgs(this, "Or");
+                return AbstractSQLValidator._superApply(this, "Or");
             });
         },
         And: function() {
@@ -1244,7 +1245,7 @@
                 });
                 return [ "And" ].concat(conditions);
             }, function() {
-                return AbstractSQLValidator._superApplyWithArgs(this, "And");
+                return AbstractSQLValidator._superApply(this, "And");
             });
         },
         Not: function() {
@@ -1283,7 +1284,7 @@
                 this._apply("SetHelped");
                 return boolStatement;
             }, function() {
-                return AbstractSQLValidator._superApplyWithArgs(this, "Not");
+                return AbstractSQLValidator._superApply(this, "Not");
             });
         },
         NotEquals: function() {
@@ -1302,7 +1303,7 @@
                 this._apply("SetHelped");
                 return [ "Exists", value ];
             }, function() {
-                return AbstractSQLValidator._superApplyWithArgs(this, "NotEquals");
+                return AbstractSQLValidator._superApply(this, "NotEquals");
             });
         },
         Equals: function() {
@@ -1321,7 +1322,7 @@
                 this._apply("SetHelped");
                 return [ "Not", [ "Exists", value ] ];
             }, function() {
-                return AbstractSQLValidator._superApplyWithArgs(this, "Equals");
+                return AbstractSQLValidator._superApply(this, "Equals");
             });
         },
         BooleanValue: function() {
@@ -1333,7 +1334,7 @@
             }, function() {
                 return this._apply("EndsWith");
             }, function() {
-                return AbstractSQLValidator._superApplyWithArgs(this, "BooleanValue");
+                return AbstractSQLValidator._superApply(this, "BooleanValue");
             });
         },
         Contains: function() {
@@ -1377,7 +1378,7 @@
         },
         Helped: function(disableMemoisationHack) {
             var $elf = this, _fromIdx = this.input.idx;
-            this._pred(this.helped === !0);
+            this._pred(!0 === this.helped);
             return this.helped = !1;
         },
         SetHelped: function() {
@@ -1418,8 +1419,7 @@
             });
             return query;
         }
-    });
-    AbstractSQLOptimiser.initialize = function() {
+    })).initialize = function() {
         this.helped = !1;
     };
 });
