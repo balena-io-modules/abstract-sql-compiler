@@ -13,24 +13,24 @@
   "repository": "https://github.com/resin-io-modules/abstract-sql-compiler.git",
   "author": "",
   "dependencies": {
-    "@resin/sbvr-types": "^1.2.1",
+    "@resin/sbvr-types": "^1.4.2",
     "@types/bluebird": "3.5.20",
     "@types/lodash": "4.14.108",
     "@types/node": "8.10.13",
     "bluebird": "^3.5.1",
-    "lodash": "^4.0.0",
-    "ometa-js": "^1.4.1"
+    "lodash": "^4.17.10",
+    "ometa-js": "^1.5.0"
   },
   "devDependencies": {
-    "@resin/lf-to-abstract-sql": "2.0.0",
-    "@resin/odata-parser": "^0.2.3",
-    "@resin/odata-to-abstract-sql": "2.0.0",
-    "@resin/sbvr-parser": "0.1.0",
+    "@resin/lf-to-abstract-sql": "2.0.4",
+    "@resin/odata-parser": "^0.2.10",
+    "@resin/odata-to-abstract-sql": "2.1.2",
+    "@resin/sbvr-parser": "0.1.4",
     "chai": "^4.1.2",
     "coffee-script": "^1.12.7",
-    "mocha": "^4.1.0",
+    "mocha": "^5.1.1",
     "require-npm4-to-publish": "^1.0.0",
-    "resin-lint": "^1.5.0",
+    "resin-lint": "^1.5.7",
     "typescript": "^2.8.3"
   }
 }
