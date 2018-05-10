@@ -1,13 +1,14 @@
 {
   "name": "@resin/abstract-sql-compiler",
-  "version": "5.0.1",
+  "version": "5.0.2",
   "description": "A translator for abstract sql into sql.",
   "main": "AbstractSQLCompiler.js",
   "types": "AbstractSQLCompiler.ts",
   "scripts": {
-    "pretest": "npm run prepublish",
+    "pretest": "npm run prepublishOnly",
     "test": "mocha",
-    "prepublish": "tsc && ometajs2js --input AbstractSQLOptimiser.ometajs --output AbstractSQLOptimiser.js && ometajs2js --input AbstractSQLRules2SQL.ometajs --output AbstractSQLRules2SQL.js"
+    "prepublish": "require-npm4-to-publish",
+    "prepublishOnly": "tsc && ometajs2js --input AbstractSQLOptimiser.ometajs --output AbstractSQLOptimiser.js && ometajs2js --input AbstractSQLRules2SQL.ometajs --output AbstractSQLRules2SQL.js"
   },
   "repository": "https://github.com/resin-io-modules/abstract-sql-compiler.git",
   "author": "",
@@ -28,6 +29,7 @@
     "chai": "^4.1.2",
     "coffee-script": "^1.12.7",
     "mocha": "^4.1.0",
+    "require-npm4-to-publish": "^1.0.0",
     "resin-lint": "^1.5.0",
     "typescript": "2.6.2"
   }
