@@ -1,6 +1,6 @@
 import { Engines, AbstractSqlQuery } from './AbstractSQLCompiler'
 
-export type Binding = [ string, any ] | [ 'Bind', number | any[] ]
+export type Binding = [ string, any ] | [ 'Bind', number | string | any[] ]
 export interface SqlResult {
 	query: string
 	bindings: Binding[]

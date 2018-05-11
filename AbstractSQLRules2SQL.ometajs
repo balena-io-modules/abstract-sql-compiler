@@ -315,10 +315,11 @@ export ometa AbstractSQLRules2SQL {
 
 	Bind =
 		[	'Bind'
-			(	number
-			|	:tableName
+			(	:tableName
 				:field
 				-> [tableName, field]
+			|	number
+			|	string
 			):bind
 		]
 		AddBind(['Bind', bind])
