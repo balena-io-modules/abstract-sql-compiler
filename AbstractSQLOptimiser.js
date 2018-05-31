@@ -1365,7 +1365,7 @@
                 }
             });
             this._apply("SetHelped");
-            return [ "GreaterThan", [ "StrPos", haystack, needle ], [ "Number", 0 ] ];
+            return [ "Like", haystack, [ "Concatenate", [ "EmbeddedText", "%" ], escapeForLike(needle), [ "EmbeddedText", "%" ] ] ];
         },
         StartsWith: function() {
             var $elf = this, _fromIdx = this.input.idx, haystack, needle;

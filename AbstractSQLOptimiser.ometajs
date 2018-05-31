@@ -961,7 +961,13 @@ export ometa AbstractSQLOptimiser <: AbstractSQLValidator {
 			TextValue:haystack
 		]
 		SetHelped
-		-> ['GreaterThan', ['StrPos', haystack, needle], ['Number', 0]],
+		-> ['Like', haystack,
+			[	'Concatenate',
+				['EmbeddedText', '%'],
+				escapeForLike(needle),
+				['EmbeddedText', '%']
+			]
+		],
 
 	StartsWith =
 		[	'Startswith'
