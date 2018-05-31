@@ -982,7 +982,12 @@ export ometa AbstractSQLOptimiser <: AbstractSQLValidator {
 			TextValue:needle
 		]
 		SetHelped
-		-> ['Equals', ['Right', haystack, ['CharacterLength', needle]], needle],
+		-> ['Like', haystack,
+			[	'Concatenate',
+				['EmbeddedText', '%'],
+				escapeForLike(needle)
+			]
+		],
 
 	Helped :disableMemoisationHack =
 		?(this.helped === true)

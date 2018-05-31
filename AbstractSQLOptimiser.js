@@ -1385,7 +1385,7 @@
                 return needle = this._apply("TextValue");
             });
             this._apply("SetHelped");
-            return [ "Equals", [ "Right", haystack, [ "CharacterLength", needle ] ], needle ];
+            return [ "Like", haystack, [ "Concatenate", [ "EmbeddedText", "%" ], escapeForLike(needle) ] ];
         },
         Helped: function(disableMemoisationHack) {
             var $elf = this, _fromIdx = this.input.idx;
