@@ -1,5 +1,22 @@
 var _ = require('lodash');
 
+var escapeForLike = function(str) {
+	return [
+		'Replace',
+		[	'Replace',
+			[	'Replace',
+				str,
+				['EmbeddedText', '\\'],
+				['EmbeddedText', '\\\\']
+			],
+			['EmbeddedText', '_'],
+			['EmbeddedText', '\\_']
+		],
+		['EmbeddedText', '%'],
+		['EmbeddedText', '\\%']
+	];
+}
+
 ometa AbstractSQLValidator {
 
 	Query =
@@ -275,6 +292,7 @@ ometa AbstractSQLValidator {
 	TextValue =
 		(	UnknownValue
 		|	Text
+		|	EmbeddedText
 		|	Concat
 		|	Lower
 		|	Upper
@@ -288,6 +306,11 @@ ometa AbstractSQLValidator {
 		[	(	'Value'
 			|	'Text'
 			)
+			:text
+		],
+
+	EmbeddedText =
+		[	'EmbeddedText'
 			:text
 		],
 
@@ -946,7 +969,12 @@ export ometa AbstractSQLOptimiser <: AbstractSQLValidator {
 			TextValue:needle
 		]
 		SetHelped
-		-> ['Equals', ['StrPos', haystack, needle], ['Number', 1]],
+		-> ['Like', haystack,
+			[	'Concatenate',
+				escapeForLike(needle),
+				['EmbeddedText', '%']
+			]
+		],
 
 	EndsWith =
 		[	'Endswith'
