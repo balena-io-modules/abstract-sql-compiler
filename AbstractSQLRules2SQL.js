@@ -516,6 +516,8 @@
             }, function() {
                 return this._apply("Text");
             }, function() {
+                return this._apply("EmbeddedText");
+            }, function() {
                 return this._applyWithArgs("Concat", indent);
             }, function() {
                 return this._applyWithArgs("Lower", indent);
@@ -549,6 +551,14 @@
                 return text = this.anything();
             });
             return this._applyWithArgs("AddBind", [ "Text", text ]);
+        },
+        EmbeddedText: function() {
+            var $elf = this, _fromIdx = this.input.idx, text;
+            this._form(function() {
+                this._applyWithArgs("exactly", "EmbeddedText");
+                return text = this.anything();
+            });
+            return "'" + text + "'";
         },
         Concat: function(indent) {
             var $elf = this, _fromIdx = this.input.idx, comparators;

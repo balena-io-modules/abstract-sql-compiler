@@ -176,20 +176,20 @@ createMethodCall = (method, args...) ->
 			if method is 'SUBSTRINGOF'
 				args.reverse()
 			return {
-				sql: "STRPOS(#{args[0].sql}, #{args[1].sql}) > 0"
+				sql: "#{args[0].sql} LIKE ('%' || REPLACE(REPLACE(REPLACE(#{args[1].sql}, '\\', '\\\\'), '_', '\\_'), '%', '\\%') || '%')"
 				bindings: [args[0].bindings..., args[1].bindings...]
 				odata
 			}
 		when 'STARTSWITH'
 			return {
-				sql: "STRPOS(#{args[0].sql}, #{args[1].sql}) = 1"
+				sql: "#{args[0].sql} LIKE (REPLACE(REPLACE(REPLACE(#{args[1].sql}, '\\', '\\\\'), '_', '\\_'), '%', '\\%') || '%')"
 				bindings: [args[0].bindings..., args[1].bindings...]
 				odata
 			}
 		when 'ENDSWITH'
 			return {
-				sql: "RIGHT(#{args[0].sql}, LENGTH(#{args[1].sql})) = #{args[1].sql}"
-				bindings: [args[0].bindings..., args[1].bindings..., args[1].bindings...]
+				sql: "#{args[0].sql} LIKE ('%' || REPLACE(REPLACE(REPLACE(#{args[1].sql}, '\\', '\\\\'), '_', '\\_'), '%', '\\%'))"
+				bindings: [args[0].bindings..., args[1].bindings...]
 				odata
 			}
 		when 'CONCAT'

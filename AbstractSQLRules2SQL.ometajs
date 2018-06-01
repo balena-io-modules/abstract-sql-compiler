@@ -353,6 +353,7 @@ export ometa AbstractSQLRules2SQL {
 	TextValue :indent =
 		(	UnknownValue(indent)
 		|	Text
+		|	EmbeddedText
 		|	Concat(indent)
 		|	Lower(indent)
 		|	Upper(indent)
@@ -369,6 +370,13 @@ export ometa AbstractSQLRules2SQL {
 			:text
 		]
 		AddBind(['Text', text])
+	,
+
+	EmbeddedText =
+		[	'EmbeddedText'
+			:text
+		]
+		-> ("'" + text + "'")
 	,
 
 	Concat :indent =

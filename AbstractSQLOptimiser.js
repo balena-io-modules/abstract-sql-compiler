@@ -3,7 +3,9 @@
         return root[moduleName];
     }, root, root.OMeta);
 }(this, function(require, exports, OMeta) {
-    var _ = require("lodash"), AbstractSQLValidator = OMeta._extend({
+    var _ = require("lodash"), escapeForLike = function(str) {
+        return [ "Replace", [ "Replace", [ "Replace", str, [ "EmbeddedText", "\\" ], [ "EmbeddedText", "\\\\" ] ], [ "EmbeddedText", "_" ], [ "EmbeddedText", "\\_" ] ], [ "EmbeddedText", "%" ], [ "EmbeddedText", "\\%" ] ];
+    }, AbstractSQLValidator = OMeta._extend({
         Query: function() {
             var $elf = this, _fromIdx = this.input.idx;
             return this._apply("SelectQuery");
@@ -436,6 +438,8 @@
             }, function() {
                 return this._apply("Text");
             }, function() {
+                return this._apply("EmbeddedText");
+            }, function() {
                 return this._apply("Concat");
             }, function() {
                 return this._apply("Lower");
@@ -466,6 +470,13 @@
                         throw this._fail();
                     }
                 }).call(this);
+                return text = this.anything();
+            });
+        },
+        EmbeddedText: function() {
+            var $elf = this, _fromIdx = this.input.idx, text;
+            return this._form(function() {
+                this._applyWithArgs("exactly", "EmbeddedText");
                 return text = this.anything();
             });
         },
@@ -1354,7 +1365,7 @@
                 }
             });
             this._apply("SetHelped");
-            return [ "GreaterThan", [ "StrPos", haystack, needle ], [ "Number", 0 ] ];
+            return [ "Like", haystack, [ "Concatenate", [ "EmbeddedText", "%" ], escapeForLike(needle), [ "EmbeddedText", "%" ] ] ];
         },
         StartsWith: function() {
             var $elf = this, _fromIdx = this.input.idx, haystack, needle;
@@ -1364,7 +1375,7 @@
                 return needle = this._apply("TextValue");
             });
             this._apply("SetHelped");
-            return [ "Equals", [ "StrPos", haystack, needle ], [ "Number", 1 ] ];
+            return [ "Like", haystack, [ "Concatenate", escapeForLike(needle), [ "EmbeddedText", "%" ] ] ];
         },
         EndsWith: function() {
             var $elf = this, _fromIdx = this.input.idx, haystack, needle;
@@ -1374,7 +1385,7 @@
                 return needle = this._apply("TextValue");
             });
             this._apply("SetHelped");
-            return [ "Equals", [ "Right", haystack, [ "CharacterLength", needle ] ], needle ];
+            return [ "Like", haystack, [ "Concatenate", [ "EmbeddedText", "%" ], escapeForLike(needle) ] ];
         },
         Helped: function(disableMemoisationHack) {
             var $elf = this, _fromIdx = this.input.idx;
