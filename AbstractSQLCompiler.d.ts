@@ -73,7 +73,7 @@ export interface ModifiedFields {
 export declare enum Engines {
     postgres = "postgres",
     mysql = "mysql",
-    websql = "websql",
+    websql = "websql"
 }
 export interface EngineInstance {
     compileSchema: (abstractSqlModel: AbstractSqlModel) => SqlModel;

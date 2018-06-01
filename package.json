@@ -19,18 +19,18 @@
     "@types/node": "8.10.13",
     "bluebird": "^3.5.1",
     "lodash": "^4.17.10",
-    "ometa-js": "^1.5.0"
+    "ometa-js": "^1.5.2"
   },
   "devDependencies": {
     "@resin/lf-to-abstract-sql": "2.0.4",
-    "@resin/odata-parser": "^0.2.10",
+    "@resin/odata-parser": "^0.3.1",
     "@resin/odata-to-abstract-sql": "2.1.2",
     "@resin/sbvr-parser": "0.1.4",
     "chai": "^4.1.2",
     "coffee-script": "^1.12.7",
-    "mocha": "^5.1.1",
+    "mocha": "^5.2.0",
     "require-npm4-to-publish": "^1.0.0",
     "resin-lint": "^1.5.7",
-    "typescript": "^2.8.3"
+    "typescript": "^2.9.1"
   }
 }
