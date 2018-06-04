@@ -16,7 +16,7 @@ module.exports = exports = (builtInVocab = false) ->
 
 	seSoFar = ''
 
-	runExpectation = (describe, input, expectation) ->
+	runExpectation = (it, input, expectation) ->
 		it input, ->
 			try
 				SBVRParser.reset()
@@ -28,8 +28,8 @@ module.exports = exports = (builtInVocab = false) ->
 				return
 			expectation(result)
 
-	runSchema = (describe, input, expectation) ->
-		runExpectation describe, input, (result) ->
+	runSchema = (it, input, expectation) ->
+		runExpectation it, input, (result) ->
 			seSoFar += input + '\n'
 			if _.isFunction(expectation)
 				expectation(result)
@@ -41,8 +41,8 @@ module.exports = exports = (builtInVocab = false) ->
 				for i in [0...Math.max(result.createSchema.length, expectation.length)]
 					expect(result.createSchema[i]).to.equal(expectation[i])
 
-	runRule = (describe, input, expectation) ->
-		runExpectation describe, 'Rule: ' + input, (result) ->
+	runRule = (it, input, expectation) ->
+		runExpectation it, 'Rule: ' + input, (result) ->
 			if _.isFunction(expectation)
 				expectation(result)
 			else if _.isError(result)
@@ -53,10 +53,10 @@ module.exports = exports = (builtInVocab = false) ->
 				expect(lastRule).to.have.property('structuredEnglish').that.equals(input)
 				expect(lastRule).to.have.property('sql').that.equals(expectation)
 
-	ret = runSchema.bind(null, describe)
-	ret.skip = runSchema.bind(null, describe.skip)
-	ret.only = runSchema.bind(null, describe.only)
-	ret.rule = runRule.bind(null, describe)
-	ret.rule.skip = runRule.bind(null, describe.skip)
-	ret.rule.only = runRule.bind(null, describe.only)
+	ret = runSchema.bind(null, it)
+	ret.skip = runSchema.bind(null, it.skip)
+	ret.only = runSchema.bind(null, it.only)
+	ret.rule = runRule.bind(null, it)
+	ret.rule.skip = runRule.bind(null, it.skip)
+	ret.rule.only = runRule.bind(null, it.only)
 	return ret

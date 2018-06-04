@@ -49,9 +49,7 @@ sqlEquals =
 			num++
 		equals(actual, expected)
 
-x = describe.only
 runExpectation = (describe, engine, input, method, expectedBindings, body, expectation) ->
-	# return if describe isnt x
 	if !expectation?
 		if !body?
 			if !expectedBindings?
