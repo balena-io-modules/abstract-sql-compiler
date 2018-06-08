@@ -409,10 +409,12 @@
             return this._form(function() {
                 this._applyWithArgs("exactly", "Bind");
                 return this._or(function() {
-                    return this._apply("number");
-                }, function() {
                     tableName = this.anything();
                     return field = this.anything();
+                }, function() {
+                    return this._apply("number");
+                }, function() {
+                    return this._apply("string");
                 });
             });
         },

@@ -472,11 +472,13 @@
             this._form(function() {
                 this._applyWithArgs("exactly", "Bind");
                 return bind = this._or(function() {
-                    return this._apply("number");
-                }, function() {
                     tableName = this.anything();
                     field = this.anything();
                     return [ tableName, field ];
+                }, function() {
+                    return this._apply("number");
+                }, function() {
+                    return this._apply("string");
                 });
             });
             return this._applyWithArgs("AddBind", [ "Bind", bind ]);

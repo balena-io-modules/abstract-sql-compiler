@@ -271,9 +271,10 @@ ometa AbstractSQLValidator {
 
 	Bind =
 		[	'Bind'
-			(	number
-			|	:tableName
+			(	:tableName
 				:field
+			|	number
+			|	string
 			)
 		],
 
