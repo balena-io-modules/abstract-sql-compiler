@@ -77,7 +77,7 @@ describe 'pilots', ->
 				FROM "plane" AS "plane.1",
 					"pilot-can fly-plane" AS "pilot.0-can fly-plane.1"
 				WHERE "pilot.0-can fly-plane.1"."pilot" = "pilot.0"."id"
-				AND "pilot.0-can fly-plane.1"."plane" = "plane.1"."id"
+				AND "pilot.0-can fly-plane.1"."can fly-plane" = "plane.1"."id"
 			)
 		) AS "result";
 		'''
@@ -93,7 +93,7 @@ describe 'pilots', ->
 					FROM "plane" AS "plane.1",
 						"pilot-can fly-plane" AS "pilot.0-can fly-plane.1"
 					WHERE "pilot.0-can fly-plane.1"."pilot" = "pilot.0"."id"
-					AND "pilot.0-can fly-plane.1"."plane" = "plane.1"."id"
+					AND "pilot.0-can fly-plane.1"."can fly-plane" = "plane.1"."id"
 				) >= 2
 			)
 		) AS "result";
@@ -109,7 +109,7 @@ describe 'pilots', ->
 				FROM "plane" AS "plane.1",
 					"pilot-can fly-plane" AS "pilot.0-can fly-plane.1"
 				WHERE "pilot.0-can fly-plane.1"."pilot" = "pilot.0"."id"
-				AND "pilot.0-can fly-plane.1"."plane" = "plane.1"."id"
+				AND "pilot.0-can fly-plane.1"."can fly-plane" = "plane.1"."id"
 			) >= 3
 		) AS "result";
 		'''
@@ -124,7 +124,7 @@ describe 'pilots', ->
 					FROM "plane" AS "plane.1",
 						"pilot-can fly-plane" AS "pilot.0-can fly-plane.1"
 					WHERE "pilot.0-can fly-plane.1"."pilot" = "pilot.0"."id"
-					AND "pilot.0-can fly-plane.1"."plane" = "plane.1"."id"
+					AND "pilot.0-can fly-plane.1"."can fly-plane" = "plane.1"."id"
 				) >= 3
 			)
 			AND "pilot.0"."is experienced" != 0
@@ -140,7 +140,7 @@ describe 'pilots', ->
 				FROM "pilot" AS "pilot.1",
 					"pilot-can fly-plane" AS "pilot.1-can fly-plane.0"
 				WHERE "pilot.1-can fly-plane.0"."pilot" = "pilot.1"."id"
-				AND "pilot.1-can fly-plane.0"."plane" = "plane.0"."id"
+				AND "pilot.1-can fly-plane.0"."can fly-plane" = "plane.0"."id"
 			) >= 3
 			AND "plane.0"."name" IS NULL
 		) AS "result";
@@ -156,7 +156,7 @@ describe 'pilots', ->
 					"pilot-can fly-plane" AS "pilot.1-can fly-plane.0"
 				WHERE "pilot.1"."is experienced" = 1
 				AND "pilot.1-can fly-plane.0"."pilot" = "pilot.1"."id"
-				AND "pilot.1-can fly-plane.0"."plane" = "plane.0"."id"
+				AND "pilot.1-can fly-plane.0"."can fly-plane" = "plane.0"."id"
 			) >= 3
 			AND "plane.0"."name" IS NULL
 		) AS "result";
@@ -173,7 +173,7 @@ describe 'pilots', ->
 						"pilot-can fly-plane" AS "pilot.1-can fly-plane.0"
 					WHERE "pilot.1"."is experienced" = 0
 					AND "pilot.1-can fly-plane.0"."pilot" = "pilot.1"."id"
-					AND "pilot.1-can fly-plane.0"."plane" = "plane.0"."id"
+					AND "pilot.1-can fly-plane.0"."can fly-plane" = "plane.0"."id"
 				) >= 3
 				AND "plane.0"."name" IS NULL
 			) AS "result";
@@ -191,7 +191,7 @@ describe 'pilots', ->
 					"pilot-can fly-plane" AS "pilot.1-can fly-plane.0"
 				WHERE "pilot.1"."is experienced" = 1
 				AND "pilot.1-can fly-plane.0"."pilot" = "pilot.1"."id"
-				AND "pilot.1-can fly-plane.0"."plane" = "plane.0"."id"
+				AND "pilot.1-can fly-plane.0"."can fly-plane" = "plane.0"."id"
 			) >= 3
 			AND "plane.0"."name" IS NULL
 		) AS "result";
@@ -207,7 +207,7 @@ describe 'pilots', ->
 					"pilot-can fly-plane" AS "pilot.1-can fly-plane.0"
 				WHERE "pilot.1"."name" IS NOT NULL
 				AND "pilot.1-can fly-plane.0"."pilot" = "pilot.1"."id"
-				AND "pilot.1-can fly-plane.0"."plane" = "plane.0"."id"
+				AND "pilot.1-can fly-plane.0"."can fly-plane" = "plane.0"."id"
 			) >= 3
 			AND "plane.0"."name" IS NULL
 		) AS "result";
@@ -233,7 +233,7 @@ describe 'pilots', ->
 				FROM "pilot" AS "pilot.1",
 					"pilot-can fly-plane" AS "pilot.1-can fly-plane.0"
 				WHERE "pilot.1-can fly-plane.0"."pilot" = "pilot.1"."id"
-				AND "pilot.1-can fly-plane.0"."plane" = "plane.0"."id"
+				AND "pilot.1-can fly-plane.0"."can fly-plane" = "plane.0"."id"
 			)
 		) AS "result";
 		'''
@@ -251,7 +251,7 @@ describe 'pilots', ->
 					FROM "plane" AS "plane.1",
 						"pilot-can fly-plane" AS "pilot.0-can fly-plane.1"
 					WHERE "pilot.0-can fly-plane.1"."pilot" = "pilot.0"."id"
-					AND "pilot.0-can fly-plane.1"."plane" = "plane.1"."id"
+					AND "pilot.0-can fly-plane.1"."can fly-plane" = "plane.1"."id"
 				) >= 2
 				OR 5 < "pilot.0"."years of experience"
 				AND "pilot.0"."years of experience" IS NOT NULL)
@@ -269,7 +269,7 @@ describe 'pilots', ->
 				FROM "plane" AS "plane.1",
 					"pilot-can fly-plane" AS "pilot.0-can fly-plane.1"
 				WHERE "pilot.0-can fly-plane.1"."pilot" = "pilot.0"."id"
-				AND "pilot.0-can fly-plane.1"."plane" = "plane.1"."id"
+				AND "pilot.0-can fly-plane.1"."can fly-plane" = "plane.1"."id"
 			) >= 2)
 			AND NOT (
 				5 < "pilot.0"."years of experience"
@@ -288,14 +288,14 @@ describe 'pilots', ->
 				FROM "plane" AS "plane.1",
 					"pilot-can fly-plane" AS "pilot.0-can fly-plane.1"
 				WHERE "pilot.0-can fly-plane.1"."pilot" = "pilot.0"."id"
-				AND "pilot.0-can fly-plane.1"."plane" = "plane.1"."id"
+				AND "pilot.0-can fly-plane.1"."can fly-plane" = "plane.1"."id"
 			) >= 3
 			OR (
 				SELECT COUNT(*)
 				FROM "plane" AS "plane.2",
 					"pilot-can fly-plane" AS "pilot.0-can fly-plane.2"
 				WHERE "pilot.0-can fly-plane.2"."pilot" = "pilot.0"."id"
-				AND "pilot.0-can fly-plane.2"."plane" = "plane.2"."id"
+				AND "pilot.0-can fly-plane.2"."can fly-plane" = "plane.2"."id"
 			) = 1)
 			AND NOT (
 				5 < "pilot.0"."years of experience"
@@ -315,14 +315,14 @@ describe 'pilots', ->
 					FROM "plane" AS "plane.1",
 						"pilot-can fly-plane" AS "pilot.0-can fly-plane.1"
 					WHERE "pilot.0-can fly-plane.1"."pilot" = "pilot.0"."id"
-					AND "pilot.0-can fly-plane.1"."plane" = "plane.1"."id"
+					AND "pilot.0-can fly-plane.1"."can fly-plane" = "plane.1"."id"
 				) >= 3
 				OR (
 					SELECT COUNT(*)
 					FROM "plane" AS "plane.2",
 						"pilot-can fly-plane" AS "pilot.0-can fly-plane.2"
 					WHERE "pilot.0-can fly-plane.2"."pilot" = "pilot.0"."id"
-					AND "pilot.0-can fly-plane.2"."plane" = "plane.2"."id"
+					AND "pilot.0-can fly-plane.2"."can fly-plane" = "plane.2"."id"
 				) = 1)
 			)
 		) AS "result";
@@ -337,14 +337,14 @@ describe 'pilots', ->
 				FROM "plane" AS "plane.1",
 					"pilot-can fly-plane" AS "pilot.0-can fly-plane.1"
 				WHERE "pilot.0-can fly-plane.1"."pilot" = "pilot.0"."id"
-				AND "pilot.0-can fly-plane.1"."plane" = "plane.1"."id"
+				AND "pilot.0-can fly-plane.1"."can fly-plane" = "plane.1"."id"
 			) >= 3
 			OR (
 				SELECT COUNT(*)
 				FROM "plane" AS "plane.2",
 					"pilot-can fly-plane" AS "pilot.0-can fly-plane.2"
 				WHERE "pilot.0-can fly-plane.2"."pilot" = "pilot.0"."id"
-				AND "pilot.0-can fly-plane.2"."plane" = "plane.2"."id"
+				AND "pilot.0-can fly-plane.2"."can fly-plane" = "plane.2"."id"
 			) = 1)
 			AND "pilot.0"."is experienced" != 1
 		) AS "result";
@@ -359,7 +359,7 @@ describe 'pilots', ->
 				FROM "plane" AS "plane.1",
 					"pilot-can fly-plane" AS "pilot.0-can fly-plane.1"
 				WHERE "pilot.0-can fly-plane.1"."pilot" = "pilot.0"."id"
-				AND "pilot.0-can fly-plane.1"."plane" = "plane.1"."id"
+				AND "pilot.0-can fly-plane.1"."can fly-plane" = "plane.1"."id"
 			)
 		)
 		OR EXISTS (
@@ -370,7 +370,7 @@ describe 'pilots', ->
 				FROM "plane" AS "plane.3",
 					"pilot-can fly-plane" AS "pilot.2-can fly-plane.3"
 				WHERE "pilot.2-can fly-plane.3"."pilot" = "pilot.2"."id"
-				AND "pilot.2-can fly-plane.3"."plane" = "plane.3"."id"
+				AND "pilot.2-can fly-plane.3"."can fly-plane" = "plane.3"."id"
 			) >= 10
 		)) AS "result";
 		'''
@@ -384,14 +384,14 @@ describe 'pilots', ->
 				FROM "pilot" AS "pilot.1",
 					"pilot-can fly-plane" AS "pilot.1-can fly-plane.0"
 				WHERE "pilot.1-can fly-plane.0"."pilot" = "pilot.1"."id"
-				AND "pilot.1-can fly-plane.0"."plane" = "plane.0"."id"
+				AND "pilot.1-can fly-plane.0"."can fly-plane" = "plane.0"."id"
 			) >= 3
 			OR (
 				SELECT COUNT(*)
 				FROM "pilot" AS "pilot.2",
 					"pilot-can fly-plane" AS "pilot.2-can fly-plane.0"
 				WHERE "pilot.2-can fly-plane.0"."pilot" = "pilot.2"."id"
-				AND "pilot.2-can fly-plane.0"."plane" = "plane.0"."id"
+				AND "pilot.2-can fly-plane.0"."can fly-plane" = "plane.0"."id"
 			) = 1)
 			AND "plane.0"."name" IS NULL
 		) AS "result";
@@ -410,7 +410,7 @@ describe 'pilots', ->
 					FROM "plane" AS "plane.1",
 						"pilot-can fly-plane" AS "pilot.0-can fly-plane.1"
 					WHERE "pilot.0-can fly-plane.1"."pilot" = "pilot.0"."id"
-					AND "pilot.0-can fly-plane.1"."plane" = "plane.1"."id"
+					AND "pilot.0-can fly-plane.1"."can fly-plane" = "plane.1"."id"
 				) >= 2
 				AND 5 < "pilot.0"."years of experience"
 				AND "pilot.0"."years of experience" IS NOT NULL
@@ -428,7 +428,7 @@ describe 'pilots', ->
 				FROM "plane" AS "plane.1",
 					"pilot-can fly-plane" AS "pilot.0-can fly-plane.1"
 				WHERE "pilot.0-can fly-plane.1"."pilot" = "pilot.0"."id"
-				AND "pilot.0-can fly-plane.1"."plane" = "plane.1"."id"
+				AND "pilot.0-can fly-plane.1"."can fly-plane" = "plane.1"."id"
 			) >= 2
 			AND NOT (
 				5 < "pilot.0"."years of experience"
@@ -448,14 +448,14 @@ describe 'pilots', ->
 					FROM "plane" AS "plane.1",
 						"pilot-can fly-plane" AS "pilot.0-can fly-plane.1"
 					WHERE "pilot.0-can fly-plane.1"."pilot" = "pilot.0"."id"
-					AND "pilot.0-can fly-plane.1"."plane" = "plane.1"."id"
+					AND "pilot.0-can fly-plane.1"."can fly-plane" = "plane.1"."id"
 				) >= 3
 				AND (
 					SELECT COUNT(*)
 					FROM "plane" AS "plane.2",
 						"pilot-can fly-plane" AS "pilot.0-can fly-plane.2"
 					WHERE "pilot.0-can fly-plane.2"."pilot" = "pilot.0"."id"
-					AND "pilot.0-can fly-plane.2"."plane" = "plane.2"."id"
+					AND "pilot.0-can fly-plane.2"."can fly-plane" = "plane.2"."id"
 				) = 1
 			)
 		) AS "result";
@@ -470,14 +470,14 @@ describe 'pilots', ->
 				FROM "plane" AS "plane.1",
 					"pilot-can fly-plane" AS "pilot.0-can fly-plane.1"
 				WHERE "pilot.0-can fly-plane.1"."pilot" = "pilot.0"."id"
-				AND "pilot.0-can fly-plane.1"."plane" = "plane.1"."id"
+				AND "pilot.0-can fly-plane.1"."can fly-plane" = "plane.1"."id"
 			) >= 3
 			AND (
 				SELECT COUNT(*)
 				FROM "plane" AS "plane.2",
 					"pilot-can fly-plane" AS "pilot.0-can fly-plane.2"
 				WHERE "pilot.0-can fly-plane.2"."pilot" = "pilot.0"."id"
-				AND "pilot.0-can fly-plane.2"."plane" = "plane.2"."id"
+				AND "pilot.0-can fly-plane.2"."can fly-plane" = "plane.2"."id"
 			) = 1
 			AND "pilot.0"."is experienced" != 1
 		) AS "result";
@@ -492,7 +492,7 @@ describe 'pilots', ->
 				FROM "plane" AS "plane.1",
 					"pilot-can fly-plane" AS "pilot.0-can fly-plane.1"
 				WHERE "pilot.0-can fly-plane.1"."pilot" = "pilot.0"."id"
-				AND "pilot.0-can fly-plane.1"."plane" = "plane.1"."id"
+				AND "pilot.0-can fly-plane.1"."can fly-plane" = "plane.1"."id"
 			)
 		)
 		AND EXISTS (
@@ -503,7 +503,7 @@ describe 'pilots', ->
 				FROM "plane" AS "plane.3",
 					"pilot-can fly-plane" AS "pilot.2-can fly-plane.3"
 				WHERE "pilot.2-can fly-plane.3"."pilot" = "pilot.2"."id"
-				AND "pilot.2-can fly-plane.3"."plane" = "plane.3"."id"
+				AND "pilot.2-can fly-plane.3"."can fly-plane" = "plane.3"."id"
 			) >= 10
 		) AS "result";
 		'''
@@ -517,14 +517,14 @@ describe 'pilots', ->
 				FROM "pilot" AS "pilot.1",
 					"pilot-can fly-plane" AS "pilot.1-can fly-plane.0"
 				WHERE "pilot.1-can fly-plane.0"."pilot" = "pilot.1"."id"
-				AND "pilot.1-can fly-plane.0"."plane" = "plane.0"."id"
+				AND "pilot.1-can fly-plane.0"."can fly-plane" = "plane.0"."id"
 			) >= 3
 			AND (
 				SELECT COUNT(*)
 				FROM "pilot" AS "pilot.2",
 					"pilot-can fly-plane" AS "pilot.2-can fly-plane.0"
 				WHERE "pilot.2-can fly-plane.0"."pilot" = "pilot.2"."id"
-				AND "pilot.2-can fly-plane.0"."plane" = "plane.0"."id"
+				AND "pilot.2-can fly-plane.0"."can fly-plane" = "plane.0"."id"
 			) = 1
 			AND "plane.0"."name" IS NULL
 		) AS "result";
@@ -541,14 +541,14 @@ describe 'pilots', ->
 				FROM "plane" AS "plane.1",
 					"pilot-can fly-plane" AS "pilot.0-can fly-plane.1"
 				WHERE "pilot.0-can fly-plane.1"."pilot" = "pilot.0"."id"
-				AND "pilot.0-can fly-plane.1"."plane" = "plane.1"."id"
+				AND "pilot.0-can fly-plane.1"."can fly-plane" = "plane.1"."id"
 			) >= 3
 			OR (
 				SELECT COUNT(*)
 				FROM "plane" AS "plane.2",
 					"pilot-can fly-plane" AS "pilot.0-can fly-plane.2"
 				WHERE "pilot.0-can fly-plane.2"."pilot" = "pilot.0"."id"
-				AND "pilot.0-can fly-plane.2"."plane" = "plane.2"."id"
+				AND "pilot.0-can fly-plane.2"."can fly-plane" = "plane.2"."id"
 			) = 1)
 			AND NOT (
 				5 < "pilot.0"."years of experience"
@@ -566,14 +566,14 @@ describe 'pilots', ->
 				FROM "plane" AS "plane.1",
 					"pilot-can fly-plane" AS "pilot.0-can fly-plane.1"
 				WHERE "pilot.0-can fly-plane.1"."pilot" = "pilot.0"."id"
-				AND "pilot.0-can fly-plane.1"."plane" = "plane.1"."id"
+				AND "pilot.0-can fly-plane.1"."can fly-plane" = "plane.1"."id"
 			) >= 3
 			OR (
 				SELECT COUNT(*)
 				FROM "plane" AS "plane.2",
 					"pilot-can fly-plane" AS "pilot.0-can fly-plane.2"
 				WHERE "pilot.0-can fly-plane.2"."pilot" = "pilot.0"."id"
-				AND "pilot.0-can fly-plane.2"."plane" = "plane.2"."id"
+				AND "pilot.0-can fly-plane.2"."can fly-plane" = "plane.2"."id"
 			) = 1
 			AND "pilot.0"."is experienced" = 1)
 			AND NOT (
@@ -594,7 +594,7 @@ describe 'pilots', ->
 				FROM "plane" AS "plane.1",
 					"pilot-can fly-plane" AS "pilot.0-can fly-plane.1"
 				WHERE "pilot.0-can fly-plane.1"."pilot" = "pilot.0"."id"
-				AND "pilot.0-can fly-plane.1"."plane" = "plane.1"."id"
+				AND "pilot.0-can fly-plane.1"."can fly-plane" = "plane.1"."id"
 			) >= 3
 			AND NOT (
 				(
@@ -602,7 +602,7 @@ describe 'pilots', ->
 					FROM "plane" AS "plane.2",
 						"pilot-can fly-plane" AS "pilot.0-can fly-plane.2"
 					WHERE "pilot.0-can fly-plane.2"."pilot" = "pilot.0"."id"
-					AND "pilot.0-can fly-plane.2"."plane" = "plane.2"."id"
+					AND "pilot.0-can fly-plane.2"."can fly-plane" = "plane.2"."id"
 				) >= 11
 			)
 			AND NOT (
@@ -622,14 +622,14 @@ describe 'pilots', ->
 				FROM "plane" AS "plane.1",
 					"pilot-can fly-plane" AS "pilot.0-can fly-plane.1"
 				WHERE "pilot.0-can fly-plane.1"."pilot" = "pilot.0"."id"
-				AND "pilot.0-can fly-plane.1"."plane" = "plane.1"."id"
+				AND "pilot.0-can fly-plane.1"."can fly-plane" = "plane.1"."id"
 			) >= 3
 			OR (
 				SELECT COUNT(*)
 				FROM "plane" AS "plane.2",
 					"pilot-can fly-plane" AS "pilot.0-can fly-plane.2"
 				WHERE "pilot.0-can fly-plane.2"."pilot" = "pilot.0"."id"
-				AND "pilot.0-can fly-plane.2"."plane" = "plane.2"."id"
+				AND "pilot.0-can fly-plane.2"."can fly-plane" = "plane.2"."id"
 			) = 1)
 			AND NOT (
 				5 < "pilot.0"."years of experience"
@@ -648,7 +648,7 @@ describe 'pilots', ->
 				FROM "plane" AS "plane.1",
 					"pilot-can fly-plane" AS "pilot.0-can fly-plane.1"
 				WHERE "pilot.0-can fly-plane.1"."pilot" = "pilot.0"."id"
-				AND "pilot.0-can fly-plane.1"."plane" = "plane.1"."id"
+				AND "pilot.0-can fly-plane.1"."can fly-plane" = "plane.1"."id"
 			) >= 3
 			AND (NOT (
 				(
@@ -656,7 +656,7 @@ describe 'pilots', ->
 					FROM "plane" AS "plane.2",
 						"pilot-can fly-plane" AS "pilot.0-can fly-plane.2"
 					WHERE "pilot.0-can fly-plane.2"."pilot" = "pilot.0"."id"
-					AND "pilot.0-can fly-plane.2"."plane" = "plane.2"."id"
+					AND "pilot.0-can fly-plane.2"."can fly-plane" = "plane.2"."id"
 				) >= 11
 			)
 			OR 10 < LENGTH("pilot.0"."name")
@@ -679,14 +679,14 @@ describe 'pilots', ->
 				FROM "plane" AS "plane.1",
 					"pilot-can fly-plane" AS "pilot.0-can fly-plane.1"
 				WHERE "pilot.0-can fly-plane.1"."pilot" = "pilot.0"."id"
-				AND "pilot.0-can fly-plane.1"."plane" = "plane.1"."id"
+				AND "pilot.0-can fly-plane.1"."can fly-plane" = "plane.1"."id"
 			) >= 3
 			OR (
 				SELECT COUNT(*)
 				FROM "plane" AS "plane.2",
 					"pilot-can fly-plane" AS "pilot.0-can fly-plane.2"
 				WHERE "pilot.0-can fly-plane.2"."pilot" = "pilot.0"."id"
-				AND "pilot.0-can fly-plane.2"."plane" = "plane.2"."id"
+				AND "pilot.0-can fly-plane.2"."can fly-plane" = "plane.2"."id"
 			) = 1
 			AND 10 < LENGTH("pilot.0"."name")
 			AND LENGTH("pilot.0"."name") IS NOT NULL
@@ -708,14 +708,14 @@ describe 'pilots', ->
 				FROM "plane" AS "plane.1",
 					"pilot-can fly-plane" AS "pilot.0-can fly-plane.1"
 				WHERE "pilot.0-can fly-plane.1"."pilot" = "pilot.0"."id"
-				AND "pilot.0-can fly-plane.1"."plane" = "plane.1"."id"
+				AND "pilot.0-can fly-plane.1"."can fly-plane" = "plane.1"."id"
 			) >= 3
 			OR (
 				SELECT COUNT(*)
 				FROM "plane" AS "plane.2",
 					"pilot-can fly-plane" AS "pilot.0-can fly-plane.2"
 				WHERE "pilot.0-can fly-plane.2"."pilot" = "pilot.0"."id"
-				AND "pilot.0-can fly-plane.2"."plane" = "plane.2"."id"
+				AND "pilot.0-can fly-plane.2"."can fly-plane" = "plane.2"."id"
 			) = 1
 			AND 10 < LENGTH("pilot.0"."name")
 			AND LENGTH("pilot.0"."name") IS NOT NULL
@@ -737,14 +737,14 @@ describe 'pilots', ->
 				FROM "plane" AS "plane.1",
 					"pilot-can fly-plane" AS "pilot.0-can fly-plane.1"
 				WHERE "pilot.0-can fly-plane.1"."pilot" = "pilot.0"."id"
-				AND "pilot.0-can fly-plane.1"."plane" = "plane.1"."id"
+				AND "pilot.0-can fly-plane.1"."can fly-plane" = "plane.1"."id"
 			) >= 3
 			OR (
 				SELECT COUNT(*)
 				FROM "plane" AS "plane.2",
 					"pilot-can fly-plane" AS "pilot.0-can fly-plane.2"
 				WHERE "pilot.0-can fly-plane.2"."pilot" = "pilot.0"."id"
-				AND "pilot.0-can fly-plane.2"."plane" = "plane.2"."id"
+				AND "pilot.0-can fly-plane.2"."can fly-plane" = "plane.2"."id"
 			) = 1
 			AND 10 < LENGTH("pilot.0"."name")
 			AND LENGTH("pilot.0"."name") IS NOT NULL
@@ -766,21 +766,21 @@ describe 'pilots', ->
 				FROM "plane" AS "plane.1",
 					"pilot-can fly-plane" AS "pilot.0-can fly-plane.1"
 				WHERE "pilot.0-can fly-plane.1"."pilot" = "pilot.0"."id"
-				AND "pilot.0-can fly-plane.1"."plane" = "plane.1"."id"
+				AND "pilot.0-can fly-plane.1"."can fly-plane" = "plane.1"."id"
 			) = 1
 			OR (
 				SELECT COUNT(*)
 				FROM "plane" AS "plane.2",
 					"pilot-can fly-plane" AS "pilot.0-can fly-plane.2"
 				WHERE "pilot.0-can fly-plane.2"."pilot" = "pilot.0"."id"
-				AND "pilot.0-can fly-plane.2"."plane" = "plane.2"."id"
+				AND "pilot.0-can fly-plane.2"."can fly-plane" = "plane.2"."id"
 			) >= 5)
 			AND (
 				SELECT COUNT(*)
 				FROM "plane" AS "plane.3",
 					"pilot-can fly-plane" AS "pilot.0-can fly-plane.3"
 				WHERE "pilot.0-can fly-plane.3"."pilot" = "pilot.0"."id"
-				AND "pilot.0-can fly-plane.3"."plane" = "plane.3"."id"
+				AND "pilot.0-can fly-plane.3"."can fly-plane" = "plane.3"."id"
 			) >= 3
 			AND NOT (
 				5 < "pilot.0"."years of experience"
@@ -799,7 +799,7 @@ describe 'pilots', ->
 				FROM "plane" AS "plane.1",
 					"pilot-can fly-plane" AS "pilot.0-can fly-plane.1"
 				WHERE "pilot.0-can fly-plane.1"."pilot" = "pilot.0"."id"
-				AND "pilot.0-can fly-plane.1"."plane" = "plane.1"."id"
+				AND "pilot.0-can fly-plane.1"."can fly-plane" = "plane.1"."id"
 			)
 			AND NOT (
 				(
@@ -807,7 +807,7 @@ describe 'pilots', ->
 					FROM "plane" AS "plane.2",
 						"pilot-can fly-plane" AS "pilot.0-can fly-plane.2"
 					WHERE "pilot.0-can fly-plane.2"."pilot" = "pilot.0"."id"
-					AND "pilot.0-can fly-plane.2"."plane" = "plane.2"."id"
+					AND "pilot.0-can fly-plane.2"."can fly-plane" = "plane.2"."id"
 				) >= 6
 			)
 			OR (
@@ -815,7 +815,7 @@ describe 'pilots', ->
 				FROM "plane" AS "plane.3",
 					"pilot-can fly-plane" AS "pilot.0-can fly-plane.3"
 				WHERE "pilot.0-can fly-plane.3"."pilot" = "pilot.0"."id"
-				AND "pilot.0-can fly-plane.3"."plane" = "plane.3"."id"
+				AND "pilot.0-can fly-plane.3"."can fly-plane" = "plane.3"."id"
 			) >= 3)
 			AND NOT (
 				5 < "pilot.0"."years of experience"
@@ -835,7 +835,7 @@ describe 'pilots', ->
 					FROM "plane" AS "plane.1",
 						"pilot-can fly-plane" AS "pilot.0-can fly-plane.1"
 					WHERE "pilot.0-can fly-plane.1"."pilot" = "pilot.0"."id"
-					AND "pilot.0-can fly-plane.1"."plane" = "plane.1"."id"
+					AND "pilot.0-can fly-plane.1"."can fly-plane" = "plane.1"."id"
 				) >= 11
 			)
 			OR 10 < LENGTH("pilot.0"."name")
@@ -846,7 +846,7 @@ describe 'pilots', ->
 				FROM "plane" AS "plane.4",
 					"pilot-can fly-plane" AS "pilot.0-can fly-plane.4"
 				WHERE "pilot.0-can fly-plane.4"."pilot" = "pilot.0"."id"
-				AND "pilot.0-can fly-plane.4"."plane" = "plane.4"."id"
+				AND "pilot.0-can fly-plane.4"."can fly-plane" = "plane.4"."id"
 			) >= 3
 			AND NOT (
 				5 < "pilot.0"."years of experience"
@@ -865,7 +865,7 @@ describe 'pilots', ->
 				FROM "plane" AS "plane.1",
 					"pilot-can fly-plane" AS "pilot.0-can fly-plane.1"
 				WHERE "pilot.0-can fly-plane.1"."pilot" = "pilot.0"."id"
-				AND "pilot.0-can fly-plane.1"."plane" = "plane.1"."id"
+				AND "pilot.0-can fly-plane.1"."can fly-plane" = "plane.1"."id"
 			) = 1
 			AND 10 < LENGTH("pilot.0"."name")
 			AND LENGTH("pilot.0"."name") IS NOT NULL
@@ -875,7 +875,7 @@ describe 'pilots', ->
 				FROM "plane" AS "plane.4",
 					"pilot-can fly-plane" AS "pilot.0-can fly-plane.4"
 				WHERE "pilot.0-can fly-plane.4"."pilot" = "pilot.0"."id"
-				AND "pilot.0-can fly-plane.4"."plane" = "plane.4"."id"
+				AND "pilot.0-can fly-plane.4"."can fly-plane" = "plane.4"."id"
 			) >= 3)
 			AND NOT (
 				5 < "pilot.0"."years of experience"
@@ -894,7 +894,7 @@ describe 'pilots', ->
 					FROM "plane" AS "plane.1",
 						"pilot-can fly-plane" AS "pilot.0-can fly-plane.1"
 					WHERE "pilot.0-can fly-plane.1"."pilot" = "pilot.0"."id"
-					AND "pilot.0-can fly-plane.1"."plane" = "plane.1"."id"
+					AND "pilot.0-can fly-plane.1"."can fly-plane" = "plane.1"."id"
 				) >= 11
 			)
 			OR (
@@ -902,7 +902,7 @@ describe 'pilots', ->
 				FROM "plane" AS "plane.2",
 					"pilot-can fly-plane" AS "pilot.0-can fly-plane.2"
 				WHERE "pilot.0-can fly-plane.2"."pilot" = "pilot.0"."id"
-				AND "pilot.0-can fly-plane.2"."plane" = "plane.2"."id"
+				AND "pilot.0-can fly-plane.2"."can fly-plane" = "plane.2"."id"
 			) >= 15)
 			AND "pilot.0"."is experienced" = 1
 			AND (
@@ -910,7 +910,7 @@ describe 'pilots', ->
 				FROM "plane" AS "plane.3",
 					"pilot-can fly-plane" AS "pilot.0-can fly-plane.3"
 				WHERE "pilot.0-can fly-plane.3"."pilot" = "pilot.0"."id"
-				AND "pilot.0-can fly-plane.3"."plane" = "plane.3"."id"
+				AND "pilot.0-can fly-plane.3"."can fly-plane" = "plane.3"."id"
 			) >= 3
 			AND NOT (
 				5 < "pilot.0"."years of experience"
@@ -928,7 +928,7 @@ describe 'pilots', ->
 				FROM "plane" AS "plane.1",
 					"pilot-can fly-plane" AS "pilot.0-can fly-plane.1"
 				WHERE "pilot.0-can fly-plane.1"."pilot" = "pilot.0"."id"
-				AND "pilot.0-can fly-plane.1"."plane" = "plane.1"."id"
+				AND "pilot.0-can fly-plane.1"."can fly-plane" = "plane.1"."id"
 			)
 			AND NOT (
 				(
@@ -936,7 +936,7 @@ describe 'pilots', ->
 					FROM "plane" AS "plane.2",
 						"pilot-can fly-plane" AS "pilot.0-can fly-plane.2"
 					WHERE "pilot.0-can fly-plane.2"."pilot" = "pilot.0"."id"
-					AND "pilot.0-can fly-plane.2"."plane" = "plane.2"."id"
+					AND "pilot.0-can fly-plane.2"."can fly-plane" = "plane.2"."id"
 				) >= 11
 			)
 			OR "pilot.0"."is experienced" = 1
@@ -945,7 +945,7 @@ describe 'pilots', ->
 				FROM "plane" AS "plane.3",
 					"pilot-can fly-plane" AS "pilot.0-can fly-plane.3"
 				WHERE "pilot.0-can fly-plane.3"."pilot" = "pilot.0"."id"
-				AND "pilot.0-can fly-plane.3"."plane" = "plane.3"."id"
+				AND "pilot.0-can fly-plane.3"."can fly-plane" = "plane.3"."id"
 			) >= 3)
 			AND NOT (
 				5 < "pilot.0"."years of experience"
@@ -961,7 +961,7 @@ describe 'pilots', ->
 				"plane" AS "plane.1",
 				"pilot-can fly-plane" AS "pilot.0-can fly-plane.1"
 			WHERE "pilot.0-can fly-plane.1"."pilot" = "pilot.0"."id"
-			AND "pilot.0-can fly-plane.1"."plane" = "plane.1"."id"
+			AND "pilot.0-can fly-plane.1"."can fly-plane" = "plane.1"."id"
 			AND NOT EXISTS (
 				SELECT 1
 				FROM "plane" AS "plane.2",
@@ -970,11 +970,11 @@ describe 'pilots', ->
 					"pilot-can fly-plane" AS "pilot.3-can fly-plane.2",
 					"pilot-can fly-plane" AS "pilot.0-can fly-plane.2"
 				WHERE "pilot.3-can fly-plane.1"."pilot" = "pilot.3"."id"
-				AND "pilot.3-can fly-plane.1"."plane" = "plane.1"."id"
+				AND "pilot.3-can fly-plane.1"."can fly-plane" = "plane.1"."id"
 				AND "pilot.3-can fly-plane.2"."pilot" = "pilot.3"."id"
-				AND "pilot.3-can fly-plane.2"."plane" = "plane.2"."id"
+				AND "pilot.3-can fly-plane.2"."can fly-plane" = "plane.2"."id"
 				AND "pilot.0-can fly-plane.2"."pilot" = "pilot.0"."id"
-				AND "pilot.0-can fly-plane.2"."plane" = "plane.2"."id"
+				AND "pilot.0-can fly-plane.2"."can fly-plane" = "plane.2"."id"
 			)
 		) AS "result";
 		'''

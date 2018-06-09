@@ -1,6 +1,6 @@
 {
   "name": "@resin/abstract-sql-compiler",
-  "version": "5.2.0",
+  "version": "5.2.1",
   "description": "A translator for abstract sql into sql.",
   "main": "AbstractSQLCompiler.js",
   "types": "AbstractSQLCompiler.d.ts",
@@ -22,7 +22,7 @@
     "ometa-js": "^1.5.2"
   },
   "devDependencies": {
-    "@resin/lf-to-abstract-sql": "2.0.4",
+    "@resin/lf-to-abstract-sql": "2.0.5",
     "@resin/odata-parser": "^0.3.1",
     "@resin/odata-to-abstract-sql": "2.2.0",
     "@resin/sbvr-parser": "0.1.4",
