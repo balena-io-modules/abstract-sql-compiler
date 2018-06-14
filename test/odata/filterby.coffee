@@ -357,6 +357,27 @@ do ->
 			operandTest(mathOp, 'gt', 10)
 
 run ->
+	odata = "name eq @name&@name='Pete'"
+	test "/pilot?$filter=#{odata}", 'GET', [['Bind', '@name']], (result, sqlEquals) ->
+		it 'should select from pilot where "' + odata + '"', ->
+			sqlEquals result.query, """
+				SELECT #{pilotFields}
+				FROM "pilot"
+				WHERE "pilot"."name" = ?
+			"""
+
+run ->
+	odata = "name eq @x or favourite_colour eq @x&@x='Amber'"
+	test "/pilot?$filter=#{odata}", 'GET', [['Bind', '@x']], (result, sqlEquals) ->
+		it 'should select from pilot where "' + odata + '"', ->
+			sqlEquals result.query, """
+				SELECT #{pilotFields}
+				FROM "pilot"
+				WHERE ("pilot"."name" = $1
+				OR "pilot"."favourite colour" = $1)
+			"""
+
+run ->
 	{ odata, bindings, sql } = createExpression('can_fly__plane/id', 'eq', 10)
 	test "/pilot?$filter=#{odata}", 'GET', bindings, (result, sqlEquals) ->
 		it 'should select from pilot where "' + odata + '"', ->
