@@ -757,10 +757,20 @@ export ometa AbstractSQLRules2SQL {
 }
 
 AbstractSQLRules2SQL.AddBind = function(bind) {
-	this.fieldOrderings.push(bind);
 	if (this.engine === 'postgres') {
-		return '$' + this.fieldOrderings.length;
+		if (bind[0] === 'Bind') {
+			var existingBindIndex = _.findIndex(this.fieldOrderings, function(existingBind) {
+				return _.isEqual(bind, existingBind);
+			});
+			if (existingBindIndex !== -1) {
+				// Reuse the existing bind if there is one, adding 1 because the postgres binds start from $1
+				existingBindIndex = existingBindIndex + 1;
+				return '$' + existingBindIndex;
+			}
+		}
+		return '$' + this.fieldOrderings.push(bind);
 	} else {
+		this.fieldOrderings.push(bind);
 		return '?';
 	}
 };

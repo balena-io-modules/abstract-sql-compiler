@@ -1159,7 +1159,19 @@
             });
         }
     })).AddBind = function(bind) {
+        if ("postgres" === this.engine) {
+            if ("Bind" === bind[0]) {
+                var existingBindIndex = _.findIndex(this.fieldOrderings, function(existingBind) {
+                    return _.isEqual(bind, existingBind);
+                });
+                if (-1 !== existingBindIndex) {
+                    existingBindIndex += 1;
+                    return "$" + existingBindIndex;
+                }
+            }
+            return "$" + this.fieldOrderings.push(bind);
+        }
         this.fieldOrderings.push(bind);
-        return "postgres" === this.engine ? "$" + this.fieldOrderings.length : "?";
+        return "?";
     };
 });
