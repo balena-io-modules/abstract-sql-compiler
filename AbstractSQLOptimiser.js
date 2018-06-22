@@ -268,7 +268,7 @@
                 }, function() {
                     return this._apply("SelectQuery");
                 }, function() {
-                    return this.anything();
+                    return this._apply("string");
                 });
             });
             return [ [ "From", from ] ];

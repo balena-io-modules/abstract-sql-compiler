@@ -184,7 +184,7 @@ ometa AbstractSQLValidator {
 				]
 				-> [table, as]
 			|	SelectQuery
-			|	anything
+			|	string
 			):from
 		]
 		-> [['From', from]],
