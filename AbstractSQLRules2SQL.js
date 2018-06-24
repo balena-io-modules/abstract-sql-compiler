@@ -352,7 +352,7 @@
                 query = this._applyWithArgs("SelectQuery", nestedindent);
                 return "(" + nestedindent + query + indent + ")";
             }, function() {
-                table = this.anything();
+                table = this._apply("string");
                 return '"' + table + '"';
             });
         },
