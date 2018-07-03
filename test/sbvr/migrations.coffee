@@ -3,7 +3,8 @@ typeVocab = fs.readFileSync(require.resolve('@resin/sbvr-types/Type.sbvr'))
 test = require('./test')(typeVocab)
 
 describe 'migrations', ->
-	test.migration '''
+	console.log(test)
+	test.skip '''
 			Term:      name
 				Concept Type: Short Text (Type)
 			Term:      person

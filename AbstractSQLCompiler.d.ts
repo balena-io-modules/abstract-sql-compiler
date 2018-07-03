@@ -1,3 +1,4 @@
+/// <reference types="lodash" />
 import { Binding, SqlResult } from './AbstractSQLRules2SQL';
 export { Binding, SqlResult } from './AbstractSQLRules2SQL';
 import * as _ from 'lodash';
@@ -41,30 +42,33 @@ export interface Relationship {
 export interface AbstractSqlQuery extends Array<AbstractSqlQuery | string> {
 }
 export interface AbstractSqlModel {
-    synonyms: {
-        [synonym: string]: string;
-    };
-    relationships: {
-        [resourceName: string]: Relationship;
-    };
-    tables: {
-        [resourceName: string]: AbstractSqlTable;
-    };
+    synonyms: ResourceMap<string>;
+    relationships: ResourceMap<Relationship>;
+    tables: ResourceMap<AbstractSqlTable>;
     rules: AbstractSqlQuery[];
 }
 export interface SqlModel {
-    synonyms: {
-        [synonym: string]: string;
-    };
-    relationships: {
-        [resourceName: string]: Relationship;
-    };
-    tables: {
-        [resourceName: string]: AbstractSqlTable;
-    };
+    synonyms: ResourceMap<string>;
+    relationships: ResourceMap<Relationship>;
+    tables: ResourceMap<AbstractSqlTable>;
     rules: SqlRule[];
     createSchema: string[];
     dropSchema: string[];
+}
+export interface HasDependants {
+    [dependant: string]: true;
+}
+export interface SchemaDependencyMap {
+    [tableName: string]: {
+        resourceName: string;
+        primitive: AbstractSqlTable['primitive'];
+        createSQL: string;
+        dropSQL: string;
+        depends: string[];
+    };
+}
+export interface ResourceMap<T> {
+    [resourceName: string]: T;
 }
 export interface ModifiedFields {
     table: string;
@@ -73,7 +77,7 @@ export interface ModifiedFields {
 export declare enum Engines {
     postgres = "postgres",
     mysql = "mysql",
-    websql = "websql"
+    websql = "websql",
 }
 export interface EngineInstance {
     compileSchema: (abstractSqlModel: AbstractSqlModel) => SqlModel;
@@ -85,6 +89,7 @@ export interface EngineInstance {
 export declare const postgres: {
     compileSchema: _.Function1<AbstractSqlModel, SqlModel>;
     compileRule: _.Function1<AbstractSqlQuery, SqlResult | SqlResult[]>;
+    diffSchemas: _.Function2<AbstractSqlModel, AbstractSqlModel, any[]>;
     dataTypeValidate: (value: any, field: AbstractSqlField) => any;
     getReferencedFields: (ruleBody: AbstractSqlQuery) => ReferencedFields;
     getModifiedFields: (abstractSqlQuery: AbstractSqlQuery) => ModifiedFields | (ModifiedFields | undefined)[] | undefined;
@@ -92,6 +97,7 @@ export declare const postgres: {
 export declare const mysql: {
     compileSchema: _.Function1<AbstractSqlModel, SqlModel>;
     compileRule: _.Function1<AbstractSqlQuery, SqlResult | SqlResult[]>;
+    diffSchemas: _.Function2<AbstractSqlModel, AbstractSqlModel, any[]>;
     dataTypeValidate: (value: any, field: AbstractSqlField) => any;
     getReferencedFields: (ruleBody: AbstractSqlQuery) => ReferencedFields;
     getModifiedFields: (abstractSqlQuery: AbstractSqlQuery) => ModifiedFields | (ModifiedFields | undefined)[] | undefined;
@@ -99,6 +105,7 @@ export declare const mysql: {
 export declare const websql: {
     compileSchema: _.Function1<AbstractSqlModel, SqlModel>;
     compileRule: _.Function1<AbstractSqlQuery, SqlResult | SqlResult[]>;
+    diffSchemas: _.Function2<AbstractSqlModel, AbstractSqlModel, any[]>;
     dataTypeValidate: (value: any, field: AbstractSqlField) => any;
     getReferencedFields: (ruleBody: AbstractSqlQuery) => ReferencedFields;
     getModifiedFields: (abstractSqlQuery: AbstractSqlQuery) => ModifiedFields | (ModifiedFields | undefined)[] | undefined;

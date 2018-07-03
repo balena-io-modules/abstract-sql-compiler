@@ -28,8 +28,7 @@ module.exports = exports = (builtInVocab = false) ->
 				return
 			expectation(result)
 
-	runMigration = (describe, src, dst, expectation) ->
-		describe 'Migration', ->
+	runMigration = (it, src, dst, expectation) ->
 		it 'Vocabulary: src\n' + src + '\n\nVocabulary: dst\n' + dst, ->
 			SBVRParser.reset()
 			srcLf = SBVRParser.matchAll(src, 'Process')
@@ -68,20 +67,11 @@ module.exports = exports = (builtInVocab = false) ->
 				expect(lastRule).to.have.property('structuredEnglish').that.equals(input)
 				expect(lastRule).to.have.property('sql').that.equals(expectation)
 
-<<<<<<< HEAD
 	ret = runSchema.bind(null, it)
 	ret.skip = runSchema.bind(null, it.skip)
 	ret.only = runSchema.bind(null, it.only)
 	ret.rule = runRule.bind(null, it)
 	ret.rule.skip = runRule.bind(null, it.skip)
 	ret.rule.only = runRule.bind(null, it.only)
-=======
-	ret = runSchema.bind(null, describe)
-	ret.skip = runSchema.bind(null, describe.skip)
-	ret.only = runSchema.bind(null, describe.only)
-	ret.rule = runRule.bind(null, describe)
-	ret.rule.skip = runRule.bind(null, describe.skip)
-	ret.rule.only = runRule.bind(null, describe.only)
-	ret.migration = runMigration.bind(null, describe)
->>>>>>> Added a diffSchema function that attempts to produce a valid sql migration from a pair of AbstractSQLModels.
+	ret.migration = runMigration.bind(null, it)
 	return ret

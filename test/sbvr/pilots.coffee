@@ -2,6 +2,7 @@ typeVocab = require('fs').readFileSync(require.resolve('@resin/sbvr-types/Type.s
 test = require('./test')(typeVocab)
 
 describe 'pilots', ->
+	console.log(test)
 	test '''
 		Term:      name
 			Concept Type: Short Text (Type)

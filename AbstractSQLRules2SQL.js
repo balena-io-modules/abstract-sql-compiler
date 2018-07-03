@@ -41,8 +41,7 @@
         },
         Fractionalseconds: fractionalSecondsFormat,
         Totalseconds: basicDateFormat("SECOND")
-    };
-    (exports.AbstractSQLRules2SQL = OMeta._extend({
+    }, AbstractSQLRules2SQL = exports.AbstractSQLRules2SQL = OMeta._extend({
         NestedIndent: function(indent) {
             var $elf = this, _fromIdx = this.input.idx;
             return indent + "\t";
@@ -1158,13 +1157,14 @@
                 };
             });
         }
-    })).AddBind = function(bind) {
+    });
+    AbstractSQLRules2SQL.AddBind = function(bind) {
         if ("postgres" === this.engine) {
             if ("Bind" === bind[0]) {
                 var existingBindIndex = _.findIndex(this.fieldOrderings, function(existingBind) {
                     return _.isEqual(bind, existingBind);
                 });
-                if (-1 !== existingBindIndex) {
+                if (existingBindIndex !== -1) {
                     existingBindIndex += 1;
                     return "$" + existingBindIndex;
                 }
