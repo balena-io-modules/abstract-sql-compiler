@@ -290,6 +290,15 @@ test '/pilot/$count?$filter=id eq 5 or id eq 10', 'GET', [['Bind', 0], ['Bind', 
 			WHERE "pilot"."id" IN (?, ?)
 		'''
 
+test '/pilot/$count?$filter=id eq 5 or id eq null', 'GET', [['Bind', 0]], (result, sqlEquals) ->
+	it 'should select count(*) from pilot where id in (5,10)', ->
+		sqlEquals result.query, '''
+			SELECT COUNT(*) AS "$count"
+			FROM "pilot"
+			WHERE ("pilot"."id" = ?
+			OR "pilot"."id" IS NULL)
+		'''
+
 test '/pilot(5)/licence/$count', 'GET', [['Bind', 0]], (result, sqlEquals) ->
 	it 'should select count(*) the licence from pilot where pilot/id', ->
 		sqlEquals result.query, '''

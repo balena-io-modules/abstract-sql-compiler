@@ -798,11 +798,16 @@ export ometa AbstractSQLOptimiser <: AbstractSQLValidator {
 			// -> queryAdditions
 		// |	^Where,
 
+	AnyNotNullValue =
+		~Null
+		AnyValue
+	,
+
 	FieldNotEquals =
 		[	'NotEquals'
 			(	Field:comp1
-				AnyValue:comp2
-			|	AnyValue:comp2
+				AnyNotNullValue:comp2
+			|	AnyNotNullValue:comp2
 				Field:comp1
 			)
 		]
@@ -811,8 +816,8 @@ export ometa AbstractSQLOptimiser <: AbstractSQLValidator {
 	FieldEquals =
 		[	'Equals'
 			(	Field:comp1
-				AnyValue:comp2
-			|	AnyValue:comp2
+				AnyNotNullValue:comp2
+			|	AnyNotNullValue:comp2
 				Field:comp1
 			)
 		]
