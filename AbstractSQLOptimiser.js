@@ -1134,15 +1134,22 @@
         }
     });
     (exports.AbstractSQLOptimiser = AbstractSQLValidator._extend({
+        AnyNotNullValue: function() {
+            var $elf = this, _fromIdx = this.input.idx;
+            this._not(function() {
+                return this._apply("Null");
+            });
+            return this._apply("AnyValue");
+        },
         FieldNotEquals: function() {
             var $elf = this, _fromIdx = this.input.idx, comp1, comp2;
             this._form(function() {
                 this._applyWithArgs("exactly", "NotEquals");
                 return this._or(function() {
                     comp1 = this._apply("Field");
-                    return comp2 = this._apply("AnyValue");
+                    return comp2 = this._apply("AnyNotNullValue");
                 }, function() {
-                    comp2 = this._apply("AnyValue");
+                    comp2 = this._apply("AnyNotNullValue");
                     return comp1 = this._apply("Field");
                 });
             });
@@ -1154,9 +1161,9 @@
                 this._applyWithArgs("exactly", "Equals");
                 return this._or(function() {
                     comp1 = this._apply("Field");
-                    return comp2 = this._apply("AnyValue");
+                    return comp2 = this._apply("AnyNotNullValue");
                 }, function() {
-                    comp2 = this._apply("AnyValue");
+                    comp2 = this._apply("AnyNotNullValue");
                     return comp1 = this._apply("Field");
                 });
             });
