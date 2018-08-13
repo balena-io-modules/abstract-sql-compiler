@@ -424,6 +424,8 @@
                 return this._applyWithArgs("JSONValue", indent);
             }, function() {
                 return this._applyWithArgs("DurationValue", indent);
+            }, function() {
+                return this._applyWithArgs("Case", indent);
             });
         },
         UnknownValue: function(indent) {
@@ -1130,6 +1132,33 @@
                     minimumFractionDigits: 1
                 }) + "'" + ("mysql" === this.engine ? " DAY_MICROSECOND" : "");
             });
+        },
+        Case: function(indent) {
+            var $elf = this, _fromIdx = this.input.idx, nestedIndent, val, whens;
+            this._form(function() {
+                this._applyWithArgs("exactly", "Case");
+                nestedIndent = this._applyWithArgs("NestedIndent", indent);
+                whens = this._many1(function() {
+                    return this._applyWithArgs("When", nestedIndent);
+                });
+                return this._opt(function() {
+                    return this._form(function() {
+                        this._applyWithArgs("exactly", "Else");
+                        return val = this._applyWithArgs("AnyValue", nestedIndent);
+                    });
+                });
+            });
+            return "CASE" + nestedIndent + whens.join(nestedIndent) + (val ? nestedIndent + "ELSE " + val : "") + indent + "END";
+        },
+        When: function(indent) {
+            var $elf = this, _fromIdx = this.input.idx, matches, nestedIndent, resultValue;
+            this._form(function() {
+                this._applyWithArgs("exactly", "When");
+                nestedIndent = this._applyWithArgs("NestedIndent", indent);
+                matches = this._applyWithArgs("BooleanValue", nestedIndent);
+                return resultValue = this._applyWithArgs("AnyValue", indent);
+            });
+            return "WHEN " + matches + " THEN " + resultValue;
         },
         Process: function() {
             var $elf = this, _fromIdx = this.input.idx, query, value;

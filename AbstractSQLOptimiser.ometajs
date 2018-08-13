@@ -206,6 +206,25 @@ ometa AbstractSQLValidator {
 		]
 		-> [['Where', boolStatement]],
 
+	Case =
+		[	'Case'
+			When+:whens
+			[	'Else'
+				AnyValue:elseValue
+			]?
+		]
+		(	?elseValue
+			-> ['Case'].concat(whens, [['Else', elseValue]])
+		|	-> ['Case'].concat(whens)
+		),
+
+	When =
+		[	'When'
+			BooleanValue:matches
+			AnyValue:resultValue
+		]
+		-> ['When', matches, resultValue],
+
 	GroupBy =
 		[	'GroupBy'
 			[	AnyValue+:values
@@ -244,6 +263,7 @@ ometa AbstractSQLValidator {
 		|	BooleanValue
 		|	DateValue
 		|	JSONValue
+		|	Case
 		|	DurationValue,
 
 	UnknownValue =

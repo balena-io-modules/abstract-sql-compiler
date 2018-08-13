@@ -296,6 +296,36 @@
             });
             return [ [ "Where", boolStatement ] ];
         },
+        Case: function() {
+            var $elf = this, _fromIdx = this.input.idx, elseValue, whens;
+            this._form(function() {
+                this._applyWithArgs("exactly", "Case");
+                whens = this._many1(function() {
+                    return this._apply("When");
+                });
+                return this._opt(function() {
+                    return this._form(function() {
+                        this._applyWithArgs("exactly", "Else");
+                        return elseValue = this._apply("AnyValue");
+                    });
+                });
+            });
+            return this._or(function() {
+                this._pred(elseValue);
+                return [ "Case" ].concat(whens, [ [ "Else", elseValue ] ]);
+            }, function() {
+                return [ "Case" ].concat(whens);
+            });
+        },
+        When: function() {
+            var $elf = this, _fromIdx = this.input.idx, matches, resultValue;
+            this._form(function() {
+                this._applyWithArgs("exactly", "When");
+                matches = this._apply("BooleanValue");
+                return resultValue = this._apply("AnyValue");
+            });
+            return [ "When", matches, resultValue ];
+        },
         GroupBy: function() {
             var $elf = this, _fromIdx = this.input.idx, values;
             this._form(function() {
@@ -363,6 +393,8 @@
                 return this._apply("DateValue");
             }, function() {
                 return this._apply("JSONValue");
+            }, function() {
+                return this._apply("Case");
             }, function() {
                 return this._apply("DurationValue");
             });

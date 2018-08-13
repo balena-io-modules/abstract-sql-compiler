@@ -284,6 +284,7 @@ export ometa AbstractSQLRules2SQL {
 		|	DateValue(indent)
 		|	JSONValue(indent)
 		|	DurationValue(indent)
+		|	Case(indent)
 		),
 
 	UnknownValue :indent =
@@ -742,6 +743,25 @@ export ometa AbstractSQLRules2SQL {
 				(this.engine === 'mysql' ? ' DAY_MICROSECOND' : '')
 			)
 		),
+
+	Case :indent =
+		[	'Case'
+			NestedIndent(indent):nestedIndent
+			When(nestedIndent)+:whens			
+			[	'Else'
+				AnyValue(nestedIndent):val
+			]?
+		]
+		-> ('CASE' + nestedIndent + whens.join(nestedIndent) + (val ? nestedIndent + 'ELSE ' + val : '') + indent + 'END'),
+
+	When :indent =
+		[
+			'When'
+			NestedIndent(indent):nestedIndent
+			BooleanValue(nestedIndent):matches
+			AnyValue(indent):resultValue
+		]
+		-> ('WHEN ' + matches + ' THEN ' + resultValue),
 
 	Process =
 			{this.fieldOrderings = []}
