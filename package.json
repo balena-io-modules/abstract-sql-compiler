@@ -5,32 +5,31 @@
   "main": "AbstractSQLCompiler.js",
   "types": "AbstractSQLCompiler.d.ts",
   "scripts": {
-    "pretest": "npm run prepublishOnly",
+    "pretest": "npm run prepare",
     "test": "mocha",
     "prepublish": "require-npm4-to-publish",
-    "prepublishOnly": "tsc && ometajs2js --input AbstractSQLOptimiser.ometajs --output AbstractSQLOptimiser.js && ometajs2js --input AbstractSQLRules2SQL.ometajs --output AbstractSQLRules2SQL.js"
+    "prepare": "tsc && ometajs2js --input AbstractSQLOptimiser.ometajs --output AbstractSQLOptimiser.js && ometajs2js --input AbstractSQLRules2SQL.ometajs --output AbstractSQLRules2SQL.js"
   },
   "repository": "https://github.com/resin-io-modules/abstract-sql-compiler.git",
   "author": "",
   "dependencies": {
     "@resin/sbvr-types": "^1.4.2",
-    "@types/bluebird": "3.5.20",
-    "@types/lodash": "4.14.109",
-    "@types/node": "8.10.19",
+    "@types/bluebird": "^3.5.24",
+    "@types/lodash": "^4.14.116",
+    "@types/node": "^8.10.32",
     "bluebird": "^3.5.1",
-    "lodash": "^4.17.10",
-    "ometa-js": "^1.5.2"
+    "lodash": "^4.17.11",
+    "ometa-js": "^1.5.3"
   },
   "devDependencies": {
-    "@resin/lf-to-abstract-sql": "2.0.5",
-    "@resin/odata-parser": "^0.3.5",
+    "@resin/lf-to-abstract-sql": "2.0.7",
+    "@resin/odata-parser": "^0.3.6",
     "@resin/odata-to-abstract-sql": "2.2.0",
     "@resin/sbvr-parser": "0.1.4",
-    "chai": "^4.1.2",
-    "coffee-script": "^1.12.7",
+    "chai": "^4.2.0",
+    "coffeescript": "^1.12.7",
     "mocha": "^5.2.0",
     "require-npm4-to-publish": "^1.0.0",
-    "resin-lint": "^1.5.7",
-    "typescript": "^2.9.2"
+    "typescript": "^3.1.1"
   }
 }
