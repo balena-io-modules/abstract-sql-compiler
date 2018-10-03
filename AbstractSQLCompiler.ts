@@ -35,6 +35,7 @@ export interface AbstractSqlTable {
 		fields: string[]
 	}>
 	primitive: false | string
+	definition?: AbstractSqlQuery
 }
 export interface ReferencedFields {
 	[alias: string]: string[]
