@@ -134,16 +134,14 @@ do ->
 			''')
 do ->
 	bindings = [
-		['Bind', ['pilot', 'id']]
 		['Bind', ['pilot', 'is_experienced']]
 		['Bind', 0]
 	]
 	testFunc = (result, sqlEquals) ->
-		it 'should insert/update the pilot with id 1', ->
+		it 'should update the pilot with id 1', ->
 			sqlEquals(result.query, '''
 				UPDATE "pilot"
-				SET "id" = ?,
-					"is experienced" = ?
+				SET "is experienced" = ?
 				WHERE "pilot"."id" = ?
 			''')
 	test '/pilot(1)', 'PATCH', bindings, { is_experienced: true }, testFunc
@@ -197,15 +195,13 @@ do ->
 do ->
 	bindings = [
 		['Bind', ['pilot-can fly-plane', 'pilot']]
-		['Bind', ['pilot-can fly-plane', 'id']]
 		['Bind', 0]
 	]
 	testFunc = (result, sqlEquals) ->
-		it 'should insert/update the pilot with id 1', ->
+		it 'should update the pilot with id 1', ->
 			sqlEquals(result.query, '''
 				UPDATE "pilot-can fly-plane"
-				SET "pilot" = ?,
-					"id" = ?
+				SET "pilot" = ?
 				WHERE "pilot-can fly-plane"."id" = ?
 			''')
 	test '/pilot__can_fly__plane(1)', 'PATCH', bindings, { pilot: 1 }, testFunc

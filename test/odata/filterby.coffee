@@ -256,15 +256,7 @@ createMethodCall = (method, args...) ->
 operandTest = (lhs, op, rhs) ->
 	run ->
 		{ odata, sql, bindings } = createExpression(lhs, op, rhs)
-		if _.isString(lhs)
-			lFieldParts = lhs.split('/')
-		else
-			lFieldParts = []
-		if _.isString(rhs)
-			rFieldParts = rhs.split('/')
-		else
-			rFieldParts = []
-		if lFieldParts.length > 1 or rFieldParts.length > 1
+		if _.includes(odata, '/')
 			from = '''
 				"pilot",
 					"pilot" AS "pilot.trained-pilot"'''
@@ -274,6 +266,7 @@ operandTest = (lhs, op, rhs) ->
 		else
 			from = '"pilot"'
 			where = sql
+
 		test "/pilot?$filter=#{odata}", 'GET', bindings, (result, sqlEquals) ->
 			it 'should select from pilot where "' + odata + '"', ->
 				sqlEquals result.query, '''
@@ -518,10 +511,10 @@ run ->
 	{ odata: keyOdata, bindings: keyBindings } = parseOperand(1)
 	{ odata, sql, bindings: exprBindings } = createExpression('name', 'eq', "'#{name}'")
 	bodyBindings = [
-		['Bind', ['pilot', 'id']]
 		['Bind', ['pilot', 'name']]
 	]
 	insertBindings = [
+		['Bind', ['pilot', 'id']]
 		bodyBindings...
 		exprBindings...
 	]
@@ -534,8 +527,7 @@ run ->
 		it 'should update the pilot with id 1', ->
 			sqlEquals result.query, """
 				UPDATE "pilot"
-				SET "id" = ?,
-					"name" = ?
+				SET "name" = ?
 				WHERE "pilot"."id" = ?
 				AND "pilot"."id" IN ((
 					SELECT "pilot"."id"
@@ -544,7 +536,7 @@ run ->
 				))
 			"""
 
-	test '/pilot(' + keyOdata + ')?$filter=' + odata, 'PUT', [ insertBindings, updateBindings ], { name }, (result, sqlEquals) ->
+	test '/pilot(' + keyOdata + ')?$filter=' + odata, 'PUT', [ insertBindings, [ ['Bind', ['pilot', 'id']], updateBindings...] ], { name }, (result, sqlEquals) ->
 		describe 'should upsert the pilot with id 1', ->
 			it 'should be an upsert', ->
 				expect(result).to.be.an('array')
@@ -605,7 +597,7 @@ run -> operandTest(createMethodCall('indexof', 'name', "'Pe'"), 'eq', 0)
 run -> operandTest(createMethodCall('substring', 'name', 1), 'eq', "'ete'")
 run -> operandTest(createMethodCall('substring', 'name', 1, 2), 'eq', "'et'")
 run -> operandTest(createMethodCall('tolower', 'name'), 'eq', "'pete'")
-run -> operandTest(createMethodCall('tolower', 'licence/name'), 'eq', "'pete'")
+run -> operandTest(createMethodCall('tolower', 'trained__pilot/name'), 'eq', "'pete'")
 run -> operandTest(createMethodCall('toupper', 'name'), 'eq', "'PETE'")
 run ->
 	concat = createMethodCall('concat', 'name', "'%20'")
