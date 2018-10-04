@@ -24,7 +24,7 @@
   "devDependencies": {
     "@resin/lf-to-abstract-sql": "2.0.7",
     "@resin/odata-parser": "^0.3.6",
-    "@resin/odata-to-abstract-sql": "2.2.0",
+    "@resin/odata-to-abstract-sql": "2.2.5",
     "@resin/sbvr-parser": "0.1.4",
     "chai": "^4.2.0",
     "coffeescript": "^1.12.7",
