@@ -13,28 +13,16 @@ var Engines;
 })(Engines = exports.Engines || (exports.Engines = {}));
 var validateTypes = _.mapValues(sbvrTypes, function (_a) {
     var validate = _a.validate;
-    if (validate != null) {
-        return Promise.promisify(validate);
-    }
+    return validate;
 });
 var dataTypeValidate = function (value, field) {
     var dataType = field.dataType, required = field.required;
-    if (value == null) {
-        if (required) {
-            return Promise.reject('cannot be null');
-        }
-        else {
-            return Promise.resolve(null);
-        }
+    var validateFn = validateTypes[dataType];
+    if (validateFn != null) {
+        return validateFn(value, required);
     }
     else {
-        var validateFn = validateTypes[dataType];
-        if (validateFn != null) {
-            return validateFn(value, required);
-        }
-        else {
-            return Promise.reject('is an unsupported type: ' + dataType);
-        }
+        return Promise.reject(new Error('is an unsupported type: ' + dataType));
     }
 };
 var dataTypeGen = function (engine, _a) {

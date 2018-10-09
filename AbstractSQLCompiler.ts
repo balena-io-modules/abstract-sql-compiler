@@ -7,7 +7,7 @@ const sbvrTypes: {
 		types: {
 			[engine: string]: DatabaseType
 		}
-		validate(value: any, required: boolean, cb: (err: any, value: any) => void): void
+		validate(value: any, required: boolean): Promise<any>
 	}
 } = require('@resin/sbvr-types')
 import * as _ from 'lodash'
@@ -97,28 +97,16 @@ export interface EngineInstance {
 	getModifiedFields: (abstractSqlQuery: AbstractSqlQuery) => undefined | ModifiedFields | Array<undefined | ModifiedFields>,
 }
 
-const validateTypes = _.mapValues(sbvrTypes, ({ validate }) => {
-	if (validate != null) {
-		return Promise.promisify(validate)
-	}
-})
+const validateTypes = _.mapValues(sbvrTypes, ({ validate }) => validate)
 
 const dataTypeValidate: EngineInstance['dataTypeValidate'] = (value, field) => {
 	// In case one of the validation types throws an error.
 	const { dataType, required } = field
-	if (value == null) {
-		if (required) {
-			return Promise.reject('cannot be null')
-		} else {
-			return Promise.resolve(null)
-		}
+	const validateFn = validateTypes[dataType]
+	if (validateFn != null) {
+		return validateFn(value, required)
 	} else {
-		const validateFn = validateTypes[dataType]
-		if (validateFn != null) {
-			return validateFn(value, required)
-		} else {
-			return Promise.reject('is an unsupported type: ' + dataType)
-		}
+		return Promise.reject(new Error('is an unsupported type: ' + dataType))
 	}
 }
 
