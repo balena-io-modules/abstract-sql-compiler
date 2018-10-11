@@ -13,16 +13,16 @@
   "repository": "https://github.com/resin-io-modules/abstract-sql-compiler.git",
   "author": "",
   "dependencies": {
-    "@resin/sbvr-types": "^1.4.2",
+    "@resin/sbvr-types": "^2.0.0",
     "@types/bluebird": "^3.5.24",
     "@types/lodash": "^4.14.116",
-    "@types/node": "^8.10.32",
+    "@types/node": "^8.10.35",
     "bluebird": "^3.5.1",
     "lodash": "^4.17.11",
     "ometa-js": "^1.5.3"
   },
   "devDependencies": {
-    "@resin/lf-to-abstract-sql": "2.0.7",
+    "@resin/lf-to-abstract-sql": "2.0.8",
     "@resin/odata-parser": "^0.3.6",
     "@resin/odata-to-abstract-sql": "2.2.5",
     "@resin/sbvr-parser": "0.1.4",
