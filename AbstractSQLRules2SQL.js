@@ -259,7 +259,7 @@
             return "DEFAULT";
         },
         Select: function(indent) {
-            var $elf = this, _fromIdx = this.input.idx, as, field, fields, table, value;
+            var $elf = this, _fromIdx = this.input.idx, as, field, fields, table;
             this._applyWithArgs("exactly", "Select");
             this._form(function() {
                 return this._or(function() {
@@ -269,32 +269,18 @@
                     return fields = this._many(function() {
                         return this._or(function() {
                             this._form(function() {
-                                return field = this._or(function() {
-                                    field = this._applyWithArgs("SelectField", indent);
-                                    as = this.anything();
-                                    return field + ' AS "' + as + '"';
-                                }, function() {
-                                    switch (this.anything()) {
-                                      case "Count":
-                                        this._applyWithArgs("exactly", "*");
-                                        return "COUNT(*)";
-
-                                      default:
-                                        throw this._fail();
-                                    }
-                                }, function() {
-                                    table = this.anything();
-                                    this._applyWithArgs("exactly", "*");
-                                    return '"' + table + '".*';
-                                }, function() {
-                                    value = this._applyWithArgs("AnyValue", indent);
-                                    as = this.anything();
-                                    return value + ' AS "' + as + '"';
-                                });
+                                field = this._applyWithArgs("SelectField", indent);
+                                return as = this.anything();
                             });
-                            return field;
+                            return field + ' AS "' + as + '"';
                         }, function() {
-                            return this._applyWithArgs("AnyValue", indent);
+                            return this._applyWithArgs("SelectField", indent);
+                        }, function() {
+                            this._form(function() {
+                                table = this.anything();
+                                return this._applyWithArgs("exactly", "*");
+                            });
+                            return '"' + table + '".*';
                         }, function() {
                             switch (this.anything()) {
                               case "*":
@@ -303,8 +289,6 @@
                               default:
                                 throw this._fail();
                             }
-                        }, function() {
-                            return this._apply("Null");
                         });
                     });
                 });
