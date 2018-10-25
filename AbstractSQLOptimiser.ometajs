@@ -148,11 +148,11 @@ ometa AbstractSQLValidator {
 	Select =
 		[	'Select'
 			[	(	[	SelectField:field
-						anything:as
+						string:as
 					]
 					-> [field, as]
 				|	SelectField
-				|	[	:table
+				|	[	string:table
 						'*'
 					]
 				|	'*'

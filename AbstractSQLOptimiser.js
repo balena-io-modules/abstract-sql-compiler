@@ -207,14 +207,14 @@
                         return this._or(function() {
                             this._form(function() {
                                 field = this._apply("SelectField");
-                                return as = this.anything();
+                                return as = this._apply("string");
                             });
                             return [ field, as ];
                         }, function() {
                             return this._apply("SelectField");
                         }, function() {
                             return this._form(function() {
-                                table = this.anything();
+                                table = this._apply("string");
                                 return this._applyWithArgs("exactly", "*");
                             });
                         }, function() {

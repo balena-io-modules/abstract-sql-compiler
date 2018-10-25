@@ -193,11 +193,11 @@ export ometa AbstractSQLRules2SQL {
 		[	end
 			{['1']}:fields
 		|	(	[	SelectField(indent):field
-					anything:as
+					string:as
 				]
 				-> (field + ' AS "' + as + '"')
 			|	SelectField(indent)
-			|	[	:table
+			|	[	string:table
 					'*'
 				]
 				-> ('"' + table + '".*')

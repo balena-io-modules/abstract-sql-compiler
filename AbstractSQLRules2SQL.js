@@ -270,14 +270,14 @@
                         return this._or(function() {
                             this._form(function() {
                                 field = this._applyWithArgs("SelectField", indent);
-                                return as = this.anything();
+                                return as = this._apply("string");
                             });
                             return field + ' AS "' + as + '"';
                         }, function() {
                             return this._applyWithArgs("SelectField", indent);
                         }, function() {
                             this._form(function() {
-                                table = this.anything();
+                                table = this._apply("string");
                                 return this._applyWithArgs("exactly", "*");
                             });
                             return '"' + table + '".*';
