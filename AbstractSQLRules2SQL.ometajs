@@ -192,24 +192,16 @@ export ometa AbstractSQLRules2SQL {
 		'Select'
 		[	end
 			{['1']}:fields
-		|	(	[	(	SelectField(indent):field
-						anything:as
-						-> (field + ' AS "' + as + '"')
-					|	'Count'
-						'*'
-						-> 'COUNT(*)'
-					|	:table
-						'*'
-						-> ('"' + table + '".*')
-					|	AnyValue(indent):value
-						anything:as
-						-> (value + ' AS "' + as + '"')
-					):field
+		|	(	[	SelectField(indent):field
+					string:as
 				]
-				-> field
-			|	AnyValue(indent)
+				-> (field + ' AS "' + as + '"')
+			|	SelectField(indent)
+			|	[	string:table
+					'*'
+				]
+				-> ('"' + table + '".*')
 			|	'*'
-			|	Null
 			)*:fields
 		]
 		-> fields,
@@ -747,7 +739,7 @@ export ometa AbstractSQLRules2SQL {
 	Case :indent =
 		[	'Case'
 			NestedIndent(indent):nestedIndent
-			When(nestedIndent)+:whens			
+			When(nestedIndent)+:whens
 			[	'Else'
 				AnyValue(nestedIndent):val
 			]?
