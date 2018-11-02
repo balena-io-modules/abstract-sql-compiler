@@ -1,5 +1,3 @@
-require('ometa-js')
-
 AbstractSQLCompiler = require('../..')
 
 expect = require('chai').expect

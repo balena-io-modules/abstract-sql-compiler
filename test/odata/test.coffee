@@ -1,5 +1,4 @@
 fs = require('fs')
-require('ometa-js')
 ODataParser = require('@resin/odata-parser')
 OData2AbstractSQL = require('@resin/odata-to-abstract-sql').OData2AbstractSQL.createInstance()
 sbvrModel = fs.readFileSync(require.resolve('../model.sbvr'), 'utf8')
