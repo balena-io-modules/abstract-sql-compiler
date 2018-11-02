@@ -22,10 +22,10 @@
     "ometa-js": "^1.5.3"
   },
   "devDependencies": {
-    "@resin/lf-to-abstract-sql": "2.0.8",
-    "@resin/odata-parser": "^0.3.6",
-    "@resin/odata-to-abstract-sql": "2.2.5",
-    "@resin/sbvr-parser": "0.1.4",
+    "@resin/lf-to-abstract-sql": "2.1.0",
+    "@resin/odata-parser": "^1.0.0",
+    "@resin/odata-to-abstract-sql": "2.4.0",
+    "@resin/sbvr-parser": "^0.2.1",
     "chai": "^4.2.0",
     "coffeescript": "^1.12.7",
     "mocha": "^5.2.0",

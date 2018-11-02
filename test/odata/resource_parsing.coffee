@@ -1,5 +1,6 @@
 expect = require('chai').expect
 test = require('./test')
+ODataParser = require('@resin/odata-parser')
 { pilotFields, teamFields, aliasFields, aliasPlaneFields, aliasPilotLicenceFields, aliasLicenceFields } = require('./fields')
 aliasPilotFields = aliasFields('plane.pilot-can fly-plane.pilot', pilotFields).join(', ')
 aliasPlaneFields = aliasPlaneFields.join(', ')
@@ -253,7 +254,7 @@ test '/team', 'POST', [['Bind', ['team', 'favourite_colour']]], { favourite_colo
 
 test '/pilot/$count/$count', (result, sqlEquals) ->
 	it 'should fail because it is invalid', ->
-		expect(result).to.be.instanceOf(SyntaxError)
+		expect(result).to.be.instanceOf(ODataParser.SyntaxError)
 
 test '/pilot/$count', (result, sqlEquals) ->
 	it 'should select count(*) from pilot', ->
@@ -264,11 +265,11 @@ test '/pilot/$count', (result, sqlEquals) ->
 
 test '/pilot(5)/$count', (result, sqlEquals) ->
 	it 'should fail because it is invalid', ->
-		expect(result).to.be.instanceOf(SyntaxError)
+		expect(result).to.be.instanceOf(ODataParser.SyntaxError)
 
 test '/pilot?$filter=id eq 5/$count', (result, sqlEquals) ->
 	it 'should fail because it is invalid', ->
-		expect(result).to.be.instanceOf(SyntaxError)
+		expect(result).to.be.instanceOf(ODataParser.SyntaxError)
 
 test '/pilot/$count?$filter=id gt 5', 'GET', [['Bind', 0]], (result, sqlEquals) ->
 	it 'should select count(*) from pilot where pilot/id > 5 ', ->
