@@ -1,6 +1,5 @@
 fs = require('fs')
-require('ometa-js')
-ODataParser = require('@resin/odata-parser').ODataParser.createInstance()
+ODataParser = require('@resin/odata-parser')
 OData2AbstractSQL = require('@resin/odata-to-abstract-sql').OData2AbstractSQL.createInstance()
 sbvrModel = fs.readFileSync(require.resolve('../model.sbvr'), 'utf8')
 
@@ -64,7 +63,7 @@ runExpectation = (describe, engine, input, method, expectedBindings, body, expec
 
 	describe 'Parsing ' + method + ' ' + input, ->
 		try
-			input = ODataParser.matchAll(input, 'Process')
+			input = ODataParser.parse(input)
 			{ tree, extraBodyVars } = OData2AbstractSQL.match(input.tree, 'Process', [method, _.keys(body)])
 			_.assign(body, extraBodyVars)
 			result = AbstractSQLCompiler[engine].compileRule(tree)
