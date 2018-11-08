@@ -910,7 +910,7 @@ export ometa AbstractSQLOptimiser <: AbstractSQLValidator {
 		|	// Collapse nested ANDs.
 			[	'And'
 				{[]}:conditions
-				(	And:and
+				(	^And:and
 					{conditions.concat(and.slice(1))}:conditions
 					SetHelped
 				|	BooleanValue:bool
