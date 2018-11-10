@@ -1033,20 +1033,20 @@ export ometa AbstractSQLOptimiser <: AbstractSQLValidator {
 	Process =
 		:query
 		// Make sure we can at least do one valid pass.
-		(	AnyValue(query)
-		|	SelectQuery(query)
+		(	SelectQuery(query)
 		|	InsertQuery(query)
 		|	UpdateQuery(query)
 		|	DeleteQuery(query)
 		|	UpsertQuery(query)
+		|	AnyValue(query)
 		):query
 		(	Helped('disableMemoisation')
-			(	AnyValue(query)
-			|	SelectQuery(query)
+			(	SelectQuery(query)
 			|	InsertQuery(query)
 			|	UpdateQuery(query)
 			|	DeleteQuery(query)
 			|	UpsertQuery(query)
+			|	AnyValue(query)
 			):query
 		)*
 		-> query
