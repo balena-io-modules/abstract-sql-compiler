@@ -192,8 +192,9 @@ export ometa AbstractSQLRules2SQL {
 		'Select'
 		[	end
 			{['1']}:fields
-		|	(	[	SelectField(indent):field
-					string:as
+		|	(	[	&(anything anything end)
+					SelectField(indent):field
+					anything:as
 				]
 				-> (field + ' AS "' + as + '"')
 			|	SelectField(indent)
@@ -221,14 +222,15 @@ export ometa AbstractSQLRules2SQL {
 		'From'
 		NestedIndent(indent):nestedindent
 		(	~string
-			[	(	SelectQuery(nestedindent):query
+			[	&(anything anything end)
+				(	SelectQuery(nestedindent):query
 					-> ('(' + nestedindent + query + indent + ')')
 				|	anything:table
 					-> ('"' + table + '"')
 				):from
-				anything:alias
+				anything:as
 			]
-			-> (from + ' AS "' + alias + '"')
+			-> (from + ' AS "' + as + '"')
 		|	SelectQuery(nestedindent):query
 			-> ('(' + nestedindent + query + indent + ')')
 		|	string:table

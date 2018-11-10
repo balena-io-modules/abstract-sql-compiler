@@ -147,7 +147,8 @@ ometa AbstractSQLValidator {
 
 	Select =
 		[	'Select'
-			[	(	[	SelectField:field
+			[	(	[	&(anything string end)
+						SelectField:field
 						string:as
 					]
 					-> [field, as]
@@ -177,10 +178,11 @@ ometa AbstractSQLValidator {
 	Table =
 		[	'From'
 			(	~string
-				[	(	SelectQuery
+				[	&(anything string end)
+					(	SelectQuery
 					|	anything
 					):table
-					anything:as
+					string:as
 				]
 				-> [table, as]
 			|	SelectQuery
