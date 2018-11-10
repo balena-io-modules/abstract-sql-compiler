@@ -165,7 +165,6 @@ ometa AbstractSQLValidator {
 	SelectField =
 			Count
 		|	AnyValue
-		|	Null
 	,
 
 	Count =
