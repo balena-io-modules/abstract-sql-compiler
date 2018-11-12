@@ -147,7 +147,8 @@ ometa AbstractSQLValidator {
 
 	Select =
 		[	'Select'
-			[	(	[	SelectField:field
+			[	(	[	&(anything string end)
+						SelectField:field
 						string:as
 					]
 					-> [field, as]
@@ -164,7 +165,6 @@ ometa AbstractSQLValidator {
 	SelectField =
 			Count
 		|	AnyValue
-		|	Null
 	,
 
 	Count =
@@ -177,10 +177,11 @@ ometa AbstractSQLValidator {
 	Table =
 		[	'From'
 			(	~string
-				[	(	SelectQuery
+				[	&(anything string end)
+					(	SelectQuery
 					|	anything
 					):table
-					anything:as
+					string:as
 				]
 				-> [table, as]
 			|	SelectQuery
@@ -910,7 +911,7 @@ export ometa AbstractSQLOptimiser <: AbstractSQLValidator {
 		|	// Collapse nested ANDs.
 			[	'And'
 				{[]}:conditions
-				(	And:and
+				(	^And:and
 					{conditions.concat(and.slice(1))}:conditions
 					SetHelped
 				|	BooleanValue:bool
@@ -1031,20 +1032,20 @@ export ometa AbstractSQLOptimiser <: AbstractSQLValidator {
 	Process =
 		:query
 		// Make sure we can at least do one valid pass.
-		(	AnyValue(query)
-		|	SelectQuery(query)
+		(	SelectQuery(query)
 		|	InsertQuery(query)
 		|	UpdateQuery(query)
 		|	DeleteQuery(query)
 		|	UpsertQuery(query)
+		|	AnyValue(query)
 		):query
 		(	Helped('disableMemoisation')
-			(	AnyValue(query)
-			|	SelectQuery(query)
+			(	SelectQuery(query)
 			|	InsertQuery(query)
 			|	UpdateQuery(query)
 			|	DeleteQuery(query)
 			|	UpsertQuery(query)
+			|	AnyValue(query)
 			):query
 		)*
 		-> query
