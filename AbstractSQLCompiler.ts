@@ -227,9 +227,8 @@ const getModifiedFields: EngineInstance['getModifiedFields'] = (
 	}
 };
 
-const optimiser = AbstractSQLOptimiser.createInstance();
 const compileRule = (abstractSQL: AbstractSqlQuery, engine: Engines) => {
-	abstractSQL = optimiser.match(abstractSQL, 'Process');
+	abstractSQL = AbstractSQLOptimiser(abstractSQL);
 	return AbstractSQLRules2SQL(abstractSQL, engine);
 };
 

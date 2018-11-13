@@ -16,7 +16,7 @@ type MatchFn = (args: AbstractSqlQuery, indent: string) => string;
 let fieldOrderings: Binding[] = [];
 let engine: Engines = Engines.postgres;
 
-const comparisons = {
+export const comparisons = {
 	Equals: ' = ',
 	GreaterThan: ' > ',
 	GreaterThanOrEqual: ' >= ',
@@ -48,7 +48,9 @@ const AnyValue: MatchFn = (args, indent) => {
 		try {
 			return matcher(args, indent);
 		} catch (e) {
-			CheckErr(e);
+			if (e instanceof SyntaxError || e instanceof TypeError) {
+				throw e;
+			}
 		}
 	}
 
