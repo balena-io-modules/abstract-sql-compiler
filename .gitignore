@@ -3,3 +3,4 @@ node_modules
 /AbstractSQLOptimiser.js
 /AbstractSQLCompiler.js.map
 /AbstractSQLCompiler.js
+/AbstractSQLCompiler.d.ts

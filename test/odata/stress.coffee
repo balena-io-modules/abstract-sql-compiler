@@ -1,4 +1,3 @@
-expect = require('chai').expect
 test = require('./test')
 _ = require 'lodash'
 { pilotFields } = require('./fields')

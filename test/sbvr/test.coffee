@@ -4,7 +4,7 @@ sbvrTypes = require '@resin/sbvr-types'
 expect = require('chai').expect
 AbstractSQLCompiler = require('../..')
 
-module.exports = exports = (builtInVocab = false) ->
+module.exports = (builtInVocab = false) ->
 	SBVRParser = require('@resin/sbvr-parser').SBVRParser.createInstance()
 	SBVRParser.enableReusingMemoizations(SBVRParser._sideEffectingRules)
 

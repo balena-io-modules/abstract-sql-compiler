@@ -1,4 +1,3 @@
-expect = require('chai').expect
 test = require('./test')
 { pilotFields, aliasFields, aliasLicenceFields, aliasPlaneFields, aliasPilotCanFlyPlaneFields } = require('./fields')
 _ = require 'lodash'

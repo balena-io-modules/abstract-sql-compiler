@@ -1,3 +1,4 @@
+# coffeelint: disable=max_line_length
 typeVocab = require('fs').readFileSync(require.resolve('@resin/sbvr-types/Type.sbvr'))
 test = require('./test')(typeVocab)
 

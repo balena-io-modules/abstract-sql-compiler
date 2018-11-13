@@ -1,7 +1,7 @@
-import { AbstractSqlQuery } from './AbstractSQLCompiler'
+import { AbstractSqlQuery } from './AbstractSQLCompiler';
 
 export var AbstractSQLOptimiser: {
 	createInstance: () => {
-		match: (abstractSQL: AbstractSqlQuery, rule: 'Process') => AbstractSqlQuery
-	}
-}
+		match: (abstractSQL: AbstractSqlQuery, rule: 'Process') => AbstractSqlQuery;
+	};
+};
