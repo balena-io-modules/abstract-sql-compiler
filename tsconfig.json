@@ -9,7 +9,10 @@
 		"sourceMap": true,
 		"strictNullChecks": true,
 		"declaration": true,
-		"skipLibCheck": true
+		"skipLibCheck": true,
+		"lib": [
+			"es2016"
+		]
 	},
 	"include": [
 		"*.ts",

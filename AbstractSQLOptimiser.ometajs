@@ -147,16 +147,19 @@ ometa AbstractSQLValidator {
 
 	Select =
 		[	'Select'
-			[	(	[	&(anything string end)
+			[	(	[	'Alias'?
+						&(anything string end)
 						SelectField:field
 						string:as
 					]
-					-> [field, as]
+					-> ['Alias', field, as]
 				|	SelectField
 				|	[	string:table
 						'*'
 					]
+					-> ['ReferencedField', table, '*']
 				|	'*'
+					-> ['Field', '*']
 				)*:fields
 			]
 		]
@@ -177,15 +180,25 @@ ometa AbstractSQLValidator {
 	Table =
 		[	'From'
 			(	~string
-				[	&(anything string end)
-					(	SelectQuery
-					|	anything
+				[	~'Table'
+					'Alias'?
+					&(anything string end)
+					(	string:table
+						-> [ 'Table', table ]
+					|	[	'Table'
+							string
+						]
+					|	SelectQuery
 					):table
 					string:as
 				]
-				-> [table, as]
+				-> ['Alias', table, as]
+			|	string:table
+				-> [ 'Table', table ]
+			|	[	'Table'
+					string
+				]
 			|	SelectQuery
-			|	string
 			):from
 		]
 		-> [['From', from]],
@@ -301,8 +314,8 @@ ometa AbstractSQLValidator {
 
 	Null =
 		:next
-		?(next === null || next === 'Null')
-		-> null,
+		?(next === null || next === 'Null' || _.isEqual(next, ['Null']))
+		-> ['Null'],
 
 	Cast =
 		[	'Cast'

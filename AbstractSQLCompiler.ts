@@ -1,3 +1,9 @@
+export const enum Engines {
+	postgres = 'postgres',
+	mysql = 'mysql',
+	websql = 'websql',
+}
+
 import { AbstractSQLOptimiser } from './AbstractSQLOptimiser';
 import {
 	AbstractSQLRules2SQL,
@@ -80,11 +86,6 @@ export interface ModifiedFields {
 	fields?: {}[];
 }
 
-export enum Engines {
-	postgres = 'postgres',
-	mysql = 'mysql',
-	websql = 'websql',
-}
 export interface EngineInstance {
 	compileSchema: (abstractSqlModel: AbstractSqlModel) => SqlModel;
 	compileRule: (abstractSQL: AbstractSqlQuery) => SqlResult | SqlResult[];
@@ -227,11 +228,9 @@ const getModifiedFields: EngineInstance['getModifiedFields'] = (
 };
 
 const optimiser = AbstractSQLOptimiser.createInstance();
-const compiler = AbstractSQLRules2SQL.createInstance();
 const compileRule = (abstractSQL: AbstractSqlQuery, engine: Engines) => {
 	abstractSQL = optimiser.match(abstractSQL, 'Process');
-	compiler.engine = engine;
-	return compiler.match(abstractSQL, 'Process');
+	return AbstractSQLRules2SQL(abstractSQL, engine);
 };
 
 const compileSchema = (
