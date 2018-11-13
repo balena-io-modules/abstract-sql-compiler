@@ -9,7 +9,11 @@
     "test": "mocha",
     "prepublish": "require-npm4-to-publish",
     "prepare": "tsc && ometajs2js --commonjs --input AbstractSQLOptimiser.ometajs --output AbstractSQLOptimiser.js && ometajs2js --commonjs --input AbstractSQLRules2SQL.ometajs --output AbstractSQLRules2SQL.js",
-    "lint": "resin-lint test/"
+    "lint:coffee": "resin-lint test/",
+    "lint:typescript": "resin-lint --typescript AbstractSQLCompiler.ts AbstractSQLOptimiser.d.ts AbstractSQLRules2SQL.d.ts && tsc --noEmit",
+    "lint": "npm run lint:coffee && npm run lint:typescript",
+    "prettify": "prettier --config ./node_modules/resin-lint/config/.prettierrc --write \"*.ts\"",
+    "precommit": "lint-staged"
   },
   "repository": "https://github.com/resin-io-modules/abstract-sql-compiler.git",
   "author": "",
@@ -29,7 +33,10 @@
     "@resin/sbvr-parser": "^0.2.1",
     "chai": "^4.2.0",
     "coffeescript": "^1.12.7",
+    "husky": "^1.1.4",
+    "lint-staged": "^8.0.4",
     "mocha": "^5.2.0",
+    "prettier": "^1.15.2",
     "require-npm4-to-publish": "^1.0.0",
     "resin-lint": "^2.0.1",
     "typescript": "^3.1.6"

@@ -1,13 +1,16 @@
-import { Engines, AbstractSqlQuery } from './AbstractSQLCompiler'
+import { Engines, AbstractSqlQuery } from './AbstractSQLCompiler';
 
-export type Binding = [ string, any ] | [ 'Bind', number | string | any[] ]
+export type Binding = [string, any] | ['Bind', number | string | any[]];
 export interface SqlResult {
-	query: string
-	bindings: Binding[]
+	query: string;
+	bindings: Binding[];
 }
 export var AbstractSQLRules2SQL: {
 	createInstance: () => {
-		engine: Engines
-		match: (abstractSQL: AbstractSqlQuery, rule: 'Process') => SqlResult | SqlResult[]
-	}
-}
+		engine: Engines;
+		match: (
+			abstractSQL: AbstractSqlQuery,
+			rule: 'Process',
+		) => SqlResult | SqlResult[];
+	};
+};
