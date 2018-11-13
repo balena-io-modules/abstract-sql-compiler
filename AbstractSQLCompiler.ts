@@ -1,15 +1,7 @@
 import { AbstractSQLOptimiser } from './AbstractSQLOptimiser'
 import { AbstractSQLRules2SQL, Binding, SqlResult } from './AbstractSQLRules2SQL'
 export { Binding, SqlResult } from './AbstractSQLRules2SQL'
-type DatabaseType = string | ((necessity: string, index: string) => string)
-const sbvrTypes: {
-	[dataType: string]: {
-		types: {
-			[engine: string]: DatabaseType
-		}
-		validate(value: any, required: boolean): Promise<any>
-	}
-} = require('@resin/sbvr-types')
+import sbvrTypes = require('@resin/sbvr-types')
 import * as _ from 'lodash'
 import * as Promise from 'bluebird'
 
@@ -127,7 +119,7 @@ const dataTypeGen = (engine: Engines, { dataType, required, index, defaultValue 
 	} else if (index !== '') {
 		index = ' ' + index
 	}
-	const dbType: DatabaseType = _.get(sbvrTypes, [dataType, 'types', engine])
+	const dbType: typeof sbvrTypes[typeof dataType]['types'][typeof engine] = _.get(sbvrTypes, [dataType, 'types', engine])
 	if (dbType != null) {
 		if (_.isFunction(dbType)) {
 			return dbType(requiredStr, index)
