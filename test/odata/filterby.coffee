@@ -1,3 +1,4 @@
+# coffeelint: disable=max_line_length
 expect = require('chai').expect
 test = require('./test')
 clientModel = test.clientModel

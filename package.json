@@ -5,10 +5,11 @@
   "main": "AbstractSQLCompiler.js",
   "types": "AbstractSQLCompiler.d.ts",
   "scripts": {
-    "pretest": "npm run prepare",
+    "pretest": "npm run lint && npm run prepare",
     "test": "mocha",
     "prepublish": "require-npm4-to-publish",
-    "prepare": "tsc && ometajs2js --commonjs --input AbstractSQLOptimiser.ometajs --output AbstractSQLOptimiser.js && ometajs2js --commonjs --input AbstractSQLRules2SQL.ometajs --output AbstractSQLRules2SQL.js"
+    "prepare": "tsc && ometajs2js --commonjs --input AbstractSQLOptimiser.ometajs --output AbstractSQLOptimiser.js && ometajs2js --commonjs --input AbstractSQLRules2SQL.ometajs --output AbstractSQLRules2SQL.js",
+    "lint": "resin-lint test/"
   },
   "repository": "https://github.com/resin-io-modules/abstract-sql-compiler.git",
   "author": "",
@@ -30,6 +31,7 @@
     "coffeescript": "^1.12.7",
     "mocha": "^5.2.0",
     "require-npm4-to-publish": "^1.0.0",
+    "resin-lint": "^2.0.1",
     "typescript": "^3.1.6"
   }
 }

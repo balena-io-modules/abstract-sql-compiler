@@ -1,6 +1,4 @@
-expect = require('chai').expect
 test = require('./test')
-_ = require 'lodash'
 
 buildSelect = (withElse) ->
 	return [
