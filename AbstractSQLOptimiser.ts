@@ -1,7 +1,7 @@
 import * as _ from 'lodash';
 
 import { AbstractSqlQuery } from './AbstractSQLCompiler';
-import { comparisons } from './AbstractSQLRules2SQL';
+import * as AbstractSQLRules2SQL from './AbstractSQLRules2SQL';
 import { Dictionary } from 'lodash';
 
 type OptimisationMatchFn = (args: AbstractSqlQuery) => AbstractSqlQuery | false;
@@ -75,23 +75,19 @@ const AnyValue: MatchFn = args => {
 	}
 
 	for (const matcher of [
-		TextValue,
-		NumericValue,
-		BooleanValue,
-		DateValue,
-		JSONValue,
-		DurationValue,
+		isJSONValue,
+		isDateValue,
+		isTextValue,
+		isNumericValue,
+		isBooleanValue,
+		isDurationValue,
 	]) {
-		try {
-			return matcher(args);
-		} catch (e) {
-			if (e instanceof SyntaxError || e instanceof TypeError) {
-				throw e;
-			}
+		if (matcher(type)) {
+			return typeRules[type](rest);
 		}
 	}
 
-	throw new SyntaxError(`AnyValue does not support ${type}`);
+	return UnknownValue(args);
 };
 const UnknownValue: MatchFn = args => {
 	if ((args as any) === 'Null') {
@@ -113,127 +109,64 @@ const UnknownValue: MatchFn = args => {
 			throw new Error(`Invalid "UnknownValue" type: ${type}`);
 	}
 };
-const TextValue: MatchFn = args => {
+const MatchValue = (
+	matcher: (type: string | AbstractSqlQuery) => type is string,
+): MatchFn => args => {
 	const [type, ...rest] = args;
-	switch (type) {
-		case 'Value':
-		case 'Text':
-		case 'EmbeddedText':
-		case 'Concat':
-		case 'Concatenate':
-		case 'Tolower':
-		case 'ToLower':
-		case 'Lower':
-		case 'Toupper':
-		case 'ToUpper':
-		case 'Upper':
-		case 'Trim':
-		case 'Replace':
-		case 'Substring':
-		case 'Right':
-			return typeRules[type](rest);
-		default:
-			return UnknownValue(args);
+	if (matcher(type)) {
+		return typeRules[type](rest);
 	}
+	return UnknownValue(args);
 };
-const NumericValue: MatchFn = args => {
-	const [type, ...rest] = args;
-	switch (type) {
-		case 'Number':
-		case 'Real':
-		case 'Integer':
-		case 'Add':
-		case 'Subtract':
-		case 'Multiply':
-		case 'Divide':
-		case 'BitwiseAnd':
-		case 'BitwiseShiftRight':
-		case 'CharacterLength':
-		case 'StrPos':
-		case 'Year':
-		case 'Month':
-		case 'Day':
-		case 'Hour':
-		case 'Minute':
-		case 'Second':
-		case 'Fractionalseconds':
-		case 'Totalseconds':
-		case 'Round':
-		case 'Floor':
-		case 'Ceiling':
-		case 'IndexOf':
-		case 'Indexof':
-			return typeRules[type](rest);
-		default:
-			return UnknownValue(args);
-	}
+
+const isTextValue = (type: string | AbstractSqlQuery): type is string => {
+	return (
+		type === 'Concat' ||
+		type === 'Tolower' ||
+		type === 'ToLower' ||
+		type === 'Toupper' ||
+		type === 'ToUpper' ||
+		AbstractSQLRules2SQL.isTextValue(type)
+	);
 };
-const BooleanValue: MatchFn = args => {
-	const [type, ...rest] = args;
-	switch (type) {
-		case 'Boolean':
-		case 'Not':
-		case 'And':
-		case 'Or':
-		case 'Exists':
-		case 'NotExists':
-		case 'Between':
-		case 'In':
-		case 'NotIn':
-		case 'Equals':
-		case 'GreaterThan':
-		case 'GreaterThanOrEqual':
-		case 'LessThan':
-		case 'LessThanOrEqual':
-		case 'NotEquals':
-		case 'Like':
-		case 'Contains':
-		case 'Substringof':
-		case 'Startswith':
-		case 'Endswith':
-			return typeRules[type](rest);
-		default:
-			return UnknownValue(args);
-	}
+const TextValue = MatchValue(isTextValue);
+
+const isNumericValue = (type: string | AbstractSqlQuery): type is string => {
+	return (
+		type === 'IndexOf' ||
+		type === 'Indexof' ||
+		AbstractSQLRules2SQL.isNumericValue(type)
+	);
 };
-const DateValue: MatchFn = args => {
-	const [type, ...rest] = args;
-	switch (type) {
-		case 'Date':
-		case 'ToDate':
-		case 'ToTime':
-		case 'Now':
-			return typeRules[type](rest);
-		default:
-			return UnknownValue(args);
-	}
+const NumericValue = MatchValue(isNumericValue);
+
+const isBooleanValue = (type: string | AbstractSqlQuery): type is string => {
+	return (
+		type === 'Contains' ||
+		type === 'Substringof' ||
+		type === 'Startswith' ||
+		type === 'Endswith' ||
+		AbstractSQLRules2SQL.isBooleanValue(type)
+	);
 };
-const JSONValue: MatchFn = args => {
-	const [type, ...rest] = args;
-	switch (type) {
-		case 'AggregateJSON':
-			return typeRules[type](rest);
-		default:
-			return UnknownValue(args);
-	}
-};
-const DurationValue: MatchFn = args => {
-	const [type, ...rest] = args;
-	switch (type) {
-		case 'Duration':
-			return typeRules[type](rest);
-		default:
-			return UnknownValue(args);
-	}
-};
-const isFieldType = (
+const BooleanValue = MatchValue(isBooleanValue);
+
+const isDateValue = AbstractSQLRules2SQL.isDateValue;
+const DateValue = MatchValue(isDateValue);
+
+const isJSONValue = AbstractSQLRules2SQL.isJSONValue;
+
+const isDurationValue = AbstractSQLRules2SQL.isDurationValue;
+const DurationValue = MatchValue(isDurationValue);
+
+const isFieldValue = (
 	type: string | AbstractSqlQuery,
 ): type is 'Field' | 'ReferencedField' => {
 	return type === 'Field' || type === 'ReferencedField';
 };
 const Field: MatchFn = args => {
 	const [type, ...rest] = args;
-	if (isFieldType(type)) {
+	if (isFieldValue(type)) {
 		return typeRules[type](rest);
 	} else {
 		throw new SyntaxError(`Invalid field type: ${type}`);
@@ -254,9 +187,9 @@ const FieldOp = (type: string): OptimisationMatchFn => args => {
 	) {
 		return false;
 	}
-	if (isFieldType(args[0][0])) {
+	if (isFieldValue(args[0][0])) {
 		return [type, args[0], args[1]];
-	} else if (isFieldType(args[1][0])) {
+	} else if (isFieldValue(args[1][0])) {
 		return [type, args[1], args[0]];
 	} else {
 		return false;
@@ -278,7 +211,9 @@ const getAbstractSqlQuery = (
 	return abstractSqlQuery;
 };
 
-const Comparison = (comparison: keyof typeof comparisons): MatchFn => {
+const Comparison = (
+	comparison: keyof typeof AbstractSQLRules2SQL.comparisons,
+): MatchFn => {
 	return matchArgs(comparison, AnyValue, AnyValue);
 };
 const NumberMatch = (type: string): MatchFn => {

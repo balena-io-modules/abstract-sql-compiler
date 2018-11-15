@@ -38,23 +38,19 @@ const AnyValue: MatchFn = (args, indent) => {
 	}
 
 	for (const matcher of [
-		TextValue,
-		NumericValue,
-		BooleanValue,
-		DateValue,
-		JSONValue,
-		DurationValue,
+		isJSONValue,
+		isDateValue,
+		isTextValue,
+		isNumericValue,
+		isBooleanValue,
+		isDurationValue,
 	]) {
-		try {
-			return matcher(args, indent);
-		} catch (e) {
-			if (e instanceof SyntaxError || e instanceof TypeError) {
-				throw e;
-			}
+		if (matcher(type)) {
+			return typeRules[type](rest, indent);
 		}
 	}
 
-	throw new SyntaxError(`AnyValue does not support ${type}`);
+	return UnknownValue(args, indent);
 };
 const UnknownValue: MatchFn = (args, indent) => {
 	const [type, ...rest] = args;
@@ -74,109 +70,106 @@ const UnknownValue: MatchFn = (args, indent) => {
 			throw new Error(`Invalid "UnknownValue" type: ${type}`);
 	}
 };
-const TextValue: MatchFn = (args, indent) => {
+const MatchValue = (
+	matcher: (type: string | AbstractSqlQuery) => type is string,
+): MatchFn => (args, indent) => {
 	const [type, ...rest] = args;
-	switch (type) {
-		case 'Value':
-		case 'Text':
-		case 'EmbeddedText':
-		case 'Concat':
-		case 'Concatenate':
-		case 'Lower':
-		case 'Upper':
-		case 'Trim':
-		case 'Replace':
-		case 'Substring':
-		case 'Right':
-			return typeRules[type](rest, indent);
-		default:
-			return UnknownValue(args, indent);
+	if (matcher(type)) {
+		return typeRules[type](rest, indent);
 	}
+	return UnknownValue(args, indent);
 };
-const NumericValue: MatchFn = (args, indent) => {
-	const [type, ...rest] = args;
-	switch (type) {
-		case 'Number':
-		case 'Real':
-		case 'Integer':
-		case 'Add':
-		case 'Subtract':
-		case 'Multiply':
-		case 'Divide':
-		case 'BitwiseAnd':
-		case 'BitwiseShiftRight':
-		case 'CharacterLength':
-		case 'StrPos':
-		case 'Year':
-		case 'Month':
-		case 'Day':
-		case 'Hour':
-		case 'Minute':
-		case 'Second':
-		case 'Fractionalseconds':
-		case 'Totalseconds':
-		case 'Round':
-		case 'Floor':
-		case 'Ceiling':
-			return typeRules[type](rest, indent);
-		default:
-			return UnknownValue(args, indent);
-	}
+export const isTextValue = (
+	type: string | AbstractSqlQuery,
+): type is string => {
+	return (
+		type === 'Value' ||
+		type === 'Text' ||
+		type === 'EmbeddedText' ||
+		type === 'Concatenate' ||
+		type === 'Lower' ||
+		type === 'Upper' ||
+		type === 'Trim' ||
+		type === 'Replace' ||
+		type === 'Substring' ||
+		type === 'Right'
+	);
 };
-const BooleanValue: MatchFn = (args, indent) => {
-	const [type, ...rest] = args;
-	switch (type) {
-		case 'Boolean':
-		case 'Not':
-		case 'And':
-		case 'Or':
-		case 'Exists':
-		case 'NotExists':
-		case 'Between':
-		case 'In':
-		case 'NotIn':
-		case 'Equals':
-		case 'GreaterThan':
-		case 'GreaterThanOrEqual':
-		case 'LessThan':
-		case 'LessThanOrEqual':
-		case 'NotEquals':
-		case 'Like':
-			return typeRules[type](rest, indent);
-		default:
-			return UnknownValue(args, indent);
-	}
+const TextValue = MatchValue(isTextValue);
+export const isNumericValue = (
+	type: string | AbstractSqlQuery,
+): type is string => {
+	return (
+		type === 'Number' ||
+		type === 'Real' ||
+		type === 'Integer' ||
+		type === 'Add' ||
+		type === 'Subtract' ||
+		type === 'Multiply' ||
+		type === 'Divide' ||
+		type === 'BitwiseAnd' ||
+		type === 'BitwiseShiftRight' ||
+		type === 'CharacterLength' ||
+		type === 'StrPos' ||
+		type === 'Year' ||
+		type === 'Month' ||
+		type === 'Day' ||
+		type === 'Hour' ||
+		type === 'Minute' ||
+		type === 'Second' ||
+		type === 'Fractionalseconds' ||
+		type === 'Totalseconds' ||
+		type === 'Round' ||
+		type === 'Floor' ||
+		type === 'Ceiling'
+	);
 };
-const DateValue: MatchFn = (args, indent) => {
-	const [type, ...rest] = args;
-	switch (type) {
-		case 'Date':
-		case 'ToDate':
-		case 'ToTime':
-		case 'Now':
-			return typeRules[type](rest, indent);
-		default:
-			return UnknownValue(args, indent);
-	}
+const NumericValue = MatchValue(isNumericValue);
+export const isBooleanValue = (
+	type: string | AbstractSqlQuery,
+): type is string => {
+	return (
+		type === 'Boolean' ||
+		type === 'Not' ||
+		type === 'And' ||
+		type === 'Or' ||
+		type === 'Exists' ||
+		type === 'NotExists' ||
+		type === 'Between' ||
+		type === 'In' ||
+		type === 'NotIn' ||
+		type === 'Equals' ||
+		type === 'GreaterThan' ||
+		type === 'GreaterThanOrEqual' ||
+		type === 'LessThan' ||
+		type === 'LessThanOrEqual' ||
+		type === 'NotEquals' ||
+		type === 'Like'
+	);
 };
-const JSONValue: MatchFn = (args, indent) => {
-	const [type, ...rest] = args;
-	switch (type) {
-		case 'AggregateJSON':
-			return typeRules[type](rest, indent);
-		default:
-			return UnknownValue(args, indent);
-	}
+const BooleanValue = MatchValue(isBooleanValue);
+export const isDateValue = (
+	type: string | AbstractSqlQuery,
+): type is string => {
+	return (
+		type === 'Date' || type === 'ToDate' || type === 'ToTime' || type === 'Now'
+	);
 };
-const DurationValue: MatchFn = (args, indent) => {
-	const [type, ...rest] = args;
-	switch (type) {
-		case 'Duration':
-			return typeRules[type](rest, indent);
-		default:
-			return UnknownValue(args, indent);
-	}
+const DateValue = MatchValue(isDateValue);
+
+export const isJSONValue = (
+	type: string | AbstractSqlQuery,
+): type is string => {
+	return type === 'AggregateJSON';
 };
+
+export const isDurationValue = (
+	type: string | AbstractSqlQuery,
+): type is string => {
+	return type === 'Duration';
+};
+const DurationValue = MatchValue(isDurationValue);
+
 const Field: MatchFn = (args, indent) => {
 	const [type, ...rest] = args;
 	switch (type) {
@@ -274,23 +267,6 @@ const ExtractNumericDatePart = (type: keyof typeof dateFormats): MatchFn => {
 			return dateFormats[type](date);
 		}
 	};
-};
-
-const Concatenate: MatchFn = (args, indent) => {
-	checkMinArgs('Concatenate', args, 1);
-	const comparators = args.map(arg => {
-		if (!_.isArray(arg)) {
-			throw new SyntaxError(
-				`Expected AbstractSqlQuery array but got ${typeof arg}`,
-			);
-		}
-		return TextValue(arg, indent);
-	});
-	if (engine === 'mysql') {
-		return 'CONCAT(' + comparators.join(', ') + ')';
-	} else {
-		return '(' + comparators.join(' || ') + ')';
-	}
 };
 
 const Text: MatchFn = args => {
@@ -629,8 +605,22 @@ const typeRules: Dictionary<MatchFn> = {
 			throw new SyntaxError('TotalSeconds not supported on: ' + engine);
 		}
 	},
-	Concat: Concatenate,
-	Concatenate: Concatenate,
+	Concatenate: (args, indent) => {
+		checkMinArgs('Concatenate', args, 1);
+		const comparators = args.map(arg => {
+			if (!_.isArray(arg)) {
+				throw new SyntaxError(
+					`Expected AbstractSqlQuery array but got ${typeof arg}`,
+				);
+			}
+			return TextValue(arg, indent);
+		});
+		if (engine === 'mysql') {
+			return 'CONCAT(' + comparators.join(', ') + ')';
+		} else {
+			return '(' + comparators.join(' || ') + ')';
+		}
+	},
 	Replace: (args, indent) => {
 		checkArgs('Replace', args, 3);
 		const str = TextValue(getAbstractSqlQuery(args, 0), indent);
