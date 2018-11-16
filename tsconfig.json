@@ -12,11 +12,11 @@
 		"skipLibCheck": true,
 		"lib": [
 			"es2016"
-		]
+		],
+		"outDir": "out"
 	},
 	"include": [
-		"*.ts",
-		"*.d.ts",
+		"src/*.ts",
 		"typings/*.d.ts"
 	]
 }
