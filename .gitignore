@@ -1,6 +1,10 @@
 node_modules
-/AbstractSQLRules2SQL.js
-/AbstractSQLOptimiser.js
+/AbstractSQLCompiler.d.ts
 /AbstractSQLCompiler.js.map
 /AbstractSQLCompiler.js
-/AbstractSQLCompiler.d.ts
+/AbstractSQLOptimiser.d.ts
+/AbstractSQLOptimiser.js
+/AbstractSQLOptimiser.js.map
+/AbstractSQLRules2SQL.d.ts
+/AbstractSQLRules2SQL.js
+/AbstractSQLRules2SQL.js.map
