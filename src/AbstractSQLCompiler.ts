@@ -15,6 +15,220 @@ import sbvrTypes = require('@resin/sbvr-types');
 import * as _ from 'lodash';
 import * as Promise from 'bluebird';
 
+export type NullNode = ['Null'];
+export type DateNode = ['Date', Date];
+export type DurationNode = [
+	'Duration',
+	{
+		negative?: boolean;
+		day?: Number;
+		hour?: Number;
+		minute?: Number;
+		second?: Number;
+	}
+];
+
+// The extends array hacks in the node types are because otherwise we get issues with circular refs
+export interface OneArgNodeType<T, X> extends Array<T | X> {
+	0: T;
+	1: X;
+	length: 2;
+}
+export interface TwoArgNodeType<T, X> extends Array<T | X> {
+	0: T;
+	1: X;
+	2: X;
+	length: 3;
+}
+export interface ThreeArgNodeType<T, X> extends Array<T | X> {
+	0: T;
+	1: X;
+	2: X;
+	3: X;
+	length: 4;
+}
+export interface VarArgNodeType<T, X> extends Array<T | X | undefined> {
+	0: T;
+	1?: X;
+	2?: X;
+	3?: X;
+	4?: X;
+	5?: X;
+	6?: X;
+	7?: X;
+	8?: X;
+	9?: X;
+	10?: X;
+	11?: X;
+	12?: X;
+	13?: X;
+	14?: X;
+	15?: X;
+	16?: X;
+	17?: X;
+	18?: X;
+	19?: X;
+	20?: X;
+	21?: X;
+}
+export interface TwoVarArgNodeType<T, X, Y>
+	extends Array<T | X | Y | undefined> {
+	0: T;
+	1?: X;
+	2?: Y;
+	3?: Y;
+	4?: Y;
+	5?: Y;
+	6?: Y;
+	7?: Y;
+	8?: Y;
+	9?: Y;
+	10?: Y;
+	11?: Y;
+	12?: Y;
+	13?: Y;
+	14?: Y;
+	15?: Y;
+	16?: Y;
+	17?: Y;
+	18?: Y;
+	19?: Y;
+	20?: Y;
+	21?: Y;
+}
+
+export type BooleanNode = ['Boolean', boolean];
+export interface EqualsNode extends TwoArgNodeType<'Equals', AbstractSqlType> {}
+export interface NotEqualsNode
+	extends TwoArgNodeType<'NotEquals', AbstractSqlType> {}
+export interface GreaterThanNode
+	extends TwoArgNodeType<'GreaterThan', AbstractSqlType> {}
+export interface GreaterThanOrEqualNode
+	extends TwoArgNodeType<'GreaterThanOrEqual', AbstractSqlType> {}
+export interface LessThanNode
+	extends TwoArgNodeType<'LessThan', AbstractSqlType> {}
+export interface LessThanOrEqualNode
+	extends TwoArgNodeType<'LessThanOrEqual', AbstractSqlType> {}
+export interface InNode
+	extends TwoVarArgNodeType<
+		'In',
+		FieldNode | ReferencedFieldNode,
+		AbstractSqlType
+	> {}
+export interface ExistsNode extends OneArgNodeType<'Exists', AbstractSqlType> {}
+export interface NotNode extends OneArgNodeType<'Not', BooleanTypeNodes> {}
+export interface AndNode extends VarArgNodeType<'And', BooleanTypeNodes> {}
+export interface OrNode extends VarArgNodeType<'Or', BooleanTypeNodes> {}
+export type BooleanTypeNodes =
+	| BooleanNode
+	| EqualsNode
+	| NotEqualsNode
+	| GreaterThanNode
+	| GreaterThanOrEqualNode
+	| LessThanNode
+	| LessThanOrEqualNode
+	| InNode
+	| ExistsNode
+	| NotNode
+	| AndNode
+	| OrNode
+	| UnknownTypeNodes;
+
+export type NumberNode = ['Number', Number];
+export type CountNode = ['Count', '*'];
+export type NumberTypeNodes = NumberNode | CountNode | UnknownTypeNodes;
+
+export type FieldNode = ['Field', string];
+export type ReferencedFieldNode = ['ReferencedField', string, string];
+export type BindNode = ['Bind', string, string?];
+export interface CastNode
+	extends TwoVarArgNodeType<'Cast', AbstractSqlType, string> {}
+export type UnknownTypeNodes =
+	| FieldNode
+	| ReferencedFieldNode
+	| BindNode
+	| CastNode
+	| AbstractSqlQuery;
+
+export type TextNode = ['Text', string];
+export interface ConcatenateNode
+	extends VarArgNodeType<'Concatenate', TextTypeNodes> {}
+export type LikeNode = ['Like', '*'];
+export interface ReplaceNode
+	extends ThreeArgNodeType<'Replace', TextTypeNodes> {}
+export type TextTypeNodes =
+	| ConcatenateNode
+	| LikeNode
+	| ReplaceNode
+	| UnknownTypeNodes;
+
+export type SelectQueryNode = [
+	'SelectQuery',
+	...Array<
+		| SelectNode
+		| FromNode
+		| WhereNode
+		| GroupByNode
+		| OrderByNode
+		| LimitNode
+		| OffsetNode
+	>
+];
+export type UnionQueryNode = ['UnionQuery', ...Array<SelectQueryNode>];
+
+export interface SelectNode
+	extends OneArgNodeType<'Select', AbstractSqlType[]> {}
+export interface FromNode
+	extends TwoArgNodeType<
+		'From',
+		| SelectQueryNode
+		| UnionQueryNode
+		| TableNode
+		| AliasNode<SelectQueryNode | UnionQueryNode | TableNode>
+	> {}
+export type TableNode = ['Table', string];
+export type WhereNode = ['Where', BooleanTypeNodes];
+export type GroupByNode = [
+	'GroupBy',
+	Array<['ASC' | 'DESC', FieldNode | ReferencedFieldNode]>
+];
+export type OrderByNode = [
+	'OrderBy',
+	...Array<['ASC' | 'DESC', FieldNode | ReferencedFieldNode]>
+];
+export type LimitNode = ['Limit', NumberTypeNodes];
+export type OffsetNode = ['Offset', NumberTypeNodes];
+export type FieldsNode = ['Fields', string[]];
+export type ValuesNode = [
+	'Values',
+	SelectQueryNode | UnionQueryNode | ValuesNodeTypes[]
+];
+export type ValuesNodeTypes =
+	| 'Default'
+	| NullNode
+	| BindNode
+	| TextNode
+	| NumberNode;
+
+export type AliasNode<T> = ['Alias', T, string];
+
+export type AbstractSqlType =
+	| string
+	| NullNode
+	| DateNode
+	| BooleanTypeNodes
+	| NumberTypeNodes
+	| TextTypeNodes
+	| UnknownTypeNodes
+	| DurationNode
+	| AbstractSqlQuery
+	| SelectQueryNode
+	| SelectNode
+	| ValuesNode;
+export interface AbstractSqlQuery extends Array<AbstractSqlType> {
+	0: string;
+}
+
 export interface AbstractSqlField {
 	fieldName: string;
 	dataType: string;
@@ -53,7 +267,6 @@ export interface Relationship {
 	// TODO: This should action be just Relationship, but we can't declare that in typescript currently
 	[resourceName: string]: Relationship | RelationshipMapping;
 }
-export interface AbstractSqlQuery extends Array<AbstractSqlQuery | string> {}
 export interface AbstractSqlModel {
 	synonyms: {
 		[synonym: string]: string;
@@ -175,7 +388,7 @@ const getReferencedFields: EngineInstance['getReferencedFields'] = ruleBody => {
 						tableAliases[alias] = table;
 					}
 				}
-				recurse(part);
+				recurse(part as AbstractSqlQuery);
 			}
 		});
 	};
@@ -197,7 +410,7 @@ const checkQuery = (query: AbstractSqlQuery): ModifiedFields | undefined => {
 		return;
 	}
 
-	const froms = _.filter(query, { 0: 'From' } as Partial<AbstractSqlQuery>);
+	const froms = _.filter(query, { 0: 'From' }) as FromNode[];
 	if (froms.length !== 1) {
 		return;
 	}
@@ -349,21 +562,25 @@ const compileSchema = (
 	ruleStatements = _.map(
 		abstractSqlModel.rules,
 		(rule): SqlRule => {
-			let ruleBody = _.find(rule, { 0: 'Body' } as Partial<AbstractSqlQuery>);
-			if (ruleBody == null || _.isString(ruleBody)) {
+			const ruleBodyNode = _.find(rule, { 0: 'Body' }) as [
+				'Body',
+				AbstractSqlQuery
+			];
+			if (ruleBodyNode == null || _.isString(ruleBodyNode)) {
 				throw new Error('Invalid rule');
 			}
-			ruleBody = ruleBody[1];
+			const ruleBody = ruleBodyNode[1];
 			if (_.isString(ruleBody)) {
 				throw new Error('Invalid rule');
 			}
-			let ruleSE = _.find(rule, { 0: 'StructuredEnglish' } as Partial<
-				AbstractSqlQuery
-			>);
-			if (ruleSE == null) {
+			const ruleSENode = _.find(rule, { 0: 'StructuredEnglish' }) as [
+				'StructuredEnglish',
+				string
+			];
+			if (ruleSENode == null) {
 				throw new Error('Invalid structured English');
 			}
-			ruleSE = ruleSE[1];
+			const ruleSE = ruleSENode[1];
 			if (!_.isString(ruleSE)) {
 				throw new Error('Invalid structured English');
 			}

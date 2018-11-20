@@ -1,13 +1,28 @@
 import * as _ from 'lodash';
 
-import { AbstractSqlQuery } from './AbstractSQLCompiler';
+import {
+	AbstractSqlQuery,
+	AbstractSqlType,
+	ReplaceNode,
+	DurationNode,
+} from './AbstractSQLCompiler';
 import * as AbstractSQLRules2SQL from './AbstractSQLRules2SQL';
 import { Dictionary } from 'lodash';
 
-type OptimisationMatchFn = (args: AbstractSqlQuery) => AbstractSqlQuery | false;
-type MatchFn = (args: AbstractSqlQuery) => AbstractSqlQuery;
+const {
+	isAbstractSqlQuery,
+	getAbstractSqlQuery,
+	checkArgs,
+	checkMinArgs,
+} = AbstractSQLRules2SQL;
 
-const escapeForLike = (str: AbstractSqlQuery) => [
+type OptimisationMatchFn = (
+	args: AbstractSqlType[],
+) => AbstractSqlQuery | false;
+type MetaMatchFn = (args: AbstractSqlQuery) => AbstractSqlQuery;
+type MatchFn = (args: AbstractSqlType[]) => AbstractSqlQuery;
+
+const escapeForLike = (str: AbstractSqlType): ReplaceNode => [
 	'Replace',
 	[
 		'Replace',
@@ -19,11 +34,9 @@ const escapeForLike = (str: AbstractSqlQuery) => [
 	['EmbeddedText', '\\%'],
 ];
 
-type FnArgs<T> = T extends (...args: infer U) => any ? U : any[];
-
 let helped = false;
 const Helper = <F extends (...args: any[]) => any>(fn: F) => {
-	return (...args: FnArgs<F>): ReturnType<F> => {
+	return (...args: Parameters<F>): ReturnType<F> => {
 		const result = fn(...args);
 		if (result !== false) {
 			helped = true;
@@ -32,24 +45,24 @@ const Helper = <F extends (...args: any[]) => any>(fn: F) => {
 	};
 };
 
-type RewriteFn = (args: AbstractSqlQuery[]) => AbstractSqlQuery;
-
 const rewriteMatch = (
 	name: string,
-	matchers: MatchFn[],
-	rewriteFn: RewriteFn,
+	matchers: Array<(args: AbstractSqlType) => AbstractSqlType>,
+	rewriteFn: MatchFn,
 ): MatchFn => args => {
 	checkArgs(name, args, matchers.length);
 	return rewriteFn(
 		args.map((arg, index) => {
 			// Type cast because of cases where not all nodes are arrays, but we do handle them correctly where they can occur
-			return matchers[index](arg as AbstractSqlQuery);
+			return matchers[index](arg as AbstractSqlType);
 		}),
 	);
 };
 
-const matchArgs = (name: string, ...matchers: MatchFn[]): MatchFn =>
-	rewriteMatch(name, matchers, args => [name, ...args]);
+const matchArgs = (
+	name: string,
+	...matchers: Array<(args: AbstractSqlType) => AbstractSqlType>
+): MatchFn => rewriteMatch(name, matchers, args => [name, ...args]);
 
 const tryMatches = (...matchers: OptimisationMatchFn[]): MatchFn => {
 	return args => {
@@ -68,7 +81,7 @@ const tryMatches = (...matchers: OptimisationMatchFn[]): MatchFn => {
 	};
 };
 
-const AnyValue: MatchFn = args => {
+const AnyValue: MetaMatchFn = args => {
 	const [type, ...rest] = args;
 	if (type === 'Case') {
 		return typeRules[type](rest);
@@ -89,10 +102,10 @@ const AnyValue: MatchFn = args => {
 
 	return UnknownValue(args);
 };
-const UnknownValue: MatchFn = args => {
-	if ((args as any) === 'Null') {
+const UnknownValue: MetaMatchFn = args => {
+	if (args === null || (args as any) === 'Null') {
 		helped = true;
-		args = [args];
+		args = ['Null'];
 	}
 	const [type, ...rest] = args;
 	switch (type) {
@@ -111,7 +124,7 @@ const UnknownValue: MatchFn = args => {
 };
 const MatchValue = (
 	matcher: (type: string | AbstractSqlQuery) => type is string,
-): MatchFn => args => {
+): MetaMatchFn => args => {
 	const [type, ...rest] = args;
 	if (matcher(type)) {
 		return typeRules[type](rest);
@@ -151,20 +164,16 @@ const isBooleanValue = (type: string | AbstractSqlQuery): type is string => {
 };
 const BooleanValue = MatchValue(isBooleanValue);
 
-const isDateValue = AbstractSQLRules2SQL.isDateValue;
+const { isDateValue } = AbstractSQLRules2SQL;
 const DateValue = MatchValue(isDateValue);
 
-const isJSONValue = AbstractSQLRules2SQL.isJSONValue;
+const { isJSONValue } = AbstractSQLRules2SQL;
 
-const isDurationValue = AbstractSQLRules2SQL.isDurationValue;
+const { isDurationValue } = AbstractSQLRules2SQL;
 const DurationValue = MatchValue(isDurationValue);
 
-const isFieldValue = (
-	type: string | AbstractSqlQuery,
-): type is 'Field' | 'ReferencedField' => {
-	return type === 'Field' || type === 'ReferencedField';
-};
-const Field: MatchFn = args => {
+const { isFieldValue } = AbstractSQLRules2SQL;
+const Field: MetaMatchFn = args => {
 	const [type, ...rest] = args;
 	if (isFieldValue(type)) {
 		return typeRules[type](rest);
@@ -173,17 +182,14 @@ const Field: MatchFn = args => {
 	}
 };
 
-const AnyNotNullValue: OptimisationMatchFn = args => {
-	if (args == null || (args as any) === 'Null' || args[0] === 'Null') {
-		throw false;
-	}
-	return args;
+const AnyNotNullValue = (args: any): boolean => {
+	return args != null && (args as any) !== 'Null' && args[0] !== 'Null';
 };
 
 const FieldOp = (type: string): OptimisationMatchFn => args => {
 	if (
-		AnyNotNullValue(args[0] as AbstractSqlQuery) === false ||
-		AnyNotNullValue(args[1] as AbstractSqlQuery) === false
+		AnyNotNullValue(args[0]) === false ||
+		AnyNotNullValue(args[1]) === false
 	) {
 		return false;
 	}
@@ -197,19 +203,6 @@ const FieldOp = (type: string): OptimisationMatchFn => args => {
 };
 const FieldEquals = FieldOp('Equals');
 const FieldNotEquals = FieldOp('NotEquals');
-
-const getAbstractSqlQuery = (
-	args: AbstractSqlQuery,
-	index: number,
-): AbstractSqlQuery => {
-	const abstractSqlQuery = args[index];
-	if (!_.isArray(abstractSqlQuery)) {
-		throw new SyntaxError(
-			`Expected AbstractSqlQuery array but got ${typeof abstractSqlQuery}`,
-		);
-	}
-	return abstractSqlQuery;
-};
 
 const Comparison = (
 	comparison: keyof typeof AbstractSQLRules2SQL.comparisons,
@@ -243,7 +236,7 @@ const Concatenate: MatchFn = args => {
 	return [
 		'Concatenate',
 		...args.map(arg => {
-			if (!_.isArray(arg)) {
+			if (!isAbstractSqlQuery(arg)) {
 				throw new SyntaxError(
 					`Expected AbstractSqlQuery array but got ${typeof arg}`,
 				);
@@ -254,21 +247,6 @@ const Concatenate: MatchFn = args => {
 };
 
 const Text: MatchFn = matchArgs('Text', _.identity);
-
-const checkArgs = (matchName: string, args: AbstractSqlQuery, num: number) => {
-	if (args.length !== num) {
-		throw new SyntaxError(`"${matchName}" requires ${num} arg(s)`);
-	}
-};
-const checkMinArgs = (
-	matchName: string,
-	args: AbstractSqlQuery,
-	num: number,
-) => {
-	if (args.length < num) {
-		throw new SyntaxError(`"${matchName}" requires at least ${num} arg(s)`);
-	}
-};
 
 const Value = (arg: any): AbstractSqlQuery => {
 	switch (arg) {
@@ -293,7 +271,7 @@ const Value = (arg: any): AbstractSqlQuery => {
 	}
 };
 
-const SelectMatch: MatchFn = args => {
+const SelectMatch: MetaMatchFn = args => {
 	const [type, ...rest] = args;
 	switch (type) {
 		case 'Count':
@@ -302,7 +280,7 @@ const SelectMatch: MatchFn = args => {
 			return AnyValue(args);
 	}
 };
-const FromMatch: MatchFn = args => {
+const FromMatch: MetaMatchFn = args => {
 	if (_.isString(args)) {
 		return ['Table', args];
 	}
@@ -321,7 +299,7 @@ const FromMatch: MatchFn = args => {
 
 const MaybeAlias = (
 	args: AbstractSqlQuery,
-	matchFn: MatchFn,
+	matchFn: MetaMatchFn,
 ): AbstractSqlQuery => {
 	if (
 		args.length === 2 &&
@@ -330,7 +308,7 @@ const MaybeAlias = (
 		_.isString(args[1])
 	) {
 		helped = true;
-		return ['Alias', matchFn(args[0] as AbstractSqlQuery), args[1]];
+		return ['Alias', matchFn((args[0] as any) as AbstractSqlQuery), args[1]];
 	}
 	const [type, ...rest] = args;
 	switch (type) {
@@ -351,7 +329,7 @@ const typeRules: Dictionary<MatchFn> = {
 		return [
 			'UnionQuery',
 			...args.map(arg => {
-				if (!_.isArray(arg)) {
+				if (!isAbstractSqlQuery(arg)) {
 					throw new SyntaxError(
 						`Expected AbstractSqlQuery array but got ${typeof arg}`,
 					);
@@ -368,17 +346,17 @@ const typeRules: Dictionary<MatchFn> = {
 		];
 	},
 	SelectQuery: args => {
-		const tables = [];
-		let select: AbstractSqlQuery = [];
+		const tables: AbstractSqlQuery[] = [];
+		let select: AbstractSqlQuery[] = [];
 		const groups = {
-			Where: [] as AbstractSqlQuery,
-			GroupBy: [] as AbstractSqlQuery,
-			OrderBy: [] as AbstractSqlQuery,
-			Limit: [] as AbstractSqlQuery,
-			Offset: [] as AbstractSqlQuery,
+			Where: [] as AbstractSqlQuery[],
+			GroupBy: [] as AbstractSqlQuery[],
+			OrderBy: [] as AbstractSqlQuery[],
+			Limit: [] as AbstractSqlQuery[],
+			Offset: [] as AbstractSqlQuery[],
 		};
 		for (const arg of args) {
-			if (!_.isArray(arg)) {
+			if (!isAbstractSqlQuery(arg)) {
 				throw new SyntaxError('`SelectQuery` args must all be arrays');
 			}
 			const [type, ...rest] = arg;
@@ -420,27 +398,33 @@ const typeRules: Dictionary<MatchFn> = {
 			...groups.OrderBy,
 			...groups.Limit,
 			...groups.Offset,
-		];
+		] as AbstractSqlQuery;
 	},
 	Select: args => {
 		checkArgs('Select', args, 1);
 		return [
 			'Select',
 			getAbstractSqlQuery(args, 0).map(arg => {
-				if (!_.isArray(arg)) {
+				if (!isAbstractSqlQuery(arg)) {
 					throw new SyntaxError(
 						`Expected AbstractSqlQuery array but got ${typeof arg}`,
 					);
 				}
 				return MaybeAlias(arg, SelectMatch);
 			}),
-		];
+		] as AbstractSqlQuery;
 	},
 	From: args => {
 		checkArgs('From', args, 1);
 		return ['From', MaybeAlias(args[0] as AbstractSqlQuery, FromMatch)];
 	},
 	Where: matchArgs('Where', BooleanValue),
+	GroupBy: args => {
+		checkArgs('GroupBy', args, 1);
+		const groups = getAbstractSqlQuery(args, 0);
+		checkMinArgs('GroupBy groups', groups, 1);
+		return ['GroupBy', groups.map(AnyValue)] as AbstractSqlQuery;
+	},
 	OrderBy: args => {
 		checkMinArgs('OrderBy', args, 1);
 		return [
@@ -454,7 +438,7 @@ const typeRules: Dictionary<MatchFn> = {
 				const field = Field(getAbstractSqlQuery(arg, 1));
 				return [order, field];
 			}),
-		];
+		] as AbstractSqlQuery;
 	},
 	Limit: matchArgs('Limit', NumericValue),
 	Offset: matchArgs('Offset', NumericValue),
@@ -477,7 +461,7 @@ const typeRules: Dictionary<MatchFn> = {
 	Now: matchArgs('Now'),
 	AggregateJSON: matchArgs('AggregateJSON', _.identity),
 	Equals: tryMatches(
-		Helper(args => {
+		Helper<OptimisationMatchFn>(args => {
 			checkArgs('Equals', args, 2);
 			let valueIndex;
 			if (args[0][0] === 'Null') {
@@ -493,7 +477,7 @@ const typeRules: Dictionary<MatchFn> = {
 		Comparison('Equals'),
 	),
 	NotEquals: tryMatches(
-		Helper(args => {
+		Helper<OptimisationMatchFn>(args => {
 			checkArgs('NotEquals', args, 2);
 			let valueIndex;
 			if (args[0][0] === 'Null') {
@@ -534,7 +518,7 @@ const typeRules: Dictionary<MatchFn> = {
 		checkMinArgs('Substring', args, 2);
 		const str = TextValue(getAbstractSqlQuery(args, 0));
 		const nums = args.slice(1).map(arg => {
-			if (!_.isArray(arg)) {
+			if (!isAbstractSqlQuery(arg)) {
 				throw new SyntaxError(
 					`Expected AbstractSqlQuery array but got ${typeof arg}`,
 				);
@@ -561,7 +545,7 @@ const typeRules: Dictionary<MatchFn> = {
 		return [
 			'Case',
 			...args.map((arg, index) => {
-				if (!_.isArray(arg)) {
+				if (!isAbstractSqlQuery(arg)) {
 					throw new SyntaxError(
 						`Expected AbstractSqlQuery array but got ${typeof arg}`,
 					);
@@ -583,14 +567,14 @@ const typeRules: Dictionary<MatchFn> = {
 						throw new SyntaxError('Case can only contain When/Else');
 				}
 			}),
-		];
+		] as AbstractSqlQuery;
 	},
 	And: tryMatches(
-		Helper(args => {
+		Helper<OptimisationMatchFn>(args => {
 			if (args.length !== 1) {
 				return false;
 			}
-			return args[0];
+			return getAbstractSqlQuery(args, 0);
 		}),
 		Helper<OptimisationMatchFn>(args => {
 			checkMinArgs('And', args, 2);
@@ -599,7 +583,7 @@ const typeRules: Dictionary<MatchFn> = {
 			const others: AbstractSqlQuery[] = [];
 			let maybeHelped = false;
 			args.map(arg => {
-				if (!_.isArray(arg)) {
+				if (!isAbstractSqlQuery(arg)) {
 					throw new SyntaxError(
 						`Expected AbstractSqlQuery array but got ${typeof arg}`,
 					);
@@ -631,14 +615,14 @@ const typeRules: Dictionary<MatchFn> = {
 					return ['NotIn', fields[0][1], ..._.map(fields, 2)];
 				}
 			});
-			return ['And', ...fields, ...others];
+			return ['And', ...fields, ...others] as AbstractSqlQuery;
 		}),
-		Helper(args => {
+		Helper<OptimisationMatchFn>(args => {
 			checkMinArgs('And', args, 2);
 			// Collapse nested ANDs.
 			let maybeHelped = false;
 			const conditions = _.flatMap(args, arg => {
-				if (!_.isArray(arg)) {
+				if (!isAbstractSqlQuery(arg)) {
 					throw new SyntaxError(
 						`Expected AbstractSqlQuery array but got ${typeof arg}`,
 					);
@@ -654,14 +638,14 @@ const typeRules: Dictionary<MatchFn> = {
 				return false;
 			}
 
-			return ['And', ...conditions];
+			return ['And', ...conditions] as AbstractSqlQuery;
 		}),
 		args => {
 			checkMinArgs('And', args, 2);
 			return [
 				'And',
 				...args.map(arg => {
-					if (!_.isArray(arg)) {
+					if (!isAbstractSqlQuery(arg)) {
 						throw new SyntaxError(
 							`Expected AbstractSqlQuery array but got ${typeof arg}`,
 						);
@@ -672,11 +656,11 @@ const typeRules: Dictionary<MatchFn> = {
 		},
 	),
 	Or: tryMatches(
-		Helper(args => {
+		Helper<OptimisationMatchFn>(args => {
 			if (args.length !== 1) {
 				return false;
 			}
-			return args[0];
+			return getAbstractSqlQuery(args, 0);
 		}),
 		Helper<OptimisationMatchFn>(args => {
 			checkMinArgs('Or', args, 2);
@@ -685,7 +669,7 @@ const typeRules: Dictionary<MatchFn> = {
 			const others: AbstractSqlQuery[] = [];
 			let maybeHelped = false;
 			args.map(arg => {
-				if (!_.isArray(arg)) {
+				if (!isAbstractSqlQuery(arg)) {
 					throw new SyntaxError(
 						`Expected AbstractSqlQuery array but got ${typeof arg}`,
 					);
@@ -718,14 +702,14 @@ const typeRules: Dictionary<MatchFn> = {
 					return ['In', fields[0][1], ..._.map(fields, 2)];
 				}
 			});
-			return ['Or', ...fields, ...others];
+			return ['Or', ...fields, ...others] as AbstractSqlQuery;
 		}),
-		Helper(args => {
+		Helper<OptimisationMatchFn>(args => {
 			checkMinArgs('Or', args, 2);
 			// Collapse nested ORs.
 			let maybeHelped = false;
 			const conditions = _.flatMap(args, arg => {
-				if (!_.isArray(arg)) {
+				if (!isAbstractSqlQuery(arg)) {
 					throw new SyntaxError(
 						`Expected AbstractSqlQuery array but got ${typeof arg}`,
 					);
@@ -741,14 +725,14 @@ const typeRules: Dictionary<MatchFn> = {
 				return false;
 			}
 
-			return ['Or', ...conditions];
+			return ['Or', ...conditions] as AbstractSqlQuery;
 		}),
 		args => {
 			checkMinArgs('Or', args, 2);
 			return [
 				'Or',
 				...args.map(arg => {
-					if (!_.isArray(arg)) {
+					if (!isAbstractSqlQuery(arg)) {
 						throw new SyntaxError(
 							`Expected AbstractSqlQuery array but got ${typeof arg}`,
 						);
@@ -770,8 +754,7 @@ const typeRules: Dictionary<MatchFn> = {
 	Duration: args => {
 		checkArgs('Duration', args, 1);
 
-		// TODO: The abstract sql type should accommodate this
-		let duration = (args[0] as any) as Dictionary<string>;
+		let duration = args[0] as DurationNode[1];
 		if (!_.isObject(duration)) {
 			throw new SyntaxError(
 				`Duration must be an object, got ${typeof duration}`,
@@ -792,30 +775,30 @@ const typeRules: Dictionary<MatchFn> = {
 	},
 	Exists: args => {
 		checkArgs('Exists', args, 1);
-		args = getAbstractSqlQuery(args, 0);
-		const [type, ...rest] = args;
+		const arg = getAbstractSqlQuery(args, 0);
+		const [type, ...rest] = arg;
 		switch (type) {
 			case 'SelectQuery':
 			case 'UnionQuery':
 				return ['Exists', typeRules[type](rest)];
 			default:
-				return ['Exists', AnyValue(args)];
+				return ['Exists', AnyValue(arg)];
 		}
 	},
 	NotExists: args => {
 		checkArgs('NotExists', args, 1);
-		args = getAbstractSqlQuery(args, 0);
-		const [type, ...rest] = args;
+		const arg = getAbstractSqlQuery(args, 0);
+		const [type, ...rest] = arg;
 		switch (type) {
 			case 'SelectQuery':
 			case 'UnionQuery':
 				return ['NotExists', typeRules[type](rest)];
 			default:
-				return ['NotExists', AnyValue(args)];
+				return ['NotExists', AnyValue(arg)];
 		}
 	},
 	Not: tryMatches(
-		Helper(args => {
+		Helper<OptimisationMatchFn>(args => {
 			checkArgs('Not', args, 1);
 			const [type, ...rest] = getAbstractSqlQuery(args, 0);
 			switch (type) {
@@ -843,7 +826,7 @@ const typeRules: Dictionary<MatchFn> = {
 		checkMinArgs('In', args, 2);
 		const field = Field(getAbstractSqlQuery(args, 0));
 		const vals = args.slice(1).map(arg => {
-			if (!_.isArray(arg)) {
+			if (!isAbstractSqlQuery(arg)) {
 				throw new SyntaxError(
 					`Expected AbstractSqlQuery array but got ${typeof arg}`,
 				);
@@ -856,7 +839,7 @@ const typeRules: Dictionary<MatchFn> = {
 		checkMinArgs('NotIn', args, 2);
 		const field = Field(getAbstractSqlQuery(args, 0));
 		const vals = args.slice(1).map(arg => {
-			if (!_.isArray(arg)) {
+			if (!isAbstractSqlQuery(arg)) {
 				throw new SyntaxError(
 					`Expected AbstractSqlQuery array but got ${typeof arg}`,
 				);
@@ -867,43 +850,44 @@ const typeRules: Dictionary<MatchFn> = {
 	},
 	InsertQuery: args => {
 		const tables = [];
-		let fields: AbstractSqlQuery = [];
-		let values: AbstractSqlQuery = [];
-		let where: AbstractSqlQuery = [];
+		let fields: AbstractSqlQuery[] = [];
+		let values: AbstractSqlQuery[] = [];
+		let where: AbstractSqlQuery[] = [];
 		for (const arg of args) {
-			if (!_.isArray(arg)) {
-				throw new SyntaxError('`SelectQuery` args must all be arrays');
+			if (!isAbstractSqlQuery(arg)) {
+				throw new SyntaxError('`InsertQuery` args must all be arrays');
 			}
 			const [type, ...rest] = arg;
 			switch (type) {
 				case 'Fields':
 					if (fields.length !== 0) {
 						throw new SyntaxError(
-							`'SelectQuery' can only accept one '${type}'`,
+							`'InsertQuery' can only accept one '${type}'`,
 						);
 					}
 					checkMinArgs('Update fields', rest, 1);
-					fields = arg;
+					fields = [arg];
 					break;
 				case 'Values':
 					if (values.length !== 0) {
 						throw new SyntaxError(
-							`'SelectQuery' can only accept one '${type}'`,
+							`'InsertQuery' can only accept one '${type}'`,
 						);
 					}
-					values = getAbstractSqlQuery(rest, 0);
-					if (values.length > 0) {
-						const [valuesType, ...valuesRest] = values;
+					let valuesArray = getAbstractSqlQuery(rest, 0);
+					if (valuesArray.length > 0) {
+						const [valuesType, ...valuesRest] = valuesArray;
 						switch (valuesType) {
 							case 'SelectQuery':
 							case 'UnionQuery':
-								values = typeRules[valuesType](valuesRest);
+								values = [['Values', typeRules[valuesType](valuesRest)]];
 								break;
 							default:
-								values = values.map(Value);
+								values = [
+									['Values', valuesArray.map(Value)] as AbstractSqlQuery,
+								];
 						}
 					}
-					values = ['Values', values];
 					break;
 				case 'From':
 					tables.push(typeRules[type](rest));
@@ -915,23 +899,42 @@ const typeRules: Dictionary<MatchFn> = {
 					throw new SyntaxError(`'InsertQuery' does not support '${type}'`);
 			}
 		}
-		if (
-			!['SelectQuery', 'UnionQuery'].includes(values[0] as string) &&
-			fields.length !== values.length
-		) {
+		if (tables.length === 0) {
+			throw new SyntaxError("'InsertQuery' must have a From component");
+		}
+		if (fields.length === 0) {
+			throw new SyntaxError("'InsertQuery' requires a Fields component");
+		}
+		if (values.length === 0 && fields[0][1].length !== 0) {
 			throw new SyntaxError(
-				'Fields and Values must have the same length or use a query',
+				"'InsertQuery' requires Values component to be present if Fields are provided ",
 			);
 		}
-		return ['InsertQuery', ...tables, fields, values, ...where];
+		if (
+			fields.length !== 0 &&
+			values.length !== 0 &&
+			!['SelectQuery', 'UnionQuery'].includes(values[0][0] as string) &&
+			fields[0].length !== values[0].length
+		) {
+			throw new SyntaxError(
+				"'InsertQuery' requires Fields and Values components to have the same length or use a query for Values",
+			);
+		}
+		return [
+			'InsertQuery',
+			...tables,
+			...fields,
+			...values,
+			...where,
+		] as AbstractSqlQuery;
 	},
 	UpdateQuery: args => {
 		const tables = [];
-		let fields: AbstractSqlQuery = [];
-		let values: AbstractSqlQuery = [];
-		let where: AbstractSqlQuery = [];
+		let fields: AbstractSqlQuery[] = [];
+		let values: AbstractSqlQuery[] = [];
+		let where: AbstractSqlQuery[] = [];
 		for (const arg of args) {
-			if (!_.isArray(arg)) {
+			if (!isAbstractSqlQuery(arg)) {
 				throw new SyntaxError('`UpdateQuery` args must all be arrays');
 			}
 			const [type, ...rest] = arg;
@@ -943,7 +946,7 @@ const typeRules: Dictionary<MatchFn> = {
 						);
 					}
 					checkMinArgs('Update fields', rest, 1);
-					fields = arg;
+					fields = [arg];
 					break;
 				case 'Values':
 					if (values.length !== 0) {
@@ -954,7 +957,7 @@ const typeRules: Dictionary<MatchFn> = {
 					checkArgs('Update values', rest, 1);
 					const valuesArray = getAbstractSqlQuery(rest, 0);
 					checkMinArgs('Update values array', valuesArray, 1);
-					values = ['Values', valuesArray.map(Value)];
+					values = [['Values', valuesArray.map(Value)] as AbstractSqlQuery];
 					break;
 				case 'From':
 					tables.push(typeRules[type](rest));
@@ -965,23 +968,35 @@ const typeRules: Dictionary<MatchFn> = {
 							`'UpdateQuery' can only accept one '${type}'`,
 						);
 					}
-					where = typeRules[type](rest);
+					where = [typeRules[type](rest)];
 					break;
 				default:
 					throw new SyntaxError(`'UpdateQuery' does not support '${type}'`);
 			}
 		}
-		if (fields.length !== values.length) {
-			throw new SyntaxError('Fields and Values must have the same length');
+		if (tables.length === 0) {
+			throw new SyntaxError("'UpdateQuery' must have a From component");
+		}
+		if (fields.length === 0) {
+			throw new SyntaxError("'UpdateQuery' requires a Fields component");
+		}
+		if (values.length === 0) {
+			throw new SyntaxError("'UpdateQuery' requires a Values component");
 		}
 
-		return ['UpdateQuery', ...tables, fields, values, where];
+		return [
+			'UpdateQuery',
+			...tables,
+			...fields,
+			...values,
+			...where,
+		] as AbstractSqlQuery;
 	},
 	DeleteQuery: args => {
 		const tables = [];
-		let where: AbstractSqlQuery = [];
+		let where: AbstractSqlQuery[] = [];
 		for (const arg of args) {
-			if (!_.isArray(arg)) {
+			if (!isAbstractSqlQuery(arg)) {
 				throw new SyntaxError('`DeleteQuery` args must all be arrays');
 			}
 			const [type, ...rest] = arg;
@@ -995,21 +1010,24 @@ const typeRules: Dictionary<MatchFn> = {
 							`'DeleteQuery' can only accept one '${type}'`,
 						);
 					}
-					where = typeRules[type](rest);
+					where = [typeRules[type](rest)];
 					break;
 				default:
 					throw new SyntaxError(`'DeleteQuery' does not support '${type}'`);
 			}
 		}
+		if (tables.length === 0) {
+			throw new SyntaxError("'DeleteQuery' must have a From component");
+		}
 
-		return ['DeleteQuery', ...tables, where];
+		return ['DeleteQuery', ...tables, ...where] as AbstractSqlQuery;
 	},
 
 	// Virtual functions
 	Contains: rewriteMatch(
 		'Contains',
 		[TextValue, TextValue],
-		Helper(([haystack, needle]) => [
+		Helper<MatchFn>(([haystack, needle]) => [
 			'Like',
 			haystack,
 			[
@@ -1023,7 +1041,7 @@ const typeRules: Dictionary<MatchFn> = {
 	Substringof: rewriteMatch(
 		'Substringof',
 		[TextValue, TextValue],
-		Helper(([needle, haystack]) => [
+		Helper<MatchFn>(([needle, haystack]) => [
 			'Like',
 			haystack,
 			[
@@ -1037,7 +1055,7 @@ const typeRules: Dictionary<MatchFn> = {
 	Startswith: rewriteMatch(
 		'Startswith',
 		[TextValue, TextValue],
-		Helper(([haystack, needle]) => [
+		Helper<MatchFn>(([haystack, needle]) => [
 			'Like',
 			haystack,
 			['Concatenate', escapeForLike(needle), ['EmbeddedText', '%']],
@@ -1046,7 +1064,7 @@ const typeRules: Dictionary<MatchFn> = {
 	Endswith: rewriteMatch(
 		'Endswith',
 		[TextValue, TextValue],
-		Helper(([haystack, needle]) => [
+		Helper<MatchFn>(([haystack, needle]) => [
 			'Like',
 			haystack,
 			['Concatenate', ['EmbeddedText', '%'], escapeForLike(needle)],
@@ -1055,7 +1073,7 @@ const typeRules: Dictionary<MatchFn> = {
 	IndexOf: rewriteMatch(
 		'IndexOf',
 		[TextValue, TextValue],
-		Helper(([haystack, needle]) => [
+		Helper<MatchFn>(([haystack, needle]) => [
 			'Subtract',
 			['StrPos', haystack, needle],
 			['Number', 1],
@@ -1064,7 +1082,7 @@ const typeRules: Dictionary<MatchFn> = {
 	Indexof: rewriteMatch(
 		'Indexof',
 		[TextValue, TextValue],
-		Helper(([haystack, needle]) => [
+		Helper<MatchFn>(([haystack, needle]) => [
 			'Subtract',
 			['StrPos', haystack, needle],
 			['Number', 1],
