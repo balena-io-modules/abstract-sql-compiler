@@ -384,11 +384,11 @@ const getReferencedFields: EngineInstance['getReferencedFields'] = ruleBody => {
 					if (_.isArray(nested)) {
 						if (
 							nested.length === 2 &&
-							!_.isString(nested[0]) &&
+							nested[0] !== 'Table' &&
 							_.isString(nested[1])
 						) {
 							// Deprecated: Remove this when we drop implicit aliases
-							nested = ['Alias', nested[0], nested[1]];
+							nested = ['Alias', (nested[0] as any) as TableNode, nested[1]];
 						}
 						if (nested[0] === 'Alias') {
 							let [, table, alias] = nested;
