@@ -174,7 +174,8 @@ export type SelectQueryNode = [
 		| OffsetNode
 	>
 ];
-export type UnionQueryNode = ['UnionQuery', ...Array<SelectQueryNode>];
+export interface UnionQueryNode
+	extends VarArgNodeType<'UnionQuery', UnionQueryNode | SelectQueryNode> {}
 
 export interface SelectNode
 	extends OneArgNodeType<'Select', AbstractSqlType[]> {}
@@ -379,13 +380,27 @@ const getReferencedFields: EngineInstance['getReferencedFields'] = ruleBody => {
 					throw new Error('Cannot find queried fields for unreferenced fields');
 				}
 				if (part[0] === 'From') {
-					const nested = part[1];
+					let nested = (part as FromNode)[1];
 					if (_.isArray(nested)) {
-						const [table, alias] = nested;
-						if (!_.isString(table) || !_.isString(alias)) {
-							throw new Error('Cannot handle aliased select queries');
+						if (
+							nested.length === 2 &&
+							!_.isString(nested[0]) &&
+							_.isString(nested[1])
+						) {
+							// Deprecated: Remove this when we drop implicit aliases
+							nested = ['Alias', nested[0], nested[1]];
 						}
-						tableAliases[alias] = table;
+						if (nested[0] === 'Alias') {
+							let [, table, alias] = nested;
+							if (_.isString(table)) {
+								// Deprecated: Remove this when we drop implicit tables
+								table = ['Table', table];
+							}
+							if (table[0] !== 'Table' || !_.isString(alias)) {
+								throw new Error('Cannot handle aliased select queries');
+							}
+							tableAliases[alias] = table[1];
+						}
 					}
 				}
 				recurse(part as AbstractSqlQuery);
@@ -410,25 +425,31 @@ const checkQuery = (query: AbstractSqlQuery): ModifiedFields | undefined => {
 		return;
 	}
 
-	const froms = _.filter(query, { 0: 'From' }) as FromNode[];
+	const froms = _.filter(query, n => n[0] === 'From') as FromNode[];
 	if (froms.length !== 1) {
 		return;
 	}
 
-	const table = froms[0][1];
-	if (!_.isString(table)) {
+	let table = froms[0][1];
+	let tableName: string;
+	if (table[0] === 'Table') {
+		tableName = table[1];
+	} else if (_.isString(table)) {
+		// Deprecated: Remove this when we drop implicit tables
+		tableName = table;
+	} else {
 		return;
 	}
 
 	if (queryType in ['InsertQuery', 'DeleteQuery']) {
-		return { table };
+		return { table: tableName };
 	}
 
 	const fields = _(query)
 		.filter({ 0: 'Fields' } as Partial<AbstractSqlQuery>)
 		.flatMap('1')
 		.value();
-	return { table, fields };
+	return { table: tableName, fields };
 };
 const getModifiedFields: EngineInstance['getModifiedFields'] = (
 	abstractSqlQuery: AbstractSqlQuery,
