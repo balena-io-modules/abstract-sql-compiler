@@ -180,7 +180,7 @@ export interface UnionQueryNode
 export interface SelectNode
 	extends OneArgNodeType<'Select', AbstractSqlType[]> {}
 export interface FromNode
-	extends TwoArgNodeType<
+	extends OneArgNodeType<
 		'From',
 		| SelectQueryNode
 		| UnionQueryNode
