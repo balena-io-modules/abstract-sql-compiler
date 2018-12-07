@@ -21,23 +21,23 @@
     "@resin/sbvr-types": "^2.0.0",
     "@types/bluebird": "^3.5.24",
     "@types/lodash": "^4.14.118",
-    "@types/node": "^8.10.37",
+    "@types/node": "^8.10.38",
     "bluebird": "^3.5.3",
     "lodash": "^4.17.11"
   },
   "devDependencies": {
     "@resin/lf-to-abstract-sql": "2.1.0",
-    "@resin/odata-parser": "^1.0.0",
-    "@resin/odata-to-abstract-sql": "2.4.0",
+    "@resin/odata-parser": "^1.0.1",
+    "@resin/odata-to-abstract-sql": "^3.0.0",
     "@resin/sbvr-parser": "^0.2.1",
     "chai": "^4.2.0",
     "coffeescript": "^1.12.7",
-    "husky": "^1.1.4",
-    "lint-staged": "^8.0.4",
+    "husky": "^1.2.0",
+    "lint-staged": "^8.1.0",
     "mocha": "^5.2.0",
-    "prettier": "^1.15.2",
+    "prettier": "^1.15.3",
     "require-npm4-to-publish": "^1.0.0",
     "resin-lint": "^2.0.1",
-    "typescript": "^3.1.6"
+    "typescript": "^3.2.2"
   }
 }
