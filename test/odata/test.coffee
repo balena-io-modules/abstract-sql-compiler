@@ -1,6 +1,6 @@
 fs = require('fs')
 ODataParser = require('@resin/odata-parser')
-OData2AbstractSQL = require('@resin/odata-to-abstract-sql').OData2AbstractSQL.createInstance()
+{ OData2AbstractSQL } = require('@resin/odata-to-abstract-sql')
 sbvrModel = fs.readFileSync(require.resolve('../model.sbvr'), 'utf8')
 
 AbstractSQLCompiler = require('../..')
@@ -26,7 +26,7 @@ generateClientModel = (input) ->
 	return abstractSql
 
 clientModel = generateClientModel(sbvrModel)
-OData2AbstractSQL.setClientModel(clientModel)
+odata2AbstractSQL = new OData2AbstractSQL(clientModel)
 
 bindingsTest = (actualBindings, expectedBindings = false) ->
 	if expectedBindings is false
@@ -64,7 +64,7 @@ runExpectation = (describe, engine, input, method, expectedBindings, body, expec
 	describe 'Parsing ' + method + ' ' + input, ->
 		try
 			input = ODataParser.parse(input)
-			{ tree, extraBodyVars } = OData2AbstractSQL.match(input.tree, 'Process', [method, _.keys(body)])
+			{ tree, extraBodyVars } = odata2AbstractSQL.match(input.tree, method, _.keys(body))
 			_.assign(body, extraBodyVars)
 			result = AbstractSQLCompiler[engine].compileRule(tree)
 		catch e
