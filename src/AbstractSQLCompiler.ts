@@ -233,7 +233,7 @@ export interface AbstractSqlQuery extends Array<AbstractSqlType> {
 export interface AbstractSqlField {
 	fieldName: string;
 	dataType: string;
-	required: boolean;
+	required?: boolean;
 	index: string;
 	references?: {
 		resourceName: string;
@@ -303,7 +303,10 @@ export interface ModifiedFields {
 export interface EngineInstance {
 	compileSchema: (abstractSqlModel: AbstractSqlModel) => SqlModel;
 	compileRule: (abstractSQL: AbstractSqlQuery) => SqlResult | SqlResult[];
-	dataTypeValidate: (value: any, field: AbstractSqlField) => any;
+	dataTypeValidate: (
+		value: any,
+		field: Pick<AbstractSqlField, 'dataType' | 'required'>,
+	) => any;
 	getReferencedFields: (ruleBody: AbstractSqlQuery) => ReferencedFields;
 	getModifiedFields: (
 		abstractSqlQuery: AbstractSqlQuery,
