@@ -305,6 +305,7 @@ const MaybeAlias = (
 		args.length === 2 &&
 		args[0] !== 'Table' &&
 		args[0] !== 'Count' &&
+		args[0] !== 'Field' &&
 		_.isString(args[1])
 	) {
 		helped = true;
