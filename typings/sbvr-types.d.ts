@@ -7,7 +7,7 @@ declare module '@resin/sbvr-types' {
 			types: {
 				[engine: string]: DatabaseType;
 			};
-			validate(value: any, required: boolean): Promise<any>;
+			validate(value: any, required?: boolean): Promise<any>;
 		};
 	};
 	export = sbvrTypes;
