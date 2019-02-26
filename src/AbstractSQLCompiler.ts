@@ -474,11 +474,9 @@ const compileSchema = (
 	engine: Engines,
 	ifNotExists: boolean,
 ): SqlModel => {
-	let ifNotExistsStr: string;
+	let ifNotExistsStr = '';
 	if (ifNotExists) {
 		ifNotExistsStr = 'IF NOT EXISTS ';
-	} else {
-		ifNotExistsStr = '';
 	}
 	const hasDependants: {
 		[dependant: string]: true;
@@ -498,13 +496,13 @@ const compileSchema = (
 		}
 		const foreignKeys = [];
 		const depends = [];
-		const dropSQL = `DROP TABLE "${table.name}";`;
-		let createSQL = `CREATE TABLE ${ifNotExistsStr}"${table.name}" (\n\t`;
+		const createSqlElements = [];
 
 		for (const field of table.fields) {
 			const { fieldName, references, dataType } = field;
-			createSQL +=
-				'"' + fieldName + '" ' + dataTypeGen(engine, field) + '\n,\t';
+			createSqlElements.push(
+				'"' + fieldName + '" ' + dataTypeGen(engine, field),
+			);
 			if (
 				_.includes(['ForeignKey', 'ConceptType'], dataType) &&
 				references != null
@@ -517,25 +515,32 @@ const compileSchema = (
 
 		for (const { fieldName, references } of foreignKeys) {
 			const referencedTable = abstractSqlModel.tables[references.resourceName];
-			createSQL += `FOREIGN KEY ("${fieldName}") REFERENCES "${
-				referencedTable.name
-			}" ("${references.fieldName}")\n,\t`;
+			createSqlElements.push(
+				`FOREIGN KEY ("${fieldName}") REFERENCES "${referencedTable.name}" ("${
+					references.fieldName
+				}")`,
+			);
 		}
 		for (const index of table.indexes) {
-			createSQL += index.type + '("' + index.fields.join('", "') + '")\n,\t';
+			createSqlElements.push(
+				index.type + '("' + index.fields.join('", "') + '")',
+			);
 		}
-		createSQL = createSQL.slice(0, -2) + ');';
+
 		schemaDependencyMap[table.resourceName] = {
 			resourceName,
 			primitive: table.primitive,
-			createSQL,
-			dropSQL,
+			createSQL: `\
+CREATE TABLE ${ifNotExistsStr}"${table.name}" (
+	${createSqlElements.join('\n,\t')}
+);`,
+			dropSQL: `DROP TABLE "${table.name}";`,
 			depends,
 		};
 	});
 
-	const createSchemaStatements = [];
-	let dropSchemaStatements = [];
+	const createSchemaStatements: string[] = [];
+	let dropSchemaStatements: string[] = [];
 	let resourceNames: string[] = [];
 	while (
 		resourceNames.length !==
