@@ -242,6 +242,12 @@ export interface AbstractSqlField {
 	defaultValue?: string;
 	necessity: boolean;
 }
+export interface Trigger {
+	operation: 'INSERT' | 'UPDATE' | 'DELETE' | 'TRUNCATE';
+	fnName: string;
+	level: 'ROW' | 'STATEMENT';
+	when: 'BEFORE' | 'AFTER' | 'INSTEAD OF';
+}
 export interface AbstractSqlTable {
 	name: string;
 	resourceName: string;
@@ -252,6 +258,7 @@ export interface AbstractSqlTable {
 		fields: string[];
 	}>;
 	primitive: false | string;
+	triggers?: Trigger[];
 }
 export interface ReferencedFields {
 	[alias: string]: string[];
@@ -279,6 +286,11 @@ export interface AbstractSqlModel {
 		[resourceName: string]: AbstractSqlTable;
 	};
 	rules: AbstractSqlQuery[];
+	functions?: _.Dictionary<{
+		type: 'trigger';
+		body: string;
+		language: 'plpgsql';
+	}>;
 }
 export interface SqlModel {
 	synonyms: {
@@ -474,12 +486,38 @@ const compileSchema = (
 	engine: Engines,
 	ifNotExists: boolean,
 ): SqlModel => {
-	let ifNotExistsStr: string;
+	let ifNotExistsStr = '';
 	if (ifNotExists) {
 		ifNotExistsStr = 'IF NOT EXISTS ';
-	} else {
-		ifNotExistsStr = '';
 	}
+
+	const createSchemaStatements: string[] = [];
+	let dropSchemaStatements: string[] = [];
+
+	const fns: _.Dictionary<true> = {};
+	if (abstractSqlModel.functions) {
+		_.forEach(abstractSqlModel.functions, (fnDefinition, fnName) => {
+			if (engine !== 'postgres') {
+				throw new Error('Functions are only supported on postgres currently');
+			}
+			if (fnDefinition.language !== 'plpgsql') {
+				throw new Error('Only plpgsql functions currently supported');
+			}
+			if (fnDefinition.type !== 'trigger') {
+				throw new Error('Only trigger functions currently supported');
+			}
+			fns[fnName] = true;
+			createSchemaStatements.push(`\
+CREATE OR REPLACE FUNCTION "${fnName}"()
+RETURNS TRIGGER AS $$
+BEGIN
+	${fnDefinition.body}
+END;
+$$ LANGUAGE ${fnDefinition.language};`);
+			dropSchemaStatements.push(`DROP FUNCTION "${fnName}"();`);
+		});
+	}
+
 	const hasDependants: {
 		[dependant: string]: true;
 	} = {};
@@ -487,8 +525,8 @@ const compileSchema = (
 		[resourceName: string]: {
 			resourceName: string;
 			primitive: AbstractSqlTable['primitive'];
-			createSQL: string;
-			dropSQL: string;
+			createSQL: string[];
+			dropSQL: string[];
 			depends: string[];
 		};
 	} = {};
@@ -498,13 +536,13 @@ const compileSchema = (
 		}
 		const foreignKeys = [];
 		const depends = [];
-		const dropSQL = `DROP TABLE "${table.name}";`;
-		let createSQL = `CREATE TABLE ${ifNotExistsStr}"${table.name}" (\n\t`;
+		const createSqlElements = [];
 
 		for (const field of table.fields) {
 			const { fieldName, references, dataType } = field;
-			createSQL +=
-				'"' + fieldName + '" ' + dataTypeGen(engine, field) + '\n,\t';
+			createSqlElements.push(
+				'"' + fieldName + '" ' + dataTypeGen(engine, field),
+			);
 			if (
 				_.includes(['ForeignKey', 'ConceptType'], dataType) &&
 				references != null
@@ -517,25 +555,62 @@ const compileSchema = (
 
 		for (const { fieldName, references } of foreignKeys) {
 			const referencedTable = abstractSqlModel.tables[references.resourceName];
-			createSQL += `FOREIGN KEY ("${fieldName}") REFERENCES "${
-				referencedTable.name
-			}" ("${references.fieldName}")\n,\t`;
+			createSqlElements.push(
+				`FOREIGN KEY ("${fieldName}") REFERENCES "${referencedTable.name}" ("${
+					references.fieldName
+				}")`,
+			);
 		}
 		for (const index of table.indexes) {
-			createSQL += index.type + '("' + index.fields.join('", "') + '")\n,\t';
+			createSqlElements.push(
+				index.type + '("' + index.fields.join('", "') + '")',
+			);
 		}
-		createSQL = createSQL.slice(0, -2) + ');';
+
+		const createTriggers = [];
+		const dropTriggers = [];
+		if (table.triggers) {
+			for (const trigger of table.triggers) {
+				if (!fns[trigger.fnName]) {
+					throw new Error(`No such function '${trigger.fnName}' declared`);
+				}
+				const triggerName = `${table.name}_${trigger.fnName}`;
+				createTriggers.push(`\
+DO
+$$
+BEGIN
+IF NOT EXISTS(
+	SELECT 1
+	FROM "information_schema"."triggers"
+	WHERE "event_object_table" = '${table.name}'
+	AND "trigger_name" = '${triggerName}'
+) THEN
+	CREATE TRIGGER "${triggerName}"
+	${trigger.when} ${trigger.operation} ON "${table.name}"
+	FOR EACH ${trigger.level}
+	EXECUTE PROCEDURE "${trigger.fnName}"();
+END IF;
+END;
+$$`);
+				dropTriggers.push(`DROP TRIGGER "${triggerName}";`);
+			}
+		}
+
 		schemaDependencyMap[table.resourceName] = {
 			resourceName,
 			primitive: table.primitive,
-			createSQL,
-			dropSQL,
+			createSQL: [
+				`\
+CREATE TABLE ${ifNotExistsStr}"${table.name}" (
+	${createSqlElements.join('\n,\t')}
+);`,
+				...createTriggers,
+			],
+			dropSQL: [...dropTriggers, `DROP TABLE "${table.name}";`],
 			depends,
 		};
 	});
 
-	const createSchemaStatements = [];
-	let dropSchemaStatements = [];
 	let resourceNames: string[] = [];
 	while (
 		resourceNames.length !==
@@ -566,8 +641,8 @@ const compileSchema = (
 							schemaInfo.resourceName,
 						);
 					}
-					createSchemaStatements.push(schemaInfo.createSQL);
-					dropSchemaStatements.push(schemaInfo.dropSQL);
+					createSchemaStatements.push(...schemaInfo.createSQL);
+					dropSchemaStatements.push(...schemaInfo.dropSQL);
 				}
 				delete schemaDependencyMap[resourceName];
 			}

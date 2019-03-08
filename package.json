@@ -12,8 +12,7 @@
     "lint:coffee": "resin-lint test/",
     "lint:typescript": "resin-lint --typescript src/ typings/ && tsc --noEmit",
     "lint": "npm run lint:coffee && npm run lint:typescript",
-    "prettify": "prettier --config ./node_modules/resin-lint/config/.prettierrc --write \"{src,typings}/*.ts\"",
-    "precommit": "lint-staged"
+    "prettify": "prettier --config ./node_modules/resin-lint/config/.prettierrc --write \"{src,typings}/*.ts\""
   },
   "repository": "https://github.com/resin-io-modules/abstract-sql-compiler.git",
   "author": "",
@@ -39,5 +38,10 @@
     "require-npm4-to-publish": "^1.0.0",
     "resin-lint": "^2.0.1",
     "typescript": "^3.2.4"
+  },
+  "husky": {
+    "hooks": {
+      "pre-commit": "lint-staged"
+    }
   }
 }
