@@ -1,5 +1,5 @@
 {
-  "name": "@resin/abstract-sql-compiler",
+  "name": "@balena.io/abstract-sql-compiler",
   "version": "6.4.0",
   "description": "A translator for abstract sql into sql.",
   "main": "out/AbstractSQLCompiler.js",
@@ -17,7 +17,7 @@
   "repository": "https://github.com/resin-io-modules/abstract-sql-compiler.git",
   "author": "",
   "dependencies": {
-    "@resin/sbvr-types": "^2.0.0",
+    "@balena.io/sbvr-types": "^2.0.0",
     "@types/bluebird": "^3.5.25",
     "@types/lodash": "^4.14.120",
     "@types/node": "^8.10.39",
@@ -25,10 +25,10 @@
     "lodash": "^4.17.11"
   },
   "devDependencies": {
-    "@resin/lf-to-abstract-sql": "2.1.0",
-    "@resin/odata-parser": "^1.0.1",
-    "@resin/odata-to-abstract-sql": "^3.0.0",
-    "@resin/sbvr-parser": "^0.2.1",
+    "@balena.io/lf-to-abstract-sql": "2.1.0",
+    "@balena.io/odata-parser": "^1.0.1",
+    "@balena.io/odata-to-abstract-sql": "^3.0.0",
+    "@balena.io/sbvr-parser": "^0.2.1",
     "chai": "^4.2.0",
     "coffeescript": "^1.12.7",
     "husky": "^1.3.1",
