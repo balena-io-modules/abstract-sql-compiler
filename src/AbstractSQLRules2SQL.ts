@@ -638,7 +638,7 @@ const typeRules: Dictionary<MatchFn> = {
 		const duration = DurationValue(getAbstractSqlQuery(args, 0), indent);
 		if (engine === 'postgres') {
 			return `EXTRACT(EPOCH FROM ${duration})`;
-		} else if (this.engine === 'mysql') {
+		} else if (engine === 'mysql') {
 			return `(TIMESTAMPDIFF(MICROSECOND, FROM_UNIXTIME(0), FROM_UNIXTIME(0) + ${duration}) / 1000000)`;
 		} else {
 			throw new SyntaxError('TotalSeconds not supported on: ' + engine);
