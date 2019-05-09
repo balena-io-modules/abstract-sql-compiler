@@ -309,7 +309,7 @@ export interface SqlModel {
 
 export interface ModifiedFields {
 	table: string;
-	fields?: {}[];
+	fields?: string[];
 }
 
 export interface EngineInstance {
@@ -460,10 +460,10 @@ const checkQuery = (query: AbstractSqlQuery): ModifiedFields | undefined => {
 		return { table: tableName };
 	}
 
-	const fields = _(query)
-		.filter({ 0: 'Fields' } as Partial<AbstractSqlQuery>)
-		.flatMap('1')
-		.value();
+	const fields = _<FieldsNode | AbstractSqlType>(query)
+		.filter((v): v is FieldsNode => v != null && v[0] === 'Fields')
+		.flatMap(v => v[1])
+		.value() as string[];
 	return { table: tableName, fields };
 };
 const getModifiedFields: EngineInstance['getModifiedFields'] = (
