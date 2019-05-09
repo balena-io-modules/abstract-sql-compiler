@@ -1,4 +1,21 @@
 - commits:
+    - subject: Update and fix lodash typings
+      hash: 2bf073bbff3a94d66c31e07d98c3e298f5132b2c
+      body: ''
+      footer:
+        Change-type: patch
+        change-type: patch
+      author: Pagan Gazzard
+    - subject: Update husky/mocha dev dependencies
+      hash: 29f7d52185186bdb1171fdf27a923eb38887d009
+      body: ''
+      footer:
+        Change-type: patch
+        change-type: patch
+      author: Pagan Gazzard
+  version: 6.4.2
+  date: 2019-05-09T21:32:48.414Z
+- commits:
     - subject: Fix typescript compilation
       hash: a3733e5c348687d74dd290538c6a7f3f3a4a4bb0
       body: |
