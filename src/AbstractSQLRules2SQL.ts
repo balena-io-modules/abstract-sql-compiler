@@ -853,7 +853,7 @@ const typeRules: Dictionary<MatchFn> = {
 		duration = _(duration)
 			.pick('negative', 'day', 'hour', 'minute', 'second')
 			.omitBy(_.isNil)
-			.value();
+			.value() as Dictionary<string>;
 		if (
 			_(duration)
 				.omit('negative')
