@@ -1,4 +1,14 @@
 - commits:
+    - subject: Add support for computed fields
+      hash: df53a1545b851da0ac188edac7cca6d34f1000f7
+      body: ''
+      footer:
+        Change-type: minor
+        change-type: minor
+      author: Pagan Gazzard
+  version: 6.5.0
+  date: 2019-05-30T19:27:09.123Z
+- commits:
     - subject: Add tests for `getReferencedFields`
       hash: ae56c039a943bda5d7b75927be4ed3c9c5402261
       body: ''
