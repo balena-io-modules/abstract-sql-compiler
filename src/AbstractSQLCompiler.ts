@@ -234,13 +234,14 @@ export interface AbstractSqlField {
 	fieldName: string;
 	dataType: string;
 	required?: boolean;
-	index: string;
+	index?: string;
 	references?: {
 		resourceName: string;
 		fieldName: string;
 	};
 	defaultValue?: string;
 	necessity: boolean;
+	computed?: AbstractSqlQuery;
 }
 export interface Trigger {
 	operation: 'INSERT' | 'UPDATE' | 'DELETE' | 'TRUNCATE';
@@ -539,17 +540,19 @@ $$ LANGUAGE ${fnDefinition.language};`);
 		const createSqlElements = [];
 
 		for (const field of table.fields) {
-			const { fieldName, references, dataType } = field;
-			createSqlElements.push(
-				'"' + fieldName + '" ' + dataTypeGen(engine, field),
-			);
-			if (
-				_.includes(['ForeignKey', 'ConceptType'], dataType) &&
-				references != null
-			) {
-				foreignKeys.push({ fieldName, references });
-				depends.push(references.resourceName);
-				hasDependants[references.resourceName] = true;
+			const { fieldName, references, dataType, computed } = field;
+			if (!computed) {
+				createSqlElements.push(
+					'"' + fieldName + '" ' + dataTypeGen(engine, field),
+				);
+				if (
+					_.includes(['ForeignKey', 'ConceptType'], dataType) &&
+					references != null
+				) {
+					foreignKeys.push({ fieldName, references });
+					depends.push(references.resourceName);
+					hasDependants[references.resourceName] = true;
+				}
 			}
 		}
 
