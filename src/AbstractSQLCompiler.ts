@@ -373,52 +373,82 @@ const dataTypeGen = (
 	}
 };
 
+type Scope = _.Dictionary<string>;
+
+const getScope = (rulePart: AbstractSqlQuery, scope: Scope): Scope => {
+	scope = { ...scope };
+	const fromNodes = rulePart.filter(node => node[0] === 'From') as FromNode[];
+	fromNodes.forEach(node => {
+		const nested = node[1];
+		if (nested[0] === 'Alias') {
+			const [, from, alias] = nested;
+			if (!_.isString(alias)) {
+				throw new Error('Cannot handle non-string aliases');
+			}
+			switch (from[0]) {
+				case 'Table':
+					scope[alias] = from[1];
+					break;
+				case 'SelectQuery':
+					// Ignore SelectQuery in the From as we'll handle any fields it selects
+					// when we recurse in. With true scope handling however we could prune
+					// fields that don't affect the end result and avoid false positives
+					scope[alias] = '';
+					break;
+				default:
+					throw new Error(`Cannot handle aliased ${from[0]} nodes`);
+			}
+		} else if (nested[0] === 'Table') {
+			scope[nested[1]] = nested[1];
+		} else {
+			throw Error(`Unsupported FromNode for scoping: ${nested[0]}`);
+		}
+	});
+	return scope;
+};
+const $getReferencedFields = (
+	referencedFields: ReferencedFields,
+	rulePart: AbstractSqlQuery,
+	scope: Scope = {},
+) => {
+	if (!_.isArray(rulePart)) {
+		return;
+	}
+	switch (rulePart[0]) {
+		case 'SelectQuery':
+			// Update the current scope before trying to resolve field references
+			scope = getScope(rulePart, scope);
+			rulePart.forEach((node: AbstractSqlQuery) => {
+				$getReferencedFields(referencedFields, node, scope);
+			});
+			break;
+		case 'ReferencedField':
+			let [, tableName, fieldName] = rulePart;
+			if (!_.isString(tableName) || !_.isString(fieldName)) {
+				throw new Error(`Invalid ReferencedField: ${rulePart}`);
+			}
+			tableName = scope[tableName];
+			// The scoped tableName is empty in the case of an aliased from query
+			// and those fields will be covered when we recurse into them
+			if (tableName !== '') {
+				if (referencedFields[tableName] == null) {
+					referencedFields[tableName] = [];
+				}
+				referencedFields[tableName].push(fieldName);
+			}
+			return;
+		case 'Field':
+			throw new Error('Cannot find queried fields for unreferenced fields');
+		default:
+			rulePart.forEach((node: AbstractSqlQuery) => {
+				$getReferencedFields(referencedFields, node, scope);
+			});
+	}
+};
 const getReferencedFields: EngineInstance['getReferencedFields'] = ruleBody => {
 	ruleBody = AbstractSQLOptimiser(ruleBody);
-
-	const tableAliases: {
-		[alias: string]: string;
-	} = {};
 	const referencedFields: ReferencedFields = {};
-	const recurse = (rulePart: AbstractSqlQuery) => {
-		_.each(rulePart, part => {
-			if (_.isArray(part)) {
-				if (part[0] === 'ReferencedField') {
-					const [, tableName, fieldName] = part;
-					if (!_.isString(tableName) || !_.isString(fieldName)) {
-						throw new Error('Invalid ReferencedField');
-					}
-					if (referencedFields[tableName] == null) {
-						referencedFields[tableName] = [];
-					}
-					referencedFields[tableName].push(fieldName);
-					return;
-				}
-				if (part[0] === 'Field') {
-					throw new Error('Cannot find queried fields for unreferenced fields');
-				}
-				if (part[0] === 'From') {
-					const nested = (part as FromNode)[1];
-					if (nested[0] === 'Alias') {
-						const [, table, alias] = nested;
-						if (table[0] !== 'Table' || !_.isString(alias)) {
-							throw new Error('Cannot handle aliased select queries');
-						}
-						tableAliases[alias] = table[1];
-					}
-				}
-				recurse(part as AbstractSqlQuery);
-			}
-		});
-	};
-	recurse(ruleBody);
-
-	for (const alias in tableAliases) {
-		const table = tableAliases[alias];
-		const tableFields = referencedFields[table] || [];
-		const aliasFields = referencedFields[alias] || [];
-		referencedFields[table] = tableFields.concat(aliasFields);
-	}
+	$getReferencedFields(referencedFields, ruleBody);
 
 	return _.mapValues(referencedFields, _.uniq);
 };
