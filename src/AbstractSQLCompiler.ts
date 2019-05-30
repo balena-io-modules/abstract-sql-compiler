@@ -431,7 +431,7 @@ const getReferencedFields: EngineInstance['getReferencedFields'] = ruleBody => {
 		referencedFields[table] = tableFields.concat(aliasFields);
 	}
 
-	return referencedFields;
+	return _.mapValues(referencedFields, _.uniq);
 };
 
 const checkQuery = (query: AbstractSqlQuery): ModifiedFields | undefined => {
