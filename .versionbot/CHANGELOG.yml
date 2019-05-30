@@ -1,4 +1,14 @@
 - commits:
+    - subject: Add tests for `getReferencedFields`
+      hash: ae56c039a943bda5d7b75927be4ed3c9c5402261
+      body: ''
+      footer:
+        Change-type: patch
+        change-type: patch
+      author: Pagan Gazzard
+  version: 6.4.3
+  date: 2019-05-30T14:55:18.212Z
+- commits:
     - subject: Update and fix lodash typings
       hash: 2bf073bbff3a94d66c31e07d98c3e298f5132b2c
       body: ''
