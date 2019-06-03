@@ -1,4 +1,16 @@
 - commits:
+    - subject: Improve aliased from handling in `getReferencedFields`
+      hash: dcfff55b813d38434208a9e07c818d1d32f521ef
+      body: |
+        We do this by using basic scope info to prune aliased table references
+        which also allows us to handle aliased select queries in the from
+      footer:
+        Change-type: minor
+        change-type: minor
+      author: Pagan Gazzard
+  version: 6.6.0
+  date: 2019-06-03T12:33:58.507Z
+- commits:
     - subject: Use an abstract-sql-optimiser prepass to simplify getReferencedFields
       hash: 6fc850fc820d691c823ad698d8d499cf55126cf4
       body: ''
