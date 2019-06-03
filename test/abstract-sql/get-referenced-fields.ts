@@ -51,7 +51,6 @@ describe('getReferencedFields', () => {
 			]),
 		).to.deep.equal({
 			table: ['field1', 'field2'],
-			atable: ['field1', 'field2'],
 		});
 	});
 
@@ -72,7 +71,6 @@ describe('getReferencedFields', () => {
 			]),
 		).to.deep.equal({
 			table: ['field1', 'field2'],
-			atable: ['field1', 'field2'],
 		});
 	});
 
@@ -128,9 +126,7 @@ describe('getReferencedFields', () => {
 			]),
 		).to.deep.equal({
 			table: ['field1'],
-			atable: ['field1'],
 			table2: ['field2'],
-			atable2: ['field2'],
 		});
 	});
 
@@ -152,9 +148,7 @@ describe('getReferencedFields', () => {
 			]),
 		).to.deep.equal({
 			table: ['field1'],
-			atable: ['field1'],
 			table2: ['field2'],
-			atable2: ['field2'],
 		});
 	});
 
@@ -174,8 +168,6 @@ describe('getReferencedFields', () => {
 			]),
 		).to.deep.equal({
 			table: ['field1', 'field2'],
-			atable: ['field1'],
-			atable2: ['field2'],
 		});
 	});
 
@@ -197,8 +189,6 @@ describe('getReferencedFields', () => {
 			]),
 		).to.deep.equal({
 			table: ['field1', 'field2'],
-			atable: ['field1'],
-			atable2: ['field2'],
 		});
 	});
 
@@ -303,6 +293,385 @@ describe('getReferencedFields', () => {
 		});
 	});
 
+	it('should work with select queries in the from', () => {
+		expect(
+			AbstractSqlCompiler.postgres.getReferencedFields([
+				'SelectQuery',
+				['Select', [['ReferencedField', 'table', 'field1']]],
+				['From', ['Table', 'table']],
+				[
+					'From',
+					[
+						'Alias',
+						[
+							'SelectQuery',
+							['Select', [['ReferencedField', 'table2', 'field2']]],
+							['From', ['Table', 'table2']],
+							[
+								'Where',
+								[
+									'Equals',
+									['ReferencedField', 'table', 'field3'],
+									['ReferencedField', 'table2', 'field4'],
+								],
+							],
+						],
+						'atable2',
+					],
+				],
+			]),
+		).to.deep.equal({
+			table: ['field1', 'field3'],
+			table2: ['field2', 'field4'],
+		});
+	});
+
+	it('should work with select queries in the from', () => {
+		expect(
+			AbstractSqlCompiler.postgres.getReferencedFields([
+				'SelectQuery',
+				[
+					'Select',
+					[
+						['ReferencedField', 'table', 'field1'],
+						['ReferencedField', 'atable2', 'afield2'],
+					],
+				],
+				['From', ['Table', 'table']],
+				[
+					'From',
+					[
+						'Alias',
+						[
+							'SelectQuery',
+							[
+								'Select',
+								[['Alias', ['ReferencedField', 'table2', 'field2'], 'afield2']],
+							],
+							['From', ['Table', 'table2']],
+							[
+								'Where',
+								[
+									'Equals',
+									['ReferencedField', 'table', 'field3'],
+									['ReferencedField', 'table2', 'field4'],
+								],
+							],
+						],
+						'atable2',
+					],
+				],
+			]),
+		).to.deep.equal({
+			table: ['field1', 'field3'],
+			table2: ['field2', 'field4'],
+		});
+	});
+
+	it('should work with select queries in the select and from', () => {
+		expect(
+			AbstractSqlCompiler.postgres.getReferencedFields([
+				'SelectQuery',
+				[
+					'Select',
+					[
+						['ReferencedField', 'table', 'field1'],
+						['ReferencedField', 'atable2', 'afield2'],
+						[
+							'Alias',
+							[
+								'SelectQuery',
+								['Select', [['ReferencedField', 'table3', 'field5']]],
+								['From', ['Table', 'table3']],
+								[
+									'Where',
+									[
+										'Equals',
+										['ReferencedField', 'table', 'field6'],
+										['ReferencedField', 'table3', 'field7'],
+									],
+								],
+							],
+							'afield',
+						],
+					],
+				],
+				['From', ['Table', 'table']],
+				[
+					'From',
+					[
+						'Alias',
+						[
+							'SelectQuery',
+							[
+								'Select',
+								[['Alias', ['ReferencedField', 'table2', 'field2'], 'afield2']],
+							],
+							['From', ['Table', 'table2']],
+							[
+								'Where',
+								[
+									'Equals',
+									['ReferencedField', 'table', 'field3'],
+									['ReferencedField', 'table2', 'field4'],
+								],
+							],
+						],
+						'atable2',
+					],
+				],
+			]),
+		).to.deep.equal({
+			table: ['field1', 'field6', 'field3'],
+			table2: ['field2', 'field4'],
+			table3: ['field5', 'field7'],
+		});
+	});
+
+	it('should work with nested select queries in the from', () => {
+		expect(
+			AbstractSqlCompiler.postgres.getReferencedFields([
+				'SelectQuery',
+				[
+					'Select',
+					[
+						['ReferencedField', 'table', 'field1'],
+						['ReferencedField', 'aatable2', 'aafield2'],
+					],
+				],
+				['From', ['Table', 'table']],
+				[
+					'From',
+					[
+						'Alias',
+						[
+							'SelectQuery',
+							[
+								'Select',
+								[
+									[
+										'Alias',
+										['ReferencedField', 'atable2', 'afield2'],
+										'aafield2',
+									],
+								],
+							],
+							[
+								'From',
+								[
+									'Alias',
+									[
+										'SelectQuery',
+										[
+											'Select',
+											[
+												[
+													'Alias',
+													['ReferencedField', 'table2', 'field2'],
+													'afield2',
+												],
+												[
+													'Alias',
+													['ReferencedField', 'table', 'field5'],
+													'afield5',
+												],
+												[
+													'Alias',
+													['ReferencedField', 'table3', 'field6'],
+													'afield6',
+												],
+											],
+										],
+										['From', ['Table', 'table3']],
+										[
+											'Where',
+											[
+												'Equals',
+												['ReferencedField', 'table2', 'field7'],
+												['ReferencedField', 'table3', 'field8'],
+											],
+										],
+									],
+									'atable2',
+								],
+							],
+							['From', ['Table', 'table2']],
+							[
+								'Where',
+								[
+									'Equals',
+									['ReferencedField', 'table', 'field3'],
+									['ReferencedField', 'table2', 'field4'],
+								],
+							],
+						],
+						'aatable2',
+					],
+				],
+			]),
+		).to.deep.equal({
+			table: ['field1', 'field5', 'field3'],
+			table2: ['field2', 'field7', 'field4'],
+			table3: ['field6', 'field8'],
+		});
+	});
+
+	it('should work with nested select queries in the select', () => {
+		expect(
+			AbstractSqlCompiler.postgres.getReferencedFields([
+				'SelectQuery',
+				[
+					'Select',
+					[
+						['ReferencedField', 'table', 'field1'],
+						[
+							'Alias',
+							[
+								'SelectQuery',
+								[
+									'Select',
+									[
+										[
+											'Alias',
+											[
+												'SelectQuery',
+												[
+													'Select',
+													[
+														[
+															'Alias',
+															['ReferencedField', 'table2', 'field2'],
+															'afield2',
+														],
+														[
+															'Alias',
+															['ReferencedField', 'table', 'field5'],
+															'afield5',
+														],
+														[
+															'Alias',
+															['ReferencedField', 'table3', 'field6'],
+															'afield6',
+														],
+													],
+												],
+												['From', ['Table', 'table3']],
+												[
+													'Where',
+													[
+														'Equals',
+														['ReferencedField', 'table2', 'field7'],
+														['ReferencedField', 'table3', 'field8'],
+													],
+												],
+											],
+											'aafield2',
+										],
+									],
+								],
+								['From', ['Table', 'table2']],
+								[
+									'Where',
+									[
+										'Equals',
+										['ReferencedField', 'table', 'field3'],
+										['ReferencedField', 'table2', 'field4'],
+									],
+								],
+							],
+							'aafield2',
+						],
+					],
+				],
+				['From', ['Table', 'table']],
+			]),
+		).to.deep.equal({
+			table: ['field1', 'field5', 'field3'],
+			table2: ['field2', 'field7', 'field4'],
+			table3: ['field6', 'field8'],
+		});
+	});
+
+	it('should work with from select query with select query in its select', () => {
+		expect(
+			AbstractSqlCompiler.postgres.getReferencedFields([
+				'SelectQuery',
+				[
+					'Select',
+					[
+						['ReferencedField', 'table', 'field1'],
+						['ReferencedField', 'aatable2', 'aafield2'],
+					],
+				],
+				['From', ['Table', 'table']],
+				[
+					'From',
+					[
+						'Alias',
+						[
+							'SelectQuery',
+							[
+								'Select',
+								[
+									[
+										'Alias',
+										[
+											'SelectQuery',
+											[
+												'Select',
+												[
+													[
+														'Alias',
+														['ReferencedField', 'table2', 'field2'],
+														'afield2',
+													],
+													[
+														'Alias',
+														['ReferencedField', 'table', 'field5'],
+														'afield5',
+													],
+													[
+														'Alias',
+														['ReferencedField', 'table3', 'field6'],
+														'afield6',
+													],
+												],
+											],
+											['From', ['Table', 'table3']],
+											[
+												'Where',
+												[
+													'Equals',
+													['ReferencedField', 'table2', 'field7'],
+													['ReferencedField', 'table3', 'field8'],
+												],
+											],
+										],
+										'atable2',
+									],
+								],
+							],
+							['From', ['Table', 'table2']],
+							[
+								'Where',
+								[
+									'Equals',
+									['ReferencedField', 'table', 'field3'],
+									['ReferencedField', 'table2', 'field4'],
+								],
+							],
+						],
+						'aatable2',
+					],
+				],
+			]),
+		).to.deep.equal({
+			table: ['field1', 'field5', 'field3'],
+			table2: ['field2', 'field7', 'field4'],
+			table3: ['field6', 'field8'],
+		});
+	});
+
 	it('should work with deprecated implicitly aliased tables', () => {
 		expect(
 			AbstractSqlCompiler.postgres.getReferencedFields([
@@ -318,7 +687,6 @@ describe('getReferencedFields', () => {
 			] as any),
 		).to.deep.equal({
 			table: ['field1', 'field2'],
-			atable: ['field1', 'field2'],
 		});
 	});
 
@@ -353,7 +721,6 @@ describe('getReferencedFields', () => {
 			] as any),
 		).to.deep.equal({
 			table: ['field1', 'field2'],
-			atable: ['field1', 'field2'],
 		});
 	});
 });
