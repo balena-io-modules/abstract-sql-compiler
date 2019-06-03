@@ -374,6 +374,8 @@ const dataTypeGen = (
 };
 
 const getReferencedFields: EngineInstance['getReferencedFields'] = ruleBody => {
+	ruleBody = AbstractSQLOptimiser(ruleBody);
+
 	const tableAliases: {
 		[alias: string]: string;
 	} = {};
@@ -396,27 +398,13 @@ const getReferencedFields: EngineInstance['getReferencedFields'] = ruleBody => {
 					throw new Error('Cannot find queried fields for unreferenced fields');
 				}
 				if (part[0] === 'From') {
-					let nested = (part as FromNode)[1];
-					if (_.isArray(nested)) {
-						if (
-							nested.length === 2 &&
-							nested[0] !== 'Table' &&
-							_.isString(nested[1])
-						) {
-							// Deprecated: Remove this when we drop implicit aliases
-							nested = ['Alias', (nested[0] as any) as TableNode, nested[1]];
+					const nested = (part as FromNode)[1];
+					if (nested[0] === 'Alias') {
+						const [, table, alias] = nested;
+						if (table[0] !== 'Table' || !_.isString(alias)) {
+							throw new Error('Cannot handle aliased select queries');
 						}
-						if (nested[0] === 'Alias') {
-							let [, table, alias] = nested;
-							if (_.isString(table)) {
-								// Deprecated: Remove this when we drop implicit tables
-								table = ['Table', table];
-							}
-							if (table[0] !== 'Table' || !_.isString(alias)) {
-								throw new Error('Cannot handle aliased select queries');
-							}
-							tableAliases[alias] = table[1];
-						}
+						tableAliases[alias] = table[1];
 					}
 				}
 				recurse(part as AbstractSqlQuery);
@@ -446,7 +434,7 @@ const checkQuery = (query: AbstractSqlQuery): ModifiedFields | undefined => {
 		return;
 	}
 
-	let table = froms[0][1];
+	const table = froms[0][1];
 	let tableName: string;
 	if (table[0] === 'Table') {
 		tableName = table[1];
@@ -660,8 +648,7 @@ CREATE TABLE ${ifNotExistsStr}"${table.name}" (
 	}
 	dropSchemaStatements = dropSchemaStatements.reverse();
 
-	let ruleStatements: SqlRule[];
-	ruleStatements = _.map(
+	const ruleStatements: SqlRule[] = _.map(
 		abstractSqlModel.rules,
 		(rule): SqlRule => {
 			const ruleBodyNode = _.find(rule, { 0: 'Body' }) as [

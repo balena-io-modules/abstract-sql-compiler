@@ -302,4 +302,58 @@ describe('getReferencedFields', () => {
 			table: ['field1', 'field2', 'field5', 'field6', 'field3', 'field4'],
 		});
 	});
+
+	it('should work with deprecated implicitly aliased tables', () => {
+		expect(
+			AbstractSqlCompiler.postgres.getReferencedFields([
+				'SelectQuery',
+				[
+					'Select',
+					[
+						['ReferencedField', 'atable', 'field1'],
+						['ReferencedField', 'atable', 'field2'],
+					],
+				],
+				['From', [['Table', 'table'], 'atable']],
+			] as any),
+		).to.deep.equal({
+			table: ['field1', 'field2'],
+			atable: ['field1', 'field2'],
+		});
+	});
+
+	it('should work with deprecated implicitly referenced tables', () => {
+		expect(
+			AbstractSqlCompiler.postgres.getReferencedFields([
+				'SelectQuery',
+				[
+					'Select',
+					[
+						['ReferencedField', 'table', 'field1'],
+						['ReferencedField', 'table', 'field2'],
+					],
+				],
+				['From', 'table'],
+			] as any),
+		).to.deep.equal({ table: ['field1', 'field2'] });
+	});
+
+	it('should work with deprecated implicitly referenced and aliased tables', () => {
+		expect(
+			AbstractSqlCompiler.postgres.getReferencedFields([
+				'SelectQuery',
+				[
+					'Select',
+					[
+						['ReferencedField', 'atable', 'field1'],
+						['ReferencedField', 'atable', 'field2'],
+					],
+				],
+				['From', ['table', 'atable']],
+			] as any),
+		).to.deep.equal({
+			table: ['field1', 'field2'],
+			atable: ['field1', 'field2'],
+		});
+	});
 });
