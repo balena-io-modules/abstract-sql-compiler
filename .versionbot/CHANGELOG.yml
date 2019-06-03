@@ -1,4 +1,14 @@
 - commits:
+    - subject: Use an abstract-sql-optimiser prepass to simplify getReferencedFields
+      hash: 6fc850fc820d691c823ad698d8d499cf55126cf4
+      body: ''
+      footer:
+        Change-type: patch
+        change-type: patch
+      author: Pagan Gazzard
+  version: 6.5.1
+  date: 2019-06-03T12:14:07.176Z
+- commits:
     - subject: Add support for computed fields
       hash: df53a1545b851da0ac188edac7cca6d34f1000f7
       body: ''
