@@ -274,7 +274,7 @@ const ExtractNumericDatePart = (type: keyof typeof dateFormats): MatchFn => {
 	return (args, indent) => {
 		checkArgs(type, args, 1);
 		const date = DateValue(getAbstractSqlQuery(args, 0), indent);
-		if (engine === 'websql') {
+		if (engine === Engines.websql) {
 			return websqlDateFormats[type](date);
 		} else {
 			return dateFormats[type](date);
@@ -369,7 +369,7 @@ const MaybeAlias = (
 };
 
 const AddBind = (bind: Binding): string => {
-	if (engine === 'postgres') {
+	if (engine === Engines.postgres) {
 		if (bind[0] === 'Bind') {
 			const existingBindIndex = _.findIndex(fieldOrderings, existingBind =>
 				_.isEqual(bind, existingBind),
@@ -601,7 +601,7 @@ const typeRules: Dictionary<MatchFn> = {
 		checkArgs('AggregateJSON', args, 1);
 		args = getAbstractSqlQuery(args, 0);
 		checkArgs("AggregateJSON's argument", args, 2);
-		if (engine !== 'postgres') {
+		if (engine !== Engines.postgres) {
 			throw new SyntaxError('AggregateJSON not supported on: ' + engine);
 		}
 		const [table, field] = args;
@@ -636,9 +636,9 @@ const typeRules: Dictionary<MatchFn> = {
 	Totalseconds: (args, indent) => {
 		checkArgs('Totalseconds', args, 1);
 		const duration = DurationValue(getAbstractSqlQuery(args, 0), indent);
-		if (engine === 'postgres') {
+		if (engine === Engines.postgres) {
 			return `EXTRACT(EPOCH FROM ${duration})`;
-		} else if (engine === 'mysql') {
+		} else if (engine === Engines.mysql) {
 			return `(TIMESTAMPDIFF(MICROSECOND, FROM_UNIXTIME(0), FROM_UNIXTIME(0) + ${duration}) / 1000000)`;
 		} else {
 			throw new SyntaxError('TotalSeconds not supported on: ' + engine);
@@ -654,7 +654,7 @@ const typeRules: Dictionary<MatchFn> = {
 			}
 			return TextValue(arg, indent);
 		});
-		if (engine === 'mysql') {
+		if (engine === Engines.mysql) {
 			return 'CONCAT(' + comparators.join(', ') + ')';
 		} else {
 			return '(' + comparators.join(' || ') + ')';
@@ -670,7 +670,7 @@ const typeRules: Dictionary<MatchFn> = {
 	CharacterLength: (args, indent) => {
 		checkArgs('CharacterLength', args, 1);
 		const text = TextValue(getAbstractSqlQuery(args, 0), indent);
-		if (engine === 'mysql') {
+		if (engine === Engines.mysql) {
 			return `CHAR_LENGTH(${text})`;
 		} else {
 			return `LENGTH(${text})`;
@@ -680,7 +680,7 @@ const typeRules: Dictionary<MatchFn> = {
 		checkArgs('StrPos', args, 2);
 		const haystack = TextValue(getAbstractSqlQuery(args, 0), indent);
 		const needle = TextValue(getAbstractSqlQuery(args, 1), indent);
-		if (engine === 'postgres') {
+		if (engine === Engines.postgres) {
 			return `STRPOS(${haystack}, ${needle})`;
 		} else {
 			return `INSTR(${haystack}, ${needle})`;
@@ -703,7 +703,7 @@ const typeRules: Dictionary<MatchFn> = {
 		checkArgs('Right', args, 2);
 		const str = TextValue(getAbstractSqlQuery(args, 0), indent);
 		const n = NumericValue(getAbstractSqlQuery(args, 0), indent);
-		if (engine === 'websql') {
+		if (engine === Engines.websql) {
 			return `SUBSTRING(${str}, -${n})`;
 		} else {
 			return `RIGHT(${str}, ${n})`;
@@ -747,7 +747,7 @@ const typeRules: Dictionary<MatchFn> = {
 	ToTime: (args, indent) => {
 		checkArgs('ToTime', args, 1);
 		const date = DateValue(getAbstractSqlQuery(args, 0), indent);
-		if (engine === 'postgres') {
+		if (engine === Engines.postgres) {
 			return `CAST(${date} AS TIME)`;
 		} else {
 			return `TIME(${date})`;
@@ -840,7 +840,7 @@ const typeRules: Dictionary<MatchFn> = {
 	},
 	Duration: args => {
 		checkArgs('Duration', args, 1);
-		if (engine === 'websql') {
+		if (engine === Engines.websql) {
 			throw new SyntaxError('Durations not supported on: ' + engine);
 		}
 		// TODO: The abstract sql type should accommodate this
@@ -876,7 +876,7 @@ const typeRules: Dictionary<MatchFn> = {
 				minimumFractionDigits: 1,
 			}) +
 			"'" +
-			(engine === 'mysql' ? ' DAY_MICROSECOND' : '')
+			(engine === Engines.mysql ? ' DAY_MICROSECOND' : '')
 		);
 	},
 	Exists: (args, indent) => {

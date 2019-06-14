@@ -19,8 +19,8 @@
   "dependencies": {
     "@resin/sbvr-types": "^2.0.3",
     "@types/bluebird": "^3.5.27",
-    "@types/lodash": "^4.14.132",
-    "@types/node": "^8.10.48",
+    "@types/lodash": "^4.14.134",
+    "@types/node": "^8.10.49",
     "bluebird": "^3.5.5",
     "lodash": "^4.17.11"
   },
@@ -30,17 +30,17 @@
     "@resin/odata-to-abstract-sql": "3.0.1",
     "@resin/sbvr-parser": "0.2.2",
     "@types/chai": "^4.1.7",
-    "@types/mocha": "^5.2.6",
+    "@types/mocha": "^5.2.7",
     "chai": "^4.2.0",
     "coffeescript": "^1.12.7",
-    "husky": "^2.3.0",
-    "lint-staged": "^8.1.7",
+    "husky": "^2.4.1",
+    "lint-staged": "^8.2.1",
     "mocha": "^6.1.4",
-    "prettier": "^1.17.1",
+    "prettier": "^1.18.2",
     "require-npm4-to-publish": "^1.0.0",
     "resin-lint": "^2.0.1",
     "ts-node": "^7.0.1",
-    "typescript": "^3.5.1"
+    "typescript": "^3.5.2"
   },
   "husky": {
     "hooks": {
