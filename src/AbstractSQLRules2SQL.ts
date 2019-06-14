@@ -149,7 +149,9 @@ export const isBooleanValue = (
 		type === 'LessThan' ||
 		type === 'LessThanOrEqual' ||
 		type === 'NotEquals' ||
-		type === 'Like'
+		type === 'Like' ||
+		type === 'IsNotDistinctFrom' ||
+		type === 'IsDistinctFrom'
 	);
 };
 const BooleanValue = MatchValue(isBooleanValue);
@@ -622,6 +624,43 @@ const typeRules: Dictionary<MatchFn> = {
 	LessThanOrEqual: Comparison('LessThanOrEqual'),
 	NotEquals: Comparison('NotEquals'),
 	Like: Comparison('Like'),
+	IsNotDistinctFrom: (args, indent) => {
+		checkArgs('IsNotDistinctFrom', args, 2);
+		const a = AnyValue(getAbstractSqlQuery(args, 0), indent);
+		const b = AnyValue(getAbstractSqlQuery(args, 1), indent);
+		if (engine === Engines.postgres) {
+			return a + ' IS NOT DISTINCT FROM ' + b;
+		} else if (engine === Engines.mysql) {
+			return a + ' <=> ' + b;
+		} else if (engine === Engines.websql) {
+			return a + ' IS ' + b;
+		} else {
+			throw new SyntaxError('AggregateJSON not supported on: ' + engine);
+		}
+	},
+	IsDistinctFrom: (args, indent) => {
+		checkArgs('IsDistinctFrom', args, 2);
+		if (engine === Engines.postgres) {
+			const a = AnyValue(getAbstractSqlQuery(args, 0), indent);
+			const b = AnyValue(getAbstractSqlQuery(args, 1), indent);
+			return a + ' IS DISTINCT FROM ' + b;
+		} else {
+			// mysql/websql only support the equivalent of `IS NOT DISTINCT FROM` so
+			// we have to do a `NOT` on that to get the `IS DISTINCT FROM` equivalent
+			const nestedIndent = NestedIndent(indent);
+			const a = AnyValue(getAbstractSqlQuery(args, 0), nestedIndent);
+			const b = AnyValue(getAbstractSqlQuery(args, 1), nestedIndent);
+			let bool;
+			if (engine === Engines.mysql) {
+				bool = a + ' <=> ' + b;
+			} else if (engine === Engines.websql) {
+				bool = a + ' IS ' + b;
+			} else {
+				throw new SyntaxError('AggregateJSON not supported on: ' + engine);
+			}
+			return 'NOT (' + nestedIndent + bool + indent + ')';
+		}
+	},
 	Add: MathOp('Add'),
 	Subtract: MathOp('Subtract'),
 	Multiply: MathOp('Multiply'),

@@ -498,6 +498,8 @@ const typeRules: Dictionary<MatchFn> = {
 	LessThan: Comparison('LessThan'),
 	LessThanOrEqual: Comparison('LessThanOrEqual'),
 	Like: Comparison('Like'),
+	IsNotDistinctFrom: matchArgs('IsNotDistinctFrom', AnyValue, AnyValue),
+	IsDistinctFrom: matchArgs('IsDistinctFrom', AnyValue, AnyValue),
 	Add: MathOp('Add'),
 	Subtract: MathOp('Subtract'),
 	Multiply: MathOp('Multiply'),
