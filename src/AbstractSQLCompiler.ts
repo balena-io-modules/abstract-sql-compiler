@@ -25,7 +25,7 @@ export type DurationNode = [
 		hour?: Number;
 		minute?: Number;
 		second?: Number;
-	}
+	},
 ];
 
 // The extends array hacks in the node types are because otherwise we get issues with circular refs
@@ -172,7 +172,7 @@ export type SelectQueryNode = [
 		| OrderByNode
 		| LimitNode
 		| OffsetNode
-	>
+	>,
 ];
 export interface UnionQueryNode
 	extends VarArgNodeType<'UnionQuery', UnionQueryNode | SelectQueryNode> {}
@@ -191,18 +191,18 @@ export type TableNode = ['Table', string];
 export type WhereNode = ['Where', BooleanTypeNodes];
 export type GroupByNode = [
 	'GroupBy',
-	Array<['ASC' | 'DESC', FieldNode | ReferencedFieldNode]>
+	Array<['ASC' | 'DESC', FieldNode | ReferencedFieldNode]>,
 ];
 export type OrderByNode = [
 	'OrderBy',
-	...Array<['ASC' | 'DESC', FieldNode | ReferencedFieldNode]>
+	...Array<['ASC' | 'DESC', FieldNode | ReferencedFieldNode]>,
 ];
 export type LimitNode = ['Limit', NumberTypeNodes];
 export type OffsetNode = ['Offset', NumberTypeNodes];
 export type FieldsNode = ['Fields', string[]];
 export type ValuesNode = [
 	'Values',
-	SelectQueryNode | UnionQueryNode | ValuesNodeTypes[]
+	SelectQueryNode | UnionQueryNode | ValuesNodeTypes[],
 ];
 export type ValuesNodeTypes =
 	| 'Default'
@@ -516,7 +516,7 @@ const compileSchema = (
 	const fns: _.Dictionary<true> = {};
 	if (abstractSqlModel.functions) {
 		_.forEach(abstractSqlModel.functions, (fnDefinition, fnName) => {
-			if (engine !== 'postgres') {
+			if (engine !== Engines.postgres) {
 				throw new Error('Functions are only supported on postgres currently');
 			}
 			if (fnDefinition.language !== 'plpgsql') {
@@ -577,9 +577,7 @@ $$ LANGUAGE ${fnDefinition.language};`);
 		for (const { fieldName, references } of foreignKeys) {
 			const referencedTable = abstractSqlModel.tables[references.resourceName];
 			createSqlElements.push(
-				`FOREIGN KEY ("${fieldName}") REFERENCES "${referencedTable.name}" ("${
-					references.fieldName
-				}")`,
+				`FOREIGN KEY ("${fieldName}") REFERENCES "${referencedTable.name}" ("${references.fieldName}")`,
 			);
 		}
 		for (const index of table.indexes) {
@@ -683,7 +681,7 @@ CREATE TABLE ${ifNotExistsStr}"${table.name}" (
 		(rule): SqlRule => {
 			const ruleBodyNode = _.find(rule, { 0: 'Body' }) as [
 				'Body',
-				AbstractSqlQuery
+				AbstractSqlQuery,
 			];
 			if (ruleBodyNode == null || _.isString(ruleBodyNode)) {
 				throw new Error('Invalid rule');
@@ -694,7 +692,7 @@ CREATE TABLE ${ifNotExistsStr}"${table.name}" (
 			}
 			const ruleSENode = _.find(rule, { 0: 'StructuredEnglish' }) as [
 				'StructuredEnglish',
-				string
+				string,
 			];
 			if (ruleSENode == null) {
 				throw new Error('Invalid structured English');

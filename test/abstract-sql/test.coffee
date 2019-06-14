@@ -26,6 +26,7 @@ sqlEquals =
 runExpectation = (describe, engine, input, expectedBindings, body, expectation) ->
 	if !expectation?
 		if !body?
+			expectation = expectedBindings
 			expectedBindings = false
 		else
 			expectation = body
@@ -57,4 +58,3 @@ module.exports = bindRunExpectation('postgres')
 module.exports.postgres = bindRunExpectation('postgres')
 module.exports.mysql = bindRunExpectation('mysql')
 module.exports.websql = bindRunExpectation('websql')
-
