@@ -1,4 +1,14 @@
 - commits:
+    - subject: Add support for `IsDistinctFrom`/`IsNotDistinctFrom`
+      hash: 5ba68820fc21f2a4bd622677d3abdc122bb78af2
+      body: ''
+      footer:
+        Change-type: minor
+        change-type: minor
+      author: Pagan Gazzard
+  version: 6.7.0
+  date: 2019-06-14T14:12:55.045Z
+- commits:
     - subject: Improve aliased from handling in `getReferencedFields`
       hash: dcfff55b813d38434208a9e07c818d1d32f521ef
       body: |
