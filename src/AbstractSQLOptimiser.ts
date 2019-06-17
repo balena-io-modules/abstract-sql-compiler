@@ -498,8 +498,38 @@ const typeRules: Dictionary<MatchFn> = {
 	LessThan: Comparison('LessThan'),
 	LessThanOrEqual: Comparison('LessThanOrEqual'),
 	Like: Comparison('Like'),
-	IsNotDistinctFrom: matchArgs('IsNotDistinctFrom', AnyValue, AnyValue),
-	IsDistinctFrom: matchArgs('IsDistinctFrom', AnyValue, AnyValue),
+	IsNotDistinctFrom: tryMatches(
+		Helper<OptimisationMatchFn>(args => {
+			checkArgs('IsNotDistinctFrom', args, 2);
+			let valueIndex;
+			if (args[0][0] === 'Null') {
+				valueIndex = 1;
+			} else if (args[1][0] === 'Null') {
+				valueIndex = 0;
+			} else {
+				return false;
+			}
+
+			return ['NotExists', getAbstractSqlQuery(args, valueIndex)];
+		}),
+		matchArgs('IsNotDistinctFrom', AnyValue, AnyValue),
+	),
+	IsDistinctFrom: tryMatches(
+		Helper<OptimisationMatchFn>(args => {
+			checkArgs('IsDistinctFrom', args, 2);
+			let valueIndex;
+			if (args[0][0] === 'Null') {
+				valueIndex = 1;
+			} else if (args[1][0] === 'Null') {
+				valueIndex = 0;
+			} else {
+				return false;
+			}
+
+			return ['Exists', getAbstractSqlQuery(args, valueIndex)];
+		}),
+		matchArgs('IsDistinctFrom', AnyValue, AnyValue),
+	),
 	Add: MathOp('Add'),
 	Subtract: MathOp('Subtract'),
 	Multiply: MathOp('Multiply'),
