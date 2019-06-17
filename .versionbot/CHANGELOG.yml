@@ -1,4 +1,21 @@
 - commits:
+    - subject: Change `IsDistinctFrom` for postgres to a version that can use indexes
+      hash: 5046d5eb8127811eaced5308ea06d4ba092ed5f2
+      body: ''
+      footer:
+        Change-type: patch
+        change-type: patch
+      author: Pagan Gazzard
+    - subject: Optimise `IsDistinctFrom`/`IsNotDistinctFrom` when either arg is `Null`
+      hash: 664385a73a8ab881d388141692a9cfad7d7b2358
+      body: ''
+      footer:
+        Change-type: patch
+        change-type: patch
+      author: Pagan Gazzard
+  version: 6.7.1
+  date: 2019-06-17T16:02:58.721Z
+- commits:
     - subject: Add support for `IsDistinctFrom`/`IsNotDistinctFrom`
       hash: 5ba68820fc21f2a4bd622677d3abdc122bb78af2
       body: ''
