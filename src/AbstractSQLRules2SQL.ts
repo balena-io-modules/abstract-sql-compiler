@@ -191,6 +191,51 @@ const Field: MetaMatchFn = (args, indent) => {
 	}
 };
 
+const isBindValue = (
+	type: string | AbstractSqlQuery,
+): type is 'Bind' | 'Text' | 'Value' | 'Date' => {
+	return (
+		type === 'Bind' || type === 'Text' || type === 'Value' || type === 'Date'
+	);
+};
+const isNotDistinctFrom: MatchFn = (args, indent) => {
+	const a = getAbstractSqlQuery(args, 0);
+	const b = getAbstractSqlQuery(args, 1);
+
+	const aSql = AnyValue(a, indent);
+	const bSql = AnyValue(b, indent);
+
+	if (engine === Engines.postgres) {
+		// We don't support null binds so we can avoid checking them for null-ness
+		// and avoid issues with postgres type inference
+		const aIsBind = isBindValue(a[0]);
+		const bIsBind = isBindValue(b[0]);
+		if (aIsBind && bIsBind) {
+			return `${aSql} = ${bSql}`;
+		}
+		const isNotNullChecks = [];
+		if (!aIsBind) {
+			isNotNullChecks.push(`(${aSql}) IS NOT NULL`);
+		}
+		if (!bIsBind) {
+			isNotNullChecks.push(`(${bSql}) IS NOT NULL`);
+		}
+		const orBothNull =
+			!aIsBind && !bIsBind ? ` OR (${aSql}) IS NULL AND (${bSql}) IS NULL` : '';
+		return `${isNotNullChecks.join(
+			' AND ',
+		)} AND (${aSql}) = (${bSql})${orBothNull}`;
+	} else if (engine === Engines.mysql) {
+		return aSql + ' <=> ' + bSql;
+	} else if (engine === Engines.websql) {
+		return aSql + ' IS ' + bSql;
+	} else {
+		throw new SyntaxError(
+			'IsDistinctFrom/IsNotDistinctFrom not supported on: ' + engine,
+		);
+	}
+};
+
 export const isAbstractSqlQuery = (
 	x: AbstractSqlType,
 ): x is AbstractSqlQuery => {
@@ -626,40 +671,11 @@ const typeRules: Dictionary<MatchFn> = {
 	Like: Comparison('Like'),
 	IsNotDistinctFrom: (args, indent) => {
 		checkArgs('IsNotDistinctFrom', args, 2);
-		const a = AnyValue(getAbstractSqlQuery(args, 0), indent);
-		const b = AnyValue(getAbstractSqlQuery(args, 1), indent);
-		if (engine === Engines.postgres) {
-			return a + ' IS NOT DISTINCT FROM ' + b;
-		} else if (engine === Engines.mysql) {
-			return a + ' <=> ' + b;
-		} else if (engine === Engines.websql) {
-			return a + ' IS ' + b;
-		} else {
-			throw new SyntaxError('AggregateJSON not supported on: ' + engine);
-		}
+		return isNotDistinctFrom(args, indent);
 	},
 	IsDistinctFrom: (args, indent) => {
 		checkArgs('IsDistinctFrom', args, 2);
-		if (engine === Engines.postgres) {
-			const a = AnyValue(getAbstractSqlQuery(args, 0), indent);
-			const b = AnyValue(getAbstractSqlQuery(args, 1), indent);
-			return a + ' IS DISTINCT FROM ' + b;
-		} else {
-			// mysql/websql only support the equivalent of `IS NOT DISTINCT FROM` so
-			// we have to do a `NOT` on that to get the `IS DISTINCT FROM` equivalent
-			const nestedIndent = NestedIndent(indent);
-			const a = AnyValue(getAbstractSqlQuery(args, 0), nestedIndent);
-			const b = AnyValue(getAbstractSqlQuery(args, 1), nestedIndent);
-			let bool;
-			if (engine === Engines.mysql) {
-				bool = a + ' <=> ' + b;
-			} else if (engine === Engines.websql) {
-				bool = a + ' IS ' + b;
-			} else {
-				throw new SyntaxError('AggregateJSON not supported on: ' + engine);
-			}
-			return 'NOT (' + nestedIndent + bool + indent + ')';
-		}
+		return 'NOT(' + isNotDistinctFrom(args, indent) + ')';
 	},
 	Add: MathOp('Add'),
 	Subtract: MathOp('Subtract'),
