@@ -272,6 +272,45 @@ const NumberMatch = (type: string): MatchFn => {
 		return `${n}`;
 	};
 };
+const JoinMatch = (joinType: string): MatchFn => {
+	let sqlJoinType: string;
+	switch (joinType) {
+		case 'Join':
+			sqlJoinType = 'JOIN ';
+			break;
+		case 'LeftJoin':
+			sqlJoinType = 'LEFT JOIN ';
+			break;
+		case 'RightJoin':
+			sqlJoinType = 'RIGHT JOIN ';
+			break;
+		case 'FullJoin':
+			sqlJoinType = 'FULL JOIN ';
+			break;
+		default:
+			throw new Error(`Unknown join type: '${joinType}'`);
+	}
+	return (args, indent) => {
+		if (args.length !== 1 && args.length !== 2) {
+			throw new SyntaxError(`"${joinType}" requires 1/2 arg(s)`);
+		}
+		const from = MaybeAlias(getAbstractSqlQuery(args, 0), indent, FromMatch);
+		if (args.length === 1) {
+			return sqlJoinType + from;
+		}
+		const [type, ...rest] = getAbstractSqlQuery(args, 1);
+		switch (type) {
+			case 'On':
+				checkArgs('On', rest, 1);
+				const ruleBody = BooleanValue(getAbstractSqlQuery(rest, 0), indent);
+				return sqlJoinType + from + ' ON ' + ruleBody;
+			default:
+				throw new SyntaxError(
+					`'${joinType}' clause does not support '${type}' clause`,
+				);
+		}
+	};
+};
 const mathOps = {
 	Add: '+',
 	Subtract: '-',
@@ -456,6 +495,7 @@ const typeRules: Dictionary<MatchFn> = {
 	},
 	SelectQuery: (args, indent) => {
 		const tables = [];
+		const joins = [];
 		let select: string = '';
 		const groups = {
 			Where: '',
@@ -481,6 +521,12 @@ const typeRules: Dictionary<MatchFn> = {
 				case 'From':
 					tables.push(typeRules[type](rest, indent));
 					break;
+				case 'Join':
+				case 'LeftJoin':
+				case 'RightJoin':
+				case 'FullJoin':
+					joins.push(typeRules[type](rest, indent));
+					break;
 				case 'Where':
 				case 'GroupBy':
 				case 'OrderBy':
@@ -497,15 +543,25 @@ const typeRules: Dictionary<MatchFn> = {
 					throw new SyntaxError(`'SelectQuery' does not support '${type}'`);
 			}
 		}
+
+		if (tables.length === 0 && joins.length > 0) {
+			throw new SyntaxError(
+				'Must have at least one From node in order to use Join nodes',
+			);
+		}
+
 		const from =
 			tables.length > 0
 				? indent + 'FROM ' + tables.join(',' + NestedIndent(indent))
 				: '';
 
+		const joinStr = joins.length > 0 ? indent + joins.join(indent) : '';
+
 		return (
 			'SELECT ' +
 			select +
 			from +
+			joinStr +
 			groups.Where +
 			groups.GroupBy +
 			groups.OrderBy +
@@ -535,6 +591,10 @@ const typeRules: Dictionary<MatchFn> = {
 		checkArgs('From', args, 1);
 		return MaybeAlias(getAbstractSqlQuery(args, 0), indent, FromMatch);
 	},
+	Join: JoinMatch('Join'),
+	LeftJoin: JoinMatch('LeftJoin'),
+	RightJoin: JoinMatch('RightJoin'),
+	FullJoin: JoinMatch('FullJoin'),
 	Where: (args, indent) => {
 		checkArgs('Where', args, 1);
 		const ruleBody = BooleanValue(getAbstractSqlQuery(args, 0), indent);

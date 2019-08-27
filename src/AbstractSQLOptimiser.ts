@@ -324,6 +324,27 @@ const MaybeAlias = (
 const Lower = matchArgs('Lower', TextValue);
 const Upper = matchArgs('Upper', TextValue);
 
+const JoinMatch = (joinType: string): MatchFn => args => {
+	if (args.length !== 1 && args.length !== 2) {
+		throw new SyntaxError(`"${joinType}" requires 1/2 arg(s)`);
+	}
+	const from = MaybeAlias(args[0] as AbstractSqlQuery, FromMatch);
+	if (args.length === 1) {
+		return [joinType, from];
+	}
+	const [type, ...rest] = getAbstractSqlQuery(args, 1);
+	switch (type) {
+		case 'On':
+			checkArgs('On', rest, 1);
+			const ruleBody = BooleanValue(getAbstractSqlQuery(rest, 0));
+			return [joinType, from, ['On', ruleBody]];
+		default:
+			throw new SyntaxError(
+				`'${joinType}' clause does not support '${type}' clause`,
+			);
+	}
+};
+
 const typeRules: Dictionary<MatchFn> = {
 	UnionQuery: args => {
 		checkMinArgs('UnionQuery', args, 2);
@@ -371,6 +392,10 @@ const typeRules: Dictionary<MatchFn> = {
 					select = [typeRules[type](rest)];
 					break;
 				case 'From':
+				case 'Join':
+				case 'LeftJoin':
+				case 'RightJoin':
+				case 'FullJoin':
 					tables.push(typeRules[type](rest));
 					break;
 				case 'Where':
@@ -419,6 +444,10 @@ const typeRules: Dictionary<MatchFn> = {
 		checkArgs('From', args, 1);
 		return ['From', MaybeAlias(args[0] as AbstractSqlQuery, FromMatch)];
 	},
+	Join: JoinMatch('Join'),
+	LeftJoin: JoinMatch('LeftJoin'),
+	RightJoin: JoinMatch('RightJoin'),
+	FullJoin: JoinMatch('FullJoin'),
 	Where: matchArgs('Where', BooleanValue),
 	GroupBy: args => {
 		checkArgs('GroupBy', args, 1);
