@@ -1,4 +1,14 @@
 - commits:
+    - subject: Add support for inner/left/right/full joins
+      hash: d2af541da7d0f7f2b6c25adb4929a410374e5887
+      body: ''
+      footer:
+        Change-type: minor
+        change-type: minor
+      author: Pagan Gazzard
+  version: 6.8.0
+  date: 2019-08-29T16:44:13.607Z
+- commits:
     - subject: Change `IsDistinctFrom` for postgres to a version that can use indexes
       hash: 5046d5eb8127811eaced5308ea06d4ba092ed5f2
       body: ''
