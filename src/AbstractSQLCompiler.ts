@@ -47,6 +47,13 @@ export interface ThreeArgNodeType<T, X> extends Array<T | X> {
 	3: X;
 	length: 4;
 }
+export interface OneTwoArgNodeType<T, X, Y>
+	extends Array<T | X | Y | undefined> {
+	0: T;
+	1: X;
+	2?: Y;
+	length: 2 | 3;
+}
 export interface VarArgNodeType<T, X> extends Array<T | X | undefined> {
 	0: T;
 	1?: X;
@@ -167,6 +174,10 @@ export type SelectQueryNode = [
 	...Array<
 		| SelectNode
 		| FromNode
+		| InnerJoinNode
+		| LeftJoinNode
+		| RightJoinNode
+		| FullJoinNode
 		| WhereNode
 		| GroupByNode
 		| OrderByNode
@@ -177,16 +188,24 @@ export type SelectQueryNode = [
 export interface UnionQueryNode
 	extends VarArgNodeType<'UnionQuery', UnionQueryNode | SelectQueryNode> {}
 
+type FromTypeNodes =
+	| SelectQueryNode
+	| UnionQueryNode
+	| TableNode
+	| AliasNode<SelectQueryNode | UnionQueryNode | TableNode>;
+
 export interface SelectNode
 	extends OneArgNodeType<'Select', AbstractSqlType[]> {}
-export interface FromNode
-	extends OneArgNodeType<
-		'From',
-		| SelectQueryNode
-		| UnionQueryNode
-		| TableNode
-		| AliasNode<SelectQueryNode | UnionQueryNode | TableNode>
-	> {}
+export interface FromNode extends OneArgNodeType<'From', FromTypeNodes> {}
+export interface InnerJoinNode
+	extends OneTwoArgNodeType<'Join', FromTypeNodes, OnNode> {}
+export interface LeftJoinNode
+	extends OneTwoArgNodeType<'LeftJoin', FromTypeNodes, OnNode> {}
+export interface RightJoinNode
+	extends OneTwoArgNodeType<'RightJoin', FromTypeNodes, OnNode> {}
+export interface FullJoinNode
+	extends OneTwoArgNodeType<'FullJoin', FromTypeNodes, OnNode> {}
+export type OnNode = ['On', BooleanTypeNodes];
 export type TableNode = ['Table', string];
 export type WhereNode = ['Where', BooleanTypeNodes];
 export type GroupByNode = [
