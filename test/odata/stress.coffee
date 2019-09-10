@@ -3,7 +3,7 @@ _ = require 'lodash'
 { pilotFields } = require('./fields')
 pilotFields = pilotFields.join(', ')
 
-filterIDs = [1..3]
+filterIDs = [1..5000]
 filterBindsString = _.map(filterIDs, _.constant('?')).join(', ')
 filterBinds = _.map filterIDs, (n, i) ->
 	return ['Bind', i]

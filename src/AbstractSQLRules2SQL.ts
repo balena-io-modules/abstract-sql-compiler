@@ -9,7 +9,9 @@ import {
 } from './AbstractSQLCompiler';
 import { Dictionary } from 'lodash';
 
-export type Binding = [string, any] | ['Bind', number | string | any[]];
+export type Binding =
+	| [string, any]
+	| ['Bind', number | string | [string, string]];
 export interface SqlResult {
 	query: string;
 	bindings: Binding[];
@@ -302,7 +304,10 @@ const JoinMatch = (joinType: string): MatchFn => {
 		switch (type) {
 			case 'On':
 				checkArgs('On', rest, 1);
-				const ruleBody = BooleanValue(getAbstractSqlQuery(rest, 0), indent);
+				const ruleBody = BooleanValue(
+					getAbstractSqlQuery(rest, 0),
+					NestedIndent(indent),
+				);
 				return sqlJoinType + from + ' ON ' + ruleBody;
 			default:
 				throw new SyntaxError(
@@ -457,9 +462,12 @@ const MaybeAlias = (
 const AddBind = (bind: Binding): string => {
 	if (engine === Engines.postgres) {
 		if (bind[0] === 'Bind') {
-			const existingBindIndex = _.findIndex(fieldOrderings, existingBind =>
-				_.isEqual(bind, existingBind),
-			);
+			const compFn = _.isArray(bind[1])
+				? (existingBind: Binding) =>
+						existingBind[0] === 'Bind' && _.isEqual(existingBind[1], bind[1])
+				: (existingBind: Binding) =>
+						existingBind[0] === 'Bind' && existingBind[1] === bind[1];
+			const existingBindIndex = fieldOrderings.findIndex(compFn);
 			if (existingBindIndex !== -1) {
 				// Reuse the existing bind if there is one, adding 1 because the postgres binds start from $1
 				return '$' + (existingBindIndex + 1);

@@ -61,7 +61,7 @@ runExpectation = (describe, engine, input, method, expectedBindings, body, expec
 			expectation = body
 		body = {}
 
-	describe 'Parsing ' + method + ' ' + input, ->
+	describe 'Parsing ' + method + ' ' + _.truncate(input, { length: 100 }), ->
 		try
 			input = ODataParser.parse(input)
 			{ tree, extraBodyVars } = odata2AbstractSQL.match(input.tree, method, _.keys(body))
@@ -91,4 +91,3 @@ module.exports.clientModel = clientModel
 module.exports.postgres = bindRunExpectation('postgres')
 module.exports.mysql = bindRunExpectation('mysql')
 module.exports.websql = bindRunExpectation('websql')
-
