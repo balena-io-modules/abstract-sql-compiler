@@ -1,4 +1,14 @@
 - commits:
+    - subject: Optimise finding of existing binds when adding a bind variable
+      hash: 7f45a56eacc2a9fa69734a9f22778a83c4d4edf8
+      body: ''
+      footer:
+        Change-type: patch
+        change-type: patch
+      author: Pagan Gazzard
+  version: 6.8.1
+  date: 2019-09-10T17:45:47.587Z
+- commits:
     - subject: Add support for inner/left/right/full joins
       hash: d2af541da7d0f7f2b6c25adb4929a410374e5887
       body: ''
