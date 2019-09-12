@@ -40,6 +40,7 @@ module.exports = (builtInVocab = false) ->
 				# Individually match the statements in order to get a nicer diff if they don't match.
 				for i in [0...Math.max(result.createSchema.length, expectation.length)]
 					expect(result.createSchema[i]).to.equal(expectation[i])
+				expect(result.createSchema.length).to.equal(expectation.length)
 
 	runRule = (it, input, expectation) ->
 		runExpectation it, 'Rule: ' + input, (result) ->
