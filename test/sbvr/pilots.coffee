@@ -25,11 +25,38 @@ describe 'pilots', ->
 		Fact Type: pilot is experienced
 		Term: veteran pilot
 			Definition: pilot that can fly at least 2 planes
+
+		-- Test circular dependency
+		Term: licence
+		Fact type: pilot has licence
+			Necessity: each pilot has exactly one licence
+		Fact type: licence was granted by pilot
+			Necessity: each licence was granted by exactly one pilot
 	''', [
 		'''
 			CREATE TABLE IF NOT EXISTS "person" (
 				"created at" TIMESTAMP DEFAULT CURRENT_TIMESTAMP NOT NULL
 			,	"id" SERIAL NOT NULL PRIMARY KEY
+			);
+		'''
+		'''
+			CREATE TABLE IF NOT EXISTS "plane" (
+				"created at" TIMESTAMP DEFAULT CURRENT_TIMESTAMP NOT NULL
+			,	"id" SERIAL NOT NULL PRIMARY KEY
+			,	"name" VARCHAR(255) NOT NULL
+			);
+		'''
+		'''
+			CREATE TABLE IF NOT EXISTS "veteran pilot" (
+				"created at" TIMESTAMP DEFAULT CURRENT_TIMESTAMP NOT NULL
+			,	"id" SERIAL NOT NULL PRIMARY KEY
+			);
+		'''
+		'''
+			CREATE TABLE IF NOT EXISTS "licence" (
+				"created at" TIMESTAMP DEFAULT CURRENT_TIMESTAMP NOT NULL
+			,	"id" SERIAL NOT NULL PRIMARY KEY
+			,	"was granted by-pilot" INTEGER NOT NULL
 			);
 		'''
 		'''
@@ -40,14 +67,9 @@ describe 'pilots', ->
 			,	"name" VARCHAR(255) NOT NULL
 			,	"years of experience" INTEGER NOT NULL
 			,	"is experienced" INTEGER DEFAULT 0 NOT NULL
+			,	"licence" INTEGER NOT NULL
 			,	FOREIGN KEY ("person") REFERENCES "person" ("id")
-			);
-		'''
-		'''
-			CREATE TABLE IF NOT EXISTS "plane" (
-				"created at" TIMESTAMP DEFAULT CURRENT_TIMESTAMP NOT NULL
-			,	"id" SERIAL NOT NULL PRIMARY KEY
-			,	"name" VARCHAR(255) NOT NULL
+			,	FOREIGN KEY ("licence") REFERENCES "licence" ("id")
 			);
 		'''
 		'''
@@ -62,10 +84,27 @@ describe 'pilots', ->
 			);
 		'''
 		'''
-			CREATE TABLE IF NOT EXISTS "veteran pilot" (
-				"created at" TIMESTAMP DEFAULT CURRENT_TIMESTAMP NOT NULL
-			,	"id" SERIAL NOT NULL PRIMARY KEY
-			);
+			DO $$
+			BEGIN
+				IF NOT EXISTS (
+					SELECT 1
+					FROM information_schema.table_constraints tc
+					JOIN information_schema.key_column_usage kcu USING (constraint_catalog, constraint_schema, constraint_name)
+					JOIN information_schema.constraint_column_usage ccu USING (constraint_catalog, constraint_schema, constraint_name)
+					WHERE constraint_type = 'FOREIGN KEY'
+						AND tc.table_schema = CURRENT_SCHEMA()
+						AND tc.table_name = 'licence'
+						AND kcu.column_name = 'was granted by-pilot'
+						AND ccu.table_schema = CURRENT_SCHEMA()
+						AND ccu.table_name = 'pilot'
+						AND ccu.column_name = 'id'
+				) THEN
+					ALTER TABLE "licence"
+					ADD CONSTRAINT "licence_was granted by-pilot_fkey"
+					FOREIGN KEY ("was granted by-pilot") REFERENCES "pilot" ("id");
+				END IF;
+			END;
+			$$;
 		'''
 	]
 

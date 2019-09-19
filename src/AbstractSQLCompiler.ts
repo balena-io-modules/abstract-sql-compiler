@@ -530,6 +530,7 @@ const compileSchema = (
 	}
 
 	const createSchemaStatements: string[] = [];
+	const alterSchemaStatements: string[] = [];
 	let dropSchemaStatements: string[] = [];
 
 	const fns: _.Dictionary<true> = {};
@@ -586,19 +587,50 @@ $$ LANGUAGE ${fnDefinition.language};`);
 					_.includes(['ForeignKey', 'ConceptType'], dataType) &&
 					references != null
 				) {
-					foreignKeys.push({ fieldName, references });
-					depends.push(references.resourceName);
-					hasDependants[references.resourceName] = true;
+					const referencedTable =
+						abstractSqlModel.tables[references.resourceName];
+					const fkDefinition = `FOREIGN KEY ("${fieldName}") REFERENCES "${referencedTable.name}" ("${references.fieldName}")`;
+
+					const schemaInfo = schemaDependencyMap[references.resourceName];
+					if (schemaInfo && schemaInfo.depends.includes(table.resourceName)) {
+						if (engine !== Engines.postgres) {
+							throw new Error(
+								'Circular dependencies are only supported on postgres currently',
+							);
+						}
+						// It's a simple circular dependency so we switch it to an ALTER TABLE
+						alterSchemaStatements.push(`\
+DO $$
+BEGIN
+	IF NOT EXISTS (
+		SELECT 1
+		FROM information_schema.table_constraints tc
+		JOIN information_schema.key_column_usage kcu USING (constraint_catalog, constraint_schema, constraint_name)
+		JOIN information_schema.constraint_column_usage ccu USING (constraint_catalog, constraint_schema, constraint_name)
+		WHERE constraint_type = 'FOREIGN KEY'
+			AND tc.table_schema = CURRENT_SCHEMA()
+			AND tc.table_name = '${table.name}'
+			AND kcu.column_name = '${fieldName}'
+			AND ccu.table_schema = CURRENT_SCHEMA()
+			AND ccu.table_name = '${referencedTable.name}'
+			AND ccu.column_name = '${references.fieldName}'
+	) THEN
+		ALTER TABLE "${table.name}"
+		ADD CONSTRAINT "${table.name}_${fieldName}_fkey"
+		${fkDefinition};
+	END IF;
+END;
+$$;`);
+					} else {
+						foreignKeys.push(fkDefinition);
+						depends.push(references.resourceName);
+						hasDependants[references.resourceName] = true;
+					}
 				}
 			}
 		}
 
-		for (const { fieldName, references } of foreignKeys) {
-			const referencedTable = abstractSqlModel.tables[references.resourceName];
-			createSqlElements.push(
-				`FOREIGN KEY ("${fieldName}") REFERENCES "${referencedTable.name}" ("${references.fieldName}")`,
-			);
-		}
+		createSqlElements.push(...foreignKeys);
 		for (const index of table.indexes) {
 			createSqlElements.push(
 				index.type + '("' + index.fields.join('", "') + '")',
@@ -693,6 +725,7 @@ CREATE TABLE ${ifNotExistsStr}"${table.name}" (
 		);
 		throw new Error('Failed to resolve all schema dependencies');
 	}
+	createSchemaStatements.push(...alterSchemaStatements);
 	dropSchemaStatements = dropSchemaStatements.reverse();
 
 	const ruleStatements: SqlRule[] = _.map(
