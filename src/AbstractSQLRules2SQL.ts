@@ -21,6 +21,7 @@ type MetaMatchFn = (args: AbstractSqlQuery, indent: string) => string;
 type MatchFn = (args: AbstractSqlType[], indent: string) => string;
 
 let fieldOrderings: Binding[] = [];
+let fieldOrderingsLookup: Dictionary<number> = {};
 let engine: Engines = Engines.postgres;
 
 export const comparisons = {
@@ -462,16 +463,15 @@ const MaybeAlias = (
 const AddBind = (bind: Binding): string => {
 	if (engine === Engines.postgres) {
 		if (bind[0] === 'Bind') {
-			const compFn = _.isArray(bind[1])
-				? (existingBind: Binding) =>
-						existingBind[0] === 'Bind' && _.isEqual(existingBind[1], bind[1])
-				: (existingBind: Binding) =>
-						existingBind[0] === 'Bind' && existingBind[1] === bind[1];
-			const existingBindIndex = fieldOrderings.findIndex(compFn);
-			if (existingBindIndex !== -1) {
-				// Reuse the existing bind if there is one, adding 1 because the postgres binds start from $1
-				return '$' + (existingBindIndex + 1);
+			const key = JSON.stringify(bind[1]);
+			const existingBindIndex = fieldOrderingsLookup[key];
+			if (existingBindIndex != null) {
+				// Reuse the existing bind if there is one
+				return '$' + existingBindIndex;
 			}
+			const nextID = fieldOrderings.push(bind);
+			fieldOrderingsLookup[key] = nextID;
+			return '$' + nextID;
 		}
 		return '$' + fieldOrderings.push(bind);
 	} else {
@@ -1225,6 +1225,7 @@ export const AbstractSQLRules2SQL = (
 ): SqlResult | SqlResult[] => {
 	engine = $engine;
 	fieldOrderings = [];
+	fieldOrderingsLookup = {};
 
 	const indent = '\n';
 	const [type, ...rest] = abstractSQL;
@@ -1258,6 +1259,7 @@ export const AbstractSQLRules2SQL = (
 			};
 			// Reset fieldOrderings for the second query
 			fieldOrderings = [];
+			fieldOrderingsLookup = {};
 			const updateSql = typeRules.UpdateQuery(updateQuery.slice(1), indent);
 			const update = {
 				query: updateSql,
