@@ -474,11 +474,11 @@ const getReferencedFields: EngineInstance['getReferencedFields'] = ruleBody => {
 
 const checkQuery = (query: AbstractSqlQuery): ModifiedFields | undefined => {
 	const queryType = query[0];
-	if (!_.includes(['InsertQuery', 'UpdateQuery', 'DeleteQuery'], queryType)) {
+	if (!['InsertQuery', 'UpdateQuery', 'DeleteQuery'].includes(queryType)) {
 		return;
 	}
 
-	const froms = _.filter(query, n => n[0] === 'From') as FromNode[];
+	const froms = query.filter(n => n[0] === 'From') as FromNode[];
 	if (froms.length !== 1) {
 		return;
 	}
@@ -508,7 +508,7 @@ const getModifiedFields: EngineInstance['getModifiedFields'] = (
 	abstractSqlQuery: AbstractSqlQuery,
 ) => {
 	if (_.isArray(abstractSqlQuery[0])) {
-		return _.map(abstractSqlQuery, checkQuery);
+		return abstractSqlQuery.map(checkQuery);
 	} else {
 		return checkQuery(abstractSqlQuery);
 	}
@@ -584,7 +584,7 @@ $$ LANGUAGE ${fnDefinition.language};`);
 					'"' + fieldName + '" ' + dataTypeGen(engine, field),
 				);
 				if (
-					_.includes(['ForeignKey', 'ConceptType'], dataType) &&
+					['ForeignKey', 'ConceptType'].includes(dataType) &&
 					references != null
 				) {
 					const referencedTable =
@@ -728,8 +728,7 @@ CREATE TABLE ${ifNotExistsStr}"${table.name}" (
 	createSchemaStatements.push(...alterSchemaStatements);
 	dropSchemaStatements = dropSchemaStatements.reverse();
 
-	const ruleStatements: SqlRule[] = _.map(
-		abstractSqlModel.rules,
+	const ruleStatements: SqlRule[] = abstractSqlModel.rules.map(
 		(rule): SqlRule => {
 			const ruleBodyNode = _.find(rule, { 0: 'Body' }) as [
 				'Body',
