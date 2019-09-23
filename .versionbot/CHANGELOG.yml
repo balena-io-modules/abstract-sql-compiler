@@ -1,4 +1,15 @@
 - commits:
+    - subject: Switch to a lookup table for finding existing bind var entries
+      hash: cf7efe77c9d9ee64aeda09c94968cf3c9dcc8cc4
+      body: |
+        This helps massively as the number of bind vars increases
+      footer:
+        Change-type: patch
+        change-type: patch
+      author: Pagan Gazzard
+  version: 6.9.1
+  date: 2019-09-20T22:16:57.070Z
+- commits:
     - subject: Add support for resolving directly circular dependencies on postgres
       hash: 0912d3d9d51af3b03f4fe253eb3c8ff341a66886
       body: ''
