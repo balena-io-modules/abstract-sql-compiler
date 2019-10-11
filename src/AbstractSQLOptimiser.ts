@@ -772,6 +772,16 @@ const typeRules: Dictionary<MatchFn> = {
 						}
 						return;
 					}
+				} else if (arg[0] === 'In') {
+					const fieldRef = arg[1] as string;
+					if (fieldBuckets[fieldRef] == null) {
+						fieldBuckets[fieldRef] = [arg];
+					} else {
+						// We're adding a second match, so that means we can optimise
+						maybeHelped = true;
+						fieldBuckets[fieldRef].push(arg);
+					}
+					return;
 				}
 				others.push(arg);
 			});
@@ -783,8 +793,11 @@ const typeRules: Dictionary<MatchFn> = {
 				if (fields.length === 1) {
 					return fields[0];
 				} else {
-					maybeHelped = true;
-					return ['In', fields[0][1], ..._.map(fields, 2)];
+					return [
+						'In',
+						fields[0][1],
+						..._.flatMap(fields, field => field.slice(2)),
+					];
 				}
 			});
 			return ['Or', ...fields, ...others] as AbstractSqlQuery;

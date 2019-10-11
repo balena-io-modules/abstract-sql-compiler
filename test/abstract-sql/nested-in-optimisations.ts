@@ -101,3 +101,43 @@ describe('Nested AND NOT EQUALs should create a single NOT IN statement', () => 
 		},
 	);
 });
+
+describe('OR IN/EQUALs should create a single IN statement', () => {
+	test(
+		[
+			'SelectQuery',
+			['Select', []],
+			['From', ['Table', 'table']],
+			[
+				'Where',
+				[
+					'Or',
+					[
+						'In',
+						['ReferencedField', 'table', 'field1'],
+						['Text', 'a'],
+						['Text', 'b'],
+					],
+					[
+						'Or',
+						['Equals', ['ReferencedField', 'table', 'field1'], ['Text', 'c']],
+						['Equals', ['ReferencedField', 'table', 'field1'], ['Text', 'd']],
+					],
+				],
+			],
+		],
+		[['Text', 'a'], ['Text', 'b'], ['Text', 'c'], ['Text', 'd']],
+		(result, sqlEquals) => {
+			it('should produce a single in statement', () => {
+				sqlEquals(
+					result.query,
+					stripIndent`
+						SELECT 1
+						FROM "table"
+						WHERE "table"."field1" IN ($1, $2, $3, $4)
+					`,
+				);
+			});
+		},
+	);
+});
