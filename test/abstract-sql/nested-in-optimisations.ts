@@ -50,3 +50,54 @@ describe('Nested OR EQUALs should create a single IN statement', () => {
 		},
 	);
 });
+
+describe('Nested AND NOT EQUALs should create a single NOT IN statement', () => {
+	test(
+		[
+			'SelectQuery',
+			['Select', []],
+			['From', ['Table', 'table']],
+			[
+				'Where',
+				[
+					'And',
+					['NotEquals', ['ReferencedField', 'table', 'field1'], ['Text', 'a']],
+					[
+						'And',
+						[
+							'NotEquals',
+							['ReferencedField', 'table', 'field1'],
+							['Text', 'b'],
+						],
+						[
+							'And',
+							[
+								'NotEquals',
+								['ReferencedField', 'table', 'field1'],
+								['Text', 'c'],
+							],
+							[
+								'NotEquals',
+								['ReferencedField', 'table', 'field1'],
+								['Text', 'd'],
+							],
+						],
+					],
+				],
+			],
+		],
+		[['Text', 'a'], ['Text', 'b'], ['Text', 'c'], ['Text', 'd']],
+		(result, sqlEquals) => {
+			it('should produce a single IN statement', () => {
+				sqlEquals(
+					result.query,
+					stripIndent`
+						SELECT 1
+						FROM "table"
+						WHERE "table"."field1" NOT IN ($1, $2, $3, $4)
+					`,
+				);
+			});
+		},
+	);
+});
