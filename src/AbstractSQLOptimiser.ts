@@ -640,6 +640,29 @@ const typeRules: Dictionary<MatchFn> = {
 		}),
 		Helper<OptimisationMatchFn>(args => {
 			checkMinArgs('And', args, 2);
+			// Collapse nested ANDs.
+			let maybeHelped = false;
+			const conditions = _.flatMap(args, arg => {
+				if (!isAbstractSqlQuery(arg)) {
+					throw new SyntaxError(
+						`Expected AbstractSqlQuery array but got ${typeof arg}`,
+					);
+				}
+				if (arg[0] === 'And') {
+					maybeHelped = true;
+					return arg.slice(1);
+				}
+				return [arg];
+			});
+			if (!maybeHelped) {
+				// Make sure we actually hit an optimisation case
+				return false;
+			}
+
+			return ['And', ...conditions] as AbstractSqlQuery;
+		}),
+		Helper<OptimisationMatchFn>(args => {
+			checkMinArgs('And', args, 2);
 			// Optimise id != 1 AND id != 2 AND id != 3 -> id NOT IN [1, 2, 3]
 			const fieldBuckets: Dictionary<AbstractSqlQuery[]> = {};
 			const others: AbstractSqlQuery[] = [];
@@ -663,6 +686,16 @@ const typeRules: Dictionary<MatchFn> = {
 						}
 						return;
 					}
+				} else if (arg[0] === 'NotIn') {
+					const fieldRef = arg[1] as string;
+					if (fieldBuckets[fieldRef] == null) {
+						fieldBuckets[fieldRef] = [arg];
+					} else {
+						// We're adding a second match, so that means we can optimise
+						maybeHelped = true;
+						fieldBuckets[fieldRef].push(arg);
+					}
+					return;
 				}
 				others.push(arg);
 			});
@@ -674,33 +707,14 @@ const typeRules: Dictionary<MatchFn> = {
 				if (fields.length === 1) {
 					return fields[0];
 				} else {
-					return ['NotIn', fields[0][1], ..._.map(fields, 2)];
+					return [
+						'NotIn',
+						fields[0][1],
+						..._.flatMap(fields, field => field.slice(2)),
+					];
 				}
 			});
 			return ['And', ...fields, ...others] as AbstractSqlQuery;
-		}),
-		Helper<OptimisationMatchFn>(args => {
-			checkMinArgs('And', args, 2);
-			// Collapse nested ANDs.
-			let maybeHelped = false;
-			const conditions = _.flatMap(args, arg => {
-				if (!isAbstractSqlQuery(arg)) {
-					throw new SyntaxError(
-						`Expected AbstractSqlQuery array but got ${typeof arg}`,
-					);
-				}
-				if (arg[0] === 'And') {
-					maybeHelped = true;
-					return arg.slice(1);
-				}
-				return [arg];
-			});
-			if (!maybeHelped) {
-				// Make sure we actually hit an optimisation case
-				return false;
-			}
-
-			return ['And', ...conditions] as AbstractSqlQuery;
 		}),
 		args => {
 			checkMinArgs('And', args, 2);
@@ -723,6 +737,29 @@ const typeRules: Dictionary<MatchFn> = {
 				return false;
 			}
 			return getAbstractSqlQuery(args, 0);
+		}),
+		Helper<OptimisationMatchFn>(args => {
+			checkMinArgs('Or', args, 2);
+			// Collapse nested ORs.
+			let maybeHelped = false;
+			const conditions = _.flatMap(args, arg => {
+				if (!isAbstractSqlQuery(arg)) {
+					throw new SyntaxError(
+						`Expected AbstractSqlQuery array but got ${typeof arg}`,
+					);
+				}
+				if (arg[0] === 'Or') {
+					maybeHelped = true;
+					return arg.slice(1);
+				}
+				return [arg];
+			});
+			if (!maybeHelped) {
+				// Make sure we actually hit an optimisation case
+				return false;
+			}
+
+			return ['Or', ...conditions] as AbstractSqlQuery;
 		}),
 		Helper<OptimisationMatchFn>(args => {
 			checkMinArgs('Or', args, 2);
@@ -749,6 +786,16 @@ const typeRules: Dictionary<MatchFn> = {
 						}
 						return;
 					}
+				} else if (arg[0] === 'In') {
+					const fieldRef = arg[1] as string;
+					if (fieldBuckets[fieldRef] == null) {
+						fieldBuckets[fieldRef] = [arg];
+					} else {
+						// We're adding a second match, so that means we can optimise
+						maybeHelped = true;
+						fieldBuckets[fieldRef].push(arg);
+					}
+					return;
 				}
 				others.push(arg);
 			});
@@ -760,34 +807,14 @@ const typeRules: Dictionary<MatchFn> = {
 				if (fields.length === 1) {
 					return fields[0];
 				} else {
-					maybeHelped = true;
-					return ['In', fields[0][1], ..._.map(fields, 2)];
+					return [
+						'In',
+						fields[0][1],
+						..._.flatMap(fields, field => field.slice(2)),
+					];
 				}
 			});
 			return ['Or', ...fields, ...others] as AbstractSqlQuery;
-		}),
-		Helper<OptimisationMatchFn>(args => {
-			checkMinArgs('Or', args, 2);
-			// Collapse nested ORs.
-			let maybeHelped = false;
-			const conditions = _.flatMap(args, arg => {
-				if (!isAbstractSqlQuery(arg)) {
-					throw new SyntaxError(
-						`Expected AbstractSqlQuery array but got ${typeof arg}`,
-					);
-				}
-				if (arg[0] === 'Or') {
-					maybeHelped = true;
-					return arg.slice(1);
-				}
-				return [arg];
-			});
-			if (!maybeHelped) {
-				// Make sure we actually hit an optimisation case
-				return false;
-			}
-
-			return ['Or', ...conditions] as AbstractSqlQuery;
 		}),
 		args => {
 			checkMinArgs('Or', args, 2);
