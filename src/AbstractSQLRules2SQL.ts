@@ -23,6 +23,7 @@ type MatchFn = (args: AbstractSqlType[], indent: string) => string;
 let fieldOrderings: Binding[] = [];
 let fieldOrderingsLookup: Dictionary<number> = {};
 let engine: Engines = Engines.postgres;
+let noBinds: boolean = false;
 
 export const comparisons = {
 	Equals: ' = ',
@@ -376,7 +377,11 @@ const ExtractNumericDatePart = (type: keyof typeof dateFormats): MatchFn => {
 
 const Text: MatchFn = args => {
 	checkArgs('Text', args, 1);
-	return AddBind(['Text', args[0]]);
+	if (noBinds) {
+		return `'${args[0]}'`;
+	} else {
+		return AddBind(['Text', args[0]]);
+	}
 };
 
 export const checkArgs = (matchName: string, args: any[], num: number) => {
@@ -461,6 +466,9 @@ const MaybeAlias = (
 };
 
 const AddBind = (bind: Binding): string => {
+	if (noBinds) {
+		throw new SyntaxError('Cannot use a bind whilst they are disabled');
+	}
 	if (engine === Engines.postgres) {
 		if (bind[0] === 'Bind') {
 			const key = JSON.stringify(bind[1]);
@@ -1219,11 +1227,28 @@ const typeRules: Dictionary<MatchFn> = {
 	},
 };
 
-export const AbstractSQLRules2SQL = (
+export function AbstractSQLRules2SQL(
 	abstractSQL: AbstractSqlQuery,
 	$engine: Engines,
-): SqlResult | SqlResult[] => {
+	$noBinds: true,
+): string;
+export function AbstractSQLRules2SQL(
+	abstractSQL: AbstractSqlQuery,
+	$engine: Engines,
+	$noBinds?: false,
+): SqlResult | SqlResult[];
+export function AbstractSQLRules2SQL(
+	abstractSQL: AbstractSqlQuery,
+	$engine: Engines,
+	$noBinds?: boolean,
+): SqlResult | SqlResult[] | string;
+export function AbstractSQLRules2SQL(
+	abstractSQL: AbstractSqlQuery,
+	$engine: Engines,
+	$noBinds = false,
+): SqlResult | SqlResult[] | string {
 	engine = $engine;
+	noBinds = $noBinds;
 	fieldOrderings = [];
 	fieldOrderingsLookup = {};
 
@@ -1268,9 +1293,12 @@ export const AbstractSQLRules2SQL = (
 			return [insert, update];
 		default:
 			const value = AnyValue(abstractSQL, indent);
+			if (noBinds) {
+				return value;
+			}
 			return {
 				query: `SELECT ${value} AS "result";`,
 				bindings: fieldOrderings,
 			};
 	}
-};
+}

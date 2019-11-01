@@ -35,6 +35,7 @@ const escapeForLike = (str: AbstractSqlType): ReplaceNode => [
 ];
 
 let helped = false;
+let noBinds = false;
 const Helper = <F extends (...args: any[]) => any>(fn: F) => {
 	return (...args: Parameters<F>): ReturnType<F> => {
 		const result = fn(...args);
@@ -832,6 +833,9 @@ const typeRules: Dictionary<MatchFn> = {
 		},
 	),
 	Bind: args => {
+		if (noBinds) {
+			throw new SyntaxError('Cannot use a bind whilst they are disabled');
+		}
 		if (args.length !== 1 && args.length !== 2) {
 			throw new SyntaxError(`"Bind" requires 1/2 arg(s)`);
 		}
@@ -1181,7 +1185,9 @@ const typeRules: Dictionary<MatchFn> = {
 
 export const AbstractSQLOptimiser = (
 	abstractSQL: AbstractSqlQuery,
+	$noBinds = false,
 ): AbstractSqlQuery => {
+	noBinds = $noBinds;
 	do {
 		helped = false;
 		const [type, ...rest] = abstractSQL;
