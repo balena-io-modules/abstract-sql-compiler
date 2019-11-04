@@ -378,7 +378,11 @@ const dataTypeGen = (
 	if (checks != null) {
 		checksString = checks
 			.map(check => {
-				return ` CHECK ${compileRule(check as AbstractSqlQuery, engine, true)}`;
+				return ` CHECK (${compileRule(
+					check as AbstractSqlQuery,
+					engine,
+					true,
+				)})`;
 			})
 			.join('');
 	}

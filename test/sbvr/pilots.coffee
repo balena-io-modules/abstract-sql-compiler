@@ -44,7 +44,7 @@ describe 'pilots', ->
 			CREATE TABLE IF NOT EXISTS "plane" (
 				"created at" TIMESTAMP DEFAULT CURRENT_TIMESTAMP NOT NULL
 			,	"id" SERIAL NOT NULL PRIMARY KEY
-			,	"name" VARCHAR(255) NOT NULL CHECK "name" IN ('planeA', 'planeB', 'planeC')
+			,	"name" VARCHAR(255) NOT NULL CHECK ("name" IN ('planeA', 'planeB', 'planeC'))
 			);
 		'''
 		'''
