@@ -20,6 +20,7 @@ describe 'pilots', ->
 			Necessity: each pilot has exactly one years of experience
 		Fact Type: plane has name
 			Necessity: each plane has exactly one name
+			Definition: "planeA" or "planeB" or "planeC"
 		Fact Type: pilot can fly plane
 			Synonymous Form: plane can be flown by pilot
 		Fact Type: pilot is experienced
@@ -43,7 +44,7 @@ describe 'pilots', ->
 			CREATE TABLE IF NOT EXISTS "plane" (
 				"created at" TIMESTAMP DEFAULT CURRENT_TIMESTAMP NOT NULL
 			,	"id" SERIAL NOT NULL PRIMARY KEY
-			,	"name" VARCHAR(255) NOT NULL
+			,	"name" VARCHAR(255) NOT NULL CHECK "name" IN ('planeA', 'planeB', 'planeC')
 			);
 		'''
 		'''

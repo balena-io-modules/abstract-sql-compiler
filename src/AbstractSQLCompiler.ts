@@ -261,6 +261,7 @@ export interface AbstractSqlField {
 	defaultValue?: string;
 	necessity: boolean;
 	computed?: AbstractSqlQuery;
+	checks?: BooleanTypeNodes[];
 }
 export interface Trigger {
 	operation: 'INSERT' | 'UPDATE' | 'DELETE' | 'TRUNCATE';
@@ -360,7 +361,7 @@ const dataTypeValidate: EngineInstance['dataTypeValidate'] = (value, field) => {
 
 const dataTypeGen = (
 	engine: Engines,
-	{ dataType, required, index, defaultValue }: AbstractSqlField,
+	{ dataType, required, index, defaultValue, checks }: AbstractSqlField,
 ): string => {
 	let requiredStr;
 	if (required) {
@@ -372,6 +373,14 @@ const dataTypeGen = (
 		defaultValue = ` DEFAULT ${defaultValue}`;
 	} else {
 		defaultValue = '';
+	}
+	let checksString = '';
+	if (checks != null) {
+		checksString = checks
+			.map(check => {
+				return ` CHECK ${compileRule(check as AbstractSqlQuery, engine, true)}`;
+			})
+			.join('');
 	}
 	if (index == null) {
 		index = '';
@@ -386,7 +395,7 @@ const dataTypeGen = (
 		if (_.isFunction(dbType)) {
 			return dbType(requiredStr, index);
 		}
-		return dbType + defaultValue + requiredStr + index;
+		return dbType + defaultValue + requiredStr + checksString + index;
 	} else {
 		throw new Error(`Unknown data type '${dataType}' for engine: ${engine}`);
 	}
@@ -514,9 +523,13 @@ const getModifiedFields: EngineInstance['getModifiedFields'] = (
 	}
 };
 
-const compileRule = (abstractSQL: AbstractSqlQuery, engine: Engines) => {
-	abstractSQL = AbstractSQLOptimiser(abstractSQL);
-	return AbstractSQLRules2SQL(abstractSQL, engine);
+const compileRule = (
+	abstractSQL: AbstractSqlQuery,
+	engine: Engines,
+	noBinds?: boolean,
+) => {
+	abstractSQL = AbstractSQLOptimiser(abstractSQL, noBinds);
+	return AbstractSQLRules2SQL(abstractSQL, engine, noBinds);
 };
 
 const compileSchema = (
@@ -785,7 +798,7 @@ CREATE TABLE ${ifNotExistsStr}"${table.name}" (
 const generateExport = (engine: Engines, ifNotExists: boolean) => {
 	return {
 		compileSchema: _.partial(compileSchema, _, engine, ifNotExists),
-		compileRule: _.partial(compileRule, _, engine),
+		compileRule: _.partial(compileRule, _, engine, false),
 		dataTypeValidate,
 		getReferencedFields,
 		getModifiedFields,
