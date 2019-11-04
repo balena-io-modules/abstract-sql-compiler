@@ -1,4 +1,14 @@
 - commits:
+    - subject: Add support for basic check constraints
+      hash: 3c85919ddc7d35ada6e2788d28580f4ceb9a8170
+      body: ''
+      footer:
+        Change-type: minor
+        change-type: minor
+      author: Pagan Gazzard
+  version: 6.10.0
+  date: 2019-11-04T12:28:46.703Z
+- commits:
     - subject: Allow combining/adding to existing NOT IN statements
       hash: e7010af9667c48db526d65d1286dd3c88f2bf831
       body: ''
