@@ -523,14 +523,29 @@ const getModifiedFields: EngineInstance['getModifiedFields'] = (
 	}
 };
 
-const compileRule = (
+export function compileRule(
+	abstractSQL: AbstractSqlQuery,
+	engine: Engines,
+	noBinds: true,
+): string;
+export function compileRule(
+	abstractSQL: AbstractSqlQuery,
+	engine: Engines,
+	noBinds?: false,
+): SqlResult | SqlResult[];
+export function compileRule(
 	abstractSQL: AbstractSqlQuery,
 	engine: Engines,
 	noBinds?: boolean,
-) => {
+): SqlResult | SqlResult[] | string;
+export function compileRule(
+	abstractSQL: AbstractSqlQuery,
+	engine: Engines,
+	noBinds = false,
+): SqlResult | SqlResult[] | string {
 	abstractSQL = AbstractSQLOptimiser(abstractSQL, noBinds);
 	return AbstractSQLRules2SQL(abstractSQL, engine, noBinds);
-};
+}
 
 const compileSchema = (
 	abstractSqlModel: AbstractSqlModel,
@@ -798,7 +813,8 @@ CREATE TABLE ${ifNotExistsStr}"${table.name}" (
 const generateExport = (engine: Engines, ifNotExists: boolean) => {
 	return {
 		compileSchema: _.partial(compileSchema, _, engine, ifNotExists),
-		compileRule: _.partial(compileRule, _, engine, false),
+		compileRule: (abstractSQL: AbstractSqlQuery) =>
+			compileRule(abstractSQL, engine, false),
 		dataTypeValidate,
 		getReferencedFields,
 		getModifiedFields,
