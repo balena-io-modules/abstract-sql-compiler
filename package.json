@@ -1,6 +1,6 @@
 {
   "name": "@resin/abstract-sql-compiler",
-  "version": "6.10.1",
+  "version": "6.10.2",
   "description": "A translator for abstract sql into sql.",
   "main": "out/AbstractSQLCompiler.js",
   "types": "out/AbstractSQLCompiler.d.ts",
