@@ -1,4 +1,14 @@
 - commits:
+    - subject: Fix `compileRule` typings
+      hash: c59026e90d600b90a68616e8629f201cf4646ada
+      body: ''
+      footer:
+        Change-type: patch
+        change-type: patch
+      author: Pagan Gazzard
+  version: 6.10.1
+  date: 2019-11-04T14:03:29.039Z
+- commits:
     - subject: Add support for basic check constraints
       hash: 3c85919ddc7d35ada6e2788d28580f4ceb9a8170
       body: ''
