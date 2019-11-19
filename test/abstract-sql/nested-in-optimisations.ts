@@ -35,7 +35,12 @@ describe('Nested OR EQUALs should create a single IN statement', () => {
 				],
 			],
 		],
-		[['Text', 'a'], ['Text', 'b'], ['Text', 'c'], ['Text', 'd']],
+		[
+			['Text', 'a'],
+			['Text', 'b'],
+			['Text', 'c'],
+			['Text', 'd'],
+		],
 		(result, sqlEquals) => {
 			it('should produce a single IN statement', () => {
 				sqlEquals(
@@ -86,7 +91,12 @@ describe('Nested AND NOT EQUALs should create a single NOT IN statement', () => 
 				],
 			],
 		],
-		[['Text', 'a'], ['Text', 'b'], ['Text', 'c'], ['Text', 'd']],
+		[
+			['Text', 'a'],
+			['Text', 'b'],
+			['Text', 'c'],
+			['Text', 'd'],
+		],
 		(result, sqlEquals) => {
 			it('should produce a single IN statement', () => {
 				sqlEquals(
@@ -126,7 +136,12 @@ describe('OR IN/EQUALs should create a single IN statement', () => {
 				],
 			],
 		],
-		[['Text', 'a'], ['Text', 'b'], ['Text', 'c'], ['Text', 'd']],
+		[
+			['Text', 'a'],
+			['Text', 'b'],
+			['Text', 'c'],
+			['Text', 'd'],
+		],
 		(result, sqlEquals) => {
 			it('should produce a single in statement', () => {
 				sqlEquals(
@@ -174,7 +189,12 @@ describe('AND NOT IN/NOT EQUALs should create a single NOT IN statement', () => 
 				],
 			],
 		],
-		[['Text', 'a'], ['Text', 'b'], ['Text', 'c'], ['Text', 'd']],
+		[
+			['Text', 'a'],
+			['Text', 'b'],
+			['Text', 'c'],
+			['Text', 'd'],
+		],
 		(result, sqlEquals) => {
 			it('should produce a single not in statement', () => {
 				sqlEquals(
