@@ -291,6 +291,9 @@ const JoinMatch = (joinType: string): MatchFn => {
 		case 'FullJoin':
 			sqlJoinType = 'FULL JOIN ';
 			break;
+		case 'CrossJoin':
+			sqlJoinType = 'CROSS JOIN ';
+			break;
 		default:
 			throw new Error(`Unknown join type: '${joinType}'`);
 	}
@@ -541,6 +544,7 @@ const typeRules: Dictionary<MatchFn> = {
 				case 'LeftJoin':
 				case 'RightJoin':
 				case 'FullJoin':
+				case 'CrossJoin':
 					joins.push(typeRules[type](rest, indent));
 					break;
 				case 'Where':
@@ -611,6 +615,11 @@ const typeRules: Dictionary<MatchFn> = {
 	LeftJoin: JoinMatch('LeftJoin'),
 	RightJoin: JoinMatch('RightJoin'),
 	FullJoin: JoinMatch('FullJoin'),
+	CrossJoin: (args, indent) => {
+		checkArgs('CrossJoin', args, 1);
+		const from = MaybeAlias(getAbstractSqlQuery(args, 0), indent, FromMatch);
+		return `CROSS JOIN ${from}`;
+	},
 	Where: (args, indent) => {
 		checkArgs('Where', args, 1);
 		const ruleBody = BooleanValue(getAbstractSqlQuery(args, 0), indent);

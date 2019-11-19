@@ -61,3 +61,32 @@ joinTest('RightJoin', 'RIGHT JOIN');
 joinTest('LeftJoin', 'LEFT JOIN');
 
 joinTest('FullJoin', 'FULL JOIN');
+
+describe('CrossJoin', () => {
+	test(
+		[
+			'SelectQuery',
+			[
+				'Select',
+				[
+					['ReferencedField', 'table', 'field1'],
+					['ReferencedField', 'table2', 'field2'],
+				],
+			],
+			['From', ['Table', 'table']],
+			['CrossJoin', ['Table', 'table2']],
+		],
+		(result, sqlEquals) => {
+			it('should produce a valid join statement', () => {
+				sqlEquals(
+					result.query,
+					stripIndent`
+						SELECT "table"."field1", "table2"."field2"
+						FROM "table"
+						CROSS JOIN "table2"
+					`,
+				);
+			});
+		},
+	);
+});

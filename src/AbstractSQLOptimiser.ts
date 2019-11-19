@@ -329,7 +329,7 @@ const JoinMatch = (joinType: string): MatchFn => args => {
 	if (args.length !== 1 && args.length !== 2) {
 		throw new SyntaxError(`"${joinType}" requires 1/2 arg(s)`);
 	}
-	const from = MaybeAlias(args[0] as AbstractSqlQuery, FromMatch);
+	const from = MaybeAlias(getAbstractSqlQuery(args, 0), FromMatch);
 	if (args.length === 1) {
 		return [joinType, from];
 	}
@@ -397,6 +397,7 @@ const typeRules: Dictionary<MatchFn> = {
 				case 'LeftJoin':
 				case 'RightJoin':
 				case 'FullJoin':
+				case 'CrossJoin':
 					tables.push(typeRules[type](rest));
 					break;
 				case 'Where':
@@ -449,6 +450,11 @@ const typeRules: Dictionary<MatchFn> = {
 	LeftJoin: JoinMatch('LeftJoin'),
 	RightJoin: JoinMatch('RightJoin'),
 	FullJoin: JoinMatch('FullJoin'),
+	CrossJoin: args => {
+		checkArgs('CrossJoin', args, 1);
+		const from = MaybeAlias(getAbstractSqlQuery(args, 0), FromMatch);
+		return ['CrossJoin', from];
+	},
 	Where: matchArgs('Where', BooleanValue),
 	GroupBy: args => {
 		checkArgs('GroupBy', args, 1);
