@@ -1,4 +1,14 @@
 - commits:
+    - subject: Update dependencies
+      hash: 765b58fc2063ec3ab784c697b37f11c14a39752b
+      body: ''
+      footer:
+        Change-type: patch
+        change-type: patch
+      author: Pagan Gazzard
+  version: 6.10.3
+  date: 2019-11-19T14:59:28.783Z
+- commits:
     - subject: Fix CHECK syntax
       hash: 4b3f6f301b0b3b57dbab10eaee44e1a7363bffaf
       body: ''
