@@ -178,6 +178,7 @@ export type SelectQueryNode = [
 		| LeftJoinNode
 		| RightJoinNode
 		| FullJoinNode
+		| CrossJoinNode
 		| WhereNode
 		| GroupByNode
 		| OrderByNode
@@ -205,6 +206,8 @@ export interface RightJoinNode
 	extends OneTwoArgNodeType<'RightJoin', FromTypeNodes, OnNode> {}
 export interface FullJoinNode
 	extends OneTwoArgNodeType<'FullJoin', FromTypeNodes, OnNode> {}
+export interface CrossJoinNode
+	extends OneArgNodeType<'CrossJoin', FromTypeNodes> {}
 export type OnNode = ['On', BooleanTypeNodes];
 export type TableNode = ['Table', string];
 export type WhereNode = ['Where', BooleanTypeNodes];
