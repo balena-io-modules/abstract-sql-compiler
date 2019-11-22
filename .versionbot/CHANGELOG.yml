@@ -1,4 +1,14 @@
 - commits:
+    - subject: Update dev dependencies
+      hash: 0994bf0a71631391752c04d54e7ce566286a71e4
+      body: ''
+      footer:
+        Change-type: patch
+        change-type: patch
+      author: Pagan Gazzard
+  version: 6.11.1
+  date: 2019-11-22T12:47:51.880Z
+- commits:
     - subject: Add support for `CrossJoin`
       hash: b48e6cbf668312d038e509f06e947c5dead39ea4
       body: ''
