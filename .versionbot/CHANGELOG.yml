@@ -1,4 +1,14 @@
 - commits:
+    - subject: Trim trigger names to the max of 63 characters
+      hash: 05e1b93994e51afa7763aa0f721c76ef892fd469
+      body: ''
+      footer:
+        Change-type: patch
+        change-type: patch
+      author: Pagan Gazzard
+  version: 6.11.2
+  date: 2020-01-09T18:36:42.468Z
+- commits:
     - subject: Update dev dependencies
       hash: 0994bf0a71631391752c04d54e7ce566286a71e4
       body: ''
