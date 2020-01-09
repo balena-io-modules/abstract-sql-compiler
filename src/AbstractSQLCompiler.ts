@@ -679,7 +679,8 @@ $$;`);
 				if (!fns[trigger.fnName]) {
 					throw new Error(`No such function '${trigger.fnName}' declared`);
 				}
-				const triggerName = `${table.name}_${trigger.fnName}`;
+				// Trim the trigger name to a max of 63 characters
+				const triggerName = `${table.name}_${trigger.fnName}`.slice(0, 63);
 				createTriggers.push(`\
 DO
 $$
