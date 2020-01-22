@@ -1,4 +1,14 @@
 - commits:
+    - subject: Add CODEOWNERS
+      hash: 660c9caa7621f6a0d8e161b6f2fade5e3df88f0e
+      body: ''
+      footer:
+        Change-type: patch
+        change-type: patch
+      author: Pagan Gazzard
+  version: 6.11.3
+  date: 2020-01-22T15:37:52.435Z
+- commits:
     - subject: Trim trigger names to the max of 63 characters
       hash: 05e1b93994e51afa7763aa0f721c76ef892fd469
       body: ''
