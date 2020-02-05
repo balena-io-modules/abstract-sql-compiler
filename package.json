@@ -10,9 +10,8 @@
     "prepublish": "require-npm4-to-publish",
     "prepare": "tsc --project ./tsconfig.build.json",
     "lint:coffee": "resin-lint test/",
-    "lint:typescript": "resin-lint --typescript src/ typings/ test/ && tsc --noEmit",
-    "lint": "npm run lint:coffee && npm run lint:typescript",
-    "prettify": "prettier --config ./node_modules/resin-lint/config/.prettierrc --write \"{src,typings,test}/**/*.ts\""
+    "lint:typescript": "resin-lint --typescript --fix src/ typings/ test/ && tsc --noEmit",
+    "lint": "npm run lint:coffee && npm run lint:typescript"
   },
   "repository": "https://github.com/resin-io-modules/abstract-sql-compiler.git",
   "author": "",
@@ -35,12 +34,12 @@
     "chai": "^4.2.0",
     "coffeescript": "^1.12.7",
     "common-tags": "^1.8.0",
-    "husky": "^3.1.0",
-    "lint-staged": "^9.4.3",
+    "husky": "^4.2.1",
+    "lint-staged": "^10.0.7",
     "mocha": "^6.2.2",
     "prettier": "^1.19.1",
     "require-npm4-to-publish": "^1.0.0",
-    "resin-lint": "^2.0.1",
+    "resin-lint": "^3.2.4",
     "ts-node": "^7.0.1",
     "typescript": "^3.7.2"
   },

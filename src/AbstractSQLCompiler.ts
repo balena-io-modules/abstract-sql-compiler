@@ -12,8 +12,8 @@ import {
 } from './AbstractSQLRules2SQL';
 export { Binding, SqlResult } from './AbstractSQLRules2SQL';
 import sbvrTypes = require('@resin/sbvr-types');
-import * as _ from 'lodash';
 import * as Promise from 'bluebird';
+import * as _ from 'lodash';
 
 export type NullNode = ['Null'];
 export type DateNode = ['Date', Date];
@@ -21,10 +21,10 @@ export type DurationNode = [
 	'Duration',
 	{
 		negative?: boolean;
-		day?: Number;
-		hour?: Number;
-		minute?: Number;
-		second?: Number;
+		day?: number;
+		hour?: number;
+		minute?: number;
+		second?: number;
 	},
 ];
 
@@ -141,7 +141,7 @@ export type BooleanTypeNodes =
 	| OrNode
 	| UnknownTypeNodes;
 
-export type NumberNode = ['Number', Number];
+export type NumberNode = ['Number', number];
 export type CountNode = ['Count', '*'];
 export type NumberTypeNodes = NumberNode | CountNode | UnknownTypeNodes;
 
@@ -458,7 +458,8 @@ const $getReferencedFields = (
 			});
 			break;
 		case 'ReferencedField':
-			let [, tableName, fieldName] = rulePart;
+			let tableName = rulePart[1];
+			const fieldName = rulePart[2];
 			if (!_.isString(tableName) || !_.isString(fieldName)) {
 				throw new Error(`Invalid ReferencedField: ${rulePart}`);
 			}

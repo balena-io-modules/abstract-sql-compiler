@@ -1,5 +1,5 @@
-import { AbstractSqlQuery } from '../../src/AbstractSQLCompiler';
 import { stripIndent } from 'common-tags';
+import { AbstractSqlQuery } from '../../src/AbstractSQLCompiler';
 
 type TestCb = (
 	result: { query: string },

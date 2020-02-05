@@ -1,13 +1,13 @@
 import * as _ from 'lodash';
 
+import { Dictionary } from 'lodash';
 import {
 	AbstractSqlQuery,
 	AbstractSqlType,
-	ReplaceNode,
 	DurationNode,
+	ReplaceNode,
 } from './AbstractSQLCompiler';
 import * as AbstractSQLRules2SQL from './AbstractSQLRules2SQL';
-import { Dictionary } from 'lodash';
 
 const {
 	isAbstractSqlQuery,
@@ -579,7 +579,7 @@ const typeRules: Dictionary<MatchFn> = {
 	Fractionalseconds: ExtractNumericDatePart('Fractionalseconds'),
 	Totalseconds: matchArgs('Totalseconds', DurationValue),
 	Concat: Concatenate,
-	Concatenate: Concatenate,
+	Concatenate,
 	Replace: matchArgs('Replace', TextValue, TextValue, TextValue),
 	CharacterLength: matchArgs('CharacterLength', TextValue),
 	StrPos: matchArgs('StrPos', TextValue, TextValue),
@@ -599,10 +599,10 @@ const typeRules: Dictionary<MatchFn> = {
 	Right: matchArgs('Right', TextValue, NumericValue),
 	Tolower: Lower,
 	ToLower: Lower,
-	Lower: Lower,
+	Lower,
 	Toupper: Upper,
 	ToUpper: Upper,
-	Upper: Upper,
+	Upper,
 	Trim: matchArgs('Trim', TextValue),
 	Round: matchArgs('Round', NumericValue),
 	Floor: matchArgs('Floor', NumericValue),
@@ -710,14 +710,14 @@ const typeRules: Dictionary<MatchFn> = {
 			if (!maybeHelped) {
 				return false;
 			}
-			const fields = _.map(fieldBuckets, fields => {
-				if (fields.length === 1) {
-					return fields[0];
+			const fields = _.map(fieldBuckets, fieldBucket => {
+				if (fieldBucket.length === 1) {
+					return fieldBucket[0];
 				} else {
 					return [
 						'NotIn',
-						fields[0][1],
-						..._.flatMap(fields, field => field.slice(2)),
+						fieldBucket[0][1],
+						..._.flatMap(fieldBucket, field => field.slice(2)),
 					];
 				}
 			});
@@ -810,14 +810,14 @@ const typeRules: Dictionary<MatchFn> = {
 			if (!maybeHelped) {
 				return false;
 			}
-			const fields = _.map(fieldBuckets, fields => {
-				if (fields.length === 1) {
-					return fields[0];
+			const fields = _.map(fieldBuckets, fieldBucket => {
+				if (fieldBucket.length === 1) {
+					return fieldBucket[0];
 				} else {
 					return [
 						'In',
-						fields[0][1],
-						..._.flatMap(fields, field => field.slice(2)),
+						fieldBucket[0][1],
+						..._.flatMap(fieldBucket, field => field.slice(2)),
 					];
 				}
 			});
@@ -847,7 +847,7 @@ const typeRules: Dictionary<MatchFn> = {
 		}
 		return ['Bind', ...args];
 	},
-	Text: Text,
+	Text,
 	Value: Text,
 	Date: matchArgs('Date', _.identity),
 	Duration: args => {
@@ -951,7 +951,7 @@ const typeRules: Dictionary<MatchFn> = {
 		const tables = [];
 		let fields: AbstractSqlQuery[] = [];
 		let values: AbstractSqlQuery[] = [];
-		let where: AbstractSqlQuery[] = [];
+		const where: AbstractSqlQuery[] = [];
 		for (const arg of args) {
 			if (!isAbstractSqlQuery(arg)) {
 				throw new SyntaxError('`InsertQuery` args must all be arrays');
@@ -973,7 +973,7 @@ const typeRules: Dictionary<MatchFn> = {
 							`'InsertQuery' can only accept one '${type}'`,
 						);
 					}
-					let valuesArray = getAbstractSqlQuery(rest, 0);
+					const valuesArray = getAbstractSqlQuery(rest, 0);
 					if (valuesArray.length > 0) {
 						const [valuesType, ...valuesRest] = valuesArray;
 						switch (valuesType) {
