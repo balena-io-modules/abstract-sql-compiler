@@ -510,7 +510,7 @@ const checkQuery = (query: AbstractSqlQuery): ModifiedFields | undefined => {
 		return;
 	}
 
-	if (queryType in ['InsertQuery', 'DeleteQuery']) {
+	if (['InsertQuery', 'DeleteQuery'].includes(queryType)) {
 		return { table: tableName };
 	}
 
