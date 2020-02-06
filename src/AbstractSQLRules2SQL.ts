@@ -2,12 +2,12 @@ import * as _ from 'lodash';
 
 import sbvrTypes = require('@resin/sbvr-types');
 
+import { Dictionary } from 'lodash';
 import {
-	Engines,
 	AbstractSqlQuery,
 	AbstractSqlType,
+	Engines,
 } from './AbstractSQLCompiler';
-import { Dictionary } from 'lodash';
 
 export type Binding =
 	| [string, any]
@@ -972,7 +972,7 @@ const typeRules: Dictionary<MatchFn> = {
 		}
 		return AddBind(['Bind', bind]);
 	},
-	Text: Text,
+	Text,
 	Value: Text,
 	Date: args => {
 		checkArgs('Date', args, 1);
@@ -1113,7 +1113,7 @@ const typeRules: Dictionary<MatchFn> = {
 								values = typeRules[valuesType](valuesRest, indent);
 								break;
 							default:
-								values = valuesArray.map(arg => Value(arg, indent));
+								values = valuesArray.map(v => Value(v, indent));
 						}
 					}
 					break;
@@ -1176,7 +1176,7 @@ const typeRules: Dictionary<MatchFn> = {
 					checkArgs('Update values', rest, 1);
 					const valuesArray = getAbstractSqlQuery(rest, 0);
 					checkMinArgs('Update values array', valuesArray, 1);
-					values = valuesArray.map(arg => Value(arg, indent));
+					values = valuesArray.map(v => Value(v, indent));
 					break;
 				case 'From':
 					tables.push(typeRules[type](rest, indent));
