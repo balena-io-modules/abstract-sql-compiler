@@ -1,4 +1,14 @@
 - commits:
+    - subject: Update resin-lint to 3.x and use it for auto-linting
+      hash: bd82923590b10227dde854ac782f2f9f0417ef2f
+      body: ''
+      footer:
+        Change-type: patch
+        change-type: patch
+      author: Pagan Gazzard
+  version: 6.11.5
+  date: 2020-02-06T13:31:42.463Z
+- commits:
     - subject: Fix query type check
       hash: e72755b88856c133ba54f3115abdd07ae6e4d9f6
       body: ''
