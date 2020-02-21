@@ -131,7 +131,8 @@ export const isNumericValue = (
 		type === 'Totalseconds' ||
 		type === 'Round' ||
 		type === 'Floor' ||
-		type === 'Ceiling'
+		type === 'Ceiling' ||
+		type === 'Average'
 	);
 };
 const NumericValue = MatchValue(isNumericValue);
@@ -668,6 +669,11 @@ const typeRules: Dictionary<MatchFn> = {
 			throw new SyntaxError('"Count" only supports "*"');
 		}
 		return 'COUNT(*)';
+	},
+	Average: (args, indent) => {
+		checkArgs('Average', args, 1);
+		const num = NumericValue(getAbstractSqlQuery(args, 0), indent);
+		return `AVG(${num})`;
 	},
 	Field: args => {
 		checkArgs('Field', args, 1);

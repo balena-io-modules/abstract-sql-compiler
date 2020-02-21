@@ -277,6 +277,7 @@ const SelectMatch: MetaMatchFn = args => {
 	const [type, ...rest] = args;
 	switch (type) {
 		case 'Count':
+		case 'Average':
 			return typeRules[type](rest);
 		default:
 			return AnyValue(args);
@@ -487,6 +488,7 @@ const typeRules: Dictionary<MatchFn> = {
 		}
 		return ['Count', args[0]];
 	},
+	Average: matchArgs('Average', NumericValue),
 	Field: matchArgs('Field', _.identity),
 	ReferencedField: matchArgs('ReferencedField', _.identity, _.identity),
 	Cast: matchArgs('Cast', AnyValue, _.identity),

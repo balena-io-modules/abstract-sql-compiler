@@ -18,3 +18,14 @@ describe('Count', () => {
 		});
 	});
 });
+
+describe('Average', () => {
+	test(
+		['SelectQuery', ['Select', [['Average', ['Number', 5]]]]],
+		(result, sqlEquals) => {
+			it('should produce a valid AVG(5) statement', () => {
+				sqlEquals(result.query, 'SELECT AVG(5)');
+			});
+		},
+	);
+});
