@@ -1,4 +1,40 @@
 - commits:
+    - subject: Update dependencies
+      hash: 47c6427ed2722aa3d6dfb3dee42c491203750913
+      body: |
+        Update sbvr-types from 2.0.3 to 2.0.4
+      footer:
+        Change-type: patch
+        change-type: patch
+      author: Pagan Gazzard
+      nested:
+        - commits:
+            - subject: Add node 12 to the test matrix
+              hash: ecd938076fa0b473e0149940e71ac909a5f2cdfd
+              body: ''
+              footer:
+                Change-type: patch
+                change-type: patch
+              author: Pagan Gazzard
+            - subject: Update dependencies
+              hash: 3aacccdbb1962f5cb7eeec8ca5fa62c5f42145e3
+              body: ''
+              footer:
+                Change-type: patch
+                change-type: patch
+              author: Pagan Gazzard
+            - subject: Add CODEOWNERS
+              hash: d04a524767359dca21b7dfefc07e7e05a5607934
+              body: ''
+              footer:
+                Change-type: patch
+                change-type: patch
+              author: Pagan Gazzard
+          version: sbvr-types-2.0.4
+          date: 2020-01-22T17:34:25.485Z
+  version: 6.11.6
+  date: 2020-02-21T18:15:42.469Z
+- commits:
     - subject: Update resin-lint to 3.x and use it for auto-linting
       hash: bd82923590b10227dde854ac782f2f9f0417ef2f
       body: ''
