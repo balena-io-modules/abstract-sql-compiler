@@ -115,6 +115,7 @@ const UnknownValue: MetaMatchFn = args => {
 		case 'ReferencedField':
 		case 'Bind':
 		case 'Cast':
+		case 'Coalesce':
 			return typeRules[type](rest);
 		case 'SelectQuery':
 		case 'UnionQuery':
@@ -609,6 +610,10 @@ const typeRules: Dictionary<MatchFn> = {
 	Ceiling: matchArgs('Ceiling', NumericValue),
 	ToDate: matchArgs('ToDate', DateValue),
 	ToTime: matchArgs('ToTime', DateValue),
+	Coalesce: args => {
+		checkMinArgs('Coalesce', args, 2);
+		return ['Coalesce', ...args.map(AnyValue)];
+	},
 	Case: args => {
 		checkMinArgs('Case', args, 1);
 		return [

@@ -150,11 +150,14 @@ export type ReferencedFieldNode = ['ReferencedField', string, string];
 export type BindNode = ['Bind', string, string?];
 export interface CastNode
 	extends TwoVarArgNodeType<'Cast', AbstractSqlType, string> {}
+export interface CoalesceNode
+	extends TwoVarArgNodeType<'Coalesce', UnknownTypeNodes, UnknownTypeNodes> {}
 export type UnknownTypeNodes =
 	| FieldNode
 	| ReferencedFieldNode
 	| BindNode
 	| CastNode
+	| CoalesceNode
 	| AbstractSqlQuery;
 
 export type TextNode = ['Text', string];

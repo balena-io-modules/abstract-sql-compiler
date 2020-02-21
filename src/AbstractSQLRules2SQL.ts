@@ -69,6 +69,7 @@ const UnknownValue: MetaMatchFn = (args, indent) => {
 		case 'ReferencedField':
 		case 'Bind':
 		case 'Cast':
+		case 'Coalesce':
 			return typeRules[type](rest, indent);
 		case 'SelectQuery':
 		case 'UnionQuery':
@@ -892,6 +893,18 @@ const typeRules: Dictionary<MatchFn> = {
 		} else {
 			return `TIME(${date})`;
 		}
+	},
+	Coalesce: (args, indent) => {
+		checkMinArgs('Coalesce', args, 2);
+		const comparators = args.map(arg => {
+			if (!isAbstractSqlQuery(arg)) {
+				throw new SyntaxError(
+					`Expected AbstractSqlQuery array but got ${typeof arg}`,
+				);
+			}
+			return AnyValue(arg, indent);
+		});
+		return 'COALESCE(' + comparators.join(', ') + ')';
 	},
 	Case: (args, indent) => {
 		checkMinArgs('Case', args, 1);
