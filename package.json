@@ -7,6 +7,7 @@
   "scripts": {
     "pretest": "npm run lint && npm run prepare",
     "test": "mocha",
+    "test6": "npm run-script prepare && mocha",
     "prepublish": "require-npm4-to-publish",
     "prepare": "tsc --project ./tsconfig.build.json",
     "lint:coffee": "resin-lint test/",
@@ -16,19 +17,19 @@
   "repository": "https://github.com/resin-io-modules/abstract-sql-compiler.git",
   "author": "",
   "dependencies": {
-    "@resin/sbvr-types": "^2.0.3",
+    "@resin/sbvr-types": "^2.0.4",
     "@types/bluebird": "^3.5.29",
     "@types/lodash": "^4.14.149",
     "@types/node": "^8.10.59",
-    "bluebird": "^3.7.1",
+    "bluebird": "^3.7.2",
     "lodash": "^4.17.15"
   },
   "devDependencies": {
     "@resin/lf-to-abstract-sql": "2.2.0",
-    "@resin/odata-parser": "1.3.0",
+    "@resin/odata-parser": "1.3.1",
     "@resin/odata-to-abstract-sql": "3.0.1",
-    "@resin/sbvr-parser": "0.2.3",
-    "@types/chai": "^4.2.5",
+    "@resin/sbvr-parser": "0.2.7",
+    "@types/chai": "^4.2.9",
     "@types/common-tags": "^1.8.0",
     "@types/mocha": "^5.2.7",
     "chai": "^4.2.0",
@@ -41,7 +42,7 @@
     "require-npm4-to-publish": "^1.0.0",
     "resin-lint": "^3.2.4",
     "ts-node": "^7.0.1",
-    "typescript": "^3.7.2"
+    "typescript": "^3.8.2"
   },
   "husky": {
     "hooks": {
