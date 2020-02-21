@@ -29,3 +29,14 @@ describe('Average', () => {
 		},
 	);
 });
+
+describe('Sum', () => {
+	test(
+		['SelectQuery', ['Select', [['Sum', ['Number', 5]]]]],
+		(result, sqlEquals) => {
+			it('should produce a valid SUM(5) statement', () => {
+				sqlEquals(result.query, 'SELECT SUM(5)');
+			});
+		},
+	);
+});

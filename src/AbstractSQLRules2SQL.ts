@@ -132,7 +132,8 @@ export const isNumericValue = (
 		type === 'Round' ||
 		type === 'Floor' ||
 		type === 'Ceiling' ||
-		type === 'Average'
+		type === 'Average' ||
+		type === 'Sum'
 	);
 };
 const NumericValue = MatchValue(isNumericValue);
@@ -674,6 +675,11 @@ const typeRules: Dictionary<MatchFn> = {
 		checkArgs('Average', args, 1);
 		const num = NumericValue(getAbstractSqlQuery(args, 0), indent);
 		return `AVG(${num})`;
+	},
+	Sum: (args, indent) => {
+		checkArgs('Sum', args, 1);
+		const num = NumericValue(getAbstractSqlQuery(args, 0), indent);
+		return `SUM(${num})`;
 	},
 	Field: args => {
 		checkArgs('Field', args, 1);
