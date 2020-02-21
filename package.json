@@ -7,6 +7,7 @@
   "scripts": {
     "pretest": "npm run lint && npm run prepare",
     "test": "mocha",
+    "test6": "npm run-script prepare && mocha",
     "prepublish": "require-npm4-to-publish",
     "prepare": "tsc --project ./tsconfig.build.json",
     "lint:coffee": "resin-lint test/",
