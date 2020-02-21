@@ -132,6 +132,7 @@ export const isNumericValue = (
 		type === 'Round' ||
 		type === 'Floor' ||
 		type === 'Ceiling' ||
+		type === 'Count' ||
 		type === 'Average' ||
 		type === 'Sum'
 	);

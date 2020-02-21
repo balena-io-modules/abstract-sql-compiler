@@ -273,17 +273,6 @@ const Value = (arg: any): AbstractSqlQuery => {
 	}
 };
 
-const SelectMatch: MetaMatchFn = args => {
-	const [type, ...rest] = args;
-	switch (type) {
-		case 'Count':
-		case 'Average':
-		case 'Sum':
-			return typeRules[type](rest);
-		default:
-			return AnyValue(args);
-	}
-};
 const FromMatch: MetaMatchFn = args => {
 	if (_.isString(args)) {
 		return ['Table', args];
@@ -441,7 +430,7 @@ const typeRules: Dictionary<MatchFn> = {
 						`Expected AbstractSqlQuery array but got ${typeof arg}`,
 					);
 				}
-				return MaybeAlias(arg, SelectMatch);
+				return MaybeAlias(arg, AnyValue);
 			}),
 		] as AbstractSqlQuery;
 	},
