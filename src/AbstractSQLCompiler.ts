@@ -143,7 +143,14 @@ export type BooleanTypeNodes =
 
 export type NumberNode = ['Number', number];
 export type CountNode = ['Count', '*'];
-export type NumberTypeNodes = NumberNode | CountNode | UnknownTypeNodes;
+export type AverageNode = ['Average', NumberTypeNodes];
+export type SumNode = ['Sum', NumberTypeNodes];
+export type NumberTypeNodes =
+	| NumberNode
+	| CountNode
+	| AverageNode
+	| SumNode
+	| UnknownTypeNodes;
 
 export type FieldNode = ['Field', string];
 export type ReferencedFieldNode = ['ReferencedField', string, string];
