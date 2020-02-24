@@ -1,4 +1,28 @@
 - commits:
+    - subject: Add support for sum
+      hash: 2b2a7dba023994be6bf3d1db80ca2699390250c1
+      body: ''
+      footer:
+        Change-type: minor
+        change-type: minor
+      author: Pagan Gazzard
+    - subject: Add support for average
+      hash: 7cd03b2dcd6d15549f158b5a9970a59b93b23142
+      body: ''
+      footer:
+        Change-type: minor
+        change-type: minor
+      author: Pagan Gazzard
+    - subject: Add tests for count
+      hash: 439e409c9b23bc6cb00bbdcc670a86f068f9fe3d
+      body: ''
+      footer:
+        Change-type: patch
+        change-type: patch
+      author: Pagan Gazzard
+  version: 6.13.0
+  date: 2020-02-21T18:56:02.870Z
+- commits:
     - subject: Add support for coalesce
       hash: 4fa84d101ac97b32677bd6438e183a1883a28327
       body: ''
