@@ -593,12 +593,18 @@ const compileSchema = (
 			}
 			fns[fnName] = true;
 			createSchemaStatements.push(`\
-CREATE OR REPLACE FUNCTION "${fnName}"()
-RETURNS TRIGGER AS $$
+DO $$
 BEGIN
-	${fnDefinition.body}
+	PERFORM '"${fnName}"()'::regprocedure;
+EXCEPTION WHEN undefined_function THEN
+	CREATE FUNCTION "${fnName}"()
+	RETURNS TRIGGER AS $fn$
+	BEGIN
+		${fnDefinition.body}
+	END;
+	$fn$ LANGUAGE ${fnDefinition.language};
 END;
-$$ LANGUAGE ${fnDefinition.language};`);
+$$;`);
 			dropSchemaStatements.push(`DROP FUNCTION "${fnName}"();`);
 		});
 	}
