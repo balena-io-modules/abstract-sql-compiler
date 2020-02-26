@@ -1,4 +1,16 @@
 - commits:
+    - subject: Only create functions if they don't already exist
+      hash: 6d828438a0d54ab7a611d4620ade9bac8ec3fc3e
+      body: |
+        This matches how we handle table/trigger creation and avoids issues
+        with running create schema statements concurrently
+      footer:
+        Change-type: patch
+        change-type: patch
+      author: Pagan Gazzard
+  version: 6.13.1
+  date: 2020-02-26T14:10:42.401Z
+- commits:
     - subject: Add support for sum
       hash: 2b2a7dba023994be6bf3d1db80ca2699390250c1
       body: ''
