@@ -1,4 +1,16 @@
 - commits:
+    - subject: "\U0001F4DD♻️ : Improve RelationshipMapping typing and docs"
+      hash: 46ba8a414d0274455675a3fd93682791f2cf9727
+      body: ''
+      footer:
+        Change-type: patch
+        change-type: patch
+        Signed-off-by: Andreas Fitzek <andreas@balena.io>
+        signed-off-by: Andreas Fitzek <andreas@balena.io>
+      author: Andreas Fitzek
+  version: 6.13.2
+  date: 2020-03-25T11:33:22.697Z
+- commits:
     - subject: Only create functions if they don't already exist
       hash: 6d828438a0d54ab7a611d4620ade9bac8ec3fc3e
       body: |
