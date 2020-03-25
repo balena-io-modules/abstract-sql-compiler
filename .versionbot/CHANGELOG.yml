@@ -1,4 +1,14 @@
 - commits:
+    - subject: Improve typings
+      hash: d00b71638104e43d92431394dcdcec0e50e97e4e
+      body: ''
+      footer:
+        Change-type: patch
+        change-type: patch
+      author: Pagan Gazzard
+  version: 6.13.2
+  date: 2020-03-25T11:37:22.149Z
+- commits:
     - subject: Only create functions if they don't already exist
       hash: 6d828438a0d54ab7a611d4620ade9bac8ec3fc3e
       body: |
