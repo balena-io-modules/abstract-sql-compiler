@@ -303,7 +303,20 @@ export interface SqlRule {
 	structuredEnglish: string;
 	referencedFields?: ReferencedFields;
 }
-export type RelationshipMapping = [string, [string, string]];
+/**
+ * The RelationshipMapping can either describe a relationship to another term, or
+ * a relationship to a local term (since simple terms are also defined and referenced).
+ * A local term basically describes the fields of the term that are available.
+ * 
+ *   - RelationshipMapping[0] is the local field
+ * 
+ * If this relationship points to a foreign term (a different table)
+ * 
+ *   - RelationshipMapping[1] is the reference to the other resource, that joins this resource
+ *   - RelationshipMapping[1][0] is the name of the other resource (or the other table)
+ *   - RelationshipMapping[1][1] is the name of the field on the other resource
+ */
+export type RelationshipMapping = [string, [string, string]?];
 export interface Relationship {
 	$: RelationshipMapping;
 	// TODO: This should action be just Relationship, but we can't declare that in typescript currently
