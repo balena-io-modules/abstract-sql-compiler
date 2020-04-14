@@ -21,14 +21,22 @@ jobs:
         command: npm install --loglevel warn
     - run:
         name: Test
-        # Skip linting for node 6 as it cannot handle it and that will be checked by other versions
-        command: npm run test6 --loglevel warn
+        # Skip linting for node 6/8 as they cannot handle it and that will be checked by other versions
+        command: npm run test8 --loglevel warn
 
   node-8:
     docker:
       - image: circleci/node:8
     working_directory: ~/node-8
-    steps: *buildSteps
+    steps:
+    - checkout
+    - run:
+        name: Install
+        command: npm install --loglevel warn
+    - run:
+        name: Test
+        # Skip linting for node 6/8 as they cannot handle it and that will be checked by other versions
+        command: npm run test8 --loglevel warn
 
   node-10:
     docker:

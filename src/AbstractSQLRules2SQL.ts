@@ -271,7 +271,7 @@ const Comparison = (comparison: keyof typeof comparisons): MatchFn => {
 	};
 };
 const NumberMatch = (type: string): MatchFn => {
-	return args => {
+	return (args) => {
 		checkArgs(type, args, 1);
 		const n = args[0];
 		if (!_.isNumber(n)) {
@@ -340,7 +340,7 @@ const MathOp = (type: keyof typeof mathOps): MatchFn => {
 	};
 };
 
-const fractionalSecondsFormat = function(date: string) {
+const fractionalSecondsFormat = function (date: string) {
 	return this['Totalseconds'](date) + ' - ' + this['Second'](date);
 };
 const websqlBasicDateFormat = (format: string) => {
@@ -357,7 +357,7 @@ const websqlDateFormats = {
 	Totalseconds: websqlBasicDateFormat('%f'),
 };
 
-const basicDateFormat = function(part: string) {
+const basicDateFormat = function (part: string) {
 	return (date: string) => `EXTRACT('${part}' FROM ${date})`;
 };
 const dateFormats = {
@@ -382,7 +382,7 @@ const ExtractNumericDatePart = (type: keyof typeof dateFormats): MatchFn => {
 	};
 };
 
-const Text: MatchFn = args => {
+const Text: MatchFn = (args) => {
 	checkArgs('Text', args, 1);
 	if (noBinds) {
 		return `'${args[0]}'`;
@@ -499,7 +499,7 @@ const typeRules: Dictionary<MatchFn> = {
 	UnionQuery: (args, indent) => {
 		checkMinArgs('UnionQuery', args, 2);
 		return args
-			.map(arg => {
+			.map((arg) => {
 				if (!isAbstractSqlQuery(arg)) {
 					throw new SyntaxError(
 						`Expected AbstractSqlQuery array but got ${typeof arg}`,
@@ -601,7 +601,7 @@ const typeRules: Dictionary<MatchFn> = {
 			return '1';
 		}
 		return args
-			.map(arg => {
+			.map((arg) => {
 				if (!isAbstractSqlQuery(arg)) {
 					throw new SyntaxError(
 						`Expected AbstractSqlQuery array but got ${typeof arg}`,
@@ -665,7 +665,7 @@ const typeRules: Dictionary<MatchFn> = {
 		const num = NumericValue(getAbstractSqlQuery(args, 0), indent);
 		return `OFFSET ${num}`;
 	},
-	Count: args => {
+	Count: (args) => {
 		checkArgs('Count', args, 1);
 		if (args[0] !== '*') {
 			throw new SyntaxError('"Count" only supports "*"');
@@ -682,7 +682,7 @@ const typeRules: Dictionary<MatchFn> = {
 		const num = NumericValue(getAbstractSqlQuery(args, 0), indent);
 		return `SUM(${num})`;
 	},
-	Field: args => {
+	Field: (args) => {
 		checkArgs('Field', args, 1);
 		const [field] = args;
 		if (!_.isString(field)) {
@@ -690,7 +690,7 @@ const typeRules: Dictionary<MatchFn> = {
 		}
 		return escapeField(field);
 	},
-	ReferencedField: args => {
+	ReferencedField: (args) => {
 		checkArgs('ReferencedField', args, 2);
 		const [table, field] = args;
 		if (!_.isString(table)) {
@@ -723,7 +723,7 @@ const typeRules: Dictionary<MatchFn> = {
 	Number: NumberMatch('Number'),
 	Real: NumberMatch('Real'),
 	Integer: NumberMatch('Integer'),
-	Boolean: args => {
+	Boolean: (args) => {
 		checkArgs('Boolean', args, 1);
 		const b = args[0];
 		if (!_.isBoolean(b)) {
@@ -731,19 +731,19 @@ const typeRules: Dictionary<MatchFn> = {
 		}
 		return b ? '1' : '0';
 	},
-	EmbeddedText: args => {
+	EmbeddedText: (args) => {
 		checkArgs('EmbeddedText', args, 1);
 		return `'${args[0]}'`;
 	},
-	Null: args => {
+	Null: (args) => {
 		checkArgs('Null', args, 0);
 		return 'NULL';
 	},
-	Now: args => {
+	Now: (args) => {
 		checkArgs('Now', args, 0);
 		return 'CURRENT_TIMESTAMP';
 	},
-	AggregateJSON: args => {
+	AggregateJSON: (args) => {
 		checkArgs('AggregateJSON', args, 1);
 		args = getAbstractSqlQuery(args, 0);
 		checkArgs("AggregateJSON's argument", args, 2);
@@ -800,7 +800,7 @@ const typeRules: Dictionary<MatchFn> = {
 	},
 	Concatenate: (args, indent) => {
 		checkMinArgs('Concatenate', args, 1);
-		const comparators = args.map(arg => {
+		const comparators = args.map((arg) => {
 			if (!isAbstractSqlQuery(arg)) {
 				throw new SyntaxError(
 					`Expected AbstractSqlQuery array but got ${typeof arg}`,
@@ -843,7 +843,7 @@ const typeRules: Dictionary<MatchFn> = {
 	Substring: (args, indent) => {
 		checkMinArgs('Substring', args, 2);
 		const str = TextValue(getAbstractSqlQuery(args, 0), indent);
-		const nums = args.slice(1).map(arg => {
+		const nums = args.slice(1).map((arg) => {
 			if (!isAbstractSqlQuery(arg)) {
 				throw new SyntaxError(
 					`Expected AbstractSqlQuery array but got ${typeof arg}`,
@@ -909,7 +909,7 @@ const typeRules: Dictionary<MatchFn> = {
 	},
 	Coalesce: (args, indent) => {
 		checkMinArgs('Coalesce', args, 2);
-		const comparators = args.map(arg => {
+		const comparators = args.map((arg) => {
 			if (!isAbstractSqlQuery(arg)) {
 				throw new SyntaxError(
 					`Expected AbstractSqlQuery array but got ${typeof arg}`,
@@ -960,7 +960,7 @@ const typeRules: Dictionary<MatchFn> = {
 	And: (args, indent) => {
 		checkMinArgs('And', args, 2);
 		return args
-			.map(arg => {
+			.map((arg) => {
 				if (!isAbstractSqlQuery(arg)) {
 					throw new SyntaxError(
 						`Expected AbstractSqlQuery array but got ${typeof arg}`,
@@ -975,7 +975,7 @@ const typeRules: Dictionary<MatchFn> = {
 		return (
 			'(' +
 			args
-				.map(arg => {
+				.map((arg) => {
 					if (!isAbstractSqlQuery(arg)) {
 						throw new SyntaxError(
 							`Expected AbstractSqlQuery array but got ${typeof arg}`,
@@ -987,7 +987,7 @@ const typeRules: Dictionary<MatchFn> = {
 			')'
 		);
 	},
-	Bind: args => {
+	Bind: (args) => {
 		let bind;
 		if (args.length === 2) {
 			bind = args;
@@ -1000,11 +1000,11 @@ const typeRules: Dictionary<MatchFn> = {
 	},
 	Text,
 	Value: Text,
-	Date: args => {
+	Date: (args) => {
 		checkArgs('Date', args, 1);
 		return AddBind(['Date', args[0]]);
 	},
-	Duration: args => {
+	Duration: (args) => {
 		checkArgs('Duration', args, 1);
 		if (engine === Engines.websql) {
 			throw new SyntaxError('Durations not supported on: ' + engine);
@@ -1020,11 +1020,7 @@ const typeRules: Dictionary<MatchFn> = {
 			.pick('negative', 'day', 'hour', 'minute', 'second')
 			.omitBy(_.isNil)
 			.value() as Dictionary<string>;
-		if (
-			_(duration)
-				.omit('negative')
-				.isEmpty()
-		) {
+		if (_(duration).omit('negative').isEmpty()) {
 			throw new SyntaxError('Invalid duration');
 		}
 		return (
@@ -1082,7 +1078,7 @@ const typeRules: Dictionary<MatchFn> = {
 	In: (args, indent) => {
 		checkMinArgs('In', args, 2);
 		const field = Field(getAbstractSqlQuery(args, 0), indent);
-		const vals = args.slice(1).map(arg => {
+		const vals = args.slice(1).map((arg) => {
 			if (!isAbstractSqlQuery(arg)) {
 				throw new SyntaxError(
 					`Expected AbstractSqlQuery array but got ${typeof arg}`,
@@ -1095,7 +1091,7 @@ const typeRules: Dictionary<MatchFn> = {
 	NotIn: (args, indent) => {
 		checkMinArgs('NotIn', args, 2);
 		const field = Field(getAbstractSqlQuery(args, 0), indent);
-		const vals = args.slice(1).map(arg => {
+		const vals = args.slice(1).map((arg) => {
 			if (!isAbstractSqlQuery(arg)) {
 				throw new SyntaxError(
 					`Expected AbstractSqlQuery array but got ${typeof arg}`,
@@ -1139,7 +1135,7 @@ const typeRules: Dictionary<MatchFn> = {
 								values = typeRules[valuesType](valuesRest, indent);
 								break;
 							default:
-								values = valuesArray.map(v => Value(v, indent));
+								values = valuesArray.map((v) => Value(v, indent));
 						}
 					}
 					break;
@@ -1202,7 +1198,7 @@ const typeRules: Dictionary<MatchFn> = {
 					checkArgs('Update values', rest, 1);
 					const valuesArray = getAbstractSqlQuery(rest, 0);
 					checkMinArgs('Update values array', valuesArray, 1);
-					values = valuesArray.map(v => Value(v, indent));
+					values = valuesArray.map((v) => Value(v, indent));
 					break;
 				case 'From':
 					tables.push(typeRules[type](rest, indent));

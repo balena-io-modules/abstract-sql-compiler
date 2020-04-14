@@ -194,7 +194,7 @@ export type SelectQueryNode = [
 		| OrderByNode
 		| LimitNode
 		| OffsetNode
-	>,
+	>
 ];
 export interface UnionQueryNode
 	extends VarArgNodeType<'UnionQuery', UnionQueryNode | SelectQueryNode> {}
@@ -227,7 +227,7 @@ export type GroupByNode = [
 ];
 export type OrderByNode = [
 	'OrderBy',
-	...Array<['ASC' | 'DESC', FieldNode | ReferencedFieldNode]>,
+	...Array<['ASC' | 'DESC', FieldNode | ReferencedFieldNode]>
 ];
 export type LimitNode = ['Limit', NumberTypeNodes];
 export type OffsetNode = ['Offset', NumberTypeNodes];
@@ -307,11 +307,11 @@ export interface SqlRule {
  * The RelationshipMapping can either describe a relationship to another term, or
  * a relationship to a local term (since simple terms are also defined and referenced).
  * A local term basically describes the fields of the term that are available.
- * 
+ *
  *   - RelationshipMapping[0] is the local field
- * 
+ *
  * If this relationship points to a foreign term (a different table)
- * 
+ *
  *   - RelationshipMapping[1] is the reference to the other resource, that joins this resource
  *   - RelationshipMapping[1][0] is the name of the other resource (or the other table)
  *   - RelationshipMapping[1][1] is the name of the field on the other resource
@@ -403,7 +403,7 @@ const dataTypeGen = (
 	let checksString = '';
 	if (checks != null) {
 		checksString = checks
-			.map(check => {
+			.map((check) => {
 				return ` CHECK (${compileRule(
 					check as AbstractSqlQuery,
 					engine,
@@ -435,8 +435,8 @@ type Scope = _.Dictionary<string>;
 
 const getScope = (rulePart: AbstractSqlQuery, scope: Scope): Scope => {
 	scope = { ...scope };
-	const fromNodes = rulePart.filter(node => node[0] === 'From') as FromNode[];
-	fromNodes.forEach(node => {
+	const fromNodes = rulePart.filter((node) => node[0] === 'From') as FromNode[];
+	fromNodes.forEach((node) => {
 		const nested = node[1];
 		if (nested[0] === 'Alias') {
 			const [, from, alias] = nested;
@@ -504,7 +504,9 @@ const $getReferencedFields = (
 			});
 	}
 };
-const getReferencedFields: EngineInstance['getReferencedFields'] = ruleBody => {
+const getReferencedFields: EngineInstance['getReferencedFields'] = (
+	ruleBody,
+) => {
 	ruleBody = AbstractSQLOptimiser(ruleBody);
 	const referencedFields: ReferencedFields = {};
 	$getReferencedFields(referencedFields, ruleBody);
@@ -518,7 +520,7 @@ const checkQuery = (query: AbstractSqlQuery): ModifiedFields | undefined => {
 		return;
 	}
 
-	const froms = query.filter(n => n[0] === 'From') as FromNode[];
+	const froms = query.filter((n) => n[0] === 'From') as FromNode[];
 	if (froms.length !== 1) {
 		return;
 	}
@@ -540,7 +542,7 @@ const checkQuery = (query: AbstractSqlQuery): ModifiedFields | undefined => {
 
 	const fields = _<FieldsNode | AbstractSqlType>(query)
 		.filter((v): v is FieldsNode => v != null && v[0] === 'Fields')
-		.flatMap(v => v[1])
+		.flatMap((v) => v[1])
 		.value() as string[];
 	return { table: tableName, fields };
 };
