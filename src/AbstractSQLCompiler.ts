@@ -417,12 +417,9 @@ const dataTypeGen = (
 	} else if (index !== '') {
 		index = ' ' + index;
 	}
-	const dbType: typeof sbvrTypes[typeof dataType]['types'][typeof engine] = _.get(
-		sbvrTypes,
-		[dataType, 'types', engine],
-	);
+	const dbType = sbvrTypes?.[dataType]?.types?.[engine];
 	if (dbType != null) {
-		if (_.isFunction(dbType)) {
+		if (typeof dbType === 'function') {
 			return dbType(requiredStr, index);
 		}
 		return dbType + defaultValue + requiredStr + checksString + index;
@@ -440,7 +437,7 @@ const getScope = (rulePart: AbstractSqlQuery, scope: Scope): Scope => {
 		const nested = node[1];
 		if (nested[0] === 'Alias') {
 			const [, from, alias] = nested;
-			if (!_.isString(alias)) {
+			if (typeof alias !== 'string') {
 				throw new Error('Cannot handle non-string aliases');
 			}
 			switch (from[0]) {
@@ -469,7 +466,7 @@ const $getReferencedFields = (
 	rulePart: AbstractSqlQuery,
 	scope: Scope = {},
 ) => {
-	if (!_.isArray(rulePart)) {
+	if (!Array.isArray(rulePart)) {
 		return;
 	}
 	switch (rulePart[0]) {
@@ -483,7 +480,7 @@ const $getReferencedFields = (
 		case 'ReferencedField':
 			let tableName = rulePart[1];
 			const fieldName = rulePart[2];
-			if (!_.isString(tableName) || !_.isString(fieldName)) {
+			if (typeof tableName !== 'string' || typeof fieldName !== 'string') {
 				throw new Error(`Invalid ReferencedField: ${rulePart}`);
 			}
 			tableName = scope[tableName];
@@ -529,7 +526,7 @@ const checkQuery = (query: AbstractSqlQuery): ModifiedFields | undefined => {
 	let tableName: string;
 	if (table[0] === 'Table') {
 		tableName = table[1];
-	} else if (_.isString(table)) {
+	} else if (typeof table === 'string') {
 		// Deprecated: Remove this when we drop implicit tables
 		tableName = table;
 	} else {
@@ -549,7 +546,7 @@ const checkQuery = (query: AbstractSqlQuery): ModifiedFields | undefined => {
 const getModifiedFields: EngineInstance['getModifiedFields'] = (
 	abstractSqlQuery: AbstractSqlQuery,
 ) => {
-	if (_.isArray(abstractSqlQuery[0])) {
+	if (Array.isArray(abstractSqlQuery[0])) {
 		return abstractSqlQuery.map(checkQuery);
 	} else {
 		return checkQuery(abstractSqlQuery);
@@ -637,7 +634,7 @@ $$;`);
 		};
 	} = {};
 	_.forOwn(abstractSqlModel.tables, (table, resourceName) => {
-		if (_.isString(table)) {
+		if (typeof table === 'string') {
 			return;
 		}
 		const foreignKeys = [];
@@ -798,18 +795,18 @@ CREATE TABLE ${ifNotExistsStr}"${table.name}" (
 
 	const ruleStatements: SqlRule[] = abstractSqlModel.rules.map(
 		(rule): SqlRule => {
-			const ruleBodyNode = _.find(rule, { 0: 'Body' }) as [
+			const ruleBodyNode = rule.find((r) => r[0] === 'Body') as [
 				'Body',
 				AbstractSqlQuery,
 			];
-			if (ruleBodyNode == null || _.isString(ruleBodyNode)) {
+			if (ruleBodyNode == null || typeof ruleBodyNode === 'string') {
 				throw new Error('Invalid rule');
 			}
 			const ruleBody = ruleBodyNode[1];
-			if (_.isString(ruleBody)) {
+			if (typeof ruleBody === 'string') {
 				throw new Error('Invalid rule');
 			}
-			const ruleSENode = _.find(rule, { 0: 'StructuredEnglish' }) as [
+			const ruleSENode = rule.find((r) => r[0] === 'StructuredEnglish') as [
 				'StructuredEnglish',
 				string,
 			];
@@ -817,7 +814,7 @@ CREATE TABLE ${ifNotExistsStr}"${table.name}" (
 				throw new Error('Invalid structured English');
 			}
 			const ruleSE = ruleSENode[1];
-			if (!_.isString(ruleSE)) {
+			if (typeof ruleSE !== 'string') {
 				throw new Error('Invalid structured English');
 			}
 			const { query: ruleSQL, bindings: ruleBindings } = compileRule(

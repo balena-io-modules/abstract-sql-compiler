@@ -46,21 +46,21 @@ parseOperandFactory = (defaultResource = 'pilot') ->
 	operandToBindings = (operand) ->
 		if operand.bindings?
 			return operand.bindings
-		if _.isBoolean(operand) or
-				_.isNumber(operand) or
+		if typeof operand == 'boolean' or
+				typeof operand == 'number' or
 				_.isDate(operand) or
-				(_.isString(operand) and operand.charAt(0) is "'")
+				(typeof operand == 'string' and operand.charAt(0) is "'")
 			return [['Bind', bindNo++]]
 		return []
 
 	operandToSQL = (operand, resource = defaultResource) ->
 		if operand.sql?
 			return operand.sql
-		if _.isBoolean(operand) or
-				_.isNumber(operand) or
+		if typeof operand == 'boolean' or
+				typeof operand == 'number' or
 				_.isDate(operand)
 			return '?'
-		if _.isString(operand)
+		if typeof operand == 'string'
 			if operand is 'null'
 				return 'NULL'
 			if operand.charAt(0) is "'"

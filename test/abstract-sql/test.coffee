@@ -38,7 +38,7 @@ runExpectation = (describe, engine, input, expectedBindings, body, expectation) 
 		catch e
 			expectation(e)
 			return
-		if _.isArray(result)
+		if Array.isArray(result)
 			for actualResult, i in result
 				if expectedBindings[0][0] is 'Bind'
 					bindingsTest(actualResult.bindings, expectedBindings)
