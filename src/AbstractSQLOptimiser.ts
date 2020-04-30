@@ -213,7 +213,7 @@ const Comparison = (
 };
 const NumberMatch = (type: string): MatchFn => {
 	return matchArgs(type, (arg) => {
-		if (!_.isNumber(arg)) {
+		if (typeof arg !== 'number') {
 			throw new SyntaxError(`${type} expected number but got ${typeof arg}`);
 		}
 		return arg;
@@ -274,7 +274,7 @@ const Value = (arg: any): AbstractSqlQuery => {
 };
 
 const FromMatch: MetaMatchFn = (args) => {
-	if (_.isString(args)) {
+	if (typeof args === 'string') {
 		return ['Table', args];
 	}
 	const [type, ...rest] = args;
@@ -299,7 +299,7 @@ const MaybeAlias = (
 		args[0] !== 'Table' &&
 		args[0] !== 'Count' &&
 		args[0] !== 'Field' &&
-		_.isString(args[1])
+		typeof args[1] === 'string'
 	) {
 		helped = true;
 		return ['Alias', matchFn((args[0] as any) as AbstractSqlQuery), args[1]];

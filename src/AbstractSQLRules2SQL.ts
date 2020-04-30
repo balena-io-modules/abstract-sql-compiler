@@ -247,7 +247,7 @@ const isNotDistinctFrom: MatchFn = (args, indent) => {
 export const isAbstractSqlQuery = (
 	x: AbstractSqlType,
 ): x is AbstractSqlQuery => {
-	return _.isArray(x);
+	return Array.isArray(x);
 };
 export const getAbstractSqlQuery = (
 	args: AbstractSqlType[],
@@ -274,7 +274,7 @@ const NumberMatch = (type: string): MatchFn => {
 	return (args) => {
 		checkArgs(type, args, 1);
 		const n = args[0];
-		if (!_.isNumber(n)) {
+		if (typeof n !== 'number') {
 			throw new SyntaxError(`${type} expected number but got ${typeof n}`);
 		}
 		return `${n}`;
@@ -447,7 +447,7 @@ const FromMatch: MetaMatchFn = (args, indent) => {
 		case 'Table':
 			checkArgs('Table', rest, 1);
 			const [table] = rest;
-			if (!_.isString(table)) {
+			if (typeof table !== 'string') {
 				throw new SyntaxError('`Table` table must be a string');
 			}
 			return escapeField(table);
@@ -685,7 +685,7 @@ const typeRules: Dictionary<MatchFn> = {
 	Field: (args) => {
 		checkArgs('Field', args, 1);
 		const [field] = args;
-		if (!_.isString(field)) {
+		if (typeof field !== 'string') {
 			throw new SyntaxError('`Field` field must be a string');
 		}
 		return escapeField(field);
@@ -693,10 +693,10 @@ const typeRules: Dictionary<MatchFn> = {
 	ReferencedField: (args) => {
 		checkArgs('ReferencedField', args, 2);
 		const [table, field] = args;
-		if (!_.isString(table)) {
+		if (typeof table !== 'string') {
 			throw new SyntaxError('`ReferencedField` table must be a string');
 		}
-		if (!_.isString(field)) {
+		if (typeof field !== 'string') {
 			throw new SyntaxError('`ReferencedField` field must be a string');
 		}
 		return `"${table}".${escapeField(field)}`;
@@ -710,7 +710,7 @@ const typeRules: Dictionary<MatchFn> = {
 		}
 		let type: string;
 		const dbType = sbvrTypes[typeName].types[engine];
-		if (_.isFunction(dbType) || dbType.toUpperCase() === 'SERIAL') {
+		if (typeof dbType === 'function' || dbType.toUpperCase() === 'SERIAL') {
 			// HACK: SERIAL type in postgres is really an INTEGER with automatic sequence,
 			// so it's not actually possible to cast to SERIAL, instead you have to cast to INTEGER.
 			// For mysql/websql it's a function since it needs to generate an INTEGER ... AUTOINCREMENT/AUTO_INCREMENT
@@ -726,7 +726,7 @@ const typeRules: Dictionary<MatchFn> = {
 	Boolean: (args) => {
 		checkArgs('Boolean', args, 1);
 		const b = args[0];
-		if (!_.isBoolean(b)) {
+		if (typeof b !== 'boolean') {
 			throw new SyntaxError(`Boolean expected boolean but got ${typeof b}`);
 		}
 		return b ? '1' : '0';
@@ -751,10 +751,10 @@ const typeRules: Dictionary<MatchFn> = {
 			throw new SyntaxError('AggregateJSON not supported on: ' + engine);
 		}
 		const [table, field] = args;
-		if (!_.isString(table)) {
+		if (typeof table !== 'string') {
 			throw new SyntaxError('`AggregateJSON` table must be a string');
 		}
-		if (!_.isString(field)) {
+		if (typeof field !== 'string') {
 			throw new SyntaxError('`AggregateJSON` field must be a string');
 		}
 		return `coalesce(array_to_json(array_agg("${table}".${escapeField(
@@ -1146,14 +1146,14 @@ const typeRules: Dictionary<MatchFn> = {
 					throw new SyntaxError(`'InsertQuery' does not support '${type}'`);
 			}
 		}
-		if (!_.isString(values) && fields.length !== values.length) {
+		if (typeof values !== 'string' && fields.length !== values.length) {
 			throw new SyntaxError(
 				'Fields and Values must have the same length or use a query',
 			);
 		}
 
 		if (fields.length > 0) {
-			if (_.isArray(values)) {
+			if (Array.isArray(values)) {
 				values = 'VALUES (' + values.join(', ') + ')';
 			}
 			return (
