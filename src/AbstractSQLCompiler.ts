@@ -365,7 +365,7 @@ export interface EngineInstance {
 	dataTypeValidate: (
 		value: any,
 		field: Pick<AbstractSqlField, 'dataType' | 'required'>,
-	) => any;
+	) => Promise<any>;
 	getReferencedFields: (ruleBody: AbstractSqlQuery) => ReferencedFields;
 	getModifiedFields: (
 		abstractSqlQuery: AbstractSqlQuery,
