@@ -9,8 +9,8 @@ expect = require('chai').expect
 _ = require('lodash')
 
 generateClientModel = (input) ->
-	sbvrTypes = require '@resin/sbvr-types'
-	typeVocab = fs.readFileSync(require.resolve('@resin/sbvr-types/Type.sbvr'), 'utf8')
+	sbvrTypes = require '@balena/sbvr-types'
+	typeVocab = fs.readFileSync(require.resolve('@balena/sbvr-types/Type.sbvr'), 'utf8')
 
 	SBVRParser = require('@balena/sbvr-parser').SBVRParser.createInstance()
 	SBVRParser.enableReusingMemoizations(SBVRParser._sideEffectingRules)

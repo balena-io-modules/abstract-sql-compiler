@@ -1,5 +1,5 @@
 _ = require 'lodash'
-sbvrTypes = require '@resin/sbvr-types'
+sbvrTypes = require '@balena/sbvr-types'
 
 expect = require('chai').expect
 AbstractSQLCompiler = require('../..')

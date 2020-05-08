@@ -1,6 +1,6 @@
 import * as _ from 'lodash';
 
-import sbvrTypes = require('@resin/sbvr-types');
+import sbvrTypes = require('@balena/sbvr-types');
 
 import { Dictionary } from 'lodash';
 import {

@@ -11,7 +11,7 @@ import {
 	SqlResult,
 } from './AbstractSQLRules2SQL';
 export { Binding, SqlResult } from './AbstractSQLRules2SQL';
-import sbvrTypes = require('@resin/sbvr-types');
+import sbvrTypes = require('@balena/sbvr-types');
 import * as _ from 'lodash';
 
 export type NullNode = ['Null'];
