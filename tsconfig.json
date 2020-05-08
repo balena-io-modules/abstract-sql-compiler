@@ -10,9 +10,7 @@
 		"strictNullChecks": true,
 		"declaration": true,
 		"skipLibCheck": true,
-		"lib": [
-			"es2016"
-		],
+		"target": "es2018",
 		"outDir": "out"
 	},
 	"include": [
