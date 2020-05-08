@@ -12,7 +12,6 @@ import {
 } from './AbstractSQLRules2SQL';
 export { Binding, SqlResult } from './AbstractSQLRules2SQL';
 import sbvrTypes = require('@resin/sbvr-types');
-import * as Promise from 'bluebird';
 import * as _ from 'lodash';
 
 export type NullNode = ['Null'];
@@ -374,14 +373,17 @@ export interface EngineInstance {
 
 const validateTypes = _.mapValues(sbvrTypes, ({ validate }) => validate);
 
-const dataTypeValidate: EngineInstance['dataTypeValidate'] = (value, field) => {
+const dataTypeValidate: EngineInstance['dataTypeValidate'] = async (
+	value,
+	field,
+) => {
 	// In case one of the validation types throws an error.
 	const { dataType, required } = field;
 	const validateFn = validateTypes[dataType];
 	if (validateFn != null) {
 		return validateFn(value, required);
 	} else {
-		return Promise.reject(new Error('is an unsupported type: ' + dataType));
+		return new Error('is an unsupported type: ' + dataType);
 	}
 };
 
