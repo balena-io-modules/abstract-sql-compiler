@@ -18,18 +18,18 @@
   "author": "",
   "dependencies": {
     "@resin/sbvr-types": "^2.0.9",
-    "@types/bluebird": "^3.5.30",
-    "@types/lodash": "^4.14.150",
+    "@types/bluebird": "^3.5.31",
+    "@types/lodash": "^4.14.151",
     "@types/node": "^8.10.60",
     "bluebird": "^3.7.2",
     "lodash": "^4.17.15"
   },
   "devDependencies": {
-    "@balena/lint": "^5.0.4",
-    "@resin/lf-to-abstract-sql": "2.2.0",
-    "@resin/odata-parser": "1.4.1",
-    "@resin/odata-to-abstract-sql": "3.0.1",
-    "@resin/sbvr-parser": "0.2.7",
+    "@balena/lf-to-abstract-sql": "^4.0.0",
+    "@balena/lint": "^5.1.0",
+    "@balena/odata-parser": "^2.0.0",
+    "@balena/sbvr-parser": "^1.0.1",
+    "@resin/odata-to-abstract-sql": "^3.3.0",
     "@types/chai": "^4.2.11",
     "@types/common-tags": "^1.8.0",
     "@types/mocha": "^5.2.7",
@@ -37,11 +37,11 @@
     "coffeescript": "^1.12.7",
     "common-tags": "^1.8.0",
     "husky": "^4.2.5",
-    "lint-staged": "^10.2.2",
+    "lint-staged": "^10.2.4",
     "mocha": "^6.2.3",
     "require-npm4-to-publish": "^1.0.0",
     "ts-node": "^7.0.1",
-    "typescript": "^3.8.3"
+    "typescript": "^3.9.2"
   },
   "husky": {
     "hooks": {

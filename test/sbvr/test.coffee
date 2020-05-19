@@ -5,10 +5,10 @@ expect = require('chai').expect
 AbstractSQLCompiler = require('../..')
 
 module.exports = (builtInVocab = false) ->
-	SBVRParser = require('@resin/sbvr-parser').SBVRParser.createInstance()
+	SBVRParser = require('@balena/sbvr-parser').SBVRParser.createInstance()
 	SBVRParser.enableReusingMemoizations(SBVRParser._sideEffectingRules)
 
-	LF2AbstractSQL = require '@resin/lf-to-abstract-sql'
+	LF2AbstractSQL = require '@balena/lf-to-abstract-sql'
 	LF2AbstractSQLTranslator = LF2AbstractSQL.createTranslator(sbvrTypes)
 
 	if builtInVocab

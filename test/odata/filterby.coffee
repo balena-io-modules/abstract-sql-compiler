@@ -386,17 +386,17 @@ run ->
 run ->
 	{ odata: keyOdata, bindings: keyBindings } = parseOperand(1)
 	{ odata, bindings } = createExpression('can_fly__plane/id', 'eq', 10)
-	test '/pilot(' + keyOdata + ')/can_fly__plane?$filter=' + odata, 'GET', keyBindings.concat(bindings), (result, sqlEquals) ->
+	test '/pilot(' + keyOdata + ')/can_fly__plane?$filter=' + odata, 'GET', bindings.concat(keyBindings), (result, sqlEquals) ->
 		it 'should select from pilot__can_fly__plane where "' + odata + '"', ->
 			sqlEquals result.query, """
 				SELECT #{aliasPilotCanFlyPlaneFields}
 				FROM "pilot",
 					"pilot-can fly-plane" AS "pilot.pilot-can fly-plane",
 					"plane" AS "pilot.pilot-can fly-plane.can fly-plane"
-				WHERE "pilot"."id" = ?
-				AND "pilot.pilot-can fly-plane"."can fly-plane" = "pilot.pilot-can fly-plane.can fly-plane"."id"
+				WHERE "pilot.pilot-can fly-plane"."can fly-plane" = "pilot.pilot-can fly-plane.can fly-plane"."id"
 				AND "pilot.pilot-can fly-plane.can fly-plane"."id" = ?
 				AND "pilot"."id" = "pilot.pilot-can fly-plane"."pilot"
+				AND "pilot"."id" = ?
 			"""
 
 run ->
@@ -417,7 +417,7 @@ run ->
 			FROM "pilot-can fly-plane" AS "pilot.pilot-can fly-plane",
 				"plane" AS "pilot.pilot-can fly-plane.plane",
 				(
-				SELECT CAST(NULL AS TIMESTAMP) AS "created at", CAST(NULL AS INTEGER) AS "id", CAST(NULL AS INTEGER) AS "person", CAST(NULL AS INTEGER) AS "is experienced", CAST(? AS VARCHAR(255)) AS "name", CAST(NULL AS INTEGER) AS "age", CAST(NULL AS INTEGER) AS "favourite colour", CAST(NULL AS INTEGER) AS "is on-team", CAST(NULL AS INTEGER) AS "licence", CAST(NULL AS TIMESTAMP) AS "hire date", CAST(NULL AS INTEGER) AS "was trained by-pilot"
+				SELECT CAST(NULL AS TIMESTAMP) AS "created at", CAST(NULL AS TIMESTAMP) AS "modified at", CAST(NULL AS INTEGER) AS "id", CAST(NULL AS INTEGER) AS "person", CAST(NULL AS INTEGER) AS "is experienced", CAST(? AS VARCHAR(255)) AS "name", CAST(NULL AS INTEGER) AS "age", CAST(NULL AS INTEGER) AS "favourite colour", CAST(NULL AS INTEGER) AS "is on-team", CAST(NULL AS INTEGER) AS "licence", CAST(NULL AS TIMESTAMP) AS "hire date", CAST(NULL AS INTEGER) AS "was trained by-pilot"
 			) AS "pilot"
 			#{filterWhere.join('\n')}
 		"""
@@ -463,6 +463,7 @@ run ->
 				sqlEquals result[1].query, """
 					UPDATE "pilot"
 					SET "created at" = DEFAULT,
+						"modified at" = DEFAULT,
 						"id" = DEFAULT,
 						"person" = DEFAULT,
 						"is experienced" = DEFAULT,
@@ -502,7 +503,7 @@ run ->
 				INSERT INTO "pilot" ("name")
 				SELECT "pilot"."name"
 				FROM (
-					SELECT CAST(NULL AS TIMESTAMP) AS "created at", CAST(NULL AS INTEGER) AS "id", CAST(NULL AS INTEGER) AS "person", CAST(NULL AS INTEGER) AS "is experienced", CAST(? AS VARCHAR(255)) AS "name", CAST(NULL AS INTEGER) AS "age", CAST(NULL AS INTEGER) AS "favourite colour", CAST(NULL AS INTEGER) AS "is on-team", CAST(NULL AS INTEGER) AS "licence", CAST(NULL AS TIMESTAMP) AS "hire date", CAST(NULL AS INTEGER) AS "was trained by-pilot"
+					SELECT CAST(NULL AS TIMESTAMP) AS "created at", CAST(NULL AS TIMESTAMP) AS "modified at", CAST(NULL AS INTEGER) AS "id", CAST(NULL AS INTEGER) AS "person", CAST(NULL AS INTEGER) AS "is experienced", CAST(? AS VARCHAR(255)) AS "name", CAST(NULL AS INTEGER) AS "age", CAST(NULL AS INTEGER) AS "favourite colour", CAST(NULL AS INTEGER) AS "is on-team", CAST(NULL AS INTEGER) AS "licence", CAST(NULL AS TIMESTAMP) AS "hire date", CAST(NULL AS INTEGER) AS "was trained by-pilot"
 				) AS "pilot"
 				WHERE #{sql}
 			"""
@@ -518,6 +519,7 @@ run ->
 		['Bind', ['pilot', 'id']]
 		bodyBindings...
 		exprBindings...
+		keyBindings...
 	]
 	updateBindings = [
 		bodyBindings...
@@ -546,14 +548,16 @@ run ->
 					INSERT INTO "pilot" ("id", "name")
 					SELECT "pilot"."id", "pilot"."name"
 					FROM (
-						SELECT CAST(NULL AS TIMESTAMP) AS "created at", CAST(? AS INTEGER) AS "id", CAST(NULL AS INTEGER) AS "person", CAST(NULL AS INTEGER) AS "is experienced", CAST(? AS VARCHAR(255)) AS "name", CAST(NULL AS INTEGER) AS "age", CAST(NULL AS INTEGER) AS "favourite colour", CAST(NULL AS INTEGER) AS "is on-team", CAST(NULL AS INTEGER) AS "licence", CAST(NULL AS TIMESTAMP) AS "hire date", CAST(NULL AS INTEGER) AS "was trained by-pilot"
+						SELECT CAST(NULL AS TIMESTAMP) AS "created at", CAST(NULL AS TIMESTAMP) AS "modified at", CAST(? AS INTEGER) AS "id", CAST(NULL AS INTEGER) AS "person", CAST(NULL AS INTEGER) AS "is experienced", CAST(? AS VARCHAR(255)) AS "name", CAST(NULL AS INTEGER) AS "age", CAST(NULL AS INTEGER) AS "favourite colour", CAST(NULL AS INTEGER) AS "is on-team", CAST(NULL AS INTEGER) AS "licence", CAST(NULL AS TIMESTAMP) AS "hire date", CAST(NULL AS INTEGER) AS "was trained by-pilot"
 					) AS "pilot"
 					WHERE #{sql}
+					AND "pilot"."id" = ?
 				"""
 			it 'and updates', ->
 				sqlEquals result[1].query, """
 					UPDATE "pilot"
 					SET "created at" = DEFAULT,
+						"modified at" = DEFAULT,
 						"id" = ?,
 						"person" = DEFAULT,
 						"is experienced" = DEFAULT,
@@ -579,15 +583,15 @@ run ->
 		'or'
 		createExpression(1, 'eq', 1)
 	)
-	test '/pilot(' + keyOdata + ')/can_fly__plane?$filter=' + odata, 'GET', keyBindings.concat(bindings), (result, sqlEquals) ->
+	test '/pilot(' + keyOdata + ')/can_fly__plane?$filter=' + odata, 'GET', bindings.concat(keyBindings), (result, sqlEquals) ->
 		it 'should select from pilot__can_fly__plane where "' + odata + '"', ->
 			sqlEquals result.query, """
 				SELECT #{aliasPilotCanFlyPlaneFields}
 				FROM "pilot",
 					"pilot-can fly-plane" AS "pilot.pilot-can fly-plane"
-				WHERE "pilot"."id" = ?
-				AND #{sql}
+				WHERE #{sql}
 				AND "pilot"."id" = "pilot.pilot-can fly-plane"."pilot"
+				AND "pilot"."id" = ?
 			"""
 
 methodTest('contains', 'name', "'et'")
@@ -843,7 +847,7 @@ run ->
 				INSERT INTO "team" ("favourite colour")
 				SELECT "team"."favourite colour"
 				FROM (
-					SELECT CAST(NULL AS TIMESTAMP) AS "created at", CAST(? AS INTEGER) AS "favourite colour"
+					SELECT CAST(NULL AS TIMESTAMP) AS "created at", CAST(NULL AS TIMESTAMP) AS "modified at", CAST(? AS INTEGER) AS "favourite colour"
 				) AS "team"
 				WHERE ''' + sql
 

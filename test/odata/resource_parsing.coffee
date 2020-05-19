@@ -1,6 +1,7 @@
+# coffeelint: disable=max_line_length
 expect = require('chai').expect
 test = require('./test')
-ODataParser = require('@resin/odata-parser')
+ODataParser = require('@balena/odata-parser')
 { pilotFields, teamFields, aliasFields, aliasPlaneFields, aliasPilotLicenceFields, aliasLicenceFields } = require('./fields')
 aliasPilotFields = aliasFields('plane.pilot-can fly-plane.pilot', pilotFields).join(', ')
 aliasPlaneFields = aliasPlaneFields.join(', ')
@@ -38,8 +39,8 @@ test '/pilot(1)/licence', 'GET', [['Bind', 0]], (result, sqlEquals) ->
 			SELECT #{aliasLicenceFields}
 			FROM "pilot",
 				"licence" AS "pilot.licence"
-			WHERE "pilot"."id" = ?
-			AND "pilot"."licence" = "pilot.licence"."id"
+			WHERE "pilot"."licence" = "pilot.licence"."id"
+			AND "pilot"."id" = ?
 		"""
 
 
@@ -50,8 +51,8 @@ test '/licence(1)/is_of__pilot', 'GET', [['Bind', 0]], (result, sqlEquals) ->
 			SELECT #{aliasPilotLicenceFields}
 			FROM "licence",
 				"pilot" AS "licence.is of-pilot"
-			WHERE "licence"."id" = ?
-			AND "licence"."id" = "licence.is of-pilot"."licence"
+			WHERE "licence"."id" = "licence.is of-pilot"."licence"
+			AND "licence"."id" = ?
 		"""
 
 
@@ -62,9 +63,9 @@ test '/pilot(1)/can_fly__plane/plane', 'GET', [['Bind', 0]], (result, sqlEquals)
 			FROM "pilot",
 				"pilot-can fly-plane" AS "pilot.pilot-can fly-plane",
 				"plane" AS "pilot.pilot-can fly-plane.plane"
-			WHERE "pilot"."id" = ?
-			AND "pilot.pilot-can fly-plane"."can fly-plane" = "pilot.pilot-can fly-plane.plane"."id"
+			WHERE "pilot.pilot-can fly-plane"."can fly-plane" = "pilot.pilot-can fly-plane.plane"."id"
 			AND "pilot"."id" = "pilot.pilot-can fly-plane"."pilot"
+			AND "pilot"."id" = ?
 		"""
 
 
@@ -75,9 +76,9 @@ test '/plane(1)/can_be_flown_by__pilot/pilot', 'GET', [['Bind', 0]], (result, sq
 			FROM "plane",
 				"pilot-can fly-plane" AS "plane.pilot-can fly-plane",
 				"pilot" AS "plane.pilot-can fly-plane.pilot"
-			WHERE "plane"."id" = ?
-			AND "plane.pilot-can fly-plane"."pilot" = "plane.pilot-can fly-plane.pilot"."id"
+			WHERE "plane.pilot-can fly-plane"."pilot" = "plane.pilot-can fly-plane.pilot"."id"
 			AND "plane"."id" = "plane.pilot-can fly-plane"."can fly-plane"
+			AND "plane"."id" = ?
 		"""
 
 
@@ -92,6 +93,7 @@ do ->
 	bindings = [
 		[
 			['Bind', ['pilot', 'id']]
+			['Bind', 0]
 		]
 		[
 			['Bind', ['pilot', 'id']]
@@ -102,11 +104,16 @@ do ->
 		it 'should insert/update the pilot with id 1', ->
 			sqlEquals(result[0].query, '''
 				INSERT INTO "pilot" ("id")
-				VALUES (?)
+				SELECT "pilot"."id"
+				FROM (
+					SELECT CAST(NULL AS TIMESTAMP) AS "created at", CAST(NULL AS TIMESTAMP) AS "modified at", CAST(? AS INTEGER) AS "id", CAST(NULL AS INTEGER) AS "person", CAST(NULL AS INTEGER) AS "is experienced", CAST(NULL AS VARCHAR(255)) AS "name", CAST(NULL AS INTEGER) AS "age", CAST(NULL AS INTEGER) AS "favourite colour", CAST(NULL AS INTEGER) AS "is on-team", CAST(NULL AS INTEGER) AS "licence", CAST(NULL AS TIMESTAMP) AS "hire date", CAST(NULL AS INTEGER) AS "was trained by-pilot"
+				) AS "pilot"
+				WHERE "pilot"."id" = ?
 			''')
 			sqlEquals(result[1].query, '''
 				UPDATE "pilot"
 				SET "created at" = DEFAULT,
+					"modified at" = DEFAULT,
 					"id" = ?,
 					"person" = DEFAULT,
 					"is experienced" = DEFAULT,
@@ -158,7 +165,10 @@ test '/pilot__can_fly__plane(1)', 'DELETE', [['Bind', 0]], (result, sqlEquals) -
 
 do ->
 	bindings = [
-		[['Bind', ['pilot-can fly-plane', 'id']]]
+		[
+			['Bind', ['pilot-can fly-plane', 'id']]
+			['Bind', 0]
+		]
 		[
 			['Bind', ['pilot-can fly-plane', 'id']]
 			['Bind', 0]
@@ -168,11 +178,16 @@ do ->
 		it 'should insert/update the pilot-can fly-plane with id 1', ->
 			sqlEquals(result[0].query, '''
 				INSERT INTO "pilot-can fly-plane" ("id")
-				VALUES (?)
+				SELECT "pilot-can fly-plane"."id"
+				FROM (
+					SELECT CAST(NULL AS TIMESTAMP) AS "created at", CAST(NULL AS TIMESTAMP) AS "modified at", CAST(NULL AS INTEGER) AS "pilot", CAST(NULL AS INTEGER) AS "can fly-plane", CAST(? AS INTEGER) AS "id"
+				) AS "pilot-can fly-plane"
+				WHERE "pilot-can fly-plane"."id" = ?
 			''')
 			sqlEquals(result[1].query, '''
 				UPDATE "pilot-can fly-plane"
 				SET "created at" = DEFAULT,
+					"modified at" = DEFAULT,
 					"pilot" = DEFAULT,
 					"can fly-plane" = DEFAULT,
 					"id" = ?
@@ -224,8 +239,8 @@ test '/pilot(1)/can_fly__plane/$links/plane', 'GET', [['Bind', 0]], (result, sql
 			SELECT "pilot.pilot-can fly-plane"."can fly-plane" AS "plane"
 			FROM "pilot",
 				"pilot-can fly-plane" AS "pilot.pilot-can fly-plane"
-			WHERE "pilot"."id" = ?
-			AND "pilot"."id" = "pilot.pilot-can fly-plane"."pilot"
+			WHERE "pilot"."id" = "pilot.pilot-can fly-plane"."pilot"
+			AND "pilot"."id" = ?
 		''')
 
 
@@ -302,8 +317,8 @@ test '/pilot(5)/licence/$count', 'GET', [['Bind', 0]], (result, sqlEquals) ->
 			SELECT COUNT(*) AS "$count"
 			FROM "pilot",
 				"licence" AS "pilot.licence"
-			WHERE "pilot"."id" = ?
-			AND "pilot"."licence" = "pilot.licence"."id"
+			WHERE "pilot"."licence" = "pilot.licence"."id"
+			AND "pilot"."id" = ?
 		'''
 
 test '/pilot/$count?$orderby=id asc', (result, sqlEquals) ->

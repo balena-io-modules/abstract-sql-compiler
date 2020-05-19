@@ -1,5 +1,6 @@
 exports.pilotFields = pilotFields = [
 	'"pilot"."created at" AS "created_at"'
+	'"pilot"."modified at" AS "modified_at"'
 	'"pilot"."id"'
 	'"pilot"."person"'
 	'"pilot"."is experienced" AS "is_experienced"'
@@ -13,22 +14,26 @@ exports.pilotFields = pilotFields = [
 ]
 exports.pilotCanFlyPlaneFields = pilotCanFlyPlaneFields = [
 	'"pilot-can fly-plane"."created at" AS "created_at"'
+	'"pilot-can fly-plane"."modified at" AS "modified_at"'
 	'"pilot-can fly-plane"."pilot"'
 	'"pilot-can fly-plane"."can fly-plane" AS "can_fly__plane"'
 	'"pilot-can fly-plane"."id"'
 ]
 exports.licenceFields = licenceFields = [
 	'"licence"."created at" AS "created_at"'
+	'"licence"."modified at" AS "modified_at"'
 	'"licence"."id"'
 	'"licence"."name"'
 ]
 exports.planeFields = planeFields = [
 	'"plane"."created at" AS "created_at"'
+	'"plane"."modified at" AS "modified_at"'
 	'"plane"."id"'
 	'"plane"."name"'
 ]
 exports.teamFields = [
 	'"team"."created at" AS "created_at"'
+	'"team"."modified at" AS "modified_at"'
 	'"team"."favourite colour" AS "favourite_colour"'
 ]
 
