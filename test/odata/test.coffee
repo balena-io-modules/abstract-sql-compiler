@@ -1,5 +1,5 @@
 fs = require('fs')
-ODataParser = require('@resin/odata-parser')
+ODataParser = require('@balena/odata-parser')
 { OData2AbstractSQL } = require('@resin/odata-to-abstract-sql')
 sbvrModel = fs.readFileSync(require.resolve('../model.sbvr'), 'utf8')
 
@@ -12,13 +12,13 @@ generateClientModel = (input) ->
 	sbvrTypes = require '@resin/sbvr-types'
 	typeVocab = fs.readFileSync(require.resolve('@resin/sbvr-types/Type.sbvr'), 'utf8')
 
-	SBVRParser = require('@resin/sbvr-parser').SBVRParser.createInstance()
+	SBVRParser = require('@balena/sbvr-parser').SBVRParser.createInstance()
 	SBVRParser.enableReusingMemoizations(SBVRParser._sideEffectingRules)
 	SBVRParser.AddCustomAttribute('Database ID Field:')
 	SBVRParser.AddCustomAttribute('Database Table Name:')
 	SBVRParser.AddBuiltInVocab(typeVocab)
 
-	LF2AbstractSQL = require('@resin/lf-to-abstract-sql')
+	LF2AbstractSQL = require('@balena/lf-to-abstract-sql')
 	LF2AbstractSQLTranslator = LF2AbstractSQL.createTranslator(sbvrTypes)
 
 	lf = SBVRParser.matchAll(input, 'Process')
