@@ -133,11 +133,23 @@ export type UnionQueryNode = [
 	...Array<UnionQueryNode | SelectQueryNode>
 ];
 
+/**
+ * This interface allows adding to the valid set of FromTypeNodes using interface merging, eg
+ * declare module '@balena/abstract-sql-compiler' {
+ * 	interface FromTypeNode {
+ * 		MyNode: MyNode;
+ * 	}
+ * }
+ */
+export interface FromTypeNode {
+	SelectQueryNode: SelectQueryNode;
+	UnionQueryNode: UnionQueryNode;
+	TableNode: TableNode;
+}
+
 type FromTypeNodes =
-	| SelectQueryNode
-	| UnionQueryNode
-	| TableNode
-	| AliasNode<SelectQueryNode | UnionQueryNode | TableNode>;
+	| FromTypeNode[keyof FromTypeNode]
+	| AliasNode<FromTypeNode[keyof FromTypeNode]>;
 
 export type SelectNode = ['Select', AbstractSqlType[]];
 export type FromNode = ['From', FromTypeNodes];
