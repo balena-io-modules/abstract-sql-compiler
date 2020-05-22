@@ -1,5 +1,5 @@
 {
-  "name": "@resin/abstract-sql-compiler",
+  "name": "@balena/abstract-sql-compiler",
   "version": "6.13.6",
   "description": "A translator for abstract sql into sql.",
   "main": "out/AbstractSQLCompiler.js",
@@ -7,7 +7,6 @@
   "scripts": {
     "pretest": "npm run lint && npm run prepare",
     "test": "mocha",
-    "test8": "npm run-script prepare && mocha",
     "prepublish": "require-npm4-to-publish",
     "prepare": "tsc --project ./tsconfig.build.json",
     "lint:coffee": "balena-lint test/",
@@ -17,11 +16,9 @@
   "repository": "https://github.com/balena-io-modules/abstract-sql-compiler.git",
   "author": "",
   "dependencies": {
-    "@resin/sbvr-types": "^2.0.9",
-    "@types/bluebird": "^3.5.31",
-    "@types/lodash": "^4.14.151",
-    "@types/node": "^8.10.60",
-    "bluebird": "^3.7.2",
+    "@balena/sbvr-types": "^3.0.0",
+    "@types/lodash": "^4.14.152",
+    "@types/node": "^10.17.24",
     "lodash": "^4.17.15"
   },
   "devDependencies": {
@@ -41,7 +38,7 @@
     "mocha": "^6.2.3",
     "require-npm4-to-publish": "^1.0.0",
     "ts-node": "^7.0.1",
-    "typescript": "^3.9.2"
+    "typescript": "^3.9.3"
   },
   "husky": {
     "hooks": {

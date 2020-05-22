@@ -11,8 +11,7 @@ import {
 	SqlResult,
 } from './AbstractSQLRules2SQL';
 export { Binding, SqlResult } from './AbstractSQLRules2SQL';
-import sbvrTypes = require('@resin/sbvr-types');
-import * as Promise from 'bluebird';
+import sbvrTypes = require('@balena/sbvr-types');
 import * as _ from 'lodash';
 
 export type NullNode = ['Null'];
@@ -28,104 +27,31 @@ export type DurationNode = [
 	},
 ];
 
-// The extends array hacks in the node types are because otherwise we get issues with circular refs
-export interface OneArgNodeType<T, X> extends Array<T | X> {
-	0: T;
-	1: X;
-	length: 2;
-}
-export interface TwoArgNodeType<T, X> extends Array<T | X> {
-	0: T;
-	1: X;
-	2: X;
-	length: 3;
-}
-export interface ThreeArgNodeType<T, X> extends Array<T | X> {
-	0: T;
-	1: X;
-	2: X;
-	3: X;
-	length: 4;
-}
-export interface OneTwoArgNodeType<T, X, Y>
-	extends Array<T | X | Y | undefined> {
-	0: T;
-	1: X;
-	2?: Y;
-	length: 2 | 3;
-}
-export interface VarArgNodeType<T, X> extends Array<T | X | undefined> {
-	0: T;
-	1?: X;
-	2?: X;
-	3?: X;
-	4?: X;
-	5?: X;
-	6?: X;
-	7?: X;
-	8?: X;
-	9?: X;
-	10?: X;
-	11?: X;
-	12?: X;
-	13?: X;
-	14?: X;
-	15?: X;
-	16?: X;
-	17?: X;
-	18?: X;
-	19?: X;
-	20?: X;
-	21?: X;
-}
-export interface TwoVarArgNodeType<T, X, Y>
-	extends Array<T | X | Y | undefined> {
-	0: T;
-	1?: X;
-	2?: Y;
-	3?: Y;
-	4?: Y;
-	5?: Y;
-	6?: Y;
-	7?: Y;
-	8?: Y;
-	9?: Y;
-	10?: Y;
-	11?: Y;
-	12?: Y;
-	13?: Y;
-	14?: Y;
-	15?: Y;
-	16?: Y;
-	17?: Y;
-	18?: Y;
-	19?: Y;
-	20?: Y;
-	21?: Y;
-}
-
 export type BooleanNode = ['Boolean', boolean];
-export interface EqualsNode extends TwoArgNodeType<'Equals', AbstractSqlType> {}
-export interface NotEqualsNode
-	extends TwoArgNodeType<'NotEquals', AbstractSqlType> {}
-export interface GreaterThanNode
-	extends TwoArgNodeType<'GreaterThan', AbstractSqlType> {}
-export interface GreaterThanOrEqualNode
-	extends TwoArgNodeType<'GreaterThanOrEqual', AbstractSqlType> {}
-export interface LessThanNode
-	extends TwoArgNodeType<'LessThan', AbstractSqlType> {}
-export interface LessThanOrEqualNode
-	extends TwoArgNodeType<'LessThanOrEqual', AbstractSqlType> {}
-export interface InNode
-	extends TwoVarArgNodeType<
-		'In',
-		FieldNode | ReferencedFieldNode,
-		AbstractSqlType
-	> {}
-export interface ExistsNode extends OneArgNodeType<'Exists', AbstractSqlType> {}
-export interface NotNode extends OneArgNodeType<'Not', BooleanTypeNodes> {}
-export interface AndNode extends VarArgNodeType<'And', BooleanTypeNodes> {}
-export interface OrNode extends VarArgNodeType<'Or', BooleanTypeNodes> {}
+export type EqualsNode = ['Equals', AbstractSqlType, AbstractSqlType];
+export type NotEqualsNode = ['NotEquals', AbstractSqlType, AbstractSqlType];
+export type GreaterThanNode = ['GreaterThan', AbstractSqlType, AbstractSqlType];
+export type GreaterThanOrEqualNode = [
+	'GreaterThanOrEqual',
+	AbstractSqlType,
+	AbstractSqlType,
+];
+export type LessThanNode = ['LessThan', AbstractSqlType, AbstractSqlType];
+export type LessThanOrEqualNode = [
+	'LessThanOrEqual',
+	AbstractSqlType,
+	AbstractSqlType,
+];
+export type InNode = [
+	'In',
+	FieldNode | ReferencedFieldNode,
+	AbstractSqlType,
+	...AbstractSqlType[]
+];
+export type ExistsNode = ['Exists', AbstractSqlType];
+export type NotNode = ['Not', BooleanTypeNodes];
+export type AndNode = ['And', ...BooleanTypeNodes[]];
+export type OrNode = ['Or', ...BooleanTypeNodes[]];
 export type BooleanTypeNodes =
 	| BooleanNode
 	| EqualsNode
@@ -155,24 +81,30 @@ export type NumberTypeNodes =
 export type FieldNode = ['Field', string];
 export type ReferencedFieldNode = ['ReferencedField', string, string];
 export type BindNode = ['Bind', string, string?];
-export interface CastNode
-	extends TwoVarArgNodeType<'Cast', AbstractSqlType, string> {}
-export interface CoalesceNode
-	extends TwoVarArgNodeType<'Coalesce', UnknownTypeNodes, UnknownTypeNodes> {}
+export type CastNode = ['Cast', AbstractSqlType, string];
+export type CoalesceNode = [
+	'Cast',
+	UnknownTypeNodes,
+	UnknownTypeNodes,
+	...UnknownTypeNodes[]
+];
 export type UnknownTypeNodes =
 	| FieldNode
 	| ReferencedFieldNode
 	| BindNode
 	| CastNode
 	| CoalesceNode
-	| AbstractSqlQuery;
+	| UnknownNode;
 
 export type TextNode = ['Text', string];
-export interface ConcatenateNode
-	extends VarArgNodeType<'Concatenate', TextTypeNodes> {}
+export type ConcatenateNode = ['Concatenate', ...TextTypeNodes[]];
 export type LikeNode = ['Like', '*'];
-export interface ReplaceNode
-	extends ThreeArgNodeType<'Replace', TextTypeNodes> {}
+export type ReplaceNode = [
+	'Replace',
+	TextTypeNodes,
+	TextTypeNodes,
+	TextTypeNodes,
+];
 export type TextTypeNodes =
 	| ConcatenateNode
 	| LikeNode
@@ -196,28 +128,36 @@ export type SelectQueryNode = [
 		| OffsetNode
 	>
 ];
-export interface UnionQueryNode
-	extends VarArgNodeType<'UnionQuery', UnionQueryNode | SelectQueryNode> {}
+export type UnionQueryNode = [
+	'UnionQuery',
+	...Array<UnionQueryNode | SelectQueryNode>
+];
+
+/**
+ * This interface allows adding to the valid set of FromTypeNodes using interface merging, eg
+ * declare module '@balena/abstract-sql-compiler' {
+ * 	interface FromTypeNode {
+ * 		MyNode: MyNode;
+ * 	}
+ * }
+ */
+export interface FromTypeNode {
+	SelectQueryNode: SelectQueryNode;
+	UnionQueryNode: UnionQueryNode;
+	TableNode: TableNode;
+}
 
 type FromTypeNodes =
-	| SelectQueryNode
-	| UnionQueryNode
-	| TableNode
-	| AliasNode<SelectQueryNode | UnionQueryNode | TableNode>;
+	| FromTypeNode[keyof FromTypeNode]
+	| AliasNode<FromTypeNode[keyof FromTypeNode]>;
 
-export interface SelectNode
-	extends OneArgNodeType<'Select', AbstractSqlType[]> {}
-export interface FromNode extends OneArgNodeType<'From', FromTypeNodes> {}
-export interface InnerJoinNode
-	extends OneTwoArgNodeType<'Join', FromTypeNodes, OnNode> {}
-export interface LeftJoinNode
-	extends OneTwoArgNodeType<'LeftJoin', FromTypeNodes, OnNode> {}
-export interface RightJoinNode
-	extends OneTwoArgNodeType<'RightJoin', FromTypeNodes, OnNode> {}
-export interface FullJoinNode
-	extends OneTwoArgNodeType<'FullJoin', FromTypeNodes, OnNode> {}
-export interface CrossJoinNode
-	extends OneArgNodeType<'CrossJoin', FromTypeNodes> {}
+export type SelectNode = ['Select', AbstractSqlType[]];
+export type FromNode = ['From', FromTypeNodes];
+export type InnerJoinNode = ['Join', FromTypeNodes, OnNode?];
+export type LeftJoinNode = ['LeftJoin', FromTypeNodes, OnNode?];
+export type RightJoinNode = ['RightJoin', FromTypeNodes, OnNode?];
+export type FullJoinNode = ['FullJoin', FromTypeNodes, OnNode?];
+export type CrossJoinNode = ['CrossJoin', FromTypeNodes];
 export type OnNode = ['On', BooleanTypeNodes];
 export type TableNode = ['Table', string];
 export type WhereNode = ['Where', BooleanTypeNodes];
@@ -254,10 +194,11 @@ export type AbstractSqlType =
 	| TextTypeNodes
 	| UnknownTypeNodes
 	| DurationNode
-	| AbstractSqlQuery
 	| SelectQueryNode
 	| SelectNode
-	| ValuesNode;
+	| ValuesNode
+	| UnknownNode;
+export type UnknownNode = AbstractSqlQuery;
 export interface AbstractSqlQuery extends Array<AbstractSqlType> {
 	0: string;
 }
@@ -374,14 +315,17 @@ export interface EngineInstance {
 
 const validateTypes = _.mapValues(sbvrTypes, ({ validate }) => validate);
 
-const dataTypeValidate: EngineInstance['dataTypeValidate'] = (value, field) => {
+const dataTypeValidate: EngineInstance['dataTypeValidate'] = async (
+	value,
+	field,
+) => {
 	// In case one of the validation types throws an error.
 	const { dataType, required } = field;
 	const validateFn = validateTypes[dataType];
 	if (validateFn != null) {
 		return validateFn(value, required);
 	} else {
-		return Promise.reject(new Error('is an unsupported type: ' + dataType));
+		return new Error('is an unsupported type: ' + dataType);
 	}
 };
 
