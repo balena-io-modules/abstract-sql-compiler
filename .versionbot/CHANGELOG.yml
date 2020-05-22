@@ -1,4 +1,126 @@
 - commits:
+    - subject: Allow adding to the FromTypeNode set
+      hash: cf970a0cd028dd32efc1938ccbbb03f53faa72d9
+      body: ''
+      footer:
+        Change-type: minor
+        change-type: minor
+      author: Pagan Gazzard
+    - subject: Rename to @balena/abstract-sql-compiler
+      hash: fdb11ff3dbc450a6560330af0a22073f50e645b8
+      body: ''
+      footer:
+        Change-type: major
+        change-type: major
+      author: Pagan Gazzard
+    - subject: Improve typings
+      hash: 281115889e51947a344308daec8f24d478a6f7e9
+      body: ''
+      footer:
+        Change-type: major
+        change-type: major
+      author: Pagan Gazzard
+    - subject: Convert all returned promises to native promises instead of bluebird
+      hash: c103fcbd070f7e24124752052474e48874661e7d
+      body: ''
+      footer:
+        Change-type: major
+        change-type: major
+      author: Pagan Gazzard
+    - subject: Update tsconfig to target es2018
+      hash: 1ebfe89128cc03e1215c9922928762a1850daf08
+      body: ''
+      footer:
+        Change-type: major
+        change-type: major
+      author: Pagan Gazzard
+    - subject: Drop support for node 6/8
+      hash: 02e4c3ab4263787339ca85160dd8e3e73c25edaf
+      body: ''
+      footer:
+        Change-type: major
+        change-type: major
+      author: Pagan Gazzard
+    - subject: Update to @balena/sbvr-types 3.0.0
+      hash: edddad8bd760b58a081eeb8dd8b0b665cc692300
+      body: |
+        Update sbvr-types from 2.0.9 to 3.0.0
+      footer:
+        Change-type: major
+        change-type: major
+      author: Pagan Gazzard
+      nested:
+        - commits:
+            - subject: Convert `fetchProcessing` to synchronous functions
+              hash: a7cb7833d852dfec2b5bd02c3aad785266cd1c5c
+              body: ''
+              footer:
+                Change-type: major
+                change-type: major
+              author: Pagan Gazzard
+            - subject: Update to bcrypt 4.x
+              hash: aadd9f09db11f39a706118bf0d605b9476f6bfb5
+              body: ''
+              footer:
+                Change-type: major
+                change-type: major
+              author: Pagan Gazzard
+            - subject: Enable strict tsconfig
+              hash: 5690af1c28d8f42677f1f12960a8a6f346aea2fe
+              body: ''
+              footer:
+                Change-type: patch
+                change-type: patch
+              author: Pagan Gazzard
+            - subject: Make use of `import type` where relevant
+              hash: d19c7b52ecf7d1269812852faae5797a77f06290
+              body: ''
+              footer:
+                Change-type: patch
+                change-type: patch
+              author: Pagan Gazzard
+            - subject: Update to balena-lint 5.x
+              hash: 5d402bcbaa1ab496013f83de61d15ae87df22af6
+              body: ''
+              footer:
+                Change-type: patch
+                change-type: patch
+              author: Pagan Gazzard
+            - subject: Rename to @balena/sbvr-types
+              hash: 3748302289afab7ae713995b56c694b477c29228
+              body: ''
+              footer:
+                Change-type: major
+                change-type: major
+              author: Pagan Gazzard
+            - subject: Drop node 8 support
+              hash: 00ef44e2cea050c977150faaf9b5db8fb74d0116
+              body: ''
+              footer:
+                Change-type: major
+                change-type: major
+              author: Pagan Gazzard
+            - subject: Update tsconfig target to es2018
+              hash: 6119c1595882069982d6021d3444513ddfa04aa4
+              body: ''
+              footer:
+                Change-type: major
+                change-type: major
+              author: Pagan Gazzard
+            - subject: >-
+                Convert all returned promises to native promises instead of
+                bluebird
+              hash: 1ae01b42d101d9764658a8553560477f0e7d7a86
+              body: ''
+              footer:
+                Change-type: major
+                change-type: major
+              author: Pagan Gazzard
+          version: sbvr-types-3.0.0
+          date: 2020-05-08T12:28:37.686Z
+  version: 7.0.0
+  date: 2020-05-21T14:04:21.217Z
+- commits:
     - subject: Update dependencies
       hash: 7c6c1da2e4e23d1868549ce5df16bfb97f15d878
       body: |
