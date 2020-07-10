@@ -1,4 +1,26 @@
 - commits:
+    - subject: Update dependencies
+      hash: 1d1ed656fca1f408b7250cc7144bf01ffdb8a9db
+      body: |
+        Update sbvr-types from 3.0.0 to 3.1.0
+      footer:
+        Change-type: patch
+        change-type: patch
+      author: Pagan Gazzard
+      nested:
+        - commits:
+            - subject: Update dependencies
+              hash: 33be8837bde82d29f182506f4b93e33157bea185
+              body: ''
+              footer:
+                Change-type: minor
+                change-type: minor
+              author: Pagan Gazzard
+          version: sbvr-types-3.1.0
+          date: 2020-06-17T21:13:53.393Z
+  version: 7.0.2
+  date: 2020-07-10T16:36:21.487Z
+- commits:
     - subject: Improve `BindNode` typing
       hash: 66723aba86dba67d25e3d79f28f38e258c2658c6
       body: ''
