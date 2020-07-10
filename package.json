@@ -16,10 +16,10 @@
   "repository": "https://github.com/balena-io-modules/abstract-sql-compiler.git",
   "author": "",
   "dependencies": {
-    "@balena/sbvr-types": "^3.0.0",
-    "@types/lodash": "^4.14.152",
-    "@types/node": "^10.17.24",
-    "lodash": "^4.17.15"
+    "@balena/sbvr-types": "^3.1.0",
+    "@types/lodash": "^4.14.157",
+    "@types/node": "^10.17.27",
+    "lodash": "^4.17.19"
   },
   "devDependencies": {
     "@balena/lf-to-abstract-sql": "^4.0.0",
@@ -34,11 +34,11 @@
     "coffeescript": "^1.12.7",
     "common-tags": "^1.8.0",
     "husky": "^4.2.5",
-    "lint-staged": "^10.2.4",
+    "lint-staged": "^10.2.11",
     "mocha": "^6.2.3",
     "require-npm4-to-publish": "^1.0.0",
     "ts-node": "^7.0.1",
-    "typescript": "^3.9.3"
+    "typescript": "^3.9.6"
   },
   "husky": {
     "hooks": {
