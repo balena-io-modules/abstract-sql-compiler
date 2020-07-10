@@ -1,4 +1,15 @@
 - commits:
+    - subject: Improve `BindNode` typing
+      hash: 66723aba86dba67d25e3d79f28f38e258c2658c6
+      body: ''
+      footer:
+        Change-type: patch
+        change-type: patch
+      author: Pagan Gazzard
+      nested: []
+  version: 7.0.1
+  date: 2020-07-10T16:16:25.953Z
+- commits:
     - subject: Allow adding to the FromTypeNode set
       hash: cf970a0cd028dd32efc1938ccbbb03f53faa72d9
       body: ''
