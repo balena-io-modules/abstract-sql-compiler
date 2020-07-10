@@ -80,7 +80,7 @@ export type NumberTypeNodes =
 
 export type FieldNode = ['Field', string];
 export type ReferencedFieldNode = ['ReferencedField', string, string];
-export type BindNode = ['Bind', string, string?];
+export type BindNode = ['Bind', number | string] | ['Bind', string, string];
 export type CastNode = ['Cast', AbstractSqlType, string];
 export type CoalesceNode = [
 	'Cast',
