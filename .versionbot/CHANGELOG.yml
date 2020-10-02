@@ -1,4 +1,15 @@
 - commits:
+    - subject: Remove accidental `necessity` from the `AbstractSqlField` types
+      hash: f9583ff668efb8e74480b0458b14d6caa3821550
+      body: ''
+      footer:
+        Change-type: patch
+        change-type: patch
+      author: Pagan Gazzard
+      nested: []
+  version: 7.0.3
+  date: 2020-10-02T13:25:39.199Z
+- commits:
     - subject: Update dependencies
       hash: 1d1ed656fca1f408b7250cc7144bf01ffdb8a9db
       body: |
