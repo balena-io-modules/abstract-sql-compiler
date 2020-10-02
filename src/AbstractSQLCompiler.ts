@@ -213,7 +213,6 @@ export interface AbstractSqlField {
 		fieldName: string;
 	};
 	defaultValue?: string;
-	necessity: boolean;
 	computed?: AbstractSqlQuery;
 	checks?: BooleanTypeNodes[];
 }
