@@ -130,7 +130,8 @@ export type SelectQueryNode = [
 ];
 export type UnionQueryNode = [
 	'UnionQuery',
-	...Array<UnionQueryNode | SelectQueryNode>
+	// tslint:disable-next-line:array-type typescript fails on a circular reference when `Array<T>` form
+	...(UnionQueryNode | SelectQueryNode)[]
 ];
 
 /**
