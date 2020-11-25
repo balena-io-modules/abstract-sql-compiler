@@ -1,1 +1,1 @@
-Convert the abstract SQL in dialect-specific SQL.
+Convert abstract SQL into dialect-specific SQL.

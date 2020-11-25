@@ -710,10 +710,11 @@ const typeRules: Dictionary<MatchFn> = {
 		}
 		let type: string;
 		const dbType = sbvrTypes[typeName].types[engine];
-		if (typeof dbType === 'function' || dbType.toUpperCase() === 'SERIAL') {
+		if (typeof dbType === 'function') {
+			type = dbType.castType;
+		} else if (dbType.toUpperCase() === 'SERIAL') {
 			// HACK: SERIAL type in postgres is really an INTEGER with automatic sequence,
 			// so it's not actually possible to cast to SERIAL, instead you have to cast to INTEGER.
-			// For mysql/websql it's a function since it needs to generate an INTEGER ... AUTOINCREMENT/AUTO_INCREMENT
 			type = 'INTEGER';
 		} else {
 			type = dbType;
