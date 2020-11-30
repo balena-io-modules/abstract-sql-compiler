@@ -1,0 +1,129 @@
+export const enum Engines {
+	postgres = 'postgres',
+	mysql = 'mysql',
+	websql = 'websql',
+}
+
+import { AbstractSQLOptimiser } from './AbstractSQLOptimiser';
+export { Binding, SqlResult } from './AbstractSQLRules2SQL';
+import sbvrTypes = require('@balena/sbvr-types');
+import * as _ from 'lodash';
+import {
+	AbstractSqlModel,
+	AbstractSqlQuery,
+	AbstractSqlType,
+	BooleanTypeNodes,
+	WhereNode,
+	isFromNode,
+} from './AbstractSQLCompiler';
+
+const countFroms = (n: AbstractSqlType[]) => {
+	let count = 0;
+	n.forEach((p) => {
+		if (Array.isArray(p)) {
+			if (isFromNode(p)) {
+				count++;
+			} else {
+				count += countFroms(p as AbstractSqlType[]);
+			}
+		}
+	});
+	return count;
+};
+
+export const optimizeSchema = (
+	abstractSqlModel: AbstractSqlModel,
+): AbstractSqlModel => {
+	abstractSqlModel.rules = abstractSqlModel.rules
+		.map((rule): AbstractSqlQuery | undefined => {
+			const ruleBodyNode = rule.find((r) => r[0] === 'Body') as [
+				'Body',
+				AbstractSqlQuery,
+			];
+			if (ruleBodyNode == null || typeof ruleBodyNode === 'string') {
+				throw new Error('Invalid rule');
+			}
+			let ruleBody = ruleBodyNode[1];
+			if (typeof ruleBody === 'string') {
+				throw new Error('Invalid rule');
+			}
+			const ruleSENode = rule.find((r) => r[0] === 'StructuredEnglish') as [
+				'StructuredEnglish',
+				string,
+			];
+			if (ruleSENode == null) {
+				throw new Error('Invalid structured English');
+			}
+			const ruleSE = ruleSENode[1];
+			if (typeof ruleSE !== 'string') {
+				throw new Error('Invalid structured English');
+			}
+
+			// Optimize the rule body, this also normalizes it making the check constraint check easier
+			ruleBody = AbstractSQLOptimiser(ruleBody, true);
+
+			const count = countFroms(ruleBody);
+			if (
+				count === 1 &&
+				ruleBody[0] === 'NotExists' &&
+				ruleBody[1][0] === 'SelectQuery'
+			) {
+				const selectQueryNodes = ruleBody[1].slice(1) as AbstractSqlType[];
+				if (
+					selectQueryNodes.every((n) =>
+						['Select', 'From', 'Where'].includes(n[0]),
+					)
+				) {
+					let fromNode = selectQueryNodes.find(isFromNode)![1];
+					if (fromNode[0] === 'Alias') {
+						fromNode = fromNode[1];
+					}
+					if (fromNode[0] === 'Table') {
+						const whereNodes = selectQueryNodes.filter(
+							(n): n is WhereNode => n[0] === 'Where',
+						);
+						let whereNode: BooleanTypeNodes;
+						if (whereNodes.length > 1) {
+							whereNode = ['And', ...whereNodes.map((n) => n[1])];
+						} else {
+							whereNode = whereNodes[0][1];
+						}
+						// This replaces the `Not` we stripped from the `NotExists`
+						whereNode = ['Not', whereNode];
+
+						const convertReferencedFieldsToFields = (n: AbstractSqlType[]) => {
+							n.forEach((p, i) => {
+								if (Array.isArray(p)) {
+									if (p[0] === 'ReferencedField') {
+										n[i] = ['Field', p[2]];
+									} else {
+										convertReferencedFieldsToFields(p as AbstractSqlType[]);
+									}
+								}
+							});
+						};
+						convertReferencedFieldsToFields(whereNode as AbstractSqlType[]);
+
+						const tableName = fromNode[1];
+						const sha = sbvrTypes.SHA.validateSync(
+							`${tableName}$${JSON.stringify(ruleBody)}`,
+						).replace(/^\$sha256\$/, '');
+
+						abstractSqlModel.tables[tableName].checks ??= [];
+						abstractSqlModel.tables[tableName].checks!.push({
+							description: ruleSE,
+							// Trim the trigger to a max of 63 characters, reserving at least 32 characters for the hash
+							name: `${tableName.slice(0, 30)}$${sha}`.slice(0, 63),
+							abstractSql: whereNode,
+						});
+						return;
+					}
+				}
+			}
+
+			return rule;
+		})
+		.filter((v): v is NonNullable<typeof v> => v != null);
+
+	return abstractSqlModel;
+};

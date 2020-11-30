@@ -13,6 +13,7 @@ import {
 export { Binding, SqlResult } from './AbstractSQLRules2SQL';
 import sbvrTypes = require('@balena/sbvr-types');
 import * as _ from 'lodash';
+import { optimizeSchema } from './AbstractSQLSchemaOptimiser';
 
 export type NullNode = ['Null'];
 export type DateNode = ['Date', Date];
@@ -378,7 +379,8 @@ const dataTypeGen = (
 	}
 };
 
-const isFromNode = (n: AbstractSqlType): n is FromNode => n[0] === 'From';
+export const isFromNode = (n: AbstractSqlType): n is FromNode =>
+	n[0] === 'From';
 
 type Scope = _.Dictionary<string>;
 
@@ -817,6 +819,7 @@ CREATE TABLE ${ifNotExistsStr}"${table.name}" (
 
 const generateExport = (engine: Engines, ifNotExists: boolean) => {
 	return {
+		optimizeSchema,
 		compileSchema: _.partial(compileSchema, _, engine, ifNotExists),
 		compileRule: (abstractSQL: AbstractSqlQuery) =>
 			compileRule(abstractSQL, engine, false),
