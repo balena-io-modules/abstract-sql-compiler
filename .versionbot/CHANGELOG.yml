@@ -1,4 +1,15 @@
 - commits:
+    - subject: Fix the `NOT(NOT(...))` optimization
+      hash: dd8c6f3b63dd0b781f9768332416fb5371a8c809
+      body: ''
+      footer:
+        Change-type: patch
+        change-type: patch
+      author: Pagan Gazzard
+      nested: []
+  version: 7.0.6
+  date: 2020-11-30T18:18:15.073Z
+- commits:
     - subject: Remove some type casts
       hash: c8e61c426077b2fe8f697f12c0f8ecb30a082d8b
       body: ''
