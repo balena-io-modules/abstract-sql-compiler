@@ -1,4 +1,15 @@
 - commits:
+    - subject: Remove some type casts
+      hash: c8e61c426077b2fe8f697f12c0f8ecb30a082d8b
+      body: ''
+      footer:
+        Change-type: patch
+        change-type: patch
+      author: Pagan Gazzard
+      nested: []
+  version: 7.0.5
+  date: 2020-11-30T15:24:49.372Z
+- commits:
     - subject: Update sbvr-types and make use of `castType`
       hash: 9613dfff39b35e6b33f7fd6eb042ab5c98d8414e
       body: |
