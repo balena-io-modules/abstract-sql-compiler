@@ -372,11 +372,13 @@ const dataTypeGen = (
 	}
 };
 
+const isFromNode = (n: AbstractSqlType): n is FromNode => n[0] === 'From';
+
 type Scope = _.Dictionary<string>;
 
 const getScope = (rulePart: AbstractSqlQuery, scope: Scope): Scope => {
 	scope = { ...scope };
-	const fromNodes = rulePart.filter((node) => node[0] === 'From') as FromNode[];
+	const fromNodes = rulePart.filter(isFromNode);
 	fromNodes.forEach((node) => {
 		const nested = node[1];
 		if (nested[0] === 'Alias') {
@@ -461,7 +463,7 @@ const checkQuery = (query: AbstractSqlQuery): ModifiedFields | undefined => {
 		return;
 	}
 
-	const froms = query.filter((n) => n[0] === 'From') as FromNode[];
+	const froms = query.filter(isFromNode);
 	if (froms.length !== 1) {
 		return;
 	}
@@ -484,7 +486,7 @@ const checkQuery = (query: AbstractSqlQuery): ModifiedFields | undefined => {
 	const fields = _<FieldsNode | AbstractSqlType>(query)
 		.filter((v): v is FieldsNode => v != null && v[0] === 'Fields')
 		.flatMap((v) => v[1])
-		.value() as string[];
+		.value();
 	return { table: tableName, fields };
 };
 const getModifiedFields: EngineInstance['getModifiedFields'] = (
