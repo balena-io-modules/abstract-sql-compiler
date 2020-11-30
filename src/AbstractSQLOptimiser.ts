@@ -896,7 +896,7 @@ const typeRules: Dictionary<MatchFn> = {
 			const [type, ...rest] = getAbstractSqlQuery(args, 0);
 			switch (type) {
 				case 'Not':
-					return typeRules.BooleanValue(rest);
+					return BooleanValue(rest[0] as AbstractSqlQuery);
 				case 'Equals':
 					return typeRules.NotEquals(rest);
 				case 'NotEquals':
