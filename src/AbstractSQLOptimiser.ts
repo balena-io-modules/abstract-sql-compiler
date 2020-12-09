@@ -942,7 +942,7 @@ const typeRules: Dictionary<MatchFn> = {
 		return ['NotIn', field, ...vals];
 	},
 	InsertQuery: (args) => {
-		const tables = [];
+		const tables: AbstractSqlQuery[] = [];
 		let fields: AbstractSqlQuery[] = [];
 		let values: AbstractSqlQuery[] = [];
 		const where: AbstractSqlQuery[] = [];
@@ -1022,7 +1022,7 @@ const typeRules: Dictionary<MatchFn> = {
 		] as AbstractSqlQuery;
 	},
 	UpdateQuery: (args) => {
-		const tables = [];
+		const tables: AbstractSqlQuery[] = [];
 		let fields: AbstractSqlQuery[] = [];
 		let values: AbstractSqlQuery[] = [];
 		let where: AbstractSqlQuery[] = [];
@@ -1086,7 +1086,7 @@ const typeRules: Dictionary<MatchFn> = {
 		] as AbstractSqlQuery;
 	},
 	DeleteQuery: (args) => {
-		const tables = [];
+		const tables: AbstractSqlQuery[] = [];
 		let where: AbstractSqlQuery[] = [];
 		for (const arg of args) {
 			if (!isAbstractSqlQuery(arg)) {
