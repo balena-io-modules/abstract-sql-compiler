@@ -1,4 +1,15 @@
 - commits:
+    - subject: Convert tests from coffeescript to type-checked javascript
+      hash: ec898159bee4cff9300c5d8b655eb02327a9f636
+      body: ''
+      footer:
+        Change-type: patch
+        change-type: patch
+      author: Pagan Gazzard
+      nested: []
+  version: 7.0.7
+  date: 2020-12-09T22:08:07.007Z
+- commits:
     - subject: Fix the `NOT(NOT(...))` optimization
       hash: dd8c6f3b63dd0b781f9768332416fb5371a8c809
       body: ''
