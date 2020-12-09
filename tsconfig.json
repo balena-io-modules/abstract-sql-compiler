@@ -11,10 +11,14 @@
 		"declaration": true,
 		"skipLibCheck": true,
 		"target": "es2018",
-		"outDir": "out"
+		"outDir": "out",
+		"allowJs": true
 	},
 	"include": [
-		"src/**/*.ts",
-		"test/**/*.ts"
+		"src/**/*",
+		"test/**/*"
+	],
+	"exclude": [
+		"node_modules"
 	]
 }

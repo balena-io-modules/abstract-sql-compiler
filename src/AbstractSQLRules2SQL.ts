@@ -221,7 +221,7 @@ const isNotDistinctFrom: MatchFn = (args, indent) => {
 		if (aIsBind && bIsBind) {
 			return `${aSql} = ${bSql}`;
 		}
-		const isNotNullChecks = [];
+		const isNotNullChecks: string[] = [];
 		if (!aIsBind) {
 			isNotNullChecks.push(`(${aSql}) IS NOT NULL`);
 		}
@@ -517,8 +517,8 @@ const typeRules: Dictionary<MatchFn> = {
 			.join(indent + 'UNION' + indent);
 	},
 	SelectQuery: (args, indent) => {
-		const tables = [];
-		const joins = [];
+		const tables: string[] = [];
+		const joins: string[] = [];
 		let select: string = '';
 		const groups = {
 			Where: '',
@@ -1103,7 +1103,7 @@ const typeRules: Dictionary<MatchFn> = {
 		return field + ' NOT IN (' + vals.join(', ') + ')';
 	},
 	InsertQuery: (args, indent) => {
-		const tables = [];
+		const tables: string[] = [];
 		let fields: string[] = [];
 		let values: string | string[] = [];
 		for (const arg of args) {
@@ -1171,7 +1171,7 @@ const typeRules: Dictionary<MatchFn> = {
 		}
 	},
 	UpdateQuery: (args, indent) => {
-		const tables = [];
+		const tables: string[] = [];
 		let fields: string[] = [];
 		let values: string[] = [];
 		let where: string = '';
@@ -1231,7 +1231,7 @@ const typeRules: Dictionary<MatchFn> = {
 		);
 	},
 	DeleteQuery: (args, indent) => {
-		const tables = [];
+		const tables: string[] = [];
 		let where: string = '';
 		for (const arg of args) {
 			if (!isAbstractSqlQuery(arg)) {

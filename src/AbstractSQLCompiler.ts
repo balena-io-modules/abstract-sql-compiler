@@ -583,9 +583,9 @@ $$;`);
 		if (typeof table === 'string') {
 			return;
 		}
-		const foreignKeys = [];
-		const depends = [];
-		const createSqlElements = [];
+		const foreignKeys: string[] = [];
+		const depends: string[] = [];
+		const createSqlElements: string[] = [];
 
 		for (const field of table.fields) {
 			const { fieldName, references, dataType, computed } = field;
@@ -647,8 +647,8 @@ $$;`);
 			);
 		}
 
-		const createTriggers = [];
-		const dropTriggers = [];
+		const createTriggers: string[] = [];
+		const dropTriggers: string[] = [];
 		if (table.triggers) {
 			for (const trigger of table.triggers) {
 				if (!fns[trigger.fnName]) {
