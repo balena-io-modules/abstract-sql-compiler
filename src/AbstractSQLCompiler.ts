@@ -223,6 +223,11 @@ export interface Trigger {
 	level: 'ROW' | 'STATEMENT';
 	when: 'BEFORE' | 'AFTER' | 'INSTEAD OF';
 }
+export interface Check {
+	description?: string;
+	name?: string;
+	abstractSql: BooleanTypeNodes;
+}
 export interface AbstractSqlTable {
 	name: string;
 	resourceName: string;
@@ -234,6 +239,7 @@ export interface AbstractSqlTable {
 	}>;
 	primitive: false | string;
 	triggers?: Trigger[];
+	checks?: Check[];
 }
 export interface ReferencedFields {
 	[alias: string]: string[];
@@ -645,6 +651,22 @@ $$;`);
 			createSqlElements.push(
 				index.type + '("' + index.fields.join('", "') + '")',
 			);
+		}
+
+		if (table.checks) {
+			for (const check of table.checks) {
+				const comment = check.description
+					? `-- ${check.description.split(/\r?\n/).join('\n-- ')}\n`
+					: '';
+				const constraintName = check.name ? `CONSTRAINT "${check.name}" ` : '';
+				const sql = compileRule(
+					check.abstractSql as AbstractSqlQuery,
+					engine,
+					true,
+				);
+				createSqlElements.push(`\
+${comment}${constraintName}CHECK (${sql})`);
+			}
 		}
 
 		const createTriggers: string[] = [];
