@@ -1,4 +1,15 @@
 - commits:
+    - subject: Add check constraint support at the table level
+      hash: 2ac556f3bdc6143a9a4be37c47079659ee20a866
+      body: ''
+      footer:
+        Change-type: minor
+        change-type: minor
+      author: Pagan Gazzard
+      nested: []
+  version: 7.1.0
+  date: 2020-12-09T22:44:11.220Z
+- commits:
     - subject: Convert tests from coffeescript to type-checked javascript
       hash: ec898159bee4cff9300c5d8b655eb02327a9f636
       body: ''
