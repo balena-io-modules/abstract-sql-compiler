@@ -1,4 +1,16 @@
 - commits:
+    - subject: Add an `optimizeSchema` function
+      hash: 43a3c0eac0ed0c57a79fbc62d025c058ab8dbb1c
+      body: |
+        Currently this can optimize certain rules into check constraints
+      footer:
+        Change-type: minor
+        change-type: minor
+      author: Pagan Gazzard
+      nested: []
+  version: 7.2.0
+  date: 2020-12-16T16:59:18.573Z
+- commits:
     - subject: Add check constraint support at the table level
       hash: 2ac556f3bdc6143a9a4be37c47079659ee20a866
       body: ''
