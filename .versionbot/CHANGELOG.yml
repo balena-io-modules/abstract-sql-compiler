@@ -1,4 +1,15 @@
 - commits:
+    - subject: Allow compiling `*QueryNode`s to direct strings without binds
+      hash: 7f1880eab543da17ba99ea3940ac52f266d2b07d
+      body: ''
+      footer:
+        Change-type: minor
+        change-type: minor
+      author: Pagan Gazzard
+      nested: []
+  version: 7.3.0
+  date: 2020-12-18T17:29:10.301Z
+- commits:
     - subject: Improve typings for compilation results
       hash: 22764a4675ef385a1ef8ce10e633364449ae22b5
       body: ''
