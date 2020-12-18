@@ -151,19 +151,26 @@ export interface FromTypeNode {
 	SelectQueryNode: SelectQueryNode;
 	UnionQueryNode: UnionQueryNode;
 	TableNode: TableNode;
+	ResourceNode: ResourceNode;
 }
+/**
+ * This is not currently understood by the abstract-sql-compiler but is a placeholder for future support
+ */
+export type ResourceNode = ['Resource', string];
 
 type FromTypeNodes =
 	| FromTypeNode[keyof FromTypeNode]
 	| AliasNode<FromTypeNode[keyof FromTypeNode]>;
 
+type AliasableFromTypeNodes = FromTypeNodes | AliasNode<FromTypeNodes>;
+
 export type SelectNode = ['Select', AbstractSqlType[]];
-export type FromNode = ['From', FromTypeNodes];
-export type InnerJoinNode = ['Join', FromTypeNodes, OnNode?];
-export type LeftJoinNode = ['LeftJoin', FromTypeNodes, OnNode?];
-export type RightJoinNode = ['RightJoin', FromTypeNodes, OnNode?];
-export type FullJoinNode = ['FullJoin', FromTypeNodes, OnNode?];
-export type CrossJoinNode = ['CrossJoin', FromTypeNodes];
+export type FromNode = ['From', AliasableFromTypeNodes];
+export type InnerJoinNode = ['Join', AliasableFromTypeNodes, OnNode?];
+export type LeftJoinNode = ['LeftJoin', AliasableFromTypeNodes, OnNode?];
+export type RightJoinNode = ['RightJoin', AliasableFromTypeNodes, OnNode?];
+export type FullJoinNode = ['FullJoin', AliasableFromTypeNodes, OnNode?];
+export type CrossJoinNode = ['CrossJoin', AliasableFromTypeNodes];
 export type OnNode = ['On', BooleanTypeNodes];
 export type TableNode = ['Table', string];
 export type WhereNode = ['Where', BooleanTypeNodes];
@@ -243,6 +250,13 @@ export interface Check {
 	name?: string;
 	abstractSql: BooleanTypeNodes;
 }
+export interface BindVars extends Array<any> {
+	[key: string]: any;
+}
+export interface Definition {
+	binds?: BindVars;
+	abstractSql: FromTypeNodes;
+}
 export interface AbstractSqlTable {
 	name: string;
 	resourceName: string;
@@ -255,6 +269,7 @@ export interface AbstractSqlTable {
 	primitive: false | string;
 	triggers?: Trigger[];
 	checks?: Check[];
+	definition?: Definition;
 }
 export interface ReferencedFields {
 	[alias: string]: string[];
@@ -397,6 +412,31 @@ const dataTypeGen = (
 
 export const isFromNode = (n: AbstractSqlType): n is FromNode =>
 	n[0] === 'From';
+export const isTableNode = (n: AbstractSqlType): n is TableNode =>
+	n[0] === 'Table';
+export const isResourceNode = (n: AbstractSqlType): n is ResourceNode =>
+	n[0] === 'Resource';
+
+/**
+ *
+ * @param n The abstract sql to check
+ * @param checkNodeTypeFn A function that checks if a given node is the correct type
+ */
+const containsNode = (
+	n: AbstractSqlType[],
+	checkNodeTypeFn: (n: AbstractSqlType[number]) => boolean,
+): boolean => {
+	for (const p of n) {
+		if (Array.isArray(p)) {
+			if (checkNodeTypeFn(p)) {
+				return true;
+			} else if (containsNode(p as AbstractSqlType[], checkNodeTypeFn)) {
+				return true;
+			}
+		}
+	}
+	return false;
+};
 
 type Scope = _.Dictionary<string>;
 
@@ -573,8 +613,10 @@ const compileSchema = (
 	ifNotExists: boolean,
 ): SqlModel => {
 	let ifNotExistsStr = '';
+	let orReplaceStr = '';
 	if (ifNotExists) {
 		ifNotExistsStr = 'IF NOT EXISTS ';
+		orReplaceStr = 'OR REPLACE ';
 	}
 
 	const createSchemaStatements: string[] = [];
@@ -625,6 +667,44 @@ $$;`);
 	} = {};
 	_.forOwn(abstractSqlModel.tables, (table, resourceName) => {
 		if (typeof table === 'string') {
+			return;
+		}
+		const { definition } = table;
+		if (definition != null) {
+			if (definition.binds != null && definition.binds.length > 0) {
+				// If there are any binds then it's a dynamic definition and cannot become a view
+				return;
+			}
+			let definitionAbstractSql = definition.abstractSql;
+			// If there are any resource nodes then it's a dynamic definition and cannot become a view
+			if (
+				containsNode(definitionAbstractSql as AbstractSqlType[], isResourceNode)
+			) {
+				return;
+			}
+			if (isTableNode(definitionAbstractSql)) {
+				// If the definition is a table node we need to wrap it in a select query for the view creation
+				definitionAbstractSql = [
+					'SelectQuery',
+					['Select', [['Field', '*']]],
+					['From', definitionAbstractSql],
+				];
+			}
+			schemaDependencyMap[table.resourceName] = {
+				resourceName,
+				primitive: table.primitive,
+				createSQL: [
+					`\
+CREATE ${orReplaceStr}VIEW "${table.name}" AS (
+${compileRule(definitionAbstractSql as AbstractSqlQuery, engine, true).replace(
+	/^/gm,
+	'	',
+)}
+);`,
+				],
+				dropSQL: [`DROP VIEW "${table.name}";`],
+				depends: [],
+			};
 			return;
 		}
 		const foreignKeys: string[] = [];
