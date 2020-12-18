@@ -134,6 +134,10 @@ export type UnionQueryNode = [
 	// tslint:disable-next-line:array-type typescript fails on a circular reference when `Array<T>` form
 	...(UnionQueryNode | SelectQueryNode)[]
 ];
+export type InsertQueryNode = ['InsertQuery', ...AbstractSqlType[]];
+export type UpdateQueryNode = ['UpdateQuery', ...AbstractSqlType[]];
+export type DeleteQueryNode = ['DeleteQuery', ...AbstractSqlType[]];
+export type UpsertQueryNode = ['UpsertQuery', InsertQueryNode, UpdateQueryNode];
 
 /**
  * This interface allows adding to the valid set of FromTypeNodes using interface merging, eg
@@ -197,8 +201,18 @@ export type AbstractSqlType =
 	| UnknownTypeNodes
 	| DurationNode
 	| SelectQueryNode
+	| InsertQueryNode
+	| UpdateQueryNode
+	| DeleteQueryNode
+	| UpsertQueryNode
 	| SelectNode
 	| ValuesNode
+	| InnerJoinNode
+	| LeftJoinNode
+	| RightJoinNode
+	| FullJoinNode
+	| CrossJoinNode
+	| GroupByNode
 	| UnknownNode;
 export type UnknownNode = AbstractSqlQuery;
 export interface AbstractSqlQuery extends Array<AbstractSqlType> {
@@ -309,7 +323,9 @@ export interface ModifiedFields {
 
 export interface EngineInstance {
 	compileSchema: (abstractSqlModel: AbstractSqlModel) => SqlModel;
-	compileRule: (abstractSQL: AbstractSqlQuery) => SqlResult | SqlResult[];
+	compileRule: (
+		abstractSQL: AbstractSqlQuery,
+	) => SqlResult | [SqlResult, SqlResult];
 	dataTypeValidate: (
 		value: any,
 		field: Pick<AbstractSqlField, 'dataType' | 'required'>,
@@ -513,20 +529,35 @@ export function compileRule(
 	noBinds: true,
 ): string;
 export function compileRule(
+	abstractSQL: UpsertQueryNode,
+	engine: Engines,
+	noBinds?: false,
+): [SqlResult, SqlResult];
+export function compileRule(
+	abstractSQL:
+		| SelectQueryNode
+		| UnionQueryNode
+		| InsertQueryNode
+		| UpdateQueryNode
+		| DeleteQueryNode,
+	engine: Engines,
+	noBinds?: false,
+): SqlResult;
+export function compileRule(
 	abstractSQL: AbstractSqlQuery,
 	engine: Engines,
 	noBinds?: false,
-): SqlResult | SqlResult[];
+): SqlResult | [SqlResult, SqlResult];
 export function compileRule(
 	abstractSQL: AbstractSqlQuery,
 	engine: Engines,
 	noBinds?: boolean,
-): SqlResult | SqlResult[] | string;
+): SqlResult | [SqlResult, SqlResult] | string;
 export function compileRule(
 	abstractSQL: AbstractSqlQuery,
 	engine: Engines,
 	noBinds = false,
-): SqlResult | SqlResult[] | string {
+): SqlResult | [SqlResult, SqlResult] | string {
 	abstractSQL = AbstractSQLOptimiser(abstractSQL, noBinds);
 	return AbstractSQLRules2SQL(abstractSQL, engine, noBinds);
 }

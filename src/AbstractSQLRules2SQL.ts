@@ -7,6 +7,12 @@ import {
 	AbstractSqlQuery,
 	AbstractSqlType,
 	Engines,
+	InsertQueryNode,
+	SelectQueryNode,
+	UnionQueryNode,
+	UpdateQueryNode,
+	DeleteQueryNode,
+	UpsertQueryNode,
 } from './AbstractSQLCompiler';
 
 export type Binding =
@@ -1265,20 +1271,35 @@ export function AbstractSQLRules2SQL(
 	$noBinds: true,
 ): string;
 export function AbstractSQLRules2SQL(
+	abstractSQL: UpsertQueryNode,
+	$engine: Engines,
+	$noBinds?: false,
+): [SqlResult, SqlResult];
+export function AbstractSQLRules2SQL(
+	abstractSQL:
+		| SelectQueryNode
+		| UnionQueryNode
+		| InsertQueryNode
+		| UpdateQueryNode
+		| DeleteQueryNode,
+	$engine: Engines,
+	$noBinds?: false,
+): SqlResult;
+export function AbstractSQLRules2SQL(
 	abstractSQL: AbstractSqlQuery,
 	$engine: Engines,
 	$noBinds?: false,
-): SqlResult | SqlResult[];
+): SqlResult | [SqlResult, SqlResult];
 export function AbstractSQLRules2SQL(
 	abstractSQL: AbstractSqlQuery,
 	$engine: Engines,
 	$noBinds?: boolean,
-): SqlResult | SqlResult[] | string;
+): SqlResult | [SqlResult, SqlResult] | string;
 export function AbstractSQLRules2SQL(
 	abstractSQL: AbstractSqlQuery,
 	$engine: Engines,
 	$noBinds = false,
-): SqlResult | SqlResult[] | string {
+): SqlResult | [SqlResult, SqlResult] | string {
 	engine = $engine;
 	noBinds = $noBinds;
 	fieldOrderings = [];
