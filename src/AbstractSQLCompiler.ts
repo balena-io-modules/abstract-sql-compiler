@@ -524,6 +524,11 @@ const getModifiedFields: EngineInstance['getModifiedFields'] = (
 };
 
 export function compileRule(
+	abstractSQL: UpsertQueryNode,
+	engine: Engines,
+	noBinds: true,
+): [string, string];
+export function compileRule(
 	abstractSQL: AbstractSqlQuery,
 	engine: Engines,
 	noBinds: true,
@@ -557,7 +562,7 @@ export function compileRule(
 	abstractSQL: AbstractSqlQuery,
 	engine: Engines,
 	noBinds = false,
-): SqlResult | [SqlResult, SqlResult] | string {
+): SqlResult | [SqlResult, SqlResult] | string | [string, string] {
 	abstractSQL = AbstractSQLOptimiser(abstractSQL, noBinds);
 	return AbstractSQLRules2SQL(abstractSQL, engine, noBinds);
 }
