@@ -1,4 +1,17 @@
 - commits:
+    - subject: Add support for table definitions
+      hash: 2939656834c374e35af8867d6337b119b58cd198
+      body: |
+        Static definitions will be converted to views and dynamic definitions
+        will be ignored
+      footer:
+        Change-type: minor
+        change-type: minor
+      author: Pagan Gazzard
+      nested: []
+  version: 7.4.0
+  date: 2020-12-18T18:35:31.430Z
+- commits:
     - subject: Allow compiling `*QueryNode`s to direct strings without binds
       hash: 7f1880eab543da17ba99ea3940ac52f266d2b07d
       body: ''
