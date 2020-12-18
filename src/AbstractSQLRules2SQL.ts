@@ -1265,6 +1265,21 @@ const typeRules: Dictionary<MatchFn> = {
 	},
 };
 
+const toSqlResult = (query: string): SqlResult | string => {
+	if (noBinds) {
+		return query;
+	}
+	return {
+		query,
+		bindings: fieldOrderings,
+	};
+};
+
+export function AbstractSQLRules2SQL(
+	abstractSQL: UpsertQueryNode,
+	$engine: Engines,
+	$noBinds: true,
+): [string, string];
 export function AbstractSQLRules2SQL(
 	abstractSQL: AbstractSqlQuery,
 	$engine: Engines,
@@ -1299,7 +1314,7 @@ export function AbstractSQLRules2SQL(
 	abstractSQL: AbstractSqlQuery,
 	$engine: Engines,
 	$noBinds = false,
-): SqlResult | [SqlResult, SqlResult] | string {
+): SqlResult | [SqlResult, SqlResult] | string | [string, string] {
 	engine = $engine;
 	noBinds = $noBinds;
 	fieldOrderings = [];
@@ -1314,10 +1329,7 @@ export function AbstractSQLRules2SQL(
 		case 'UpdateQuery':
 		case 'DeleteQuery':
 			const query = typeRules[type](rest, indent);
-			return {
-				query,
-				bindings: fieldOrderings,
-			};
+			return toSqlResult(query);
 		case 'UpsertQuery':
 			checkArgs('UpsertQuery', rest, 2);
 			const insertQuery = getAbstractSqlQuery(rest, 0);
@@ -1331,19 +1343,13 @@ export function AbstractSQLRules2SQL(
 				);
 			}
 			const insertSql = typeRules.InsertQuery(insertQuery.slice(1), indent);
-			const insert = {
-				query: insertSql,
-				bindings: fieldOrderings,
-			};
+			const insert = toSqlResult(insertSql);
 			// Reset fieldOrderings for the second query
 			fieldOrderings = [];
 			fieldOrderingsLookup = {};
 			const updateSql = typeRules.UpdateQuery(updateQuery.slice(1), indent);
-			const update = {
-				query: updateSql,
-				bindings: fieldOrderings,
-			};
-			return [insert, update];
+			const update = toSqlResult(updateSql);
+			return [insert, update] as [string, string] | [SqlResult, SqlResult];
 		default:
 			const value = AnyValue(abstractSQL, indent);
 			if (noBinds) {
