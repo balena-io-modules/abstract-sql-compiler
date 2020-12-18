@@ -1,4 +1,15 @@
 - commits:
+    - subject: Improve typings for compilation results
+      hash: 22764a4675ef385a1ef8ce10e633364449ae22b5
+      body: ''
+      footer:
+        Change-type: patch
+        change-type: patch
+      author: Pagan Gazzard
+      nested: []
+  version: 7.2.1
+  date: 2020-12-18T17:13:41.288Z
+- commits:
     - subject: Add an `optimizeSchema` function
       hash: 43a3c0eac0ed0c57a79fbc62d025c058ab8dbb1c
       body: |
