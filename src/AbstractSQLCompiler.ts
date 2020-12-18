@@ -426,13 +426,15 @@ const containsNode = (
 	n: AbstractSqlType[],
 	checkNodeTypeFn: (n: AbstractSqlType[number]) => boolean,
 ): boolean => {
+	if (checkNodeTypeFn(n)) {
+		return true;
+	}
 	for (const p of n) {
-		if (Array.isArray(p)) {
-			if (checkNodeTypeFn(p)) {
-				return true;
-			} else if (containsNode(p as AbstractSqlType[], checkNodeTypeFn)) {
-				return true;
-			}
+		if (
+			Array.isArray(p) &&
+			containsNode(p as AbstractSqlType[], checkNodeTypeFn)
+		) {
+			return true;
 		}
 	}
 	return false;
