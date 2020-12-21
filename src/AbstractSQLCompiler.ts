@@ -294,17 +294,19 @@ export interface SqlRule {
  *   - RelationshipMapping[1][1] is the name of the field on the other resource
  */
 export type RelationshipMapping = [string, [string, string]?];
-export interface Relationship {
+export interface RelationshipLeafNode {
 	$: RelationshipMapping;
-	// TODO: This should action be just Relationship, but we can't declare that in typescript currently
-	[resourceName: string]: Relationship | RelationshipMapping;
 }
+export interface RelationshipInternalNode {
+	[resourceName: string]: Relationship;
+}
+export type Relationship = RelationshipLeafNode | RelationshipInternalNode;
 export interface AbstractSqlModel {
 	synonyms: {
 		[synonym: string]: string;
 	};
 	relationships: {
-		[resourceName: string]: Relationship;
+		[resourceName: string]: RelationshipInternalNode;
 	};
 	tables: {
 		[resourceName: string]: AbstractSqlTable;
