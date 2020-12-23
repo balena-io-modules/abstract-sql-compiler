@@ -1,4 +1,21 @@
 - commits:
+    - subject: Improve Relationship typings
+      hash: 91465f7c65bc43ee2eba1c9db7dbce424a1b18d4
+      body: ''
+      footer:
+        Change-type: patch
+        change-type: patch
+        See: >-
+          https://github.com/balena-io/open-balena-api/pull/510#discussion_r546872607
+        see: >-
+          https://github.com/balena-io/open-balena-api/pull/510#discussion_r546872607
+        Signed-off-by: Thodoris Greasidis <thodoris@balena.io>
+        signed-off-by: Thodoris Greasidis <thodoris@balena.io>
+      author: Thodoris Greasidis
+      nested: []
+  version: 7.4.2
+  date: 2020-12-21T23:58:09.407Z
+- commits:
     - subject: Fix `containsNode` when that node type is at the top level
       hash: 888791a9b281d5fc91ddeb8876f024b1397718e7
       body: ''
