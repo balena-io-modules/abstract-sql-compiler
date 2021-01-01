@@ -1,4 +1,15 @@
 - commits:
+    - subject: Optimize away AND/ORs with false/true respectively
+      hash: f0249d98032b0306f7d216b5ad8e8d2c96c466fc
+      body: ''
+      footer:
+        Change-type: minor
+        change-type: minor
+      author: Pagan Gazzard
+      nested: []
+  version: 7.6.0
+  date: 2021-01-01T16:18:03.545Z
+- commits:
     - subject: Optimize out booleans from AND/OR where possible
       hash: d3d9a86ebc231dc4b11b20311e6d007a19202b18
       body: ''
