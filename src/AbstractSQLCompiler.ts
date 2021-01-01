@@ -629,7 +629,8 @@ const compileSchema = (
 
 	const fns: _.Dictionary<true> = {};
 	if (abstractSqlModel.functions) {
-		_.forEach(abstractSqlModel.functions, (fnDefinition, fnName) => {
+		for (const fnName of Object.keys(abstractSqlModel.functions)) {
+			const fnDefinition = abstractSqlModel.functions[fnName];
 			if (engine !== Engines.postgres) {
 				throw new Error('Functions are only supported on postgres currently');
 			}
@@ -654,7 +655,7 @@ EXCEPTION WHEN undefined_function THEN
 END;
 $$;`);
 			dropSchemaStatements.push(`DROP FUNCTION "${fnName}"();`);
-		});
+		}
 	}
 
 	const hasDependants: {
@@ -669,7 +670,8 @@ $$;`);
 			depends: string[];
 		};
 	} = {};
-	_.forOwn(abstractSqlModel.tables, (table, resourceName) => {
+	Object.keys(abstractSqlModel.tables).forEach((resourceName) => {
+		const table = abstractSqlModel.tables[resourceName];
 		if (typeof table === 'string') {
 			return;
 		}
@@ -873,7 +875,7 @@ CREATE TABLE ${ifNotExistsStr}"${table.name}" (
 			}
 		}
 	}
-	if (_.size(schemaDependencyMap) > 0) {
+	if (Object.keys(schemaDependencyMap).length > 0) {
 		console.error(
 			'Failed to resolve all schema dependencies',
 			schemaDependencyMap,
@@ -940,7 +942,8 @@ CREATE TABLE ${ifNotExistsStr}"${table.name}" (
 const generateExport = (engine: Engines, ifNotExists: boolean) => {
 	return {
 		optimizeSchema,
-		compileSchema: _.partial(compileSchema, _, engine, ifNotExists),
+		compileSchema: (abstractSqlModel: AbstractSqlModel) =>
+			compileSchema(abstractSqlModel, engine, ifNotExists),
 		compileRule: (abstractSQL: AbstractSqlQuery) =>
 			compileRule(abstractSQL, engine, false),
 		dataTypeValidate,
