@@ -13,6 +13,7 @@ import {
 	UpdateQueryNode,
 	DeleteQueryNode,
 	UpsertQueryNode,
+	CoalesceNode,
 } from './AbstractSQLCompiler';
 
 export type Binding =
@@ -205,13 +206,32 @@ const Field: MetaMatchFn = (args, indent) => {
 	}
 };
 
-const isBindValue = (
-	type: string | AbstractSqlQuery,
-): type is 'Bind' | 'Text' | 'Value' | 'Date' => {
-	return (
-		type === 'Bind' || type === 'Text' || type === 'Value' || type === 'Date'
-	);
+export const isNotNullable = (node: AbstractSqlType): boolean => {
+	switch (node[0]) {
+		case 'EmbeddedText':
+		case 'Boolean':
+		// We don't support null binds so we can avoid checking them for null-ness
+		// and avoid issues with postgres type inference
+		case 'Bind':
+		case 'Value':
+		case 'Text':
+		case 'Date':
+		case 'Number':
+		case 'Real':
+		case 'Integer':
+		case 'IsDistinctFrom':
+		case 'IsNotDistinctFrom':
+		case 'Exists':
+		case 'NotExists':
+			return true;
+		case 'Coalesce':
+			return (node as CoalesceNode).slice(1).some((n) => isNotNullable(n));
+		case 'Not':
+			return isNotNullable(node[1]);
+	}
+	return false;
 };
+
 const isNotDistinctFrom: MatchFn = (args, indent) => {
 	const a = getAbstractSqlQuery(args, 0);
 	const b = getAbstractSqlQuery(args, 1);
@@ -220,22 +240,22 @@ const isNotDistinctFrom: MatchFn = (args, indent) => {
 	const bSql = AnyValue(b, indent);
 
 	if (engine === Engines.postgres) {
-		// We don't support null binds so we can avoid checking them for null-ness
-		// and avoid issues with postgres type inference
-		const aIsBind = isBindValue(a[0]);
-		const bIsBind = isBindValue(b[0]);
-		if (aIsBind && bIsBind) {
+		const aIsNotNullable = isNotNullable(a);
+		const bIsNotNullable = isNotNullable(b);
+		if (aIsNotNullable && bIsNotNullable) {
 			return `${aSql} = ${bSql}`;
 		}
 		const isNotNullChecks: string[] = [];
-		if (!aIsBind) {
+		if (!aIsNotNullable) {
 			isNotNullChecks.push(`(${aSql}) IS NOT NULL`);
 		}
-		if (!bIsBind) {
+		if (!bIsNotNullable) {
 			isNotNullChecks.push(`(${bSql}) IS NOT NULL`);
 		}
 		const orBothNull =
-			!aIsBind && !bIsBind ? ` OR (${aSql}) IS NULL AND (${bSql}) IS NULL` : '';
+			!aIsNotNullable && !bIsNotNullable
+				? ` OR (${aSql}) IS NULL AND (${bSql}) IS NULL`
+				: '';
 		return `${isNotNullChecks.join(
 			' AND ',
 		)} AND (${aSql}) = (${bSql})${orBothNull}`;

@@ -154,6 +154,7 @@ const run = (function () {
 			running = true;
 			parseOperand = parseOperandFactory();
 			fn();
+			parseOperand = null;
 			running = false;
 		} else {
 			fn();
@@ -320,11 +321,13 @@ const createMethodCall = function (method, ...args) {
 	}
 };
 
-const operandTest = (lhs, op, rhs) => {
+const operandTest = (lhs, op, rhs, override) => {
 	run(function () {
 		let from;
 		let where;
-		const { odata, sql, bindings } = createExpression(lhs, op, rhs);
+		let { odata, sql, bindings } = createExpression(lhs, op, rhs);
+		bindings = override?.bindings ?? bindings;
+		sql = override?.sql ?? sql;
 		if (_.includes(odata, '/')) {
 			from = `\
 "pilot",
@@ -404,35 +407,63 @@ WHERE ` + sql,
 // Test each combination of operands and operations
 (function () {
 	const operations = ['eq', 'ne', 'gt', 'ge', 'lt', 'le'];
-	const operands = [
+	const nonNullableOperands = [
 		2,
 		-2,
 		2.5,
 		-2.5,
 		"'bar'",
-		'name',
-		'trained__pilot/name',
 		new Date(),
-		{ negative: true, day: 3, hour: 4, minute: 5, second: 6.7 },
 		true,
 		false,
+	];
+	const nullableOperands = [
+		'name',
+		'trained__pilot/name',
+		{ negative: true, day: 3, hour: 4, minute: 5, second: 6.7 },
 		// null is quoted as otherwise we hit issues with coffeescript defaulting values
-		'null',
+		// 'null',
 	];
 	operations.forEach((op) => {
 		describe(op, () => {
-			operands.forEach((lhs) => {
-				operands.forEach((rhs) => {
+			nonNullableOperands.forEach((lhs) => {
+				[...nonNullableOperands, ...nullableOperands].forEach((rhs) => {
 					run(() => {
 						operandTest(lhs, op, rhs);
 					});
+				});
+				run(() => {
+					switch (op) {
+						case 'eq':
+						case 'ne':
+							// eq/ne of non-nullable to null are automatically optimized away
+							operandTest(lhs, op, 'null', {
+								bindings: [],
+								sql: op === 'eq' ? 'false' : 'true',
+							});
+							break;
+
+						default:
+							operandTest(lhs, op, 'null');
+							break;
+					}
+				});
+			});
+			nullableOperands.forEach((lhs) => {
+				[...nonNullableOperands, ...nullableOperands].forEach((rhs) => {
+					run(() => {
+						operandTest(lhs, op, rhs);
+					});
+				});
+				run(() => {
+					operandTest(lhs, op, 'null');
 				});
 			});
 		});
 	});
 })();
 
-(function () {
+run(function () {
 	const left = createExpression('age', 'gt', 2);
 	const right = createExpression('age', 'lt', 10);
 	operandTest(left, 'and', right);
@@ -440,7 +471,7 @@ WHERE ` + sql,
 	operandTest('is_experienced');
 	operandTest('not', 'is_experienced');
 	operandTest('not', left);
-})();
+});
 
 (function () {
 	const mathOps = ['add', 'sub', 'mul', 'div'];
