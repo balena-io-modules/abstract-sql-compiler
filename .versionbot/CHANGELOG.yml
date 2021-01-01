@@ -1,4 +1,15 @@
 - commits:
+    - subject: 'Optimize Is[Not]DistinctFrom and [Not]Exists for non-null values'
+      hash: 682e84dea2088fb0c336b05be83183e627c20d4f
+      body: ''
+      footer:
+        Change-type: minor
+        change-type: minor
+      author: Pagan Gazzard
+      nested: []
+  version: 7.8.0
+  date: 2021-01-01T20:22:14.871Z
+- commits:
     - subject: Optimize EXISTS/NOT EXISTS for empty queries
       hash: 39431de07eeb98d731a114c1717575d364ddc06f
       body: ''
