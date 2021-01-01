@@ -668,6 +668,22 @@ const typeRules: Dictionary<MatchFn> = {
 		}),
 		Helper<OptimisationMatchFn>((args) => {
 			checkMinArgs('And', args, 2);
+			// Reduce any booleans
+			let maybeHelped = false;
+			const conditions = args.filter((arg) => {
+				if (arg[0] === 'Boolean' && arg[1] === true) {
+					maybeHelped = true;
+					return false;
+				}
+				return true;
+			});
+			if (maybeHelped) {
+				return ['And', ...conditions] as AbstractSqlQuery;
+			}
+			return false;
+		}),
+		Helper<OptimisationMatchFn>((args) => {
+			checkMinArgs('And', args, 2);
 			// Optimise id != 1 AND id != 2 AND id != 3 -> id NOT IN [1, 2, 3]
 			const fieldBuckets: Dictionary<AbstractSqlQuery[]> = {};
 			const others: AbstractSqlQuery[] = [];
@@ -765,6 +781,22 @@ const typeRules: Dictionary<MatchFn> = {
 			}
 
 			return ['Or', ...conditions] as AbstractSqlQuery;
+		}),
+		Helper<OptimisationMatchFn>((args) => {
+			checkMinArgs('Or', args, 2);
+			// Reduce any booleans
+			let maybeHelped = false;
+			const conditions = args.filter((arg) => {
+				if (arg[0] === 'Boolean' && arg[1] === false) {
+					maybeHelped = true;
+					return false;
+				}
+				return true;
+			});
+			if (maybeHelped) {
+				return ['Or', ...conditions] as AbstractSqlQuery;
+			}
+			return false;
 		}),
 		Helper<OptimisationMatchFn>((args) => {
 			checkMinArgs('Or', args, 2);
