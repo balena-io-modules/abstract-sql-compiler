@@ -1,4 +1,15 @@
 - commits:
+    - subject: Optimize EXISTS/NOT EXISTS for empty queries
+      hash: 39431de07eeb98d731a114c1717575d364ddc06f
+      body: ''
+      footer:
+        Change-type: minor
+        change-type: minor
+      author: Pagan Gazzard
+      nested: []
+  version: 7.7.0
+  date: 2021-01-01T17:47:15.206Z
+- commits:
     - subject: Optimize away AND/ORs with false/true respectively
       hash: f0249d98032b0306f7d216b5ad8e8d2c96c466fc
       body: ''
