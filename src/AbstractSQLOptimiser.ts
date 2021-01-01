@@ -46,6 +46,24 @@ const Helper = <F extends (...args: any[]) => any>(fn: F) => {
 	};
 };
 
+const isEmptySelectQuery = (query: AbstractSqlQuery): boolean => {
+	const [type, ...rest] = query;
+	switch (type) {
+		case 'SelectQuery':
+			for (const arg of rest) {
+				if (arg[0] === 'Where') {
+					const maybeBool = arg[1];
+					if (maybeBool[0] === 'Boolean') {
+						if (maybeBool[1] === false) {
+							return true;
+						}
+					}
+				}
+			}
+	}
+	return false;
+};
+
 const rewriteMatch = (
 	name: string,
 	matchers: Array<(args: AbstractSqlType) => AbstractSqlType>,
@@ -914,30 +932,50 @@ const typeRules: Dictionary<MatchFn> = {
 		}
 		return ['Duration', duration] as AbstractSqlQuery;
 	},
-	Exists: (args) => {
-		checkArgs('Exists', args, 1);
-		const arg = getAbstractSqlQuery(args, 0);
-		const [type, ...rest] = arg;
-		switch (type) {
-			case 'SelectQuery':
-			case 'UnionQuery':
-				return ['Exists', typeRules[type](rest)];
-			default:
-				return ['Exists', AnyValue(arg)];
-		}
-	},
-	NotExists: (args) => {
-		checkArgs('NotExists', args, 1);
-		const arg = getAbstractSqlQuery(args, 0);
-		const [type, ...rest] = arg;
-		switch (type) {
-			case 'SelectQuery':
-			case 'UnionQuery':
-				return ['NotExists', typeRules[type](rest)];
-			default:
-				return ['NotExists', AnyValue(arg)];
-		}
-	},
+	Exists: tryMatches(
+		Helper<OptimisationMatchFn>((args) => {
+			checkArgs('Exists', args, 1);
+			const arg = getAbstractSqlQuery(args, 0);
+			if (isEmptySelectQuery(arg)) {
+				return ['Boolean', false] as AbstractSqlQuery;
+			}
+			return false;
+		}),
+		(args) => {
+			checkArgs('Exists', args, 1);
+			const arg = getAbstractSqlQuery(args, 0);
+			const [type, ...rest] = arg;
+			switch (type) {
+				case 'SelectQuery':
+				case 'UnionQuery':
+					return ['Exists', typeRules[type](rest)];
+				default:
+					return ['Exists', AnyValue(arg)];
+			}
+		},
+	),
+	NotExists: tryMatches(
+		Helper<OptimisationMatchFn>((args) => {
+			checkArgs('Exists', args, 1);
+			const arg = getAbstractSqlQuery(args, 0);
+			if (isEmptySelectQuery(arg)) {
+				return ['Boolean', true] as AbstractSqlQuery;
+			}
+			return false;
+		}),
+		(args) => {
+			checkArgs('NotExists', args, 1);
+			const arg = getAbstractSqlQuery(args, 0);
+			const [type, ...rest] = arg;
+			switch (type) {
+				case 'SelectQuery':
+				case 'UnionQuery':
+					return ['NotExists', typeRules[type](rest)];
+				default:
+					return ['NotExists', AnyValue(arg)];
+			}
+		},
+	),
 	Not: tryMatches(
 		Helper<OptimisationMatchFn>((args) => {
 			checkArgs('Not', args, 1);
