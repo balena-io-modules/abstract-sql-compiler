@@ -632,7 +632,13 @@ const typeRules: Dictionary<MatchFn> = {
 	},
 	Where: (args, indent) => {
 		checkArgs('Where', args, 1);
-		const ruleBody = BooleanValue(getAbstractSqlQuery(args, 0), indent);
+		const boolNode = getAbstractSqlQuery(args, 0);
+		if (boolNode[0] === 'Boolean') {
+			// This is designed to avoid cases of `WHERE 0`/`WHERE 1` which are invalid, ideally
+			// we need to convert booleans to always use true/false but that's a major change
+			return `WHERE ${boolNode[1] ? 'true' : 'false'}`;
+		}
+		const ruleBody = BooleanValue(boolNode, indent);
 		return 'WHERE ' + ruleBody;
 	},
 	GroupBy: (args, indent) => {

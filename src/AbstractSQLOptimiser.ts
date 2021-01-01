@@ -670,13 +670,21 @@ const typeRules: Dictionary<MatchFn> = {
 			checkMinArgs('And', args, 2);
 			// Reduce any booleans
 			let maybeHelped = false;
+			let containsFalse = false;
 			const conditions = args.filter((arg) => {
-				if (arg[0] === 'Boolean' && arg[1] === true) {
-					maybeHelped = true;
-					return false;
+				if (arg[0] === 'Boolean') {
+					if (arg[1] === true) {
+						maybeHelped = true;
+						return false;
+					} else if (arg[1] === false) {
+						containsFalse = true;
+					}
 				}
 				return true;
 			});
+			if (containsFalse) {
+				return ['Boolean', false] as AbstractSqlQuery;
+			}
 			if (maybeHelped) {
 				return ['And', ...conditions] as AbstractSqlQuery;
 			}
@@ -786,13 +794,21 @@ const typeRules: Dictionary<MatchFn> = {
 			checkMinArgs('Or', args, 2);
 			// Reduce any booleans
 			let maybeHelped = false;
+			let containsTrue = false;
 			const conditions = args.filter((arg) => {
-				if (arg[0] === 'Boolean' && arg[1] === false) {
-					maybeHelped = true;
-					return false;
+				if (arg[0] === 'Boolean') {
+					if (arg[1] === false) {
+						maybeHelped = true;
+						return false;
+					} else if (arg[1] === true) {
+						containsTrue = true;
+					}
 				}
 				return true;
 			});
+			if (containsTrue) {
+				return ['Boolean', true] as AbstractSqlQuery;
+			}
 			if (maybeHelped) {
 				return ['Or', ...conditions] as AbstractSqlQuery;
 			}
