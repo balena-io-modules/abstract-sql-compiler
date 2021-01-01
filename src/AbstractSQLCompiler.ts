@@ -455,16 +455,19 @@ export function compileRule(
 	abstractSQL: UpsertQueryNode,
 	engine: Engines,
 	noBinds: true,
+	abstractSqlModel?: AbstractSqlModel,
 ): [string, string];
 export function compileRule(
 	abstractSQL: AbstractSqlQuery,
 	engine: Engines,
 	noBinds: true,
+	abstractSqlModel?: AbstractSqlModel,
 ): string;
 export function compileRule(
 	abstractSQL: UpsertQueryNode,
 	engine: Engines,
 	noBinds?: false,
+	abstractSqlModel?: AbstractSqlModel,
 ): [SqlResult, SqlResult];
 export function compileRule(
 	abstractSQL:
@@ -475,23 +478,27 @@ export function compileRule(
 		| DeleteQueryNode,
 	engine: Engines,
 	noBinds?: false,
+	abstractSqlModel?: AbstractSqlModel,
 ): SqlResult;
 export function compileRule(
 	abstractSQL: AbstractSqlQuery,
 	engine: Engines,
 	noBinds?: false,
+	abstractSqlModel?: AbstractSqlModel,
 ): SqlResult | [SqlResult, SqlResult];
 export function compileRule(
 	abstractSQL: AbstractSqlQuery,
 	engine: Engines,
 	noBinds?: boolean,
+	abstractSqlModel?: AbstractSqlModel,
 ): SqlResult | [SqlResult, SqlResult] | string;
 export function compileRule(
 	abstractSQL: AbstractSqlQuery,
 	engine: Engines,
 	noBinds = false,
+	abstractSqlModel?: AbstractSqlModel,
 ): SqlResult | [SqlResult, SqlResult] | string | [string, string] {
-	abstractSQL = AbstractSQLOptimiser(abstractSQL, noBinds);
+	abstractSQL = AbstractSQLOptimiser(abstractSQL, noBinds, abstractSqlModel);
 	return AbstractSQLRules2SQL(abstractSQL, engine, noBinds);
 }
 
@@ -586,10 +593,12 @@ $$;`);
 				createSQL: [
 					`\
 CREATE ${orReplaceStr}VIEW "${table.name}" AS (
-${compileRule(definitionAbstractSql as AbstractSqlQuery, engine, true).replace(
-	/^/gm,
-	'	',
-)}
+${compileRule(
+	definitionAbstractSql as AbstractSqlQuery,
+	engine,
+	true,
+	abstractSqlModel,
+).replace(/^/gm, '	')}
 );`,
 				],
 				dropSQL: [`DROP VIEW "${table.name}";`],
@@ -671,6 +680,7 @@ $$;`);
 					check.abstractSql as AbstractSqlQuery,
 					engine,
 					true,
+					abstractSqlModel,
 				);
 				createSqlElements.push(`\
 ${comment}${constraintName}CHECK (${sql})`);
@@ -796,6 +806,8 @@ CREATE TABLE ${ifNotExistsStr}"${table.name}" (
 			const { query: ruleSQL, bindings: ruleBindings } = compileRule(
 				ruleBody,
 				engine,
+				undefined,
+				abstractSqlModel,
 			) as SqlResult;
 			let referencedFields: ReferencedFields | undefined;
 			try {
@@ -835,8 +847,10 @@ const generateExport = (engine: Engines, ifNotExists: boolean) => {
 		optimizeSchema,
 		compileSchema: (abstractSqlModel: AbstractSqlModel) =>
 			compileSchema(abstractSqlModel, engine, ifNotExists),
-		compileRule: (abstractSQL: AbstractSqlQuery) =>
-			compileRule(abstractSQL, engine, false),
+		compileRule: (
+			abstractSQL: AbstractSqlQuery,
+			abstractSqlModel?: AbstractSqlModel,
+		) => compileRule(abstractSQL, engine, false, abstractSqlModel),
 		dataTypeValidate,
 		getReferencedFields,
 		getRuleReferencedFields,

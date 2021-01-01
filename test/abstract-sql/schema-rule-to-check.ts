@@ -76,7 +76,80 @@ CREATE TABLE IF NOT EXISTS "test" (
 	"id" INTEGER NULL PRIMARY KEY
 ,	-- It is necessary that each test has an id that is greater than 0.
 CONSTRAINT "test$hkEwz3pzAqalNu6crijhhdWJ0ffUvqRGK8rMkQbViPg=" CHECK (0 < "id"
-AND "id" IS NOT NULL)
+AND \"id\" IS NOT NULL)
+);`,
+		]);
+});
+
+it('should optimize null checks for a required field', () => {
+	expect(
+		generateSchema({
+			synonyms: {},
+			relationships: {},
+			tables: {
+				test: {
+					name: 'test',
+					resourceName: 'test',
+					idField: 'id',
+					fields: [
+						{
+							fieldName: 'id',
+							dataType: 'Integer',
+							required: true,
+							index: 'PRIMARY KEY',
+						},
+					],
+					indexes: [],
+					primitive: false,
+				},
+			},
+			rules: [
+				[
+					'Rule',
+					[
+						'Body',
+						[
+							'Not',
+							[
+								'Exists',
+								[
+									'SelectQuery',
+									['Select', []],
+									['From', ['test', 'test.0']],
+									[
+										'Where',
+										[
+											'Not',
+											[
+												'And',
+												[
+													'LessThan',
+													['Integer', 0],
+													['ReferencedField', 'test.0', 'id'],
+												],
+												['Exists', ['ReferencedField', 'test.0', 'id']],
+											],
+										],
+									],
+								],
+							],
+						],
+					] as AbstractSQLCompiler.AbstractSqlQuery,
+					[
+						'StructuredEnglish',
+						'It is necessary that each test has an id that is greater than 0.',
+					],
+				],
+			],
+		}),
+	)
+		.to.have.property('createSchema')
+		.that.deep.equals([
+			`\
+CREATE TABLE IF NOT EXISTS "test" (
+	"id" INTEGER NOT NULL PRIMARY KEY
+,	-- It is necessary that each test has an id that is greater than 0.
+CONSTRAINT "test$TIITyGYLwuTGGJjwAk8awbiE/hnw6y8rue+hQ8Pp7as=" CHECK (0 < "id")
 );`,
 		]);
 });
@@ -95,6 +168,7 @@ it('should correctly shorten a converted check rule with a long name', () => {
 						{
 							fieldName: 'id',
 							dataType: 'Integer',
+							required: true,
 							index: 'PRIMARY KEY',
 						},
 					],
@@ -163,10 +237,9 @@ it('should correctly shorten a converted check rule with a long name', () => {
 		.that.deep.equals([
 			`\
 CREATE TABLE IF NOT EXISTS "test_table_with_very_very_long_name" (
-	"id" INTEGER NULL PRIMARY KEY
+	"id" INTEGER NOT NULL PRIMARY KEY
 ,	-- It is necessary that each test_table_with_very_very_long_name has an id that is greater than 0.
-CONSTRAINT "test_table_with_very_very_long$9z+XEkP4EI1mhDQ8SiLulo2NLmenGY1C" CHECK (0 < "id"
-AND "id" IS NOT NULL)
+CONSTRAINT "test_table_with_very_very_long$/rDs8gDAB2Zoc7woBPozVMLKpx9jNTNa" CHECK (0 < "id")
 );`,
 		]);
 });
