@@ -15,13 +15,13 @@ describe('IsDistinctFrom', () => {
 	test(
 		[
 			'SelectQuery',
-			['Select', [['IsDistinctFrom', ['Number', 1], ['Number', 2]]]],
+			['Select', [['IsDistinctFrom', ['Field', 'a'], ['Field', 'b']]]],
 		],
 		(result, sqlEquals) => {
 			it('should produce a valid is distinct from statement', () => {
 				sqlEquals(
 					result.query,
-					'SELECT NOT((1) IS NOT NULL AND (2) IS NOT NULL AND (1) = (2) OR (1) IS NULL AND (2) IS NULL)',
+					'SELECT NOT(("a") IS NOT NULL AND ("b") IS NOT NULL AND ("a") = ("b") OR ("a") IS NULL AND ("b") IS NULL)',
 				);
 			});
 		},
@@ -29,21 +29,35 @@ describe('IsDistinctFrom', () => {
 	test(
 		[
 			'SelectQuery',
-			['Select', [['IsDistinctFrom', ['Number', 1], ['Text', '2']]]],
+			['Select', [['IsDistinctFrom', ['Number', 1], ['Number', 2]]]],
+		],
+		(result, sqlEquals) => {
+			it('should optimize down to a !=', () => {
+				sqlEquals(result.query, 'SELECT 1 != 2');
+			});
+		},
+	);
+	test(
+		[
+			'SelectQuery',
+			['Select', [['IsDistinctFrom', ['Field', 'a'], ['Text', '2']]]],
 		],
 		[['Text', '2']],
 		(result, sqlEquals) => {
 			it('should produce a valid is distinct from statement', () => {
-				sqlEquals(result.query, 'SELECT NOT((1) IS NOT NULL AND (1) = ($1))');
+				sqlEquals(
+					result.query,
+					'SELECT NOT(("a") IS NOT NULL AND ("a") = ($1))',
+				);
 			});
 		},
 	);
 
 	test(
-		['SelectQuery', ['Select', [['IsDistinctFrom', ['Number', 1], ['Null']]]]],
+		['SelectQuery', ['Select', [['IsDistinctFrom', ['Field', 'a'], ['Null']]]]],
 		(result, sqlEquals) => {
 			it('should produce an is not null statement', () => {
-				sqlEquals(result.query, 'SELECT 1 IS NOT NULL');
+				sqlEquals(result.query, 'SELECT "a" IS NOT NULL');
 			});
 		},
 	);
@@ -53,13 +67,13 @@ describe('IsNotDistinctFrom', () => {
 	test(
 		[
 			'SelectQuery',
-			['Select', [['IsNotDistinctFrom', ['Number', 1], ['Number', 2]]]],
+			['Select', [['IsNotDistinctFrom', ['Field', 'a'], ['Field', 'b']]]],
 		],
 		(result, sqlEquals) => {
 			it('should produce a valid is not distinct from statement', () => {
 				sqlEquals(
 					result.query,
-					'SELECT (1) IS NOT NULL AND (2) IS NOT NULL AND (1) = (2) OR (1) IS NULL AND (2) IS NULL',
+					'SELECT ("a") IS NOT NULL AND ("b") IS NOT NULL AND ("a") = ("b") OR ("a") IS NULL AND ("b") IS NULL',
 				);
 			});
 		},
@@ -67,12 +81,23 @@ describe('IsNotDistinctFrom', () => {
 	test(
 		[
 			'SelectQuery',
-			['Select', [['IsNotDistinctFrom', ['Number', 1], ['Text', '2']]]],
+			['Select', [['IsNotDistinctFrom', ['Number', 1], ['Number', 2]]]],
+		],
+		(result, sqlEquals) => {
+			it('should optimize down to an =', () => {
+				sqlEquals(result.query, 'SELECT 1 = 2');
+			});
+		},
+	);
+	test(
+		[
+			'SelectQuery',
+			['Select', [['IsNotDistinctFrom', ['Field', 'a'], ['Text', '2']]]],
 		],
 		[['Text', '2']],
 		(result, sqlEquals) => {
 			it('should produce a valid is not distinct from statement', () => {
-				sqlEquals(result.query, 'SELECT (1) IS NOT NULL AND (1) = ($1)');
+				sqlEquals(result.query, 'SELECT ("a") IS NOT NULL AND ("a") = ($1)');
 			});
 		},
 	);
@@ -80,11 +105,11 @@ describe('IsNotDistinctFrom', () => {
 	test(
 		[
 			'SelectQuery',
-			['Select', [['IsNotDistinctFrom', ['Number', 1], ['Null']]]],
+			['Select', [['IsNotDistinctFrom', ['Field', 'a'], ['Null']]]],
 		],
 		(result, sqlEquals) => {
 			it('should produce a valid is not distinct from statement', () => {
-				sqlEquals(result.query, 'SELECT 1 IS NULL');
+				sqlEquals(result.query, 'SELECT "a" IS NULL');
 			});
 		},
 	);

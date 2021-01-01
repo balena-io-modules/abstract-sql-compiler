@@ -14,6 +14,7 @@ const {
 	getAbstractSqlQuery,
 	checkArgs,
 	checkMinArgs,
+	isNotNullable,
 } = AbstractSQLRules2SQL;
 
 type OptimisationMatchFn = (
@@ -560,6 +561,16 @@ const typeRules: Dictionary<MatchFn> = {
 
 			return ['NotExists', getAbstractSqlQuery(args, valueIndex)];
 		}),
+		Helper<OptimisationMatchFn>((args) => {
+			checkArgs('IsDistinctFrom', args, 2);
+			if (
+				isNotNullable(getAbstractSqlQuery(args, 0)) &&
+				isNotNullable(getAbstractSqlQuery(args, 1))
+			) {
+				return ['Equals', ...args];
+			}
+			return false;
+		}),
 		matchArgs('IsNotDistinctFrom', AnyValue, AnyValue),
 	),
 	IsDistinctFrom: tryMatches(
@@ -575,6 +586,16 @@ const typeRules: Dictionary<MatchFn> = {
 			}
 
 			return ['Exists', getAbstractSqlQuery(args, valueIndex)];
+		}),
+		Helper<OptimisationMatchFn>((args) => {
+			checkArgs('IsDistinctFrom', args, 2);
+			if (
+				isNotNullable(getAbstractSqlQuery(args, 0)) &&
+				isNotNullable(getAbstractSqlQuery(args, 1))
+			) {
+				return ['NotEquals', ...args];
+			}
+			return false;
 		}),
 		matchArgs('IsDistinctFrom', AnyValue, AnyValue),
 	),
@@ -936,6 +957,14 @@ const typeRules: Dictionary<MatchFn> = {
 		Helper<OptimisationMatchFn>((args) => {
 			checkArgs('Exists', args, 1);
 			const arg = getAbstractSqlQuery(args, 0);
+			if (isNotNullable(arg)) {
+				return ['Boolean', true] as AbstractSqlQuery;
+			}
+			return false;
+		}),
+		Helper<OptimisationMatchFn>((args) => {
+			checkArgs('Exists', args, 1);
+			const arg = getAbstractSqlQuery(args, 0);
 			if (isEmptySelectQuery(arg)) {
 				return ['Boolean', false] as AbstractSqlQuery;
 			}
@@ -955,6 +984,14 @@ const typeRules: Dictionary<MatchFn> = {
 		},
 	),
 	NotExists: tryMatches(
+		Helper<OptimisationMatchFn>((args) => {
+			checkArgs('Exists', args, 1);
+			const arg = getAbstractSqlQuery(args, 0);
+			if (isNotNullable(arg)) {
+				return ['Boolean', false] as AbstractSqlQuery;
+			}
+			return false;
+		}),
 		Helper<OptimisationMatchFn>((args) => {
 			checkArgs('Exists', args, 1);
 			const arg = getAbstractSqlQuery(args, 0);
