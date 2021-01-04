@@ -1044,7 +1044,7 @@ const typeRules: Dictionary<MatchFn> = {
 		}
 		// TODO: The abstract sql type should accommodate this
 		let duration = (args[0] as any) as Dictionary<string>;
-		if (!_.isObject(duration)) {
+		if (duration == null || typeof duration !== 'object') {
 			throw new SyntaxError(
 				`Duration must be an object, got ${typeof duration}`,
 			);

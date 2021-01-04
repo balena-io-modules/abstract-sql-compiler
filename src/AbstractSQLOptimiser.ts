@@ -771,7 +771,8 @@ const typeRules: Dictionary<MatchFn> = {
 			if (!maybeHelped) {
 				return false;
 			}
-			const fields = _.map(fieldBuckets, (fieldBucket) => {
+			const fields = Object.keys(fieldBuckets).map((fieldRef) => {
+				const fieldBucket = fieldBuckets[fieldRef];
 				if (fieldBucket.length === 1) {
 					return fieldBucket[0];
 				} else {
@@ -895,7 +896,8 @@ const typeRules: Dictionary<MatchFn> = {
 			if (!maybeHelped) {
 				return false;
 			}
-			const fields = _.map(fieldBuckets, (fieldBucket) => {
+			const fields = Object.keys(fieldBuckets).map((fieldRef) => {
+				const fieldBucket = fieldBuckets[fieldRef];
 				if (fieldBucket.length === 1) {
 					return fieldBucket[0];
 				} else {
@@ -939,7 +941,7 @@ const typeRules: Dictionary<MatchFn> = {
 		checkArgs('Duration', args, 1);
 
 		let duration = args[0] as DurationNode[1];
-		if (!_.isObject(duration)) {
+		if (duration == null || typeof duration !== 'object') {
 			throw new SyntaxError(
 				`Duration must be an object, got ${typeof duration}`,
 			);
