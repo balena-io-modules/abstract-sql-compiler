@@ -1,4 +1,15 @@
 - commits:
+    - subject: Convert some lodash usage to native equivalents
+      hash: 400937fd3b220dccd557d67ff33d83d51ff0b939
+      body: ''
+      footer:
+        Change-type: patch
+        change-type: patch
+      author: Pagan Gazzard
+      nested: []
+  version: 7.8.1
+  date: 2021-01-04T13:04:45.938Z
+- commits:
     - subject: 'Optimize Is[Not]DistinctFrom and [Not]Exists for non-null values'
       hash: 682e84dea2088fb0c336b05be83183e627c20d4f
       body: ''
