@@ -109,14 +109,20 @@ export const optimizeSchema = (
 							`${tableName}$${JSON.stringify(ruleBody)}`,
 						).replace(/^\$sha256\$/, '');
 
-						abstractSqlModel.tables[tableName].checks ??= [];
-						abstractSqlModel.tables[tableName].checks!.push({
-							description: ruleSE,
-							// Trim the trigger to a max of 63 characters, reserving at least 32 characters for the hash
-							name: `${tableName.slice(0, 30)}$${sha}`.slice(0, 63),
-							abstractSql: whereNode,
-						});
-						return;
+						const table = _.find(
+							abstractSqlModel.tables,
+							(t) => t.name === tableName,
+						);
+						if (table) {
+							table.checks ??= [];
+							table.checks!.push({
+								description: ruleSE,
+								// Trim the trigger to a max of 63 characters, reserving at least 32 characters for the hash
+								name: `${tableName.slice(0, 30)}$${sha}`.slice(0, 63),
+								abstractSql: whereNode,
+							});
+							return;
+						}
 					}
 				}
 			}
