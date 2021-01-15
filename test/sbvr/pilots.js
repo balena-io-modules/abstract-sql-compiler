@@ -26,6 +26,8 @@ describe('pilots', function () {
 		`\
 Term:      name
 	Concept Type: Short Text (Type)
+Term:      nickname
+	Concept Type: Short Text (Type)
 Term:      years of experience
 	Concept Type: Integer (Type)
 Term:      person
@@ -36,11 +38,15 @@ Term:      plane
 	Reference Scheme: name
 Fact Type: pilot has name
 	Necessity: each pilot has exactly one name
+Fact Type: pilot has nickname
+	Necessity: each pilot has at most one nickname
 Fact Type: pilot has years of experience
 	Necessity: each pilot has exactly one years of experience
 Fact Type: plane has name
 	Necessity: each plane has exactly one name
 	Definition: "planeA" or "planeB" or "planeC"
+Fact Type: plane has nickname
+	Necessity: each plane has at most one nickname
 Fact Type: pilot can fly plane
 	Synonymous Form: plane can be flown by pilot
 Fact Type: pilot is experienced
@@ -81,6 +87,7 @@ CREATE TABLE IF NOT EXISTS "plane" (
 ,	"modified at" TIMESTAMP DEFAULT CURRENT_TIMESTAMP NOT NULL
 ,	"id" SERIAL NOT NULL PRIMARY KEY
 ,	"name" VARCHAR(255) NOT NULL CHECK ("name" IN ('planeA', 'planeB', 'planeC'))
+,	"nickname" VARCHAR(255) NULL
 );`,
 			modifiedAtTrigger('plane'),
 			`\
@@ -105,6 +112,7 @@ CREATE TABLE IF NOT EXISTS "pilot" (
 ,	"id" SERIAL NOT NULL PRIMARY KEY
 ,	"person" INTEGER NOT NULL
 ,	"name" VARCHAR(255) NOT NULL
+,	"nickname" VARCHAR(255) NULL
 ,	"years of experience" INTEGER NOT NULL
 ,	"is experienced" INTEGER DEFAULT 0 NOT NULL
 ,	"licence" INTEGER NOT NULL
@@ -215,6 +223,12 @@ SELECT NOT EXISTS (
 	test.rule(
 		'It is necessary that each plane that at least 3 pilots can fly, has a name',
 		`\
+SELECT 1 AS "result";`,
+	);
+
+	test.rule(
+		'It is necessary that each plane that at least 3 pilots can fly, has a nickname',
+		`\
 SELECT NOT EXISTS (
 	SELECT 1
 	FROM "plane" AS "plane.0"
@@ -223,12 +237,12 @@ SELECT NOT EXISTS (
 		FROM "pilot-can fly-plane" AS "pilot.1-can fly-plane.0"
 		WHERE "pilot.1-can fly-plane.0"."can fly-plane" = "plane.0"."id"
 	) >= 3
-	AND "plane.0"."name" IS NULL
+	AND "plane.0"."nickname" IS NULL
 ) AS "result";`,
 	);
 
 	test.rule(
-		'It is necessary that each plane that at least 3 pilots that are experienced can fly, has a name',
+		'It is necessary that each plane that at least 3 pilots that are experienced can fly, has a nickname',
 		`\
 SELECT NOT EXISTS (
 	SELECT 1
@@ -241,7 +255,7 @@ SELECT NOT EXISTS (
 		AND "pilot.1-can fly-plane.0"."pilot" = "pilot.1"."id"
 		AND "pilot.1-can fly-plane.0"."can fly-plane" = "plane.0"."id"
 	) >= 3
-	AND "plane.0"."name" IS NULL
+	AND "plane.0"."nickname" IS NULL
 ) AS "result";`,
 	);
 
@@ -258,20 +272,20 @@ SELECT NOT EXISTS (
 		AND "pilot.1-can fly-plane.0"."pilot" = "pilot.1"."id"
 		AND "pilot.1-can fly-plane.0"."can fly-plane" = "plane.0"."id"
 	) >= 3
-	AND "plane.0"."name" IS NULL
+	AND "plane.0"."nickname" IS NULL
 ) AS "result";`;
 		test.rule(
-			'It is necessary that each plane that at least 3 pilots that are not experienced can fly, has a name',
+			'It is necessary that each plane that at least 3 pilots that are not experienced can fly, has a nickname',
 			sql,
 		);
 		test.rule(
-			"It is necessary that each plane that at least 3 pilots that aren't experienced can fly, has a name",
+			"It is necessary that each plane that at least 3 pilots that aren't experienced can fly, has a nickname",
 			sql,
 		);
 	})();
 
 	test.rule(
-		'It is necessary that each plane that at least 3 pilot that is experienced, can fly, has a name.',
+		'It is necessary that each plane that at least 3 pilot that is experienced, can fly, has a nickname.',
 		`\
 SELECT NOT EXISTS (
 	SELECT 1
@@ -284,12 +298,12 @@ SELECT NOT EXISTS (
 		AND "pilot.1-can fly-plane.0"."pilot" = "pilot.1"."id"
 		AND "pilot.1-can fly-plane.0"."can fly-plane" = "plane.0"."id"
 	) >= 3
-	AND "plane.0"."name" IS NULL
+	AND "plane.0"."nickname" IS NULL
 ) AS "result";`,
 	);
 
 	test.rule(
-		'It is necessary that each plane that at least 3 pilots that a name is of can fly, has a name',
+		'It is necessary that each plane that at least 3 pilots that a name is of can fly, has a nickname',
 		`\
 SELECT NOT EXISTS (
 	SELECT 1
@@ -298,11 +312,10 @@ SELECT NOT EXISTS (
 		SELECT COUNT(*)
 		FROM "pilot" AS "pilot.1",
 			"pilot-can fly-plane" AS "pilot.1-can fly-plane.0"
-		WHERE "pilot.1"."name" IS NOT NULL
-		AND "pilot.1-can fly-plane.0"."pilot" = "pilot.1"."id"
+		WHERE "pilot.1-can fly-plane.0"."pilot" = "pilot.1"."id"
 		AND "pilot.1-can fly-plane.0"."can fly-plane" = "plane.0"."id"
 	) >= 3
-	AND "plane.0"."name" IS NULL
+	AND "plane.0"."nickname" IS NULL
 ) AS "result";`,
 	);
 
@@ -314,7 +327,6 @@ SELECT NOT EXISTS (
 	FROM "pilot" AS "pilot.0"
 	WHERE NOT (
 		0 < "pilot.0"."years of experience"
-		AND "pilot.0"."years of experience" IS NOT NULL
 	)
 ) AS "result";`,
 	);
@@ -347,8 +359,7 @@ SELECT NOT EXISTS (
 			FROM "pilot-can fly-plane" AS "pilot.0-can fly-plane.1"
 			WHERE "pilot.0-can fly-plane.1"."pilot" = "pilot.0"."id"
 		) >= 2
-		OR 5 < "pilot.0"."years of experience"
-		AND "pilot.0"."years of experience" IS NOT NULL)
+		OR 5 < "pilot.0"."years of experience")
 	)
 ) AS "result";`,
 	);
@@ -367,7 +378,6 @@ SELECT NOT EXISTS (
 	) >= 2)
 	AND NOT (
 		5 < "pilot.0"."years of experience"
-		AND "pilot.0"."years of experience" IS NOT NULL
 	)
 ) AS "result";`,
 	);
@@ -391,7 +401,6 @@ SELECT NOT EXISTS (
 	) = 1)
 	AND NOT (
 		5 < "pilot.0"."years of experience"
-		AND "pilot.0"."years of experience" IS NOT NULL
 	)
 ) AS "result";`,
 	);
@@ -462,7 +471,7 @@ OR EXISTS (
 	);
 
 	test.rule(
-		'It is necessary that each plane that at least 3 pilots can fly or exactly one pilot can fly, has a name',
+		'It is necessary that each plane that at least 3 pilots can fly or exactly one pilot can fly, has a nickname',
 		`\
 SELECT NOT EXISTS (
 	SELECT 1
@@ -477,7 +486,7 @@ SELECT NOT EXISTS (
 		FROM "pilot-can fly-plane" AS "pilot.2-can fly-plane.0"
 		WHERE "pilot.2-can fly-plane.0"."can fly-plane" = "plane.0"."id"
 	) = 1)
-	AND "plane.0"."name" IS NULL
+	AND "plane.0"."nickname" IS NULL
 ) AS "result";`,
 	);
 
@@ -496,7 +505,6 @@ SELECT NOT EXISTS (
 			WHERE "pilot.0-can fly-plane.1"."pilot" = "pilot.0"."id"
 		) >= 2
 		AND 5 < "pilot.0"."years of experience"
-		AND "pilot.0"."years of experience" IS NOT NULL
 	)
 ) AS "result";`,
 	);
@@ -515,7 +523,6 @@ SELECT NOT EXISTS (
 	) >= 2
 	AND NOT (
 		5 < "pilot.0"."years of experience"
-		AND "pilot.0"."years of experience" IS NOT NULL
 	)
 ) AS "result";`,
 	);
@@ -586,7 +593,7 @@ AND EXISTS (
 	);
 
 	test.rule(
-		'It is necessary that each plane that at least 3 pilots can fly and exactly one pilot can fly, has a name',
+		'It is necessary that each plane that at least 3 pilots can fly and exactly one pilot can fly, has a nickname',
 		`\
 SELECT NOT EXISTS (
 	SELECT 1
@@ -601,7 +608,7 @@ SELECT NOT EXISTS (
 		FROM "pilot-can fly-plane" AS "pilot.2-can fly-plane.0"
 		WHERE "pilot.2-can fly-plane.0"."can fly-plane" = "plane.0"."id"
 	) = 1
-	AND "plane.0"."name" IS NULL
+	AND "plane.0"."nickname" IS NULL
 ) AS "result";`,
 	);
 
@@ -625,7 +632,6 @@ SELECT NOT EXISTS (
 	) = 1)
 	AND NOT (
 		5 < "pilot.0"."years of experience"
-		AND "pilot.0"."years of experience" IS NOT NULL
 	)
 ) AS "result";`,
 	);
@@ -649,7 +655,6 @@ SELECT NOT EXISTS (
 	AND "pilot.0"."is experienced" = 1)
 	AND NOT (
 		5 < "pilot.0"."years of experience"
-		AND "pilot.0"."years of experience" IS NOT NULL
 	)
 ) AS "result";`,
 	);
@@ -676,7 +681,6 @@ SELECT NOT EXISTS (
 	)
 	AND NOT (
 		5 < "pilot.0"."years of experience"
-		AND "pilot.0"."years of experience" IS NOT NULL
 	)
 ) AS "result";`,
 	);
@@ -700,7 +704,6 @@ SELECT NOT EXISTS (
 	) = 1)
 	AND NOT (
 		5 < "pilot.0"."years of experience"
-		AND "pilot.0"."years of experience" IS NOT NULL
 	)
 ) AS "result";`,
 	);
@@ -725,11 +728,9 @@ SELECT NOT EXISTS (
 		) >= 11
 	)
 	OR 10 < LENGTH("pilot.0"."name")
-	AND LENGTH("pilot.0"."name") IS NOT NULL
-	AND "pilot.0"."name" IS NOT NULL)
+	AND LENGTH("pilot.0"."name") IS NOT NULL)
 	AND NOT (
 		5 < "pilot.0"."years of experience"
-		AND "pilot.0"."years of experience" IS NOT NULL
 	)
 ) AS "result";`,
 	);
@@ -752,11 +753,9 @@ SELECT NOT EXISTS (
 		WHERE "pilot.0-can fly-plane.2"."pilot" = "pilot.0"."id"
 	) = 1
 	AND 10 < LENGTH("pilot.0"."name")
-	AND LENGTH("pilot.0"."name") IS NOT NULL
-	AND "pilot.0"."name" IS NOT NULL)
+	AND LENGTH("pilot.0"."name") IS NOT NULL)
 	AND NOT (
 		5 < "pilot.0"."years of experience"
-		AND "pilot.0"."years of experience" IS NOT NULL
 	)
 ) AS "result";`,
 	);
@@ -779,11 +778,9 @@ SELECT NOT EXISTS (
 		WHERE "pilot.0-can fly-plane.2"."pilot" = "pilot.0"."id"
 	) = 1
 	AND 10 < LENGTH("pilot.0"."name")
-	AND LENGTH("pilot.0"."name") IS NOT NULL
-	AND "pilot.0"."name" IS NOT NULL)
+	AND LENGTH("pilot.0"."name") IS NOT NULL)
 	AND NOT (
 		5 < "pilot.0"."years of experience"
-		AND "pilot.0"."years of experience" IS NOT NULL
 	)
 ) AS "result";`,
 	);
@@ -806,11 +803,9 @@ SELECT NOT EXISTS (
 		WHERE "pilot.0-can fly-plane.2"."pilot" = "pilot.0"."id"
 	) = 1
 	AND 10 < LENGTH("pilot.0"."name")
-	AND LENGTH("pilot.0"."name") IS NOT NULL
-	AND "pilot.0"."name" IS NOT NULL)
+	AND LENGTH("pilot.0"."name") IS NOT NULL)
 	AND NOT (
 		5 < "pilot.0"."years of experience"
-		AND "pilot.0"."years of experience" IS NOT NULL
 	)
 ) AS "result";`,
 	);
@@ -839,7 +834,6 @@ SELECT NOT EXISTS (
 	) >= 3
 	AND NOT (
 		5 < "pilot.0"."years of experience"
-		AND "pilot.0"."years of experience" IS NOT NULL
 	)
 ) AS "result";`,
 	);
@@ -870,7 +864,6 @@ SELECT NOT EXISTS (
 	) >= 3)
 	AND NOT (
 		5 < "pilot.0"."years of experience"
-		AND "pilot.0"."years of experience" IS NOT NULL
 	)
 ) AS "result";`,
 	);
@@ -890,8 +883,7 @@ SELECT NOT EXISTS (
 		) >= 11
 	)
 	OR 10 < LENGTH("pilot.0"."name")
-	AND LENGTH("pilot.0"."name") IS NOT NULL
-	AND "pilot.0"."name" IS NOT NULL)
+	AND LENGTH("pilot.0"."name") IS NOT NULL)
 	AND (
 		SELECT COUNT(*)
 		FROM "pilot-can fly-plane" AS "pilot.0-can fly-plane.4"
@@ -899,7 +891,6 @@ SELECT NOT EXISTS (
 	) >= 3
 	AND NOT (
 		5 < "pilot.0"."years of experience"
-		AND "pilot.0"."years of experience" IS NOT NULL
 	)
 ) AS "result";`,
 	);
@@ -918,7 +909,6 @@ SELECT NOT EXISTS (
 	) = 1
 	AND 10 < LENGTH("pilot.0"."name")
 	AND LENGTH("pilot.0"."name") IS NOT NULL
-	AND "pilot.0"."name" IS NOT NULL
 	OR (
 		SELECT COUNT(*)
 		FROM "pilot-can fly-plane" AS "pilot.0-can fly-plane.4"
@@ -926,7 +916,6 @@ SELECT NOT EXISTS (
 	) >= 3)
 	AND NOT (
 		5 < "pilot.0"."years of experience"
-		AND "pilot.0"."years of experience" IS NOT NULL
 	)
 ) AS "result";`,
 	);
@@ -957,7 +946,6 @@ SELECT NOT EXISTS (
 	) >= 3
 	AND NOT (
 		5 < "pilot.0"."years of experience"
-		AND "pilot.0"."years of experience" IS NOT NULL
 	)
 ) AS "result";`,
 	);
@@ -988,7 +976,6 @@ SELECT NOT EXISTS (
 	) >= 3)
 	AND NOT (
 		5 < "pilot.0"."years of experience"
-		AND "pilot.0"."years of experience" IS NOT NULL
 	)
 ) AS "result";`,
 	);

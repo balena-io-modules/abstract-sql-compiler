@@ -60,7 +60,7 @@ export const optimizeSchema = (
 			}
 
 			// Optimize the rule body, this also normalizes it making the check constraint check easier
-			ruleBody = AbstractSQLOptimiser(ruleBody, true);
+			ruleBody = AbstractSQLOptimiser(ruleBody, true, abstractSqlModel);
 
 			const count = countFroms(ruleBody);
 			if (

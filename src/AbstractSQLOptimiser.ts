@@ -2,10 +2,14 @@ import * as _ from 'lodash';
 
 import { Dictionary } from 'lodash';
 import {
+	AbstractSqlModel,
 	AbstractSqlQuery,
 	AbstractSqlType,
+	AliasNode,
 	DurationNode,
+	ReferencedFieldNode,
 	ReplaceNode,
+	TableNode,
 } from './AbstractSQLCompiler';
 import * as AbstractSQLRules2SQL from './AbstractSQLRules2SQL';
 
@@ -14,7 +18,6 @@ const {
 	getAbstractSqlQuery,
 	checkArgs,
 	checkMinArgs,
-	isNotNullable,
 } = AbstractSQLRules2SQL;
 
 type OptimisationMatchFn = (
@@ -36,7 +39,9 @@ const escapeForLike = (str: AbstractSqlType): ReplaceNode => [
 ];
 
 let helped = false;
+let aliases: { [alias: string]: string } = {};
 let noBinds = false;
+let abstractSqlModel: AbstractSqlModel | undefined;
 const Helper = <F extends (...args: any[]) => any>(fn: F) => {
 	return (...args: Parameters<F>): ReturnType<F> => {
 		const result = fn(...args);
@@ -63,6 +68,22 @@ const isEmptySelectQuery = (query: AbstractSqlQuery): boolean => {
 			}
 	}
 	return false;
+};
+
+const isNotNullable = (node: AbstractSqlQuery): boolean => {
+	switch (node[0]) {
+		case 'ReferencedField':
+			if (abstractSqlModel != null) {
+				const [, aliasName, fieldName] = node as ReferencedFieldNode;
+				const tableName = aliases[aliasName] ?? aliasName;
+				const table = abstractSqlModel.tables[tableName];
+				const field = table?.fields.find((f) => f.fieldName === fieldName);
+				if (field?.required === true) {
+					return true;
+				}
+			}
+	}
+	return AbstractSQLRules2SQL.isNotNullable(node);
 };
 
 const rewriteMatch = (
@@ -455,6 +476,10 @@ const typeRules: Dictionary<MatchFn> = {
 	},
 	From: (args) => {
 		checkArgs('From', args, 1);
+		const maybeAlias = args[0] as AliasNode<TableNode>;
+		if (maybeAlias[0] === 'Alias' && maybeAlias[1][0] === 'Table') {
+			aliases[maybeAlias[2]] = maybeAlias[1][1];
+		}
 		return ['From', MaybeAlias(args[0] as AbstractSqlQuery, FromMatch)];
 	},
 	Join: JoinMatch('Join'),
@@ -1311,10 +1336,13 @@ const typeRules: Dictionary<MatchFn> = {
 export const AbstractSQLOptimiser = (
 	abstractSQL: AbstractSqlQuery,
 	$noBinds = false,
+	$abstractSqlModel?: AbstractSqlModel,
 ): AbstractSqlQuery => {
 	noBinds = $noBinds;
+	abstractSqlModel = $abstractSqlModel;
 	do {
 		helped = false;
+		aliases = {};
 		const [type, ...rest] = abstractSQL;
 		switch (type) {
 			case 'SelectQuery':
