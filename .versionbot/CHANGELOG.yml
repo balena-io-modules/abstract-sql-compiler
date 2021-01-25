@@ -1,4 +1,15 @@
 - commits:
+    - subject: Optimize the abstract sql of rules when running `optimizeSchema`
+      hash: 2ed97849674acb76f498c346b28d2861d1827ba5
+      body: ''
+      footer:
+        Change-type: minor
+        change-type: minor
+      author: Pagan Gazzard
+      nested: []
+  version: 7.9.0
+  date: 2021-01-25T17:48:56.215Z
+- commits:
     - subject: Fix schema optimizations when table and resource names are different
       hash: 46704031fbde45fd0e36b0963f8cf524df53398b
       body: ''
