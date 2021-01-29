@@ -281,6 +281,7 @@ export interface SqlRule {
 	bindings: Binding[];
 	structuredEnglish: string;
 	referencedFields?: ReferencedFields;
+	ruleReferencedFields?: RuleReferencedFields;
 }
 /**
  * The RelationshipMapping can either describe a relationship to another term, or
@@ -997,12 +998,19 @@ CREATE TABLE ${ifNotExistsStr}"${table.name}" (
 			} catch (e) {
 				console.warn('Error fetching referenced fields', e);
 			}
+			let ruleReferencedFields: RuleReferencedFields | undefined;
+			try {
+				ruleReferencedFields = getRuleReferencedFields(ruleBody);
+			} catch (e) {
+				console.warn('Error fetching rule referenced fields', e);
+			}
 
 			return {
 				structuredEnglish: ruleSE,
 				sql: ruleSQL,
 				bindings: ruleBindings,
 				referencedFields,
+				ruleReferencedFields,
 			};
 		},
 	);
