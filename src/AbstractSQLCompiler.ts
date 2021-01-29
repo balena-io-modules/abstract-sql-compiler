@@ -49,6 +49,7 @@ export type InNode = [
 	AbstractSqlType,
 	...AbstractSqlType[]
 ];
+export type NotExistsNode = ['NotExists', AbstractSqlType];
 export type ExistsNode = ['Exists', AbstractSqlType];
 export type NotNode = ['Not', BooleanTypeNodes];
 export type AndNode = ['And', ...BooleanTypeNodes[]];
@@ -63,6 +64,7 @@ export type BooleanTypeNodes =
 	| LessThanOrEqualNode
 	| InNode
 	| ExistsNode
+	| NotExistsNode
 	| NotNode
 	| AndNode
 	| OrNode
@@ -279,6 +281,7 @@ export interface SqlRule {
 	bindings: Binding[];
 	structuredEnglish: string;
 	referencedFields?: ReferencedFields;
+	ruleReferencedFields?: RuleReferencedFields;
 }
 /**
  * The RelationshipMapping can either describe a relationship to another term, or
@@ -335,6 +338,7 @@ export interface SqlModel {
 
 export interface ModifiedFields {
 	table: string;
+	action: keyof RuleReferencedFields[string];
 	fields?: string[];
 }
 
@@ -348,6 +352,10 @@ export interface EngineInstance {
 		field: Pick<AbstractSqlField, 'dataType' | 'required'>,
 	) => Promise<any>;
 	getReferencedFields: (ruleBody: AbstractSqlQuery) => ReferencedFields;
+	/**
+	 * This gets referenced fields for a query that is expected to always return true and only return fields that could change it to false
+	 */
+	getRuleReferencedFields: (ruleBody: AbstractSqlQuery) => RuleReferencedFields;
 	getModifiedFields: (
 		abstractSqlQuery: AbstractSqlQuery,
 	) => undefined | ModifiedFields | Array<undefined | ModifiedFields>;
@@ -525,6 +533,78 @@ const getReferencedFields: EngineInstance['getReferencedFields'] = (
 	return _.mapValues(referencedFields, _.uniq);
 };
 
+const dealiasTableNode = (n: AbstractSqlQuery): TableNode | undefined => {
+	if (isTableNode(n)) {
+		return n;
+	}
+	if (n[0] === 'Alias' && isTableNode(n[1])) {
+		return n[1];
+	}
+};
+export interface RuleReferencedFields {
+	[alias: string]: {
+		create: string[];
+		update: string[];
+		delete: string[];
+	};
+}
+const getRuleReferencedFields: EngineInstance['getRuleReferencedFields'] = (
+	ruleBody,
+) => {
+	ruleBody = AbstractSQLOptimiser(ruleBody);
+	let referencedFields: ReferencedFields = {};
+	const deletable = new Set<string>();
+	if (ruleBody[0] === 'NotExists') {
+		const s = ruleBody[1] as SelectQueryNode;
+		if (s[0] === 'SelectQuery') {
+			s.forEach((m) => {
+				if (!isFromNode(m)) {
+					return;
+				}
+				const table = dealiasTableNode(m[1]);
+				if (table == null) {
+					// keep this from node for later checking if we didn't optimize out
+					return;
+				}
+				deletable.add(table[1]);
+			});
+		}
+	}
+
+	$getReferencedFields(referencedFields, ruleBody);
+	referencedFields = _.mapValues(referencedFields, _.uniq);
+	const refFields: RuleReferencedFields = {};
+
+	for (const f of Object.keys(referencedFields)) {
+		refFields[f] = {
+			create: referencedFields[f],
+			update: referencedFields[f],
+			delete: referencedFields[f],
+		};
+		if (deletable.has(f)) {
+			const countFroms = (n: AbstractSqlType[]) => {
+				let count = 0;
+				n.forEach((p) => {
+					if (Array.isArray(p)) {
+						if (isFromNode(p) && dealiasTableNode(p[1])?.[1] === f) {
+							count++;
+						} else {
+							count += countFroms(p as AbstractSqlType[]);
+						}
+					}
+				});
+				return count;
+			};
+			// It's only deletable if there's just a single ref
+			if (countFroms(ruleBody) === 1) {
+				refFields[f].delete = [];
+			}
+		}
+	}
+
+	return refFields;
+};
+
 const checkQuery = (query: AbstractSqlQuery): ModifiedFields | undefined => {
 	const queryType = query[0];
 	if (!['InsertQuery', 'UpdateQuery', 'DeleteQuery'].includes(queryType)) {
@@ -547,15 +627,18 @@ const checkQuery = (query: AbstractSqlQuery): ModifiedFields | undefined => {
 		return;
 	}
 
-	if (['InsertQuery', 'DeleteQuery'].includes(queryType)) {
-		return { table: tableName };
+	if (queryType === 'InsertQuery') {
+		return { table: tableName, action: 'create' };
+	}
+	if (queryType === 'DeleteQuery') {
+		return { table: tableName, action: 'delete' };
 	}
 
 	const fields = _<FieldsNode | AbstractSqlType>(query)
 		.filter((v): v is FieldsNode => v != null && v[0] === 'Fields')
 		.flatMap((v) => v[1])
 		.value();
-	return { table: tableName, fields };
+	return { table: tableName, action: 'update', fields };
 };
 const getModifiedFields: EngineInstance['getModifiedFields'] = (
 	abstractSqlQuery: AbstractSqlQuery,
@@ -919,12 +1002,19 @@ CREATE TABLE ${ifNotExistsStr}"${table.name}" (
 			} catch (e) {
 				console.warn('Error fetching referenced fields', e);
 			}
+			let ruleReferencedFields: RuleReferencedFields | undefined;
+			try {
+				ruleReferencedFields = getRuleReferencedFields(ruleBody);
+			} catch (e) {
+				console.warn('Error fetching rule referenced fields', e);
+			}
 
 			return {
 				structuredEnglish: ruleSE,
 				sql: ruleSQL,
 				bindings: ruleBindings,
 				referencedFields,
+				ruleReferencedFields,
 			};
 		},
 	);
@@ -948,6 +1038,7 @@ const generateExport = (engine: Engines, ifNotExists: boolean) => {
 			compileRule(abstractSQL, engine, false),
 		dataTypeValidate,
 		getReferencedFields,
+		getRuleReferencedFields,
 		getModifiedFields,
 	};
 };
