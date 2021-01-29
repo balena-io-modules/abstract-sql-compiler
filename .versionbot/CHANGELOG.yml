@@ -1,4 +1,34 @@
 - commits:
+    - subject: Add an `action` property to modified fields of create/update/delete
+      hash: 8f071b8724bdae5574d5fea6c9f20e6e77daf3e6
+      body: ''
+      footer:
+        Change-type: minor
+        change-type: minor
+      author: Pagan Gazzard
+      nested: []
+    - subject: Automatically add `ruleReferencedFields` to `SqlRule`s
+      hash: f49548828fd75957290b6fdec166abf7bb0a53bf
+      body: ''
+      footer:
+        Change-type: minor
+        change-type: minor
+      author: Pagan Gazzard
+      nested: []
+    - subject: Add a `getRuleReferencedFields` which is tailored for rules
+      hash: 256c36de4a1efb7a46eb9833e1c3228d17194015
+      body: |
+        This works on the assumption that it is a rule query that should always
+        return true and allows ignoring more modification cases where they
+        cannot change the result from true to false
+      footer:
+        Change-type: minor
+        change-type: minor
+      author: Pagan Gazzard
+      nested: []
+  version: 7.10.0
+  date: 2021-01-29T16:30:19.410Z
+- commits:
     - subject: Add test for optimizeSchema optimizing rules
       hash: 4e94ee4961e98305c927734ce85067d409f90e18
       body: ''
