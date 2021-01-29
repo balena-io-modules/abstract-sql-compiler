@@ -1,4 +1,15 @@
 - commits:
+    - subject: Add test for optimizeSchema optimizing rules
+      hash: 4e94ee4961e98305c927734ce85067d409f90e18
+      body: ''
+      footer:
+        Change-type: patch
+        change-type: patch
+      author: Pagan Gazzard
+      nested: []
+  version: 7.9.1
+  date: 2021-01-29T13:01:10.504Z
+- commits:
     - subject: Optimize the abstract sql of rules when running `optimizeSchema`
       hash: 2ed97849674acb76f498c346b28d2861d1827ba5
       body: ''
