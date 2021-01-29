@@ -1,4 +1,15 @@
 - commits:
+    - subject: Separate code relating to referenced fields out of the main file
+      hash: 7ca7b5cfad4e8833293426235667cc59245f427a
+      body: ''
+      footer:
+        Change-type: patch
+        change-type: patch
+      author: Pagan Gazzard
+      nested: []
+  version: 7.10.1
+  date: 2021-01-29T18:35:19.430Z
+- commits:
     - subject: Add an `action` property to modified fields of create/update/delete
       hash: 8f071b8724bdae5574d5fea6c9f20e6e77daf3e6
       body: ''
