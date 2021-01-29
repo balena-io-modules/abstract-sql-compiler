@@ -49,6 +49,7 @@ export type InNode = [
 	AbstractSqlType,
 	...AbstractSqlType[]
 ];
+export type NotExistsNode = ['NotExists', AbstractSqlType];
 export type ExistsNode = ['Exists', AbstractSqlType];
 export type NotNode = ['Not', BooleanTypeNodes];
 export type AndNode = ['And', ...BooleanTypeNodes[]];
@@ -63,6 +64,7 @@ export type BooleanTypeNodes =
 	| LessThanOrEqualNode
 	| InNode
 	| ExistsNode
+	| NotExistsNode
 	| NotNode
 	| AndNode
 	| OrNode
@@ -348,6 +350,10 @@ export interface EngineInstance {
 		field: Pick<AbstractSqlField, 'dataType' | 'required'>,
 	) => Promise<any>;
 	getReferencedFields: (ruleBody: AbstractSqlQuery) => ReferencedFields;
+	/**
+	 * This gets referenced fields for a query that is expected to always return true and only return fields that could change it to false
+	 */
+	getRuleReferencedFields: (ruleBody: AbstractSqlQuery) => RuleReferencedFields;
 	getModifiedFields: (
 		abstractSqlQuery: AbstractSqlQuery,
 	) => undefined | ModifiedFields | Array<undefined | ModifiedFields>;
@@ -523,6 +529,78 @@ const getReferencedFields: EngineInstance['getReferencedFields'] = (
 	$getReferencedFields(referencedFields, ruleBody);
 
 	return _.mapValues(referencedFields, _.uniq);
+};
+
+const dealiasTableNode = (n: AbstractSqlQuery): TableNode | undefined => {
+	if (isTableNode(n)) {
+		return n;
+	}
+	if (n[0] === 'Alias' && isTableNode(n[1])) {
+		return n[1];
+	}
+};
+export interface RuleReferencedFields {
+	[alias: string]: {
+		create: string[];
+		update: string[];
+		delete: string[];
+	};
+}
+const getRuleReferencedFields: EngineInstance['getRuleReferencedFields'] = (
+	ruleBody,
+) => {
+	ruleBody = AbstractSQLOptimiser(ruleBody);
+	let referencedFields: ReferencedFields = {};
+	const deletable = new Set<string>();
+	if (ruleBody[0] === 'NotExists') {
+		const s = ruleBody[1] as SelectQueryNode;
+		if (s[0] === 'SelectQuery') {
+			s.forEach((m) => {
+				if (!isFromNode(m)) {
+					return;
+				}
+				const table = dealiasTableNode(m[1]);
+				if (table == null) {
+					// keep this from node for later checking if we didn't optimize out
+					return;
+				}
+				deletable.add(table[1]);
+			});
+		}
+	}
+
+	$getReferencedFields(referencedFields, ruleBody);
+	referencedFields = _.mapValues(referencedFields, _.uniq);
+	const refFields: RuleReferencedFields = {};
+
+	for (const f of Object.keys(referencedFields)) {
+		refFields[f] = {
+			create: referencedFields[f],
+			update: referencedFields[f],
+			delete: referencedFields[f],
+		};
+		if (deletable.has(f)) {
+			const countFroms = (n: AbstractSqlType[]) => {
+				let count = 0;
+				n.forEach((p) => {
+					if (Array.isArray(p)) {
+						if (isFromNode(p) && dealiasTableNode(p[1])?.[1] === f) {
+							count++;
+						} else {
+							count += countFroms(p as AbstractSqlType[]);
+						}
+					}
+				});
+				return count;
+			};
+			// It's only deletable if there's just a single ref
+			if (countFroms(ruleBody) === 1) {
+				refFields[f].delete = [];
+			}
+		}
+	}
+
+	return refFields;
 };
 
 const checkQuery = (query: AbstractSqlQuery): ModifiedFields | undefined => {
@@ -948,6 +1026,7 @@ const generateExport = (engine: Engines, ifNotExists: boolean) => {
 			compileRule(abstractSQL, engine, false),
 		dataTypeValidate,
 		getReferencedFields,
+		getRuleReferencedFields,
 		getModifiedFields,
 	};
 };
