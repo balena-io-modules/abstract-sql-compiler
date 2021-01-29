@@ -338,6 +338,7 @@ export interface SqlModel {
 
 export interface ModifiedFields {
 	table: string;
+	action: keyof RuleReferencedFields[string];
 	fields?: string[];
 }
 
@@ -626,15 +627,18 @@ const checkQuery = (query: AbstractSqlQuery): ModifiedFields | undefined => {
 		return;
 	}
 
-	if (['InsertQuery', 'DeleteQuery'].includes(queryType)) {
-		return { table: tableName };
+	if (queryType === 'InsertQuery') {
+		return { table: tableName, action: 'create' };
+	}
+	if (queryType === 'DeleteQuery') {
+		return { table: tableName, action: 'delete' };
 	}
 
 	const fields = _<FieldsNode | AbstractSqlType>(query)
 		.filter((v): v is FieldsNode => v != null && v[0] === 'Fields')
 		.flatMap((v) => v[1])
 		.value();
-	return { table: tableName, fields };
+	return { table: tableName, action: 'update', fields };
 };
 const getModifiedFields: EngineInstance['getModifiedFields'] = (
 	abstractSqlQuery: AbstractSqlQuery,
