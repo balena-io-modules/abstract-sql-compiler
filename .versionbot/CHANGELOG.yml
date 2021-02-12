@@ -1,4 +1,15 @@
 - commits:
+    - subject: Fix `getModifiedFields` for `UpsertQuery`s
+      hash: c19c902f1a6e268952540cd19960f6752a303f65
+      body: ''
+      footer:
+        Change-type: patch
+        change-type: patch
+      author: Pagan Gazzard
+      nested: []
+  version: 7.10.2
+  date: 2021-02-12T19:36:19.259Z
+- commits:
     - subject: Separate code relating to referenced fields out of the main file
       hash: 7ca7b5cfad4e8833293426235667cc59245f427a
       body: ''
