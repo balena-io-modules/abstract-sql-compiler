@@ -214,7 +214,9 @@ const checkQuery = (query: AbstractSqlQuery): ModifiedFields | undefined => {
 export const getModifiedFields: EngineInstance['getModifiedFields'] = (
 	abstractSqlQuery: AbstractSqlQuery,
 ) => {
-	if (Array.isArray(abstractSqlQuery[0])) {
+	if (abstractSqlQuery[0] === 'UpsertQuery') {
+		return abstractSqlQuery.slice(1).map(checkQuery);
+	} else if (Array.isArray(abstractSqlQuery[0])) {
 		return abstractSqlQuery.map(checkQuery);
 	} else {
 		return checkQuery(abstractSqlQuery);
