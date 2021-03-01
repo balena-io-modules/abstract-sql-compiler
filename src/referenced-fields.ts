@@ -5,9 +5,6 @@ import {
 	EngineInstance,
 	FieldsNode,
 	isFromNode,
-	isTableNode,
-	SelectQueryNode,
-	TableNode,
 } from './AbstractSQLCompiler';
 import { AbstractSQLOptimiser } from './AbstractSQLOptimiser';
 
@@ -21,9 +18,37 @@ export interface ModifiedFields {
 	fields?: string[];
 }
 
-type Scope = _.Dictionary<string>;
+export const getReferencedFields: EngineInstance['getReferencedFields'] = (
+	ruleBody,
+) => {
+	const referencedFields = getRuleReferencedFields(ruleBody);
 
-const getScope = (rulePart: AbstractSqlQuery, scope: Scope): Scope => {
+	return _.mapValues(referencedFields, ({ update }) => _.uniq(update));
+};
+
+export interface RuleReferencedFields {
+	[alias: string]: {
+		create: string[];
+		update: string[];
+		delete: string[];
+	};
+}
+enum IsSafe {
+	Insert = 'ins',
+	Delete = 'del',
+	Unknown = '',
+}
+type RuleReferencedScope = {
+	[aliasName: string]: {
+		tableName: string;
+		isSafe: IsSafe;
+	};
+};
+const getRuleReferencedScope = (
+	rulePart: AbstractSqlQuery,
+	scope: RuleReferencedScope,
+	isSafe: IsSafe,
+): RuleReferencedScope => {
 	scope = { ...scope };
 	const fromNodes = rulePart.filter(isFromNode);
 	fromNodes.forEach((node) => {
@@ -35,29 +60,30 @@ const getScope = (rulePart: AbstractSqlQuery, scope: Scope): Scope => {
 			}
 			switch (from[0]) {
 				case 'Table':
-					scope[alias] = from[1];
+					scope[alias] = { tableName: from[1], isSafe };
 					break;
 				case 'SelectQuery':
 					// Ignore SelectQuery in the From as we'll handle any fields it selects
 					// when we recurse in. With true scope handling however we could prune
 					// fields that don't affect the end result and avoid false positives
-					scope[alias] = '';
+					scope[alias] = { tableName: '', isSafe };
 					break;
 				default:
 					throw new Error(`Cannot handle aliased ${from[0]} nodes`);
 			}
 		} else if (nested[0] === 'Table') {
-			scope[nested[1]] = nested[1];
+			scope[nested[1]] = { tableName: nested[1], isSafe };
 		} else {
 			throw Error(`Unsupported FromNode for scoping: ${nested[0]}`);
 		}
 	});
 	return scope;
 };
-const $getReferencedFields = (
-	referencedFields: ReferencedFields,
+const $getRuleReferencedFields = (
+	referencedFields: RuleReferencedFields,
 	rulePart: AbstractSqlQuery,
-	scope: Scope = {},
+	isSafe: IsSafe,
+	scope: RuleReferencedScope = {},
 ) => {
 	if (!Array.isArray(rulePart)) {
 		return;
@@ -65,115 +91,76 @@ const $getReferencedFields = (
 	switch (rulePart[0]) {
 		case 'SelectQuery':
 			// Update the current scope before trying to resolve field references
-			scope = getScope(rulePart, scope);
+			scope = getRuleReferencedScope(rulePart, scope, isSafe);
 			rulePart.forEach((node: AbstractSqlQuery) => {
-				$getReferencedFields(referencedFields, node, scope);
+				$getRuleReferencedFields(referencedFields, node, isSafe, scope);
 			});
-			break;
+			return;
 		case 'ReferencedField':
-			let tableName = rulePart[1];
+			const aliasName = rulePart[1];
 			const fieldName = rulePart[2];
-			if (typeof tableName !== 'string' || typeof fieldName !== 'string') {
+			if (typeof aliasName !== 'string' || typeof fieldName !== 'string') {
 				throw new Error(`Invalid ReferencedField: ${rulePart}`);
 			}
-			tableName = scope[tableName];
+			const a = scope[aliasName];
 			// The scoped tableName is empty in the case of an aliased from query
 			// and those fields will be covered when we recurse into them
-			if (tableName !== '') {
-				if (referencedFields[tableName] == null) {
-					referencedFields[tableName] = [];
+			if (a.tableName !== '') {
+				if (referencedFields[a.tableName] == null) {
+					referencedFields[a.tableName] = {
+						create: [],
+						update: [],
+						delete: [],
+					};
 				}
-				referencedFields[tableName].push(fieldName);
+				if (a.isSafe !== IsSafe.Insert) {
+					referencedFields[a.tableName].create.push(fieldName);
+				}
+				if (a.isSafe !== IsSafe.Delete) {
+					referencedFields[a.tableName].delete.push(fieldName);
+				}
+				referencedFields[a.tableName].update.push(fieldName);
 			}
 			return;
 		case 'Field':
 			throw new Error('Cannot find queried fields for unreferenced fields');
+		case 'Not':
+		case 'NotExists':
+			// When hitting a `Not` we invert the safety rule
+			if (isSafe === IsSafe.Insert) {
+				isSafe = IsSafe.Delete;
+			} else if (isSafe === IsSafe.Delete) {
+				isSafe = IsSafe.Insert;
+			}
+		// Fallthrough
+		case 'And':
+		case 'Exists':
+			rulePart.forEach((node: AbstractSqlQuery) => {
+				$getRuleReferencedFields(referencedFields, node, isSafe, scope);
+			});
+			return;
 		default:
 			rulePart.forEach((node: AbstractSqlQuery) => {
-				$getReferencedFields(referencedFields, node, scope);
+				$getRuleReferencedFields(referencedFields, node, IsSafe.Unknown, scope);
 			});
 	}
 };
-export const getReferencedFields: EngineInstance['getReferencedFields'] = (
-	ruleBody,
-) => {
-	ruleBody = AbstractSQLOptimiser(ruleBody);
-	const referencedFields: ReferencedFields = {};
-	$getReferencedFields(referencedFields, ruleBody);
-
-	return _.mapValues(referencedFields, _.uniq);
-};
-
-const dealiasTableNode = (n: AbstractSqlQuery): TableNode | undefined => {
-	if (isTableNode(n)) {
-		return n;
-	}
-	if (n[0] === 'Alias' && isTableNode(n[1])) {
-		return n[1];
-	}
-};
-export interface RuleReferencedFields {
-	[alias: string]: {
-		create: string[];
-		update: string[];
-		delete: string[];
-	};
-}
 export const getRuleReferencedFields: EngineInstance['getRuleReferencedFields'] = (
 	ruleBody,
 ) => {
 	ruleBody = AbstractSQLOptimiser(ruleBody);
-	let referencedFields: ReferencedFields = {};
-	const deletable = new Set<string>();
-	if (ruleBody[0] === 'NotExists') {
-		const s = ruleBody[1] as SelectQueryNode;
-		if (s[0] === 'SelectQuery') {
-			s.forEach((m) => {
-				if (!isFromNode(m)) {
-					return;
-				}
-				const table = dealiasTableNode(m[1]);
-				if (table == null) {
-					// keep this from node for later checking if we didn't optimize out
-					return;
-				}
-				deletable.add(table[1]);
-			});
+	const referencedFields: RuleReferencedFields = {};
+	$getRuleReferencedFields(referencedFields, ruleBody, IsSafe.Insert);
+	for (const tableName of Object.keys(referencedFields)) {
+		const tableRefs = referencedFields[tableName];
+		for (const method of Object.keys(tableRefs) as Array<
+			keyof typeof tableRefs
+		>) {
+			tableRefs[method] = _.uniq(tableRefs[method]);
 		}
 	}
 
-	$getReferencedFields(referencedFields, ruleBody);
-	referencedFields = _.mapValues(referencedFields, _.uniq);
-	const refFields: RuleReferencedFields = {};
-
-	for (const f of Object.keys(referencedFields)) {
-		refFields[f] = {
-			create: referencedFields[f],
-			update: referencedFields[f],
-			delete: referencedFields[f],
-		};
-		if (deletable.has(f)) {
-			const countFroms = (n: AbstractSqlType[]) => {
-				let count = 0;
-				n.forEach((p) => {
-					if (Array.isArray(p)) {
-						if (isFromNode(p) && dealiasTableNode(p[1])?.[1] === f) {
-							count++;
-						} else {
-							count += countFroms(p as AbstractSqlType[]);
-						}
-					}
-				});
-				return count;
-			};
-			// It's only deletable if there's just a single ref
-			if (countFroms(ruleBody) === 1) {
-				refFields[f].delete = [];
-			}
-		}
-	}
-
-	return refFields;
+	return referencedFields;
 };
 
 const checkQuery = (query: AbstractSqlQuery): ModifiedFields | undefined => {
