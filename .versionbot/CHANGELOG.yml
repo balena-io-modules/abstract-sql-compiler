@@ -1,4 +1,16 @@
 - commits:
+    - subject: Generalize/share the referenced fields code and cover more cases
+      hash: 3e77ac1aed9f3fb596f6a01a08a1800fead1e860
+      body: |
+        This now allows detecting deletes that are
+      footer:
+        Change-type: minor
+        change-type: minor
+      author: Pagan Gazzard
+      nested: []
+  version: 7.11.0
+  date: 2021-03-01T18:55:09.855Z
+- commits:
     - subject: Fix `getModifiedFields` for `UpsertQuery`s
       hash: c19c902f1a6e268952540cd19960f6752a303f65
       body: ''
