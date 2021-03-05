@@ -1,4 +1,15 @@
 - commits:
+    - subject: Enable narrowing down create/delete referenced fields for nested exists
+      hash: 5dbc3ddf05701e5b4188bfa8db64d0a12e3b8298
+      body: ''
+      footer:
+        Change-type: minor
+        change-type: minor
+      author: Pagan Gazzard
+      nested: []
+  version: 7.12.0
+  date: 2021-03-05T20:34:11.366Z
+- commits:
     - subject: Generalize/share the referenced fields code and cover more cases
       hash: 3e77ac1aed9f3fb596f6a01a08a1800fead1e860
       body: |
