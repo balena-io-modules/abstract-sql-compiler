@@ -133,6 +133,7 @@ const $getRuleReferencedFields = (
 				isSafe = IsSafe.Insert;
 			}
 		// Fallthrough
+		case 'Where':
 		case 'And':
 		case 'Exists':
 			rulePart.forEach((node: AbstractSqlQuery) => {
