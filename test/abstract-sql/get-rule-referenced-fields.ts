@@ -110,4 +110,53 @@ describe('getRuleReferencedFields', () => {
 			},
 		});
 	});
+
+	it('should work with nested NOT EXISTS', () => {
+		expect(
+			AbstractSqlCompiler.postgres.getRuleReferencedFields([
+				'Not',
+				[
+					'Exists',
+					[
+						'SelectQuery',
+						['Select', []],
+						['From', ['test', 'test.0']],
+						[
+							'Where',
+							[
+								'Not',
+								[
+									'Exists',
+									[
+										'SelectQuery',
+										['Select', []],
+										['From', ['test2', 'test2.0']],
+										[
+											'Where',
+											[
+												'Equals',
+												['ReferencedField', 'test.0', 'id'],
+												['ReferencedField', 'test2.0', 'test'],
+											],
+										],
+									],
+								],
+							],
+						],
+					],
+				],
+			] as AbstractSqlCompiler.AbstractSqlQuery),
+		).to.deep.equal({
+			test: {
+				create: ['id'],
+				update: ['id'],
+				delete: [],
+			},
+			test2: {
+				create: [],
+				update: ['test'],
+				delete: ['test'],
+			},
+		});
+	});
 });
