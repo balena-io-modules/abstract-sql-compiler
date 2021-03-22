@@ -1,13 +1,15 @@
 {
 	"compilerOptions": {
 		"module": "commonjs",
-		"noImplicitAny": true,
+		"strict": true,
+		"strictFunctionTypes": false,
+		"strictBindCallApply": false,
+		"noImplicitThis": false,
 		"noUnusedParameters": true,
 		"noUnusedLocals": true,
 		"preserveConstEnums": true,
 		"removeComments": true,
 		"sourceMap": true,
-		"strictNullChecks": true,
 		"declaration": true,
 		"skipLibCheck": true,
 		"target": "es2018",
