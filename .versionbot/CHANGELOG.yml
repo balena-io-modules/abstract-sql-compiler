@@ -1,4 +1,15 @@
 - commits:
+    - subject: Enable strict options by default and only disable specific ones
+      hash: 84bfaac15e78453ff8a87a5a4836505a78f43666
+      body: ''
+      footer:
+        Change-type: patch
+        change-type: patch
+      author: Pagan Gazzard
+      nested: []
+  version: 7.12.1
+  date: 2021-03-22T17:21:30.316Z
+- commits:
     - subject: Enable narrowing down create/delete referenced fields for nested exists
       hash: 5dbc3ddf05701e5b4188bfa8db64d0a12e3b8298
       body: ''
