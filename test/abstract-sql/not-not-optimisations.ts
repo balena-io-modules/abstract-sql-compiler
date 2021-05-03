@@ -18,7 +18,7 @@ describe('NOT(NOT(...)) should cancel each other out', () => {
 			sqlEquals(
 				result.query,
 				stripIndent`
-						SELECT 1 AS "result";
+						SELECT TRUE AS "result";
 					`,
 			);
 		});

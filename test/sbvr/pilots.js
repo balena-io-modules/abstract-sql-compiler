@@ -106,7 +106,7 @@ CREATE TABLE IF NOT EXISTS "pilot" (
 ,	"person" INTEGER NOT NULL
 ,	"name" VARCHAR(255) NOT NULL
 ,	"years of experience" INTEGER NOT NULL
-,	"is experienced" INTEGER DEFAULT 0 NOT NULL
+,	"is experienced" BOOLEAN DEFAULT FALSE NOT NULL
 ,	"licence" INTEGER NOT NULL
 ,	FOREIGN KEY ("person") REFERENCES "person" ("id")
 ,	FOREIGN KEY ("licence") REFERENCES "licence" ("id")
@@ -169,7 +169,7 @@ SELECT (
 SELECT (
 	SELECT COUNT(*)
 	FROM "pilot" AS "pilot.0"
-	WHERE "pilot.0"."is experienced" = 1
+	WHERE "pilot.0"."is experienced" = TRUE
 	AND NOT (
 		(
 			SELECT COUNT(*)
@@ -186,7 +186,7 @@ SELECT (
 SELECT (
 	SELECT COUNT(*)
 	FROM "pilot" AS "pilot.0"
-	WHERE "pilot.0"."is experienced" = 0
+	WHERE "pilot.0"."is experienced" = FALSE
 	AND (
 		SELECT COUNT(*)
 		FROM "pilot-can fly-plane" AS "pilot.0-can fly-plane.1"
@@ -208,7 +208,7 @@ SELECT (
 			WHERE "pilot.0-can fly-plane.1"."pilot" = "pilot.0"."id"
 		) >= 3
 	)
-	AND "pilot.0"."is experienced" != 0
+	AND "pilot.0"."is experienced" != FALSE
 ) = 0 AS "result";`,
 	);
 
@@ -237,7 +237,7 @@ SELECT (
 		SELECT COUNT(*)
 		FROM "pilot" AS "pilot.1",
 			"pilot-can fly-plane" AS "pilot.1-can fly-plane.0"
-		WHERE "pilot.1"."is experienced" = 1
+		WHERE "pilot.1"."is experienced" = TRUE
 		AND "pilot.1-can fly-plane.0"."pilot" = "pilot.1"."id"
 		AND "pilot.1-can fly-plane.0"."can fly-plane" = "plane.0"."id"
 	) >= 3
@@ -254,7 +254,7 @@ SELECT (
 		SELECT COUNT(*)
 		FROM "pilot" AS "pilot.1",
 			"pilot-can fly-plane" AS "pilot.1-can fly-plane.0"
-		WHERE "pilot.1"."is experienced" = 0
+		WHERE "pilot.1"."is experienced" = FALSE
 		AND "pilot.1-can fly-plane.0"."pilot" = "pilot.1"."id"
 		AND "pilot.1-can fly-plane.0"."can fly-plane" = "plane.0"."id"
 	) >= 3
@@ -280,7 +280,7 @@ SELECT (
 		SELECT COUNT(*)
 		FROM "pilot" AS "pilot.1",
 			"pilot-can fly-plane" AS "pilot.1-can fly-plane.0"
-		WHERE "pilot.1"."is experienced" = 1
+		WHERE "pilot.1"."is experienced" = TRUE
 		AND "pilot.1-can fly-plane.0"."pilot" = "pilot.1"."id"
 		AND "pilot.1-can fly-plane.0"."can fly-plane" = "plane.0"."id"
 	) >= 3
@@ -340,7 +340,7 @@ SELECT (
 SELECT (
 	SELECT COUNT(*)
 	FROM "pilot" AS "pilot.0"
-	WHERE "pilot.0"."is experienced" = 1
+	WHERE "pilot.0"."is experienced" = TRUE
 	AND NOT (
 		((
 			SELECT COUNT(*)
@@ -359,7 +359,7 @@ SELECT (
 SELECT (
 	SELECT COUNT(*)
 	FROM "pilot" AS "pilot.0"
-	WHERE ("pilot.0"."is experienced" = 1
+	WHERE ("pilot.0"."is experienced" = TRUE
 	OR (
 		SELECT COUNT(*)
 		FROM "pilot-can fly-plane" AS "pilot.0-can fly-plane.1"
@@ -378,7 +378,7 @@ SELECT (
 SELECT (
 	SELECT COUNT(*)
 	FROM "pilot" AS "pilot.0"
-	WHERE ("pilot.0"."is experienced" = 1
+	WHERE ("pilot.0"."is experienced" = TRUE
 	OR (
 		SELECT COUNT(*)
 		FROM "pilot-can fly-plane" AS "pilot.0-can fly-plane.1"
@@ -402,7 +402,7 @@ SELECT (
 SELECT (
 	SELECT COUNT(*)
 	FROM "pilot" AS "pilot.0"
-	WHERE "pilot.0"."is experienced" = 1
+	WHERE "pilot.0"."is experienced" = TRUE
 	AND NOT (
 		((
 			SELECT COUNT(*)
@@ -434,7 +434,7 @@ SELECT (
 		FROM "pilot-can fly-plane" AS "pilot.0-can fly-plane.2"
 		WHERE "pilot.0-can fly-plane.2"."pilot" = "pilot.0"."id"
 	) = 1)
-	AND "pilot.0"."is experienced" != 1
+	AND "pilot.0"."is experienced" != TRUE
 ) = 0 AS "result";`,
 	);
 
@@ -488,7 +488,7 @@ SELECT (
 SELECT (
 	SELECT COUNT(*)
 	FROM "pilot" AS "pilot.0"
-	WHERE "pilot.0"."is experienced" = 1
+	WHERE "pilot.0"."is experienced" = TRUE
 	AND NOT (
 		(
 			SELECT COUNT(*)
@@ -507,7 +507,7 @@ SELECT (
 SELECT (
 	SELECT COUNT(*)
 	FROM "pilot" AS "pilot.0"
-	WHERE "pilot.0"."is experienced" = 1
+	WHERE "pilot.0"."is experienced" = TRUE
 	AND (
 		SELECT COUNT(*)
 		FROM "pilot-can fly-plane" AS "pilot.0-can fly-plane.1"
@@ -526,7 +526,7 @@ SELECT (
 SELECT (
 	SELECT COUNT(*)
 	FROM "pilot" AS "pilot.0"
-	WHERE "pilot.0"."is experienced" = 1
+	WHERE "pilot.0"."is experienced" = TRUE
 	AND NOT (
 		(
 			SELECT COUNT(*)
@@ -558,7 +558,7 @@ SELECT (
 		FROM "pilot-can fly-plane" AS "pilot.0-can fly-plane.2"
 		WHERE "pilot.0-can fly-plane.2"."pilot" = "pilot.0"."id"
 	) = 1
-	AND "pilot.0"."is experienced" != 1
+	AND "pilot.0"."is experienced" != TRUE
 ) = 0 AS "result";`,
 	);
 
@@ -612,7 +612,7 @@ SELECT (
 SELECT (
 	SELECT COUNT(*)
 	FROM "pilot" AS "pilot.0"
-	WHERE "pilot.0"."is experienced" = 1
+	WHERE "pilot.0"."is experienced" = TRUE
 	AND ((
 		SELECT COUNT(*)
 		FROM "pilot-can fly-plane" AS "pilot.0-can fly-plane.1"
@@ -646,7 +646,7 @@ SELECT (
 		FROM "pilot-can fly-plane" AS "pilot.0-can fly-plane.2"
 		WHERE "pilot.0-can fly-plane.2"."pilot" = "pilot.0"."id"
 	) = 1
-	AND "pilot.0"."is experienced" = 1)
+	AND "pilot.0"."is experienced" = TRUE)
 	AND NOT (
 		5 < "pilot.0"."years of experience"
 		AND "pilot.0"."years of experience" IS NOT NULL
@@ -661,7 +661,7 @@ SELECT (
 SELECT (
 	SELECT COUNT(*)
 	FROM "pilot" AS "pilot.0"
-	WHERE "pilot.0"."is experienced" = 1
+	WHERE "pilot.0"."is experienced" = TRUE
 	AND (
 		SELECT COUNT(*)
 		FROM "pilot-can fly-plane" AS "pilot.0-can fly-plane.1"
@@ -687,7 +687,7 @@ SELECT (
 SELECT (
 	SELECT COUNT(*)
 	FROM "pilot" AS "pilot.0"
-	WHERE ("pilot.0"."is experienced" = 1
+	WHERE ("pilot.0"."is experienced" = TRUE
 	OR (
 		SELECT COUNT(*)
 		FROM "pilot-can fly-plane" AS "pilot.0-can fly-plane.1"
@@ -711,7 +711,7 @@ SELECT (
 SELECT (
 	SELECT COUNT(*)
 	FROM "pilot" AS "pilot.0"
-	WHERE "pilot.0"."is experienced" = 1
+	WHERE "pilot.0"."is experienced" = TRUE
 	AND (
 		SELECT COUNT(*)
 		FROM "pilot-can fly-plane" AS "pilot.0-can fly-plane.1"
@@ -740,7 +740,7 @@ SELECT (
 SELECT (
 	SELECT COUNT(*)
 	FROM "pilot" AS "pilot.0"
-	WHERE ("pilot.0"."is experienced" = 1
+	WHERE ("pilot.0"."is experienced" = TRUE
 	OR (
 		SELECT COUNT(*)
 		FROM "pilot-can fly-plane" AS "pilot.0-can fly-plane.1"
@@ -767,7 +767,7 @@ SELECT (
 SELECT (
 	SELECT COUNT(*)
 	FROM "pilot" AS "pilot.0"
-	WHERE ("pilot.0"."is experienced" = 1
+	WHERE ("pilot.0"."is experienced" = TRUE
 	OR (
 		SELECT COUNT(*)
 		FROM "pilot-can fly-plane" AS "pilot.0-can fly-plane.1"
@@ -794,7 +794,7 @@ SELECT (
 SELECT (
 	SELECT COUNT(*)
 	FROM "pilot" AS "pilot.0"
-	WHERE ("pilot.0"."is experienced" = 1
+	WHERE ("pilot.0"."is experienced" = TRUE
 	OR (
 		SELECT COUNT(*)
 		FROM "pilot-can fly-plane" AS "pilot.0-can fly-plane.1"
@@ -821,7 +821,7 @@ SELECT (
 SELECT (
 	SELECT COUNT(*)
 	FROM "pilot" AS "pilot.0"
-	WHERE "pilot.0"."is experienced" = 1
+	WHERE "pilot.0"."is experienced" = TRUE
 	AND ((
 		SELECT COUNT(*)
 		FROM "pilot-can fly-plane" AS "pilot.0-can fly-plane.1"
@@ -850,7 +850,7 @@ SELECT (
 SELECT (
 	SELECT COUNT(*)
 	FROM "pilot" AS "pilot.0"
-	WHERE ("pilot.0"."is experienced" = 1
+	WHERE ("pilot.0"."is experienced" = TRUE
 	OR EXISTS (
 		SELECT 1
 		FROM "pilot-can fly-plane" AS "pilot.0-can fly-plane.1"
@@ -881,7 +881,7 @@ SELECT (
 SELECT (
 	SELECT COUNT(*)
 	FROM "pilot" AS "pilot.0"
-	WHERE "pilot.0"."is experienced" = 1
+	WHERE "pilot.0"."is experienced" = TRUE
 	AND (NOT (
 		(
 			SELECT COUNT(*)
@@ -910,7 +910,7 @@ SELECT (
 SELECT (
 	SELECT COUNT(*)
 	FROM "pilot" AS "pilot.0"
-	WHERE ("pilot.0"."is experienced" = 1
+	WHERE ("pilot.0"."is experienced" = TRUE
 	OR (
 		SELECT COUNT(*)
 		FROM "pilot-can fly-plane" AS "pilot.0-can fly-plane.1"
@@ -949,7 +949,7 @@ SELECT (
 		FROM "pilot-can fly-plane" AS "pilot.0-can fly-plane.2"
 		WHERE "pilot.0-can fly-plane.2"."pilot" = "pilot.0"."id"
 	) >= 15)
-	AND "pilot.0"."is experienced" = 1
+	AND "pilot.0"."is experienced" = TRUE
 	AND (
 		SELECT COUNT(*)
 		FROM "pilot-can fly-plane" AS "pilot.0-can fly-plane.3"
@@ -980,7 +980,7 @@ SELECT (
 			WHERE "pilot.0-can fly-plane.2"."pilot" = "pilot.0"."id"
 		) >= 11
 	)
-	OR "pilot.0"."is experienced" = 1
+	OR "pilot.0"."is experienced" = TRUE
 	OR (
 		SELECT COUNT(*)
 		FROM "pilot-can fly-plane" AS "pilot.0-can fly-plane.3"
