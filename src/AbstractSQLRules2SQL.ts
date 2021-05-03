@@ -888,7 +888,7 @@ const typeRules: Dictionary<MatchFn> = {
 		if (typeof b !== 'boolean') {
 			throw new SyntaxError(`Boolean expected boolean but got ${typeof b}`);
 		}
-		return b ? '1' : '0';
+		return b ? 'TRUE' : 'FALSE';
 	},
 	EmbeddedText: (args) => {
 		checkArgs('EmbeddedText', args, 1);
