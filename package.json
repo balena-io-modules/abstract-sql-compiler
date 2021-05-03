@@ -15,7 +15,7 @@
   "repository": "https://github.com/balena-io-modules/abstract-sql-compiler.git",
   "author": "",
   "dependencies": {
-    "@balena/sbvr-types": "^3.4.2",
+    "@balena/sbvr-types": "4.0.0-true-boolean-4d20b304f0092f3c3bbe389588059c11e679e08d",
     "@types/lodash": "^4.14.168",
     "@types/node": "^10.17.59",
     "lodash": "^4.17.21"
