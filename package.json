@@ -9,14 +9,14 @@
     "test": "mocha",
     "posttest": "npm run lint",
     "prepublish": "require-npm4-to-publish",
-    "prepare": "node -e \"try { require('husky').install() } catch (e) {if (e.code !== 'MODULE_NOT_FOUND') throw e}\"; tsc --project ./tsconfig.build.json",
+    "prepare": "node -e \"try { require('husky').install() } catch (e) {if (e.code !== 'MODULE_NOT_FOUND') throw e}\" && tsc --project ./tsconfig.build.json",
     "lint-fix": "balena-lint --fix -e js -e ts src/ test/",
     "lint": "balena-lint -e js -e ts src/ test/ && tsc --noEmit && tsc --noEmit --project tsconfig.js.json"
   },
   "repository": "https://github.com/balena-io-modules/abstract-sql-compiler.git",
   "author": "",
   "dependencies": {
-    "@balena/sbvr-types": "^3.4.8",
+    "@balena/sbvr-types": "4.0.0-true-boolean-3bb0e09429b25b36aa228f48135ce4b90ecf7abb-1",
     "lodash": "^4.17.21"
   },
   "devDependencies": {
