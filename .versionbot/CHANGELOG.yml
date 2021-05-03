@@ -1,4 +1,17 @@
 - commits:
+    - subject: Remove now unnecessary hack for casting SERIAL types
+      hash: 187bc075d237a2ced731d0a026ca25aa3e0f5540
+      body: |
+        This became unnecessary when @balena/sbvr-types added the concept of
+        cast types since that now specifies how to cast a SERIAL type
+      footer:
+        Change-type: patch
+        change-type: patch
+      author: Pagan Gazzard
+      nested: []
+  version: 7.12.3
+  date: 2021-05-03T11:31:24.967Z
+- commits:
     - subject: Update dependencies
       hash: a6219180c9962df1ff0de4951201f088efb1fb4b
       body: |
