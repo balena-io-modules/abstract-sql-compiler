@@ -1,4 +1,17 @@
 - commits:
+    - subject: Add support for non-null ReferencedField optimization using model info
+      hash: 37f50ae20f73dc307eea1aa0c87a138d08a50f00
+      body: |
+        We automatically use the model info to optimize rules/check constraints
+        when compiling the schema.
+      footer:
+        Change-type: minor
+        change-type: minor
+      author: Pagan Gazzard
+      nested: []
+  version: 7.13.0
+  date: 2021-05-03T10:48:19.645Z
+- commits:
     - subject: Update dependencies
       hash: a6219180c9962df1ff0de4951201f088efb1fb4b
       body: |
