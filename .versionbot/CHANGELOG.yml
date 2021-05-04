@@ -1,4 +1,16 @@
 - commits:
+    - subject: Revert "Remove now unnecessary hack for casting SERIAL types"
+      hash: 60a56423de9262b5b454ff4cd83c1d1fd39d071e
+      body: |
+        This reverts commit 187bc075d237a2ced731d0a026ca25aa3e0f5540.
+      footer:
+        Change-type: patch
+        change-type: patch
+      author: Pagan Gazzard
+      nested: []
+  version: 7.12.4
+  date: 2021-05-04T17:51:57.071Z
+- commits:
     - subject: Remove now unnecessary hack for casting SERIAL types
       hash: 187bc075d237a2ced731d0a026ca25aa3e0f5540
       body: |
