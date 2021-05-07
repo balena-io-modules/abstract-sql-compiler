@@ -1,4 +1,16 @@
 - commits:
+    - subject: Update sbvr-types and reflect the usage of BOOLEAN db type
+      hash: 5914ecfede7efc56e38162b4f9dfa5e19f0d0792
+      body: |
+        Update sbvr-types from 3.4.2 to 4.0.0
+      footer:
+        Change-type: major
+        change-type: major
+      author: Pagan Gazzard
+      nested: []
+  version: 8.0.0
+  date: 2021-05-07T12:29:50.424Z
+- commits:
     - subject: Revert "Remove now unnecessary hack for casting SERIAL types"
       hash: 60a56423de9262b5b454ff4cd83c1d1fd39d071e
       body: |
