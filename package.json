@@ -16,24 +16,24 @@
   "author": "",
   "dependencies": {
     "@balena/sbvr-types": "^3.4.2",
-    "@types/lodash": "^4.14.168",
-    "@types/node": "^10.17.59",
+    "@types/lodash": "^4.14.169",
+    "@types/node": "^10.17.60",
     "lodash": "^4.17.21"
   },
   "devDependencies": {
     "@balena/lf-to-abstract-sql": "^4.2.1",
     "@balena/lint": "^5.4.2",
-    "@balena/odata-parser": "^2.2.3",
+    "@balena/odata-parser": "^2.2.4",
     "@balena/sbvr-parser": "^1.2.2",
     "@resin/odata-to-abstract-sql": "^3.3.0",
-    "@types/chai": "^4.2.17",
+    "@types/chai": "^4.2.18",
     "@types/common-tags": "^1.8.0",
     "@types/mocha": "^8.2.2",
     "chai": "^4.3.4",
     "common-tags": "^1.8.0",
     "husky": "^4.3.8",
     "lint-staged": "^10.5.4",
-    "mocha": "^8.3.2",
+    "mocha": "^8.4.0",
     "require-npm4-to-publish": "^1.0.0",
     "ts-node": "^9.1.1",
     "typescript": "^4.2.4"
@@ -57,7 +57,8 @@
     "require": "ts-node/register/transpile-only",
     "bail": true,
     "_": [
-      "test/**/*rule-ref*.ts"
+      "test/**/*.ts",
+      "test/**/*.js"
     ]
   }
 }
