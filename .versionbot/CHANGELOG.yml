@@ -1,4 +1,15 @@
 - commits:
+    - subject: Add support for `CurrentTimestamp`/`CurrentDate` nodes
+      hash: 0f2dce05456d953a09cbe13df3bf95471026db4a
+      body: ''
+      footer:
+        Change-type: minor
+        change-type: minor
+      author: Pagan Gazzard
+      nested: []
+  version: 7.13.0
+  date: 2021-05-18T18:28:20.380Z
+- commits:
     - subject: Update sbvr-types to 3.4.3
       hash: 4acfbd8870b6948ea243a663515f1ebb3e0233d4
       body: |
