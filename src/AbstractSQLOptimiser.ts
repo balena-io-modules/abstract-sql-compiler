@@ -185,7 +185,9 @@ const isBooleanValue = (type: string | AbstractSqlQuery): type is string => {
 };
 const BooleanValue = MatchValue(isBooleanValue);
 
-const { isDateValue } = AbstractSQLRules2SQL;
+const isDateValue = (type: string | AbstractSqlQuery): type is string => {
+	return type === 'Now' || AbstractSQLRules2SQL.isDateValue(type);
+};
 const DateValue = MatchValue(isDateValue);
 
 const { isJSONValue } = AbstractSQLRules2SQL;
@@ -508,7 +510,8 @@ const typeRules: Dictionary<MatchFn> = {
 	Boolean: matchArgs('Boolean', _.identity),
 	EmbeddedText: matchArgs('EmbeddedText', _.identity),
 	Null: matchArgs('Null'),
-	Now: matchArgs('Now'),
+	CurrentTimestamp: matchArgs('CurrentTimestamp'),
+	CurrentDate: matchArgs('CurrentDate'),
 	AggregateJSON: matchArgs('AggregateJSON', _.identity),
 	Equals: tryMatches(
 		Helper<OptimisationMatchFn>((args) => {
@@ -1242,6 +1245,11 @@ const typeRules: Dictionary<MatchFn> = {
 	},
 
 	// Virtual functions
+	Now: rewriteMatch(
+		'Now',
+		[],
+		Helper<MatchFn>(([]) => ['CurrentTimestamp']),
+	),
 	Contains: rewriteMatch(
 		'Contains',
 		[TextValue, TextValue],
