@@ -1,4 +1,15 @@
 - commits:
+    - subject: Re-enable all tests
+      hash: dee9ad52b1ae35e26ccdd129c8e540b83e8cd57e
+      body: ''
+      footer:
+        Change-type: patch
+        change-type: patch
+      author: Pagan Gazzard
+      nested: []
+  version: 7.12.5
+  date: 2021-05-18T16:24:08.122Z
+- commits:
     - subject: Revert "Remove now unnecessary hack for casting SERIAL types"
       hash: 60a56423de9262b5b454ff4cd83c1d1fd39d071e
       body: |
