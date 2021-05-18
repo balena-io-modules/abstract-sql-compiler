@@ -174,7 +174,11 @@ export const isDateValue = (
 	type: string | AbstractSqlQuery,
 ): type is string => {
 	return (
-		type === 'Date' || type === 'ToDate' || type === 'ToTime' || type === 'Now'
+		type === 'Date' ||
+		type === 'ToDate' ||
+		type === 'ToTime' ||
+		type === 'CurrentTimestamp' ||
+		type === 'CurrentDate'
 	);
 };
 const DateValue = MatchValue(isDateValue);
@@ -772,9 +776,13 @@ const typeRules: Dictionary<MatchFn> = {
 		checkArgs('Null', args, 0);
 		return 'NULL';
 	},
-	Now: (args) => {
-		checkArgs('Now', args, 0);
+	CurrentTimestamp: (args) => {
+		checkArgs('CurrentTimestamp', args, 0);
 		return 'CURRENT_TIMESTAMP';
+	},
+	CurrentDate: (args) => {
+		checkArgs('CurrentDate', args, 0);
+		return 'CURRENT_DATE';
 	},
 	AggregateJSON: (args) => {
 		checkArgs('AggregateJSON', args, 1);
