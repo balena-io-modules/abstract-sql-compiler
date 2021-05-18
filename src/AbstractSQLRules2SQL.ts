@@ -1059,15 +1059,15 @@ const typeRules: Dictionary<MatchFn> = {
 		return (
 			"INTERVAL '" +
 			(duration.negative ? '-' : '') +
-			(duration.day || '0') +
+			(duration.day ?? '0') +
 			' ' +
 			(duration.negative ? '-' : '') +
-			(duration.hour || '0') +
+			(duration.hour ?? '0') +
 			':' +
-			(duration.minute || '0') +
+			(duration.minute ?? '0') +
 			':' +
 			// Force seconds to be at least 0.0 - required for mysql
-			Number(duration.second).toLocaleString('en', {
+			Number(duration.second ?? 0).toLocaleString('en', {
 				minimumFractionDigits: 1,
 			}) +
 			"'" +
