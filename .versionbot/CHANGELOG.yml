@@ -1,4 +1,15 @@
 - commits:
+    - subject: Allow duration seconds to be nullable
+      hash: 66775322c806e9fb6fdcdcb922604860f78ee5dc
+      body: ''
+      footer:
+        Change-type: patch
+        change-type: patch
+      author: Pagan Gazzard
+      nested: []
+  version: 7.12.6
+  date: 2021-05-18T16:34:30.300Z
+- commits:
     - subject: Re-enable all tests
       hash: dee9ad52b1ae35e26ccdd129c8e540b83e8cd57e
       body: ''
