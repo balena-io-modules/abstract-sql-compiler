@@ -1,4 +1,15 @@
 - commits:
+    - subject: Fix intervals when seconds are not used
+      hash: abe36c8bb24d6e6bff79790ce082e2d82e0aa26c
+      body: ''
+      footer:
+        Change-type: patch
+        change-type: patch
+      author: Thodoris Greasidis
+      nested: []
+  version: 7.12.5
+  date: 2021-05-18T16:25:21.167Z
+- commits:
     - subject: Revert "Remove now unnecessary hack for casting SERIAL types"
       hash: 60a56423de9262b5b454ff4cd83c1d1fd39d071e
       body: |
