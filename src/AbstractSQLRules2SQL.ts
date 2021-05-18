@@ -1067,7 +1067,7 @@ const typeRules: Dictionary<MatchFn> = {
 			(duration.minute || '0') +
 			':' +
 			// Force seconds to be at least 0.0 - required for mysql
-			Number(duration.second).toLocaleString('en', {
+			Number(duration.second ?? 0).toLocaleString('en', {
 				minimumFractionDigits: 1,
 			}) +
 			"'" +
