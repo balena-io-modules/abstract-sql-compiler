@@ -1,4 +1,26 @@
 - commits:
+    - subject: Update sbvr-types to 3.4.3
+      hash: 4acfbd8870b6948ea243a663515f1ebb3e0233d4
+      body: |
+        Update sbvr-types from 3.4.2 to 3.4.3
+      footer:
+        Change-type: patch
+        change-type: patch
+      author: Thodoris Greasidis
+      nested:
+        - commits:
+            - subject: Support boolean results from the db as well as integer
+              hash: 337c9af41ca4b17e06e79e574b0c5849928a167b
+              body: ''
+              footer:
+                Change-type: patch
+                change-type: patch
+              author: Pagan Gazzard
+          version: sbvr-types-3.4.3
+          date: 2021-05-11T13:04:19.851Z
+  version: 7.12.7
+  date: 2021-05-18T17:05:09.592Z
+- commits:
     - subject: Allow duration seconds to be nullable
       hash: 66775322c806e9fb6fdcdcb922604860f78ee5dc
       body: ''
