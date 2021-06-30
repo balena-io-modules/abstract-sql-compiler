@@ -1,4 +1,19 @@
 - commits:
+    - subject: Delete CODEOWNERS
+      hash: 91a8e9ac9b30d144c7a9034eeda9bd30956addfd
+      body: ''
+      footer:
+        Change-type: patch
+        change-type: patch
+        See: >-
+          https://www.flowdock.com/app/rulemotion/pub/threads/trLcZFnSX9fLZn4LiaIv4xuBbah
+        see: >-
+          https://www.flowdock.com/app/rulemotion/pub/threads/trLcZFnSX9fLZn4LiaIv4xuBbah
+      author: Thodoris Greasidis
+      nested: []
+  version: 7.13.1
+  date: 2021-06-30T21:23:27.059Z
+- commits:
     - subject: Add support for `CurrentTimestamp`/`CurrentDate` nodes
       hash: 0f2dce05456d953a09cbe13df3bf95471026db4a
       body: ''
