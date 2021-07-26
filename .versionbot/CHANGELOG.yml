@@ -1,4 +1,15 @@
 - commits:
+    - subject: Update dependencies
+      hash: 8fc84d38e28b1dfdf5a3d349fde874e81c4c9a02
+      body: ''
+      footer:
+        Change-type: patch
+        change-type: patch
+      author: Pagan Gazzard
+      nested: []
+  version: 7.13.2
+  date: 2021-07-26T13:53:41.679Z
+- commits:
     - subject: Delete CODEOWNERS
       hash: 91a8e9ac9b30d144c7a9034eeda9bd30956addfd
       body: ''
