@@ -711,11 +711,11 @@ WHERE "pilot"."id" IN ((
 
 run(function () {
 	const name = 'Peter';
-	const { odata, sql, bindings: exprBindings } = createExpression(
-		'name',
-		'eq',
-		`'${name}'`,
-	);
+	const {
+		odata,
+		sql,
+		bindings: exprBindings,
+	} = createExpression('name', 'eq', `'${name}'`);
 	const bindings = [['Bind', ['pilot', 'name']], ...exprBindings];
 	test(
 		`/pilot?$filter=${odata}`,
@@ -742,11 +742,11 @@ WHERE ${sql}`,
 run(function () {
 	const name = 'Peter';
 	const { odata: keyOdata, bindings: keyBindings } = parseOperand(1);
-	const { odata, sql, bindings: exprBindings } = createExpression(
-		'name',
-		'eq',
-		`'${name}'`,
-	);
+	const {
+		odata,
+		sql,
+		bindings: exprBindings,
+	} = createExpression('name', 'eq', `'${name}'`);
 	const bodyBindings = [['Bind', ['pilot', 'name']]];
 	const insertBindings = [
 		['Bind', ['pilot', 'id']],

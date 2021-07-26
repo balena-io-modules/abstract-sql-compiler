@@ -65,19 +65,21 @@ const isEmptySelectQuery = (query: AbstractSqlQuery): boolean => {
 	return false;
 };
 
-const rewriteMatch = (
-	name: string,
-	matchers: Array<(args: AbstractSqlType) => AbstractSqlType>,
-	rewriteFn: MatchFn,
-): MatchFn => (args) => {
-	checkArgs(name, args, matchers.length);
-	return rewriteFn(
-		args.map((arg, index) => {
-			// Type cast because of cases where not all nodes are arrays, but we do handle them correctly where they can occur
-			return matchers[index](arg as AbstractSqlType);
-		}),
-	);
-};
+const rewriteMatch =
+	(
+		name: string,
+		matchers: Array<(args: AbstractSqlType) => AbstractSqlType>,
+		rewriteFn: MatchFn,
+	): MatchFn =>
+	(args) => {
+		checkArgs(name, args, matchers.length);
+		return rewriteFn(
+			args.map((arg, index) => {
+				// Type cast because of cases where not all nodes are arrays, but we do handle them correctly where they can occur
+				return matchers[index](arg as AbstractSqlType);
+			}),
+		);
+	};
 
 const matchArgs = (
 	name: string,
@@ -143,15 +145,15 @@ const UnknownValue: MetaMatchFn = (args) => {
 			throw new Error(`Invalid "UnknownValue" type: ${type}`);
 	}
 };
-const MatchValue = (
-	matcher: (type: string | AbstractSqlQuery) => type is string,
-): MetaMatchFn => (args) => {
-	const [type, ...rest] = args;
-	if (matcher(type)) {
-		return typeRules[type](rest);
-	}
-	return UnknownValue(args);
-};
+const MatchValue =
+	(matcher: (type: string | AbstractSqlQuery) => type is string): MetaMatchFn =>
+	(args) => {
+		const [type, ...rest] = args;
+		if (matcher(type)) {
+			return typeRules[type](rest);
+		}
+		return UnknownValue(args);
+	};
 
 const isTextValue = (type: string | AbstractSqlQuery): type is string => {
 	return (
@@ -209,21 +211,23 @@ const AnyNotNullValue = (args: any): boolean => {
 	return args != null && (args as any) !== 'Null' && args[0] !== 'Null';
 };
 
-const FieldOp = (type: string): OptimisationMatchFn => (args) => {
-	if (
-		AnyNotNullValue(args[0]) === false ||
-		AnyNotNullValue(args[1]) === false
-	) {
-		return false;
-	}
-	if (isFieldValue(args[0][0])) {
-		return [type, args[0], args[1]];
-	} else if (isFieldValue(args[1][0])) {
-		return [type, args[1], args[0]];
-	} else {
-		return false;
-	}
-};
+const FieldOp =
+	(type: string): OptimisationMatchFn =>
+	(args) => {
+		if (
+			AnyNotNullValue(args[0]) === false ||
+			AnyNotNullValue(args[1]) === false
+		) {
+			return false;
+		}
+		if (isFieldValue(args[0][0])) {
+			return [type, args[0], args[1]];
+		} else if (isFieldValue(args[1][0])) {
+			return [type, args[1], args[0]];
+		} else {
+			return false;
+		}
+	};
 const FieldEquals = FieldOp('Equals');
 const FieldNotEquals = FieldOp('NotEquals');
 
@@ -323,7 +327,7 @@ const MaybeAlias = (
 		typeof args[1] === 'string'
 	) {
 		helped = true;
-		return ['Alias', matchFn((args[0] as any) as AbstractSqlQuery), args[1]];
+		return ['Alias', matchFn(args[0] as any as AbstractSqlQuery), args[1]];
 	}
 	const [type, ...rest] = args;
 	switch (type) {
@@ -338,26 +342,28 @@ const MaybeAlias = (
 const Lower = matchArgs('Lower', TextValue);
 const Upper = matchArgs('Upper', TextValue);
 
-const JoinMatch = (joinType: string): MatchFn => (args) => {
-	if (args.length !== 1 && args.length !== 2) {
-		throw new SyntaxError(`"${joinType}" requires 1/2 arg(s)`);
-	}
-	const from = MaybeAlias(getAbstractSqlQuery(args, 0), FromMatch);
-	if (args.length === 1) {
-		return [joinType, from];
-	}
-	const [type, ...rest] = getAbstractSqlQuery(args, 1);
-	switch (type) {
-		case 'On':
-			checkArgs('On', rest, 1);
-			const ruleBody = BooleanValue(getAbstractSqlQuery(rest, 0));
-			return [joinType, from, ['On', ruleBody]];
-		default:
-			throw new SyntaxError(
-				`'${joinType}' clause does not support '${type}' clause`,
-			);
-	}
-};
+const JoinMatch =
+	(joinType: string): MatchFn =>
+	(args) => {
+		if (args.length !== 1 && args.length !== 2) {
+			throw new SyntaxError(`"${joinType}" requires 1/2 arg(s)`);
+		}
+		const from = MaybeAlias(getAbstractSqlQuery(args, 0), FromMatch);
+		if (args.length === 1) {
+			return [joinType, from];
+		}
+		const [type, ...rest] = getAbstractSqlQuery(args, 1);
+		switch (type) {
+			case 'On':
+				checkArgs('On', rest, 1);
+				const ruleBody = BooleanValue(getAbstractSqlQuery(rest, 0));
+				return [joinType, from, ['On', ruleBody]];
+			default:
+				throw new SyntaxError(
+					`'${joinType}' clause does not support '${type}' clause`,
+				);
+		}
+	};
 
 const typeRules: Dictionary<MatchFn> = {
 	UnionQuery: (args) => {

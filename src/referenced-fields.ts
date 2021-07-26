@@ -146,23 +146,22 @@ const $getRuleReferencedFields = (
 			});
 	}
 };
-export const getRuleReferencedFields: EngineInstance['getRuleReferencedFields'] = (
-	ruleBody,
-) => {
-	ruleBody = AbstractSQLOptimiser(ruleBody);
-	const referencedFields: RuleReferencedFields = {};
-	$getRuleReferencedFields(referencedFields, ruleBody, IsSafe.Insert);
-	for (const tableName of Object.keys(referencedFields)) {
-		const tableRefs = referencedFields[tableName];
-		for (const method of Object.keys(tableRefs) as Array<
-			keyof typeof tableRefs
-		>) {
-			tableRefs[method] = _.uniq(tableRefs[method]);
+export const getRuleReferencedFields: EngineInstance['getRuleReferencedFields'] =
+	(ruleBody) => {
+		ruleBody = AbstractSQLOptimiser(ruleBody);
+		const referencedFields: RuleReferencedFields = {};
+		$getRuleReferencedFields(referencedFields, ruleBody, IsSafe.Insert);
+		for (const tableName of Object.keys(referencedFields)) {
+			const tableRefs = referencedFields[tableName];
+			for (const method of Object.keys(tableRefs) as Array<
+				keyof typeof tableRefs
+			>) {
+				tableRefs[method] = _.uniq(tableRefs[method]);
+			}
 		}
-	}
 
-	return referencedFields;
-};
+		return referencedFields;
+	};
 
 const checkQuery = (query: AbstractSqlQuery): ModifiedFields | undefined => {
 	const queryType = query[0];

@@ -87,15 +87,15 @@ const UnknownValue: MetaMatchFn = (args, indent) => {
 			throw new Error(`Invalid "UnknownValue" type: ${type}`);
 	}
 };
-const MatchValue = (
-	matcher: (type: string | AbstractSqlQuery) => type is string,
-): MetaMatchFn => (args, indent) => {
-	const [type, ...rest] = args;
-	if (matcher(type)) {
-		return typeRules[type](rest, indent);
-	}
-	return UnknownValue(args, indent);
-};
+const MatchValue =
+	(matcher: (type: string | AbstractSqlQuery) => type is string): MetaMatchFn =>
+	(args, indent) => {
+		const [type, ...rest] = args;
+		if (matcher(type)) {
+			return typeRules[type](rest, indent);
+		}
+		return UnknownValue(args, indent);
+	};
 export const isTextValue = (
 	type: string | AbstractSqlQuery,
 ): type is string => {
@@ -1051,7 +1051,7 @@ const typeRules: Dictionary<MatchFn> = {
 			throw new SyntaxError('Durations not supported on: ' + engine);
 		}
 		// TODO: The abstract sql type should accommodate this
-		let duration = (args[0] as any) as Dictionary<string>;
+		let duration = args[0] as any as Dictionary<string>;
 		if (duration == null || typeof duration !== 'object') {
 			throw new SyntaxError(
 				`Duration must be an object, got ${typeof duration}`,
