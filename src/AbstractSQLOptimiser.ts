@@ -650,6 +650,7 @@ const typeRules: Dictionary<MatchFn> = {
 	Floor: matchArgs('Floor', NumericValue),
 	Ceiling: matchArgs('Ceiling', NumericValue),
 	ToDate: matchArgs('ToDate', DateValue),
+	DateTrunc: matchArgs('DateTrunc', TextValue, DateValue),
 	ToTime: matchArgs('ToTime', DateValue),
 	Coalesce: (args) => {
 		checkMinArgs('Coalesce', args, 2);
