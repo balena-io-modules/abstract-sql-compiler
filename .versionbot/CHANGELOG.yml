@@ -1,4 +1,17 @@
 - commits:
+    - subject: Supprt date_trunc postgres date function for DateValue
+      hash: 75066d356729fdd9d230abcd639c80ac806018ab
+      body: ''
+      footer:
+        Change-type: patch
+        change-type: patch
+        Signed-off-by: fisehara harald@balena.io
+        signed-off-by: fisehara harald@balena.io
+      author: fisehara
+      nested: []
+  version: 7.13.3
+  date: 2021-07-28T08:58:56.916Z
+- commits:
     - subject: Update dependencies
       hash: 8fc84d38e28b1dfdf5a3d349fde874e81c4c9a02
       body: ''
