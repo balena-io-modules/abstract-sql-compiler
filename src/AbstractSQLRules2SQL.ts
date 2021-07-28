@@ -178,7 +178,8 @@ export const isDateValue = (
 		type === 'ToDate' ||
 		type === 'ToTime' ||
 		type === 'CurrentTimestamp' ||
-		type === 'CurrentDate'
+		type === 'CurrentDate' ||
+		type === 'DateTrunc'
 	);
 };
 const DateValue = MatchValue(isDateValue);
@@ -938,6 +939,15 @@ const typeRules: Dictionary<MatchFn> = {
 		checkArgs('ToDate', args, 1);
 		const date = DateValue(getAbstractSqlQuery(args, 0), indent);
 		return `DATE(${date})`;
+	},
+	DateTrunc: (args, indent) => {
+		if (engine !== Engines.postgres) {
+			throw new SyntaxError('DateTrunc is not supported on: ' + engine);
+		}
+		checkArgs('DateTrunc', args, 2);
+		const precision = TextValue(getAbstractSqlQuery(args, 0), indent);
+		const date = DateValue(getAbstractSqlQuery(args, 1), indent);
+		return `DATE_TRUNC(${precision}, ${date})`;
 	},
 	ToTime: (args, indent) => {
 		checkArgs('ToTime', args, 1);
