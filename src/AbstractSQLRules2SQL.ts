@@ -941,13 +941,25 @@ const typeRules: Dictionary<MatchFn> = {
 		return `DATE(${date})`;
 	},
 	DateTrunc: (args, indent) => {
-		if (engine !== Engines.postgres) {
-			throw new SyntaxError('DateTrunc is not supported on: ' + engine);
-		}
 		checkArgs('DateTrunc', args, 2);
 		const precision = TextValue(getAbstractSqlQuery(args, 0), indent);
 		const date = DateValue(getAbstractSqlQuery(args, 1), indent);
-		return `DATE_TRUNC(${precision}, ${date})`;
+		// Postgres generated timestamps have a microseconds precision
+		// these timestamps will fail on comparisons: eq, ne, gt, lt with
+		// js timestamps that have only milliseconds precision
+		// thus supporting for truncating to a given precision
+		if (engine === Engines.postgres) {
+			return `DATE_TRUNC(${precision}, ${date})`;
+		} else if (
+			// not postgresql ==> no need to truncate ==> return timestamp as is (milliseconds precision)
+			precision === "'milliseconds'" ||
+			precision === "'microseconds'"
+		) {
+			return date;
+		} else {
+			// not postgresql ==> no truncate functionality ==>
+			throw new SyntaxError('DateTrunc is not supported on: ' + engine);
+		}
 	},
 	ToTime: (args, indent) => {
 		checkArgs('ToTime', args, 1);
