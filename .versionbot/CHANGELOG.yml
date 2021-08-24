@@ -1,4 +1,18 @@
 - commits:
+    - subject: Support for non postgres db engines
+      hash: 7f93d469cadec5fe77353dff90bbf0183debaaab
+      body: |
+        FunctionWrapper type for ReferencedField
+      footer:
+        Change-type: patch
+        change-type: patch
+        Signed-off-by: fisehara <harald@balena.io>
+        signed-off-by: fisehara <harald@balena.io>
+      author: fisehara
+      nested: []
+  version: 7.13.4
+  date: 2021-08-17T09:30:05.634Z
+- commits:
     - subject: Supprt date_trunc postgres date function for DateValue
       hash: 75066d356729fdd9d230abcd639c80ac806018ab
       body: ''

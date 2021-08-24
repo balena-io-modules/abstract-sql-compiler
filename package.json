@@ -1,6 +1,6 @@
 {
   "name": "@balena/abstract-sql-compiler",
-  "version": "7.13.3",
+  "version": "7.13.4",
   "description": "A translator for abstract sql into sql.",
   "main": "out/AbstractSQLCompiler.js",
   "types": "out/AbstractSQLCompiler.d.ts",
@@ -63,6 +63,6 @@
     ]
   },
   "versionist": {
-    "publishedAt": "2021-07-28T08:58:57.012Z"
+    "publishedAt": "2021-08-17T09:30:05.734Z"
   }
 }
