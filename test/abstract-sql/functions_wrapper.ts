@@ -6,13 +6,19 @@ type TestCb = (
 	sqlEquals: (a: string, b: string) => void,
 ) => void;
 // tslint:disable-next-line no-var-requires
-const test = require('./test') as (
+const test = require('./test') as ((
 	query: AbstractSqlQuery,
 	binds: any[][] | TestCb,
 	cb?: TestCb,
-) => void;
+) => void) & {
+	mysql: (
+		query: AbstractSqlQuery,
+		binds: any[][] | TestCb,
+		cb?: TestCb,
+	) => void;
+};
 
-describe('Date trunc function on ReferencedField', () => {
+describe('Date trunc function on ReferencedField for milliseconds', () => {
 	test(
 		[
 			'SelectQuery',
@@ -24,17 +30,14 @@ describe('Date trunc function on ReferencedField', () => {
 					'GreaterThan',
 					[
 						'DateTrunc',
-						['Text', 'milliseconds'],
+						['EmbeddedText', 'milliseconds'],
 						['ReferencedField', 'table', 'created at'],
 					],
 					['Bind', 0],
 				],
 			],
 		],
-		[
-			['Text', 'milliseconds'],
-			['Bind', 0],
-		],
+		[['Bind', 0]],
 		(result, sqlEquals) => {
 			it('Generate a postgresql DATE_TRUNC query for referenced field with milliseconds resoluton and binding', () => {
 				sqlEquals(
@@ -42,7 +45,40 @@ describe('Date trunc function on ReferencedField', () => {
 					stripIndent`
 						SELECT 1
 						FROM "table"
-						WHERE DATE_TRUNC($1, "table"."created at") > $2
+						WHERE DATE_TRUNC('milliseconds', "table"."created at") > $1
+					`,
+				);
+			});
+		},
+	);
+
+	test.mysql(
+		[
+			'SelectQuery',
+			['Select', []],
+			['From', ['Table', 'table']],
+			[
+				'Where',
+				[
+					'GreaterThan',
+					[
+						'DateTrunc',
+						['EmbeddedText', 'milliseconds'],
+						['ReferencedField', 'table', 'created at'],
+					],
+					['Bind', 0],
+				],
+			],
+		],
+		[['Bind', 0]],
+		(result, sqlEquals) => {
+			it('Ignore DATE_TRUNC in mysql query for referenced field with milliseconds resoluton and binding', () => {
+				sqlEquals(
+					result.query,
+					stripIndent`
+						SELECT 1
+						FROM "table"
+						WHERE "table"."created at" > ?
 					`,
 				);
 			});

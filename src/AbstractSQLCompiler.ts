@@ -93,6 +93,8 @@ export type NumberTypeNodes =
 
 export type FieldNode = ['Field', string];
 export type ReferencedFieldNode = ['ReferencedField', string, string];
+export type DateTruncNode = ['DateTrunc', TextTypeNodes, DateTypeNodes];
+export type DateTypeNodes = DateNode | DateTruncNode;
 export type BindNode = ['Bind', number | string] | ['Bind', string, string];
 export type CastNode = ['Cast', AbstractSqlType, string];
 export type CoalesceNode = [
