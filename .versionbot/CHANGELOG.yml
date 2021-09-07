@@ -1,4 +1,15 @@
 - commits:
+    - subject: Update dependencies
+      hash: bddd1ff069d5caf783a01da697c5c1cb73bb4dc2
+      body: ''
+      footer:
+        Change-type: patch
+        change-type: patch
+      author: Pagan Gazzard
+      nested: []
+  version: 7.13.5
+  date: 2021-09-07T16:09:10.547Z
+- commits:
     - subject: Support for non postgres db engines
       hash: 7f93d469cadec5fe77353dff90bbf0183debaaab
       body: |
