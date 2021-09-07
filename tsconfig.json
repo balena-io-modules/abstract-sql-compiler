@@ -12,6 +12,7 @@
 		"sourceMap": true,
 		"declaration": true,
 		"skipLibCheck": true,
+		"exactOptionalPropertyTypes": true,
 		"target": "es2018",
 		"outDir": "out",
 		"allowJs": true

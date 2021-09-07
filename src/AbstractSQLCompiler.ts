@@ -289,8 +289,8 @@ export interface SqlRule {
 	sql: string;
 	bindings: Binding[];
 	structuredEnglish: string;
-	referencedFields?: ReferencedFields;
-	ruleReferencedFields?: RuleReferencedFields;
+	referencedFields?: ReferencedFields | undefined;
+	ruleReferencedFields?: RuleReferencedFields | undefined;
 }
 /**
  * The RelationshipMapping can either describe a relationship to another term, or
