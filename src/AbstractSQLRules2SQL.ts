@@ -686,8 +686,8 @@ const typeRules: Dictionary<MatchFn> = {
 					if (order !== 'ASC' && order !== 'DESC') {
 						throw new SyntaxError(`Can only order by "ASC" or "DESC"`);
 					}
-					const field = Field(getAbstractSqlQuery(arg, 1), indent);
-					return `${field} ${order}`;
+					const value = AnyValue(getAbstractSqlQuery(arg, 1), indent);
+					return `${value} ${order}`;
 				})
 				.join(',' + NestedIndent(indent))
 		);

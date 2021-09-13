@@ -491,8 +491,8 @@ const typeRules: Dictionary<MatchFn> = {
 				if (order !== 'ASC' && order !== 'DESC') {
 					throw new SyntaxError(`Can only order by "ASC" or "DESC"`);
 				}
-				const field = Field(getAbstractSqlQuery(arg, 1));
-				return [order, field];
+				const value = AnyValue(getAbstractSqlQuery(arg, 1));
+				return [order, value];
 			}),
 		] as AbstractSqlQuery;
 	},
