@@ -1,4 +1,15 @@
 - commits:
+    - subject: Improve typing for `LikeNode`
+      hash: 39333acad89b25cbd46d9d78e9f440633b6cabc3
+      body: ''
+      footer:
+        Change-type: patch
+        change-type: patch
+      author: Pagan Gazzard
+      nested: []
+  version: 7.14.1
+  date: 2021-09-23T15:43:09.822Z
+- commits:
     - subject: Relax the restrictions on `ORDER BY` as it doesn't just allow fields
       hash: a56b88a64af23c65eb2c09a81414e5e6daab42f0
       body: ''
