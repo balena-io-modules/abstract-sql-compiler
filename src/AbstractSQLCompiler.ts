@@ -113,7 +113,7 @@ export type UnknownTypeNodes =
 
 export type TextNode = ['Text', string];
 export type ConcatenateNode = ['Concatenate', ...TextTypeNodes[]];
-export type LikeNode = ['Like', '*'];
+export type LikeNode = ['Like', AbstractSqlType, AbstractSqlType];
 export type ReplaceNode = [
 	'Replace',
 	TextTypeNodes,
