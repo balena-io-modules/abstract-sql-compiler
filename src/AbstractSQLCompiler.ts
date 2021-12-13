@@ -188,10 +188,7 @@ export type CrossJoinNode = ['CrossJoin', AliasableFromTypeNodes];
 export type OnNode = ['On', BooleanTypeNodes];
 export type TableNode = ['Table', string];
 export type WhereNode = ['Where', BooleanTypeNodes];
-export type GroupByNode = [
-	'GroupBy',
-	Array<['ASC' | 'DESC', FieldNode | ReferencedFieldNode]>,
-];
+export type GroupByNode = ['GroupBy', Array<FieldNode | ReferencedFieldNode>];
 export type OrderByNode = [
 	'OrderBy',
 	...Array<['ASC' | 'DESC', FieldNode | ReferencedFieldNode]>

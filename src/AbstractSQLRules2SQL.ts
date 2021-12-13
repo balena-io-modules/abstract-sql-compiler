@@ -667,7 +667,7 @@ const typeRules: Dictionary<MatchFn> = {
 		return 'WHERE ' + ruleBody;
 	},
 	GroupBy: (args, indent) => {
-		checkMinArgs('GroupBy', args, 1);
+		checkArgs('GroupBy', args, 1);
 		const groups = getAbstractSqlQuery(args, 0);
 		checkMinArgs('GroupBy groups', groups, 1);
 		return (
