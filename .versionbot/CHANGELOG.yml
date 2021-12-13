@@ -1,4 +1,15 @@
 - commits:
+    - subject: Fix GroupByNode typings
+      hash: 69f473c58785ec51be3ddd7ff441d66c826fc2c1
+      body: ''
+      footer:
+        Change-type: patch
+        change-type: patch
+      author: Pagan Gazzard
+      nested: []
+  version: 7.14.2
+  date: 2021-12-13T15:35:55.323Z
+- commits:
     - subject: Improve typing for `LikeNode`
       hash: 39333acad89b25cbd46d9d78e9f440633b6cabc3
       body: ''
