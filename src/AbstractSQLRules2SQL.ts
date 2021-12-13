@@ -554,6 +554,7 @@ const typeRules: Dictionary<MatchFn> = {
 		const groups = {
 			Where: '',
 			GroupBy: '',
+			Having: '',
 			OrderBy: '',
 			Limit: '',
 			Offset: '',
@@ -584,6 +585,7 @@ const typeRules: Dictionary<MatchFn> = {
 					break;
 				case 'Where':
 				case 'GroupBy':
+				case 'Having':
 				case 'OrderBy':
 				case 'Limit':
 				case 'Offset':
@@ -619,6 +621,7 @@ const typeRules: Dictionary<MatchFn> = {
 			joinStr +
 			groups.Where +
 			groups.GroupBy +
+			groups.Having +
 			groups.OrderBy +
 			groups.Limit +
 			groups.Offset
@@ -674,6 +677,11 @@ const typeRules: Dictionary<MatchFn> = {
 			'GROUP BY ' +
 			groups.map((arg: AbstractSqlQuery) => AnyValue(arg, indent)).join(', ')
 		);
+	},
+	Having: (args, indent) => {
+		checkArgs('Having', args, 1);
+		const havingBody = BooleanValue(getAbstractSqlQuery(args, 0), indent);
+		return `HAVING ${havingBody}`;
 	},
 	OrderBy: (args, indent) => {
 		checkMinArgs('OrderBy', args, 1);
