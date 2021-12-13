@@ -138,6 +138,7 @@ export type SelectQueryNode = [
 		| CrossJoinNode
 		| WhereNode
 		| GroupByNode
+		| HavingNode
 		| OrderByNode
 		| LimitNode
 		| OffsetNode
@@ -189,6 +190,7 @@ export type OnNode = ['On', BooleanTypeNodes];
 export type TableNode = ['Table', string];
 export type WhereNode = ['Where', BooleanTypeNodes];
 export type GroupByNode = ['GroupBy', Array<FieldNode | ReferencedFieldNode>];
+export type HavingNode = ['Having', BooleanTypeNodes];
 export type OrderByNode = [
 	'OrderBy',
 	...Array<['ASC' | 'DESC', FieldNode | ReferencedFieldNode]>
@@ -231,6 +233,7 @@ export type AbstractSqlType =
 	| FullJoinNode
 	| CrossJoinNode
 	| GroupByNode
+	| HavingNode
 	| UnknownNode;
 export type UnknownNode = AbstractSqlQuery;
 export interface AbstractSqlQuery extends Array<AbstractSqlType> {
