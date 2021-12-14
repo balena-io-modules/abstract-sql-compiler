@@ -141,6 +141,25 @@ describe('getRuleReferencedFields', () => {
 		});
 	});
 
+	it('should work with single table SELECT NOT EXISTS for COUNT(*)', () => {
+		expect(
+			AbstractSqlCompiler.postgres.getRuleReferencedFields([
+				'NotExists',
+				[
+					'SelectQuery',
+					['Select', [['Count', '*']]],
+					['From', ['Table', 'test']],
+				],
+			] as AbstractSqlCompiler.AbstractSqlQuery),
+		).to.deep.equal({
+			test: {
+				create: [''],
+				update: [''],
+				delete: [],
+			},
+		});
+	});
+
 	it('should work with nested NOT EXISTS', () => {
 		expect(
 			AbstractSqlCompiler.postgres.getRuleReferencedFields([
@@ -216,6 +235,55 @@ describe('getRuleReferencedFields', () => {
 				create: ['id', 'test'],
 				update: ['id', 'test'],
 				delete: [],
+			},
+		});
+	});
+
+	it('should work with nested NOT EXISTS', () => {
+		expect(
+			AbstractSqlCompiler.postgres.getRuleReferencedFields([
+				'Not',
+				[
+					'Exists',
+					[
+						'SelectQuery',
+						['Select', []],
+						['From', ['test', 'test.0']],
+						[
+							'Where',
+							[
+								'Not',
+								[
+									'Exists',
+									[
+										'SelectQuery',
+										['Select', [['Count', '*']]],
+										['From', ['test2', 'test2.0']],
+										[
+											'Where',
+											[
+												'Equals',
+												['ReferencedField', 'test.0', 'id'],
+												['ReferencedField', 'test2.0', 'test'],
+											],
+										],
+									],
+								],
+							],
+						],
+					],
+				],
+			] as AbstractSqlCompiler.AbstractSqlQuery),
+		).to.deep.equal({
+			test: {
+				create: ['id'],
+				update: ['id'],
+				delete: [],
+			},
+			test2: {
+				create: [],
+				update: ['', 'test'],
+				delete: ['', 'test'],
 			},
 		});
 	});
