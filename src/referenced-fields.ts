@@ -48,7 +48,8 @@ const getRuleReferencedScope = (
 	rulePart: AbstractSqlQuery,
 	scope: RuleReferencedScope,
 	isSafe: IsSafe,
-): RuleReferencedScope => {
+): { scope: RuleReferencedScope; currentlyScopedAliases: string[] } => {
+	const currentlyScopedAliases: string[] = [];
 	scope = { ...scope };
 	const fromNodes = rulePart.filter(isFromNode);
 	fromNodes.forEach((node) => {
@@ -58,6 +59,7 @@ const getRuleReferencedScope = (
 			if (typeof alias !== 'string') {
 				throw new Error('Cannot handle non-string aliases');
 			}
+			currentlyScopedAliases.push(alias);
 			switch (from[0]) {
 				case 'Table':
 					scope[alias] = { tableName: from[1], isSafe };
@@ -72,12 +74,13 @@ const getRuleReferencedScope = (
 					throw new Error(`Cannot handle aliased ${from[0]} nodes`);
 			}
 		} else if (nested[0] === 'Table') {
+			currentlyScopedAliases.push(nested[1]);
 			scope[nested[1]] = { tableName: nested[1], isSafe };
 		} else {
 			throw Error(`Unsupported FromNode for scoping: ${nested[0]}`);
 		}
 	});
-	return scope;
+	return { scope, currentlyScopedAliases };
 };
 const addReference = (
 	referencedFields: RuleReferencedFields,
@@ -107,7 +110,13 @@ const $getRuleReferencedFields = (
 	referencedFields: RuleReferencedFields,
 	rulePart: AbstractSqlQuery,
 	isSafe: IsSafe,
-	scope: RuleReferencedScope = {},
+	{
+		scope,
+		currentlyScopedAliases,
+	}: ReturnType<typeof getRuleReferencedScope> = {
+		scope: {},
+		currentlyScopedAliases: [],
+	},
 ) => {
 	if (!Array.isArray(rulePart)) {
 		return;
@@ -115,9 +124,16 @@ const $getRuleReferencedFields = (
 	switch (rulePart[0]) {
 		case 'SelectQuery':
 			// Update the current scope before trying to resolve field references
-			scope = getRuleReferencedScope(rulePart, scope, isSafe);
+			({ scope, currentlyScopedAliases } = getRuleReferencedScope(
+				rulePart,
+				scope,
+				isSafe,
+			));
 			rulePart.forEach((node: AbstractSqlQuery) => {
-				$getRuleReferencedFields(referencedFields, node, isSafe, scope);
+				$getRuleReferencedFields(referencedFields, node, isSafe, {
+					scope,
+					currentlyScopedAliases,
+				});
 			});
 			return;
 		case 'ReferencedField': {
@@ -152,12 +168,29 @@ const $getRuleReferencedFields = (
 		case 'And':
 		case 'Exists':
 			rulePart.forEach((node: AbstractSqlQuery) => {
-				$getRuleReferencedFields(referencedFields, node, isSafe, scope);
+				$getRuleReferencedFields(referencedFields, node, isSafe, {
+					scope,
+					currentlyScopedAliases,
+				});
 			});
+			return;
+		case 'Count':
+			if (rulePart[1] !== '*') {
+				throw new Error(
+					'Only COUNT(*) is supported for rule referenced fields',
+				);
+			}
+			for (const aliasName of currentlyScopedAliases) {
+				// We use '' as it means that only operations that affect every field will match against it
+				addReference(referencedFields, scope, aliasName, '');
+			}
 			return;
 		default:
 			rulePart.forEach((node: AbstractSqlQuery) => {
-				$getRuleReferencedFields(referencedFields, node, IsSafe.Unknown, scope);
+				$getRuleReferencedFields(referencedFields, node, IsSafe.Unknown, {
+					scope,
+					currentlyScopedAliases,
+				});
 			});
 	}
 };
