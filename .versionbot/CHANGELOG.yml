@@ -1,4 +1,15 @@
 - commits:
+    - subject: Add support for `Count` nodes in rule referenced fields
+      hash: 19270d3b6993302d73fff083be322bcb489b3303
+      body: ''
+      footer:
+        Change-type: minor
+        change-type: minor
+      author: Pagan Gazzard
+      nested: []
+  version: 7.17.0
+  date: 2021-12-14T17:47:16.726Z
+- commits:
     - subject: Add support for `From` nodes in rule referenced fields
       hash: d9a35a0c0fc69dc21f5aa2003607172d0e9a4579
       body: ''
