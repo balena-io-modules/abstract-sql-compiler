@@ -1,4 +1,15 @@
 - commits:
+    - subject: Add support for `From` nodes in rule referenced fields
+      hash: d9a35a0c0fc69dc21f5aa2003607172d0e9a4579
+      body: ''
+      footer:
+        Change-type: minor
+        change-type: minor
+      author: Pagan Gazzard
+      nested: []
+  version: 7.16.0
+  date: 2021-12-14T15:56:49.623Z
+- commits:
     - subject: Add support for `HAVING` clauses
       hash: ce33ddd42751abbbc190074a5b6a1b63dc24f51e
       body: ''
