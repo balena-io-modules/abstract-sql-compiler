@@ -79,6 +79,30 @@ const getRuleReferencedScope = (
 	});
 	return scope;
 };
+const addReference = (
+	referencedFields: RuleReferencedFields,
+	scope: RuleReferencedScope,
+	aliasName: string,
+	fieldName: string,
+) => {
+	const a = scope[aliasName];
+	// The scoped tableName is empty in the case of an aliased from query
+	// and those fields will be covered when we recurse into them
+	if (a.tableName !== '') {
+		referencedFields[a.tableName] ??= {
+			create: [],
+			update: [],
+			delete: [],
+		};
+		if (a.isSafe !== IsSafe.Insert) {
+			referencedFields[a.tableName].create.push(fieldName);
+		}
+		if (a.isSafe !== IsSafe.Delete) {
+			referencedFields[a.tableName].delete.push(fieldName);
+		}
+		referencedFields[a.tableName].update.push(fieldName);
+	}
+};
 const $getRuleReferencedFields = (
 	referencedFields: RuleReferencedFields,
 	rulePart: AbstractSqlQuery,
@@ -96,34 +120,25 @@ const $getRuleReferencedFields = (
 				$getRuleReferencedFields(referencedFields, node, isSafe, scope);
 			});
 			return;
-		case 'ReferencedField':
-			const aliasName = rulePart[1];
-			const fieldName = rulePart[2];
+		case 'ReferencedField': {
+			const [, aliasName, fieldName] = rulePart;
 			if (typeof aliasName !== 'string' || typeof fieldName !== 'string') {
 				throw new Error(`Invalid ReferencedField: ${rulePart}`);
 			}
-			const a = scope[aliasName];
-			// The scoped tableName is empty in the case of an aliased from query
-			// and those fields will be covered when we recurse into them
-			if (a.tableName !== '') {
-				if (referencedFields[a.tableName] == null) {
-					referencedFields[a.tableName] = {
-						create: [],
-						update: [],
-						delete: [],
-					};
-				}
-				if (a.isSafe !== IsSafe.Insert) {
-					referencedFields[a.tableName].create.push(fieldName);
-				}
-				if (a.isSafe !== IsSafe.Delete) {
-					referencedFields[a.tableName].delete.push(fieldName);
-				}
-				referencedFields[a.tableName].update.push(fieldName);
+			addReference(referencedFields, scope, aliasName, fieldName);
+			return;
+		}
+		case 'Field': {
+			const [, fieldName] = rulePart;
+			if (typeof fieldName !== 'string') {
+				throw new Error(`Invalid ReferencedField: ${rulePart}`);
+			}
+			for (const aliasName of Object.keys(scope)) {
+				// We assume any unreferenced field can come from any of the scoped tables
+				addReference(referencedFields, scope, aliasName, fieldName);
 			}
 			return;
-		case 'Field':
-			throw new Error('Cannot find queried fields for unreferenced fields');
+		}
 		case 'Not':
 		case 'NotExists':
 			// When hitting a `Not` we invert the safety rule

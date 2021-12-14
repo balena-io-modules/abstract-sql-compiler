@@ -111,6 +111,36 @@ describe('getRuleReferencedFields', () => {
 		});
 	});
 
+	it('should work with single table SELECT EXISTS for `Field`s', () => {
+		expect(
+			AbstractSqlCompiler.postgres.getRuleReferencedFields([
+				'Exists',
+				[
+					'SelectQuery',
+					['Select', []],
+					['From', ['test', 'test.0']],
+					[
+						'Where',
+						[
+							'Not',
+							[
+								'And',
+								['LessThan', ['Integer', 0], ['Field', 'id']],
+								['Exists', ['Field', 'id']],
+							],
+						],
+					],
+				],
+			] as AbstractSqlCompiler.AbstractSqlQuery),
+		).to.deep.equal({
+			test: {
+				create: [],
+				update: ['id'],
+				delete: ['id'],
+			},
+		});
+	});
+
 	it('should work with nested NOT EXISTS', () => {
 		expect(
 			AbstractSqlCompiler.postgres.getRuleReferencedFields([
@@ -156,6 +186,36 @@ describe('getRuleReferencedFields', () => {
 				create: [],
 				update: ['test'],
 				delete: ['test'],
+			},
+		});
+	});
+
+	it('should work with multiple FROMs for `Field`s', () => {
+		expect(
+			AbstractSqlCompiler.postgres.getRuleReferencedFields([
+				'Not',
+				[
+					'Exists',
+					[
+						'SelectQuery',
+						['Select', []],
+						['From', ['test', 'test.0']],
+						['From', ['test2', 'test2.0']],
+						['Where', ['Equals', ['Field', 'id'], ['Field', 'test']]],
+					],
+				],
+			] as AbstractSqlCompiler.AbstractSqlQuery),
+		).to.deep.equal({
+			test: {
+				// We assume any unreferenced field can come from any of the scoped tables
+				create: ['id', 'test'],
+				update: ['id', 'test'],
+				delete: [],
+			},
+			test2: {
+				create: ['id', 'test'],
+				update: ['id', 'test'],
+				delete: [],
 			},
 		});
 	});
