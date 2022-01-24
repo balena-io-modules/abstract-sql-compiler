@@ -1,4 +1,18 @@
 - commits:
+    - subject: Avoid the operation type optimization for HAVING clauses
+      hash: 3fcf08bc02c21d9f49b78787ed516fa9a403f021
+      body: |
+        Since it's possible for them to behave in a way that violates the
+        safety checks we'll disable them until we can add specific checks
+        for the HAVING clause
+      footer:
+        Change-type: patch
+        change-type: patch
+      author: Pagan Gazzard
+      nested: []
+  version: 7.17.1
+  date: 2022-01-24T17:36:32.056Z
+- commits:
     - subject: Add support for `Count` nodes in rule referenced fields
       hash: 19270d3b6993302d73fff083be322bcb489b3303
       body: ''
