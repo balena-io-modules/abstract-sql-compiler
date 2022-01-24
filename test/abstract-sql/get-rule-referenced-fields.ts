@@ -287,4 +287,25 @@ describe('getRuleReferencedFields', () => {
 			},
 		});
 	});
+
+	it('HAVING clauses should not be subject to the operation typecheck optimization', () => {
+		expect(
+			AbstractSqlCompiler.postgres.getRuleReferencedFields([
+				'NotExists',
+				[
+					'SelectQuery',
+					['Select', []],
+					['From', ['Table', 'test']],
+					['GroupBy', [['ReferencedField', 'test', 'field']]],
+					['Having', ['GreaterThanOrEqual', ['Count', '*'], ['Number', 2]]],
+				],
+			] as AbstractSqlCompiler.AbstractSqlQuery),
+		).to.deep.equal({
+			test: {
+				create: ['field', ''],
+				update: ['field', ''],
+				delete: [''],
+			},
+		});
+	});
 });

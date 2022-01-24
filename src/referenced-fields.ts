@@ -174,6 +174,20 @@ const $getRuleReferencedFields = (
 				});
 			});
 			return;
+		case 'Having':
+			scope = { ...scope };
+			for (const key of Object.keys(scope)) {
+				// Treat all entries under a `HAVING` as unknown since it can include counts in such a way
+				// that our expectations of safety do not hold
+				scope[key] = { ...scope[key], isSafe: IsSafe.Unknown };
+			}
+			rulePart.forEach((node: AbstractSqlQuery) => {
+				$getRuleReferencedFields(referencedFields, node, isSafe, {
+					scope,
+					currentlyScopedAliases,
+				});
+			});
+			return;
 		case 'Count':
 			if (rulePart[1] !== '*') {
 				throw new Error(
