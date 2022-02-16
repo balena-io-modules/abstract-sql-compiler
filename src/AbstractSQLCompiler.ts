@@ -248,6 +248,7 @@ export interface AbstractSqlField {
 	references?: {
 		resourceName: string;
 		fieldName: string;
+		type?: string;
 	};
 	defaultValue?: string;
 	computed?: AbstractSqlQuery;
@@ -648,7 +649,9 @@ BEGIN
 END;
 $$;`);
 					} else {
-						foreignKeys.push(fkDefinition);
+						if (references.type !== 'informative') {
+							foreignKeys.push(fkDefinition);
+						}
 						depends.push(references.resourceName);
 						hasDependants[references.resourceName] = true;
 					}
