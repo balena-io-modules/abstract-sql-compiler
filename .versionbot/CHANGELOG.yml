@@ -1,4 +1,25 @@
 - commits:
+    - subject: Add reference property type
+      hash: d28e2456dff10b18bcc97b7232479fe78efd5eb3
+      body: |
+        Property type describes if the reference is 'strict' or 'informative'.
+
+        Behaviour change only if type is informative otherwise default 'strict'.
+
+        An informative reference is just an int field that points
+        to another tables id field - like foreign key without constraints
+        or foregein key cascades.
+      footer:
+        Change-type: minor
+        change-type: minor
+        Signed-off-by: Harald Fischer <harald@balena.io>
+        signed-off-by: Harald Fischer <harald@balena.io>
+      author: Harald Fischer
+      nested: []
+  version: 7.18.0
+  title: "'Add informative reference dataType to schema tests'"
+  date: 2022-02-16T14:18:44.963Z
+- commits:
     - subject: Avoid the operation type optimization for HAVING clauses
       hash: 3fcf08bc02c21d9f49b78787ed516fa9a403f021
       body: |
@@ -15,7 +36,7 @@
 - commits:
     - subject: Add support for `Count` nodes in rule referenced fields
       hash: 19270d3b6993302d73fff083be322bcb489b3303
-      body: ''
+      body: ""
       footer:
         Change-type: minor
         change-type: minor
@@ -26,7 +47,7 @@
 - commits:
     - subject: Add support for `From` nodes in rule referenced fields
       hash: d9a35a0c0fc69dc21f5aa2003607172d0e9a4579
-      body: ''
+      body: ""
       footer:
         Change-type: minor
         change-type: minor
@@ -37,7 +58,7 @@
 - commits:
     - subject: Add support for `HAVING` clauses
       hash: ce33ddd42751abbbc190074a5b6a1b63dc24f51e
-      body: ''
+      body: ""
       footer:
         Change-type: minor
         change-type: minor
@@ -48,7 +69,7 @@
 - commits:
     - subject: Fix GroupByNode typings
       hash: 69f473c58785ec51be3ddd7ff441d66c826fc2c1
-      body: ''
+      body: ""
       footer:
         Change-type: patch
         change-type: patch
@@ -59,7 +80,7 @@
 - commits:
     - subject: Improve typing for `LikeNode`
       hash: 39333acad89b25cbd46d9d78e9f440633b6cabc3
-      body: ''
+      body: ""
       footer:
         Change-type: patch
         change-type: patch
@@ -70,7 +91,7 @@
 - commits:
     - subject: Relax the restrictions on `ORDER BY` as it doesn't just allow fields
       hash: a56b88a64af23c65eb2c09a81414e5e6daab42f0
-      body: ''
+      body: ""
       footer:
         Change-type: minor
         change-type: minor
@@ -81,7 +102,7 @@
 - commits:
     - subject: Update dependencies
       hash: bddd1ff069d5caf783a01da697c5c1cb73bb4dc2
-      body: ''
+      body: ""
       footer:
         Change-type: patch
         change-type: patch
@@ -106,7 +127,7 @@
 - commits:
     - subject: Supprt date_trunc postgres date function for DateValue
       hash: 75066d356729fdd9d230abcd639c80ac806018ab
-      body: ''
+      body: ""
       footer:
         Change-type: patch
         change-type: patch
@@ -119,7 +140,7 @@
 - commits:
     - subject: Update dependencies
       hash: 8fc84d38e28b1dfdf5a3d349fde874e81c4c9a02
-      body: ''
+      body: ""
       footer:
         Change-type: patch
         change-type: patch
@@ -130,14 +151,12 @@
 - commits:
     - subject: Delete CODEOWNERS
       hash: 91a8e9ac9b30d144c7a9034eeda9bd30956addfd
-      body: ''
+      body: ""
       footer:
         Change-type: patch
         change-type: patch
-        See: >-
-          https://www.flowdock.com/app/rulemotion/pub/threads/trLcZFnSX9fLZn4LiaIv4xuBbah
-        see: >-
-          https://www.flowdock.com/app/rulemotion/pub/threads/trLcZFnSX9fLZn4LiaIv4xuBbah
+        See: https://www.flowdock.com/app/rulemotion/pub/threads/trLcZFnSX9fLZn4LiaIv4xuBbah
+        see: https://www.flowdock.com/app/rulemotion/pub/threads/trLcZFnSX9fLZn4LiaIv4xuBbah
       author: Thodoris Greasidis
       nested: []
   version: 7.13.1
@@ -145,7 +164,7 @@
 - commits:
     - subject: Add support for `CurrentTimestamp`/`CurrentDate` nodes
       hash: 0f2dce05456d953a09cbe13df3bf95471026db4a
-      body: ''
+      body: ""
       footer:
         Change-type: minor
         change-type: minor
@@ -166,7 +185,7 @@
         - commits:
             - subject: Support boolean results from the db as well as integer
               hash: 337c9af41ca4b17e06e79e574b0c5849928a167b
-              body: ''
+              body: ""
               footer:
                 Change-type: patch
                 change-type: patch
@@ -178,7 +197,7 @@
 - commits:
     - subject: Allow duration seconds to be nullable
       hash: 66775322c806e9fb6fdcdcb922604860f78ee5dc
-      body: ''
+      body: ""
       footer:
         Change-type: patch
         change-type: patch
@@ -189,7 +208,7 @@
 - commits:
     - subject: Re-enable all tests
       hash: dee9ad52b1ae35e26ccdd129c8e540b83e8cd57e
-      body: ''
+      body: ""
       footer:
         Change-type: patch
         change-type: patch
@@ -235,7 +254,7 @@
         - commits:
             - subject: Update dev dependencies
               hash: b7c817c8246fb95aab917e8ba1196b695103d962
-              body: ''
+              body: ""
               footer:
                 Change-type: patch
                 change-type: patch
@@ -245,7 +264,7 @@
         - commits:
             - subject: Remove unnecessary native fact type entries for synonymous forms
               hash: 64e889f7bda6f3dcf4c539248e737fef26b5686c
-              body: ''
+              body: ""
               footer:
                 Change-type: patch
                 change-type: patch
@@ -253,11 +272,9 @@
           version: sbvr-types-3.4.1
           date: 2021-02-10T18:13:49.610Z
         - commits:
-            - subject: >-
-                Add a `Current Time` name that can be used to refer to the
-                current time
+            - subject: Add a `Current Time` name that can be used to refer to the current time
               hash: 83d20325939d0e5f9922f57a36e0932ba71ebad4
-              body: ''
+              body: ""
               footer:
                 Change-type: minor
                 change-type: minor
@@ -267,7 +284,7 @@
         - commits:
             - subject: Add `is before` & `is after` verbs to the Date & DateTime types
               hash: 9d4414558d16821e485e08fc4a0504ef1d6c617f
-              body: ''
+              body: ""
               footer:
                 Change-type: minor
                 change-type: minor
@@ -279,21 +296,21 @@
         - commits:
             - subject: Add support for the `contains` verb to the text type
               hash: 8e074867c7b94f99664b14caaebeddb5e9f1fe9c
-              body: ''
+              body: ""
               footer:
                 Change-type: minor
                 change-type: minor
               author: Thodoris Greasidis
             - subject: Add support for the`ends with` verb to the text type
               hash: 4e233bffa0800a9601e80aebf86d70cd518c2901
-              body: ''
+              body: ""
               footer:
                 Change-type: minor
                 change-type: minor
               author: Thodoris Greasidis
             - subject: Add support for the `starts with` verb to the text type
               hash: 1b5652a57bbad48f9b9b18c88f8b4ad9e6b01441
-              body: ''
+              body: ""
               footer:
                 Change-type: minor
                 change-type: minor
@@ -305,7 +322,7 @@
 - commits:
     - subject: Enable strict options by default and only disable specific ones
       hash: 84bfaac15e78453ff8a87a5a4836505a78f43666
-      body: ''
+      body: ""
       footer:
         Change-type: patch
         change-type: patch
@@ -316,7 +333,7 @@
 - commits:
     - subject: Enable narrowing down create/delete referenced fields for nested exists
       hash: 5dbc3ddf05701e5b4188bfa8db64d0a12e3b8298
-      body: ''
+      body: ""
       footer:
         Change-type: minor
         change-type: minor
@@ -339,7 +356,7 @@
 - commits:
     - subject: Fix `getModifiedFields` for `UpsertQuery`s
       hash: c19c902f1a6e268952540cd19960f6752a303f65
-      body: ''
+      body: ""
       footer:
         Change-type: patch
         change-type: patch
@@ -350,7 +367,7 @@
 - commits:
     - subject: Separate code relating to referenced fields out of the main file
       hash: 7ca7b5cfad4e8833293426235667cc59245f427a
-      body: ''
+      body: ""
       footer:
         Change-type: patch
         change-type: patch
@@ -361,7 +378,7 @@
 - commits:
     - subject: Add an `action` property to modified fields of create/update/delete
       hash: 8f071b8724bdae5574d5fea6c9f20e6e77daf3e6
-      body: ''
+      body: ""
       footer:
         Change-type: minor
         change-type: minor
@@ -369,7 +386,7 @@
       nested: []
     - subject: Automatically add `ruleReferencedFields` to `SqlRule`s
       hash: f49548828fd75957290b6fdec166abf7bb0a53bf
-      body: ''
+      body: ""
       footer:
         Change-type: minor
         change-type: minor
@@ -391,7 +408,7 @@
 - commits:
     - subject: Add test for optimizeSchema optimizing rules
       hash: 4e94ee4961e98305c927734ce85067d409f90e18
-      body: ''
+      body: ""
       footer:
         Change-type: patch
         change-type: patch
@@ -402,7 +419,7 @@
 - commits:
     - subject: Optimize the abstract sql of rules when running `optimizeSchema`
       hash: 2ed97849674acb76f498c346b28d2861d1827ba5
-      body: ''
+      body: ""
       footer:
         Change-type: minor
         change-type: minor
@@ -413,7 +430,7 @@
 - commits:
     - subject: Fix schema optimizations when table and resource names are different
       hash: 46704031fbde45fd0e36b0963f8cf524df53398b
-      body: ''
+      body: ""
       footer:
         Change-type: patch
         change-type: patch
@@ -424,7 +441,7 @@
 - commits:
     - subject: Convert some lodash usage to native equivalents
       hash: 400937fd3b220dccd557d67ff33d83d51ff0b939
-      body: ''
+      body: ""
       footer:
         Change-type: patch
         change-type: patch
@@ -433,9 +450,9 @@
   version: 7.8.1
   date: 2021-01-04T13:04:45.938Z
 - commits:
-    - subject: 'Optimize Is[Not]DistinctFrom and [Not]Exists for non-null values'
+    - subject: Optimize Is[Not]DistinctFrom and [Not]Exists for non-null values
       hash: 682e84dea2088fb0c336b05be83183e627c20d4f
-      body: ''
+      body: ""
       footer:
         Change-type: minor
         change-type: minor
@@ -446,7 +463,7 @@
 - commits:
     - subject: Optimize EXISTS/NOT EXISTS for empty queries
       hash: 39431de07eeb98d731a114c1717575d364ddc06f
-      body: ''
+      body: ""
       footer:
         Change-type: minor
         change-type: minor
@@ -457,7 +474,7 @@
 - commits:
     - subject: Optimize away AND/ORs with false/true respectively
       hash: f0249d98032b0306f7d216b5ad8e8d2c96c466fc
-      body: ''
+      body: ""
       footer:
         Change-type: minor
         change-type: minor
@@ -468,7 +485,7 @@
 - commits:
     - subject: Optimize out booleans from AND/OR where possible
       hash: d3d9a86ebc231dc4b11b20311e6d007a19202b18
-      body: ''
+      body: ""
       footer:
         Change-type: minor
         change-type: minor
@@ -479,14 +496,12 @@
 - commits:
     - subject: Improve Relationship typings
       hash: 91465f7c65bc43ee2eba1c9db7dbce424a1b18d4
-      body: ''
+      body: ""
       footer:
         Change-type: patch
         change-type: patch
-        See: >-
-          https://github.com/balena-io/open-balena-api/pull/510#discussion_r546872607
-        see: >-
-          https://github.com/balena-io/open-balena-api/pull/510#discussion_r546872607
+        See: https://github.com/balena-io/open-balena-api/pull/510#discussion_r546872607
+        see: https://github.com/balena-io/open-balena-api/pull/510#discussion_r546872607
         Signed-off-by: Thodoris Greasidis <thodoris@balena.io>
         signed-off-by: Thodoris Greasidis <thodoris@balena.io>
       author: Thodoris Greasidis
@@ -496,7 +511,7 @@
 - commits:
     - subject: Fix `containsNode` when that node type is at the top level
       hash: 888791a9b281d5fc91ddeb8876f024b1397718e7
-      body: ''
+      body: ""
       footer:
         Change-type: patch
         change-type: patch
@@ -520,7 +535,7 @@
 - commits:
     - subject: Allow compiling `*QueryNode`s to direct strings without binds
       hash: 7f1880eab543da17ba99ea3940ac52f266d2b07d
-      body: ''
+      body: ""
       footer:
         Change-type: minor
         change-type: minor
@@ -531,7 +546,7 @@
 - commits:
     - subject: Improve typings for compilation results
       hash: 22764a4675ef385a1ef8ce10e633364449ae22b5
-      body: ''
+      body: ""
       footer:
         Change-type: patch
         change-type: patch
@@ -554,7 +569,7 @@
 - commits:
     - subject: Add check constraint support at the table level
       hash: 2ac556f3bdc6143a9a4be37c47079659ee20a866
-      body: ''
+      body: ""
       footer:
         Change-type: minor
         change-type: minor
@@ -565,7 +580,7 @@
 - commits:
     - subject: Convert tests from coffeescript to type-checked javascript
       hash: ec898159bee4cff9300c5d8b655eb02327a9f636
-      body: ''
+      body: ""
       footer:
         Change-type: patch
         change-type: patch
@@ -576,7 +591,7 @@
 - commits:
     - subject: Fix the `NOT(NOT(...))` optimization
       hash: dd8c6f3b63dd0b781f9768332416fb5371a8c809
-      body: ''
+      body: ""
       footer:
         Change-type: patch
         change-type: patch
@@ -587,7 +602,7 @@
 - commits:
     - subject: Remove some type casts
       hash: c8e61c426077b2fe8f697f12c0f8ecb30a082d8b
-      body: ''
+      body: ""
       footer:
         Change-type: patch
         change-type: patch
@@ -612,8 +627,7 @@
                 This allows specifying the correct type to cast to when
                 necessary
 
-                rather than relying on the fact the currently all type functions
-                happen
+                rather than relying on the fact the currently all type functions happen
 
                 to be integers
               footer:
@@ -625,7 +639,7 @@
         - commits:
             - subject: Update dependencies
               hash: 394b8c4d10ef16da163e05734ffb65a84717e204
-              body: ''
+              body: ""
               footer:
                 Change-type: patch
                 change-type: patch
@@ -637,7 +651,7 @@
 - commits:
     - subject: Remove accidental `necessity` from the `AbstractSqlField` types
       hash: f9583ff668efb8e74480b0458b14d6caa3821550
-      body: ''
+      body: ""
       footer:
         Change-type: patch
         change-type: patch
@@ -658,7 +672,7 @@
         - commits:
             - subject: Update dependencies
               hash: 33be8837bde82d29f182506f4b93e33157bea185
-              body: ''
+              body: ""
               footer:
                 Change-type: minor
                 change-type: minor
@@ -670,7 +684,7 @@
 - commits:
     - subject: Improve `BindNode` typing
       hash: 66723aba86dba67d25e3d79f28f38e258c2658c6
-      body: ''
+      body: ""
       footer:
         Change-type: patch
         change-type: patch
@@ -681,42 +695,42 @@
 - commits:
     - subject: Allow adding to the FromTypeNode set
       hash: cf970a0cd028dd32efc1938ccbbb03f53faa72d9
-      body: ''
+      body: ""
       footer:
         Change-type: minor
         change-type: minor
       author: Pagan Gazzard
     - subject: Rename to @balena/abstract-sql-compiler
       hash: fdb11ff3dbc450a6560330af0a22073f50e645b8
-      body: ''
+      body: ""
       footer:
         Change-type: major
         change-type: major
       author: Pagan Gazzard
     - subject: Improve typings
       hash: 281115889e51947a344308daec8f24d478a6f7e9
-      body: ''
+      body: ""
       footer:
         Change-type: major
         change-type: major
       author: Pagan Gazzard
     - subject: Convert all returned promises to native promises instead of bluebird
       hash: c103fcbd070f7e24124752052474e48874661e7d
-      body: ''
+      body: ""
       footer:
         Change-type: major
         change-type: major
       author: Pagan Gazzard
     - subject: Update tsconfig to target es2018
       hash: 1ebfe89128cc03e1215c9922928762a1850daf08
-      body: ''
+      body: ""
       footer:
         Change-type: major
         change-type: major
       author: Pagan Gazzard
     - subject: Drop support for node 6/8
       hash: 02e4c3ab4263787339ca85160dd8e3e73c25edaf
-      body: ''
+      body: ""
       footer:
         Change-type: major
         change-type: major
@@ -733,65 +747,63 @@
         - commits:
             - subject: Convert `fetchProcessing` to synchronous functions
               hash: a7cb7833d852dfec2b5bd02c3aad785266cd1c5c
-              body: ''
+              body: ""
               footer:
                 Change-type: major
                 change-type: major
               author: Pagan Gazzard
             - subject: Update to bcrypt 4.x
               hash: aadd9f09db11f39a706118bf0d605b9476f6bfb5
-              body: ''
+              body: ""
               footer:
                 Change-type: major
                 change-type: major
               author: Pagan Gazzard
             - subject: Enable strict tsconfig
               hash: 5690af1c28d8f42677f1f12960a8a6f346aea2fe
-              body: ''
+              body: ""
               footer:
                 Change-type: patch
                 change-type: patch
               author: Pagan Gazzard
             - subject: Make use of `import type` where relevant
               hash: d19c7b52ecf7d1269812852faae5797a77f06290
-              body: ''
+              body: ""
               footer:
                 Change-type: patch
                 change-type: patch
               author: Pagan Gazzard
             - subject: Update to balena-lint 5.x
               hash: 5d402bcbaa1ab496013f83de61d15ae87df22af6
-              body: ''
+              body: ""
               footer:
                 Change-type: patch
                 change-type: patch
               author: Pagan Gazzard
             - subject: Rename to @balena/sbvr-types
               hash: 3748302289afab7ae713995b56c694b477c29228
-              body: ''
+              body: ""
               footer:
                 Change-type: major
                 change-type: major
               author: Pagan Gazzard
             - subject: Drop node 8 support
               hash: 00ef44e2cea050c977150faaf9b5db8fb74d0116
-              body: ''
+              body: ""
               footer:
                 Change-type: major
                 change-type: major
               author: Pagan Gazzard
             - subject: Update tsconfig target to es2018
               hash: 6119c1595882069982d6021d3444513ddfa04aa4
-              body: ''
+              body: ""
               footer:
                 Change-type: major
                 change-type: major
               author: Pagan Gazzard
-            - subject: >-
-                Convert all returned promises to native promises instead of
-                bluebird
+            - subject: Convert all returned promises to native promises instead of bluebird
               hash: 1ae01b42d101d9764658a8553560477f0e7d7a86
-              body: ''
+              body: ""
               footer:
                 Change-type: major
                 change-type: major
@@ -816,7 +828,7 @@
         - commits:
             - subject: Update to mocha 7.x
               hash: f9b2009c28f50a0635738a2c49d1be17491a05b3
-              body: ''
+              body: ""
               footer:
                 Change-type: patch
                 change-type: patch
@@ -826,21 +838,21 @@
         - commits:
             - subject: Convert coffeescript tests to javascript
               hash: 4e4a14476fb29242dbcd278cf079738900fdb0c8
-              body: ''
+              body: ""
               footer:
                 Change-type: patch
                 change-type: patch
               author: Pagan Gazzard
             - subject: Drop support for node 6/8
               hash: fc61a212d5918a552ef6bbf8698413d096953429
-              body: ''
+              body: ""
               footer:
                 Change-type: major
                 change-type: major
               author: Pagan Gazzard
             - subject: Rename to @balena/sbvr-parser
               hash: f7c3e6b15c907a25661f02ab54046f9f7faa64b5
-              body: ''
+              body: ""
               footer:
                 Change-type: major
                 change-type: major
@@ -848,16 +860,16 @@
           version: sbvr-parser-1.0.0
           date: 2020-05-08T18:44:57.766Z
         - commits:
-            - subject: 'CI: Add nodejs 14 to the test matrix'
+            - subject: "CI: Add nodejs 14 to the test matrix"
               hash: b532a53263ba8c853851ba524d62d2c2862e976f
-              body: ''
+              body: ""
               footer:
                 Change-type: patch
                 change-type: patch
               author: Pagan Gazzard
-            - subject: 'CI: Remove circleci publishing in favor of balenaCI'
+            - subject: "CI: Remove circleci publishing in favor of balenaCI"
               hash: 899c978e14b686681a40ff46ce992b432974d257
-              body: ''
+              body: ""
               footer:
                 Change-type: patch
                 change-type: patch
@@ -867,7 +879,7 @@
         - commits:
             - subject: Update to to @balena/sbvr-types
               hash: 5092a2ed3c12c286661ec75dc7901adc5e5debba
-              body: ''
+              body: ""
               footer:
                 Change-type: patch
                 change-type: patch
@@ -877,7 +889,7 @@
         - commits:
             - subject: Update to @balena/lint 5.x
               hash: 7df67c7d823941cb513227b18a06af273fb71e64
-              body: ''
+              body: ""
               footer:
                 Change-type: patch
                 change-type: patch
@@ -887,7 +899,7 @@
         - commits:
             - subject: Reduce lodash usage
               hash: 275276c0c0a49a2ce638666c404d4a23495a01ff
-              body: ''
+              body: ""
               footer:
                 Change-type: patch
                 change-type: patch
@@ -897,35 +909,35 @@
         - commits:
             - subject: Include linting as part of the tests
               hash: 3c898aff5a6495b58ab963f6d979646dc43ca134
-              body: ''
+              body: ""
               footer:
                 Change-type: patch
                 change-type: patch
               author: Pagan Gazzard
             - subject: Convert from UMD module to commonjs module
               hash: 998c4ca6be517cf401883f725c8937f3a55c87fa
-              body: ''
+              body: ""
               footer:
                 Change-type: major
                 change-type: major
               author: Pagan Gazzard
             - subject: Rename to @balena/lf-to-abstract-sql
               hash: 29aef57618f13597d99f839b4e63f9dab465c303
-              body: ''
+              body: ""
               footer:
                 Change-type: major
                 change-type: major
               author: Pagan Gazzard
             - subject: Drop support for node 8
               hash: f3fa70101981f2d9a751a5bd0052dadbdc897604
-              body: ''
+              body: ""
               footer:
                 Change-type: major
                 change-type: major
               author: Pagan Gazzard
             - subject: Move @balena/sbvr-parser to production dependencies
               hash: cf4653791f11a556196af95434d80fdf1187e17d
-              body: ''
+              body: ""
               footer:
                 Change-type: patch
                 change-type: patch
@@ -945,7 +957,7 @@
                 - commits:
                     - subject: Update to mocha 7.x
                       hash: f9b2009c28f50a0635738a2c49d1be17491a05b3
-                      body: ''
+                      body: ""
                       footer:
                         Change-type: patch
                         change-type: patch
@@ -955,21 +967,21 @@
                 - commits:
                     - subject: Convert coffeescript tests to javascript
                       hash: 4e4a14476fb29242dbcd278cf079738900fdb0c8
-                      body: ''
+                      body: ""
                       footer:
                         Change-type: patch
                         change-type: patch
                       author: Pagan Gazzard
                     - subject: Drop support for node 6/8
                       hash: fc61a212d5918a552ef6bbf8698413d096953429
-                      body: ''
+                      body: ""
                       footer:
                         Change-type: major
                         change-type: major
                       author: Pagan Gazzard
                     - subject: Rename to @balena/sbvr-parser
                       hash: f7c3e6b15c907a25661f02ab54046f9f7faa64b5
-                      body: ''
+                      body: ""
                       footer:
                         Change-type: major
                         change-type: major
@@ -977,16 +989,16 @@
                   version: sbvr-parser-1.0.0
                   date: 2020-05-08T18:44:57.766Z
                 - commits:
-                    - subject: 'CI: Add nodejs 14 to the test matrix'
+                    - subject: "CI: Add nodejs 14 to the test matrix"
                       hash: b532a53263ba8c853851ba524d62d2c2862e976f
-                      body: ''
+                      body: ""
                       footer:
                         Change-type: patch
                         change-type: patch
                       author: Pagan Gazzard
-                    - subject: 'CI: Remove circleci publishing in favor of balenaCI'
+                    - subject: "CI: Remove circleci publishing in favor of balenaCI"
                       hash: 899c978e14b686681a40ff46ce992b432974d257
-                      body: ''
+                      body: ""
                       footer:
                         Change-type: patch
                         change-type: patch
@@ -996,7 +1008,7 @@
                 - commits:
                     - subject: Update to to @balena/sbvr-types
                       hash: 5092a2ed3c12c286661ec75dc7901adc5e5debba
-                      body: ''
+                      body: ""
                       footer:
                         Change-type: patch
                         change-type: patch
@@ -1006,7 +1018,7 @@
                 - commits:
                     - subject: Update to @balena/lint 5.x
                       hash: 7df67c7d823941cb513227b18a06af273fb71e64
-                      body: ''
+                      body: ""
                       footer:
                         Change-type: patch
                         change-type: patch
@@ -1016,7 +1028,7 @@
                 - commits:
                     - subject: Reduce lodash usage
                       hash: 275276c0c0a49a2ce638666c404d4a23495a01ff
-                      body: ''
+                      body: ""
                       footer:
                         Change-type: patch
                         change-type: patch
@@ -1026,9 +1038,9 @@
           version: lf-to-abstract-sql-3.2.6
           date: 2020-05-11T14:25:47.833Z
         - commits:
-            - subject: 'CI: Add nodejs 14 to the test matrix'
+            - subject: "CI: Add nodejs 14 to the test matrix"
               hash: ed093ef0606bfac0c5af3dbfdd718f2d8fed8a08
-              body: ''
+              body: ""
               footer:
                 Change-type: patch
                 change-type: patch
@@ -1048,65 +1060,63 @@
                 - commits:
                     - subject: Convert `fetchProcessing` to synchronous functions
                       hash: a7cb7833d852dfec2b5bd02c3aad785266cd1c5c
-                      body: ''
+                      body: ""
                       footer:
                         Change-type: major
                         change-type: major
                       author: Pagan Gazzard
                     - subject: Update to bcrypt 4.x
                       hash: aadd9f09db11f39a706118bf0d605b9476f6bfb5
-                      body: ''
+                      body: ""
                       footer:
                         Change-type: major
                         change-type: major
                       author: Pagan Gazzard
                     - subject: Enable strict tsconfig
                       hash: 5690af1c28d8f42677f1f12960a8a6f346aea2fe
-                      body: ''
+                      body: ""
                       footer:
                         Change-type: patch
                         change-type: patch
                       author: Pagan Gazzard
                     - subject: Make use of `import type` where relevant
                       hash: d19c7b52ecf7d1269812852faae5797a77f06290
-                      body: ''
+                      body: ""
                       footer:
                         Change-type: patch
                         change-type: patch
                       author: Pagan Gazzard
                     - subject: Update to balena-lint 5.x
                       hash: 5d402bcbaa1ab496013f83de61d15ae87df22af6
-                      body: ''
+                      body: ""
                       footer:
                         Change-type: patch
                         change-type: patch
                       author: Pagan Gazzard
                     - subject: Rename to @balena/sbvr-types
                       hash: 3748302289afab7ae713995b56c694b477c29228
-                      body: ''
+                      body: ""
                       footer:
                         Change-type: major
                         change-type: major
                       author: Pagan Gazzard
                     - subject: Drop node 8 support
                       hash: 00ef44e2cea050c977150faaf9b5db8fb74d0116
-                      body: ''
+                      body: ""
                       footer:
                         Change-type: major
                         change-type: major
                       author: Pagan Gazzard
                     - subject: Update tsconfig target to es2018
                       hash: 6119c1595882069982d6021d3444513ddfa04aa4
-                      body: ''
+                      body: ""
                       footer:
                         Change-type: major
                         change-type: major
                       author: Pagan Gazzard
-                    - subject: >-
-                        Convert all returned promises to native promises instead
-                        of bluebird
+                    - subject: Convert all returned promises to native promises instead of bluebird
                       hash: 1ae01b42d101d9764658a8553560477f0e7d7a86
-                      body: ''
+                      body: ""
                       footer:
                         Change-type: major
                         change-type: major
@@ -1116,7 +1126,7 @@
                 - commits:
                     - subject: Switch to balena-lint
                       hash: ab0228a798c1babb11891a469f8385b50c5426ef
-                      body: ''
+                      body: ""
                       footer:
                         Change-type: patch
                         change-type: patch
@@ -1126,7 +1136,7 @@
                 - commits:
                     - subject: Improve typings
                       hash: 82dfb240b97128267d26d44b12ed4ac2ddcfc8b7
-                      body: ''
+                      body: ""
                       footer:
                         Change-type: patch
                         change-type: patch
@@ -1136,7 +1146,7 @@
                 - commits:
                     - subject: Remove unused imports
                       hash: f4f8d1a55903e352db46efaace69d3b91da9016b
-                      body: ''
+                      body: ""
                       footer:
                         Change-type: patch
                         change-type: patch
@@ -1146,7 +1156,7 @@
                 - commits:
                     - subject: Remove production lodash dependency
                       hash: b819dc89d6cc55957b6c870c0fa44411d1d37bd0
-                      body: ''
+                      body: ""
                       footer:
                         Change-type: patch
                         change-type: patch
@@ -1158,63 +1168,63 @@
         - commits:
             - subject: Switch to native some
               hash: 9db59aa4e6d5bd2447671cdf048dcac41ce3229a
-              body: ''
+              body: ""
               footer:
                 Change-type: patch
                 change-type: patch
               author: Pagan Gazzard
             - subject: Switch to native findIndex
               hash: 41edb97a980d1e206a15d57d4f07a5707b767201
-              body: ''
+              body: ""
               footer:
                 Change-type: patch
                 change-type: patch
               author: Pagan Gazzard
             - subject: Switch to native every
               hash: 22e9532c671d8b5db90f6907bef9adba9159d2fe
-              body: ''
+              body: ""
               footer:
                 Change-type: patch
                 change-type: patch
               author: Pagan Gazzard
             - subject: Switch to native find
               hash: baf6ef67ddc40096d55999df05cfe0781616b4e3
-              body: ''
+              body: ""
               footer:
                 Change-type: patch
                 change-type: patch
               author: Pagan Gazzard
             - subject: Switch to native forEach where possible
               hash: e417e3b6decaad51c6a24053ba3a734b43cd7de4
-              body: ''
+              body: ""
               footer:
                 Change-type: patch
                 change-type: patch
               author: Pagan Gazzard
             - subject: Switch to native includes
               hash: 5768d76d2ebc2a457c890a181a39aa8879552dee
-              body: ''
+              body: ""
               footer:
                 Change-type: patch
                 change-type: patch
               author: Pagan Gazzard
             - subject: Switch to native array type checking
               hash: 3f3ecfbc69ab6b1f9606d8183354cea3111111bf
-              body: ''
+              body: ""
               footer:
                 Change-type: patch
                 change-type: patch
               author: Pagan Gazzard
             - subject: Switch to native string type checking
               hash: 93b0ee63ecc4740a2de9c5b01a703ddca94533fb
-              body: ''
+              body: ""
               footer:
                 Change-type: patch
                 change-type: patch
               author: Pagan Gazzard
             - subject: Switch to native Object.assign
               hash: bf1f7a2564bbd8fb01b0b298b872d79e676f7a18
-              body: ''
+              body: ""
               footer:
                 Change-type: patch
                 change-type: patch
@@ -1224,7 +1234,7 @@
         - commits:
             - subject: Always treat numbered terms as if they're used
               hash: 78cf69b82166d736865e73f5b01bc403da468569
-              body: ''
+              body: ""
               footer:
                 Change-type: patch
                 change-type: patch
@@ -1243,32 +1253,30 @@
               author: Pagan Gazzard
               nested:
                 - commits:
-                    - subject: 'CI: Remove circleci deploy in favor of balenaCI'
+                    - subject: "CI: Remove circleci deploy in favor of balenaCI"
                       hash: 9e1137a305c6ded5c11209d292dab1c5cbabd0ee
-                      body: ''
+                      body: ""
                       footer:
                         Change-type: patch
                         change-type: patch
                       author: Pagan Gazzard
-                    - subject: 'CI: Add node 12 to the test matrix'
+                    - subject: "CI: Add node 12 to the test matrix"
                       hash: ccad733c04197834893804a6f8ccb8c76a1bf562
-                      body: ''
+                      body: ""
                       footer:
                         Change-type: patch
                         change-type: patch
                       author: Pagan Gazzard
-                    - subject: 'CI: Remove node 6 from the test matrix'
+                    - subject: "CI: Remove node 6 from the test matrix"
                       hash: 5dd121cd02ffd37962ecefbfe0c1f9ab76168285
-                      body: ''
+                      body: ""
                       footer:
                         Change-type: patch
                         change-type: patch
                       author: Pagan Gazzard
-                    - subject: >-
-                        Update dependencies and use resin-lint for automatic
-                        lint fixes
+                    - subject: Update dependencies and use resin-lint for automatic lint fixes
                       hash: caab18277ab22f8d60c6feca21d731b69239f963
-                      body: ''
+                      body: ""
                       footer:
                         Change-type: patch
                         change-type: patch
@@ -1278,21 +1286,21 @@
                 - commits:
                     - subject: Add node 12 to the test matrix
                       hash: ecd938076fa0b473e0149940e71ac909a5f2cdfd
-                      body: ''
+                      body: ""
                       footer:
                         Change-type: patch
                         change-type: patch
                       author: Pagan Gazzard
                     - subject: Update dependencies
                       hash: 3aacccdbb1962f5cb7eeec8ca5fa62c5f42145e3
-                      body: ''
+                      body: ""
                       footer:
                         Change-type: patch
                         change-type: patch
                       author: Pagan Gazzard
                     - subject: Add CODEOWNERS
                       hash: d04a524767359dca21b7dfefc07e7e05a5607934
-                      body: ''
+                      body: ""
                       footer:
                         Change-type: patch
                         change-type: patch
@@ -1302,7 +1310,7 @@
                 - commits:
                     - subject: Add CODEOWNERS
                       hash: e9931f0bad2fc7b74366fcf1359642714e3d8cbe
-                      body: ''
+                      body: ""
                       footer:
                         Change-type: patch
                         change-type: patch
@@ -1312,7 +1320,7 @@
                 - commits:
                     - subject: Add support for using `of` instead of `that is of`
                       hash: 15466b993e738e16bb20d597460f673c438c6c93
-                      body: ''
+                      body: ""
                       footer:
                         Change-type: patch
                         change-type: patch
@@ -1322,7 +1330,7 @@
                 - commits:
                     - subject: Add support for `a given` as a universal quantification
                       hash: 2946841869fd9424786ae70c6c2d28948f624179
-                      body: ''
+                      body: ""
                       footer:
                         Change-type: patch
                         change-type: patch
@@ -1330,11 +1338,9 @@
                   version: sbvr-parser-0.2.5
                   date: 2019-12-30T17:43:37.528Z
                 - commits:
-                    - subject: >-
-                        Allow including terms as part of a verb by using `[]`
-                        brackets
+                    - subject: Allow including terms as part of a verb by using `[]` brackets
                       hash: 40129b411ba8b2357c03ac2815e0182f806c3531
-                      body: ''
+                      body: ""
                       footer:
                         Change-type: patch
                         change-type: patch
@@ -1344,9 +1350,7 @@
           version: lf-to-abstract-sql-3.2.1
           date: 2020-04-14T10:51:00.210Z
         - commits:
-            - subject: >-
-                Only add the destination of a link table if it's actually
-                necessary
+            - subject: Only add the destination of a link table if it's actually necessary
               hash: 463870590602492accc12ed53753f66862d42cd6
               body: >
                 This can significantly speed up queries by avoiding a join when
@@ -1360,9 +1364,9 @@
           version: lf-to-abstract-sql-3.2.0
           date: 2020-04-13T16:48:53.658Z
         - commits:
-            - subject: 'CI: Remove circleci publishing in favor of balenaCI'
+            - subject: "CI: Remove circleci publishing in favor of balenaCI"
               hash: 857edf20512d8876483751083d3738fd792b1a34
-              body: ''
+              body: ""
               footer:
                 Change-type: patch
                 change-type: patch
@@ -1372,7 +1376,7 @@
         - commits:
             - subject: Add CODEOWNERS
               hash: 84138a590beefb6a5efeb67e271fe26ec8706d4c
-              body: ''
+              body: ""
               footer:
                 Change-type: patch
                 change-type: patch
@@ -1382,7 +1386,7 @@
         - commits:
             - subject: Add support for enum definitions on fact types
               hash: c78811ce696b4408c365dafe091af50f674be5cf
-              body: ''
+              body: ""
               footer:
                 Change-type: minor
                 change-type: minor
@@ -1392,7 +1396,7 @@
         - commits:
             - subject: Fix `updateModifiedAt` formatting
               hash: 8791bf7a0fe088472d1ace8a6ebd6b9d721b3759
-              body: ''
+              body: ""
               footer:
                 Change-type: patch
                 change-type: patch
@@ -1402,21 +1406,21 @@
         - commits:
             - subject: Add node 12 tests
               hash: 83bc641d081b6cb8ba3cc9c027e0d789dfee4380
-              body: ''
+              body: ""
               footer:
                 Change-type: patch
                 change-type: patch
               author: Pagan Gazzard
             - subject: Add repo.yml for upstream changelogs
               hash: e877b3cbb7c314cd4a3632b9aed309ba392448d4
-              body: ''
+              body: ""
               footer:
                 Change-type: patch
                 change-type: patch
               author: Pagan Gazzard
             - subject: Add .versionbot/CHANGELOG.yml for downstream changelogs
               hash: 42abf7389d8bc95c621e2f012ecae9edfca24580
-              body: ''
+              body: ""
               footer:
                 Change-type: patch
                 change-type: patch
@@ -1425,45 +1429,45 @@
           date: 2019-05-08T15:55:22.023Z
         - commits:
             - author: Pagan Gazzard
-              body: ''
+              body: ""
               footers:
                 change-type: major
               hash: dc10a94a8547b413ced003e87cd4c8272b1b3b59
               subject: Add automatic modified at fields
-          date: '2019-03-08T15:40:33Z'
+          date: 2019-03-08T15:40:33Z
           version: lf-to-abstract-sql-3.0.0
         - commits:
             - subject: Rename to @balena/odata-parser
               hash: 9c835596afc1abfc4b5a260fddcd3ee2f987e63f
-              body: ''
+              body: ""
               footer:
                 Change-type: major
                 change-type: major
               author: Pagan Gazzard
             - subject: Update to @balena/lint 5.x
               hash: 8f80b624e83b2045f9c84ed813fb7399874fe684
-              body: ''
+              body: ""
               footer:
                 Change-type: major
                 change-type: major
               author: Pagan Gazzard
             - subject: Drop support for nodejs 8
               hash: e5a1507c373decd51d5e1d8781ae667b817c1bc7
-              body: ''
+              body: ""
               footer:
                 Change-type: major
                 change-type: major
               author: Pagan Gazzard
-            - subject: 'CI: Add nodejs 14 to the test matrix'
+            - subject: "CI: Add nodejs 14 to the test matrix"
               hash: 86c69609cad382db78014894d46e039898ceee62
-              body: ''
+              body: ""
               footer:
                 Change-type: patch
                 change-type: patch
               author: Pagan Gazzard
-            - subject: 'CI: Remove circleci publishing in favor of balenaCI'
+            - subject: "CI: Remove circleci publishing in favor of balenaCI"
               hash: 39515ff69eb0e6bc3137db79b351e5a9512f9b85
-              body: ''
+              body: ""
               footer:
                 Change-type: patch
                 change-type: patch
@@ -1485,7 +1489,7 @@
                 - commits:
                     - subject: Improve typings
                       hash: 11ace6373275b227497acbf2e40c2a33884adf7e
-                      body: ''
+                      body: ""
                       footer:
                         Change-type: patch
                         change-type: patch
@@ -1495,7 +1499,7 @@
                 - commits:
                     - subject: Add typings
                       hash: a2c4bfe660bbe8d5de554f15cd89ef5a9c30de74
-                      body: ''
+                      body: ""
                       footer:
                         Change-type: minor
                         change-type: minor
@@ -1509,8 +1513,7 @@
                         We do this by using basic scope info to prune aliased
                         table references
 
-                        which also allows us to handle aliased select queries in
-                        the from
+                        which also allows us to handle aliased select queries in the from
                       footer:
                         Change-type: minor
                         change-type: minor
@@ -1518,11 +1521,9 @@
                   version: abstract-sql-compiler-6.6.0
                   date: 2019-06-03T12:33:58.507Z
                 - commits:
-                    - subject: >-
-                        Use an abstract-sql-optimiser prepass to simplify
-                        getReferencedFields
+                    - subject: Use an abstract-sql-optimiser prepass to simplify getReferencedFields
                       hash: 6fc850fc820d691c823ad698d8d499cf55126cf4
-                      body: ''
+                      body: ""
                       footer:
                         Change-type: patch
                         change-type: patch
@@ -1532,7 +1533,7 @@
                 - commits:
                     - subject: Optimise exactly 0 to not exists
                       hash: dcb0cd00b8b4b08486e49d18e2b69e61162ae952
-                      body: ''
+                      body: ""
                       footer:
                         Change-type: patch
                         change-type: patch
@@ -1544,7 +1545,7 @@
         - commits:
             - subject: Add support for computed fields
               hash: b38a49327120bcb5106b5a21eb20a1a5586e4c30
-              body: ''
+              body: ""
               footer:
                 Change-type: minor
                 change-type: minor
@@ -1565,7 +1566,7 @@
                 - commits:
                     - subject: Fix adding parameter alias to the options object
                       hash: 247af0df0b4f3d6879d4415bced14fdf17beef76
-                      body: ''
+                      body: ""
                       footer:
                         Change-type: patch
                         change-type: patch
@@ -1575,7 +1576,7 @@
                 - commits:
                     - subject: Add .versionbot/CHANGELOG.yml for downstream changelogs
                       hash: d871880a00c86b8eeec37489cf1d62a3688aabcc
-                      body: ''
+                      body: ""
                       footer:
                         Change-type: patch
                         change-type: patch
@@ -1585,7 +1586,7 @@
                 - commits:
                     - subject: Add support for computed fields
                       hash: df53a1545b851da0ac188edac7cca6d34f1000f7
-                      body: ''
+                      body: ""
                       footer:
                         Change-type: minor
                         change-type: minor
@@ -1595,7 +1596,7 @@
                 - commits:
                     - subject: Add tests for `getReferencedFields`
                       hash: ae56c039a943bda5d7b75927be4ed3c9c5402261
-                      body: ''
+                      body: ""
                       footer:
                         Change-type: patch
                         change-type: patch
@@ -1605,14 +1606,14 @@
                 - commits:
                     - subject: Update and fix lodash typings
                       hash: 2bf073bbff3a94d66c31e07d98c3e298f5132b2c
-                      body: ''
+                      body: ""
                       footer:
                         Change-type: patch
                         change-type: patch
                       author: Pagan Gazzard
                     - subject: Update husky/mocha dev dependencies
                       hash: 29f7d52185186bdb1171fdf27a923eb38887d009
-                      body: ''
+                      body: ""
                       footer:
                         Change-type: patch
                         change-type: patch
@@ -1633,11 +1634,9 @@
                       author: Pagan Gazzard
                       nested:
                         - commits:
-                            - subject: >-
-                                Add .versionbot/CHANGELOG.yml for downstream
-                                changelogs
+                            - subject: Add .versionbot/CHANGELOG.yml for downstream changelogs
                               hash: 45c5843b204def5a727b8ba8dfafb2a2347f50f3
-                              body: ''
+                              body: ""
                               footer:
                                 Change-type: patch
                                 change-type: patch
@@ -1646,21 +1645,21 @@
                           date: 2019-05-08T14:23:57.847Z
                     - subject: Add node 12 tests
                       hash: 094c059eb3c5fd6f3502c53e40ed4b90197ed5c2
-                      body: ''
+                      body: ""
                       footer:
                         Change-type: patch
                         change-type: patch
                       author: Pagan Gazzard
                     - subject: Add repo.yml for upstream changelogs
                       hash: 3f4bffe3a107a4b6fd30c15bf1e70c79e68e226e
-                      body: ''
+                      body: ""
                       footer:
                         Change-type: patch
                         change-type: patch
                       author: Pagan Gazzard
                     - subject: Add .versionbot/CHANGELOG.yml for downstream changelogs
                       hash: 5e4ab1569e5e7f7648d4c14df8d3bf9f834a4828
-                      body: ''
+                      body: ""
                       footer:
                         Change-type: patch
                         change-type: patch
@@ -1672,21 +1671,21 @@
         - commits:
             - subject: Add node 12 tests
               hash: a6cc208654a36228a35fb8d8886e62bccc3c9fa4
-              body: ''
+              body: ""
               footer:
                 Change-type: patch
                 change-type: patch
               author: Pagan Gazzard
             - subject: Add repo.yml for upstream changelogs
               hash: e50ca4f49d80b3e89d37f7d8bf6607b0f797c7ae
-              body: ''
+              body: ""
               footer:
                 Change-type: patch
                 change-type: patch
               author: Pagan Gazzard
             - subject: Add .versionbot/CHANGELOG.yml for downstream changelogs
               hash: 9d68e94757f2f9498dedf3d6f085ce77ea70652a
-              body: ''
+              body: ""
               footer:
                 Change-type: patch
                 change-type: patch
@@ -1695,33 +1694,31 @@
           date: 2019-05-08T15:52:48.099Z
         - commits:
             - author: Pagan Gazzard
-              body: ''
+              body: ""
               footers:
                 change-type: patch
               hash: c7892c3950b3e4ca9722c63c162893a7ea8b09ca
               subject: Fix off-by-one error when having to resort to a random alias
-          date: '2019-04-22T15:38:45Z'
+          date: 2019-04-22T15:38:45Z
           version: odata-to-abstract-sql-3.1.1
         - commits:
             - author: Pagan Gazzard
-              body: ''
+              body: ""
               footers:
                 change-type: minor
               hash: b61b2f9a20fe0bb3632c591a452cf01f0740e42c
-              subject: >-
-                Add support for definitions for the target table of insert
-                queries
+              subject: Add support for definitions for the target table of insert queries
             - author: Pagan Gazzard
-              body: ''
+              body: ""
               footers:
                 change-type: minor
               hash: 815a4ff330f27fd503778bc1461e99e6ff0043b6
               subject: Add path key where statements to the select subquery for inserts
             - author: Pagan Gazzard
-              body: ''
+              body: ""
               hash: 785f06c38990b89614551f7cbd8ad87280561aeb
               subject: Convert == to ===
-          date: '2019-03-08T14:39:00Z'
+          date: 2019-03-08T14:39:00Z
           version: odata-to-abstract-sql-3.1.0
   version: 6.13.6
   date: 2020-05-19T15:19:55.893Z
@@ -1738,7 +1735,7 @@
         - commits:
             - subject: Switch to balena-lint
               hash: ab0228a798c1babb11891a469f8385b50c5426ef
-              body: ''
+              body: ""
               footer:
                 Change-type: patch
                 change-type: patch
@@ -1748,7 +1745,7 @@
         - commits:
             - subject: Improve typings
               hash: 82dfb240b97128267d26d44b12ed4ac2ddcfc8b7
-              body: ''
+              body: ""
               footer:
                 Change-type: patch
                 change-type: patch
@@ -1758,7 +1755,7 @@
         - commits:
             - subject: Remove unused imports
               hash: f4f8d1a55903e352db46efaace69d3b91da9016b
-              body: ''
+              body: ""
               footer:
                 Change-type: patch
                 change-type: patch
@@ -1768,7 +1765,7 @@
         - commits:
             - subject: Remove production lodash dependency
               hash: b819dc89d6cc55957b6c870c0fa44411d1d37bd0
-              body: ''
+              body: ""
               footer:
                 Change-type: patch
                 change-type: patch
@@ -1780,7 +1777,7 @@
 - commits:
     - subject: Reduce lodash usage
       hash: ed5c57cca3e703081feb04064fd8520558a54cd7
-      body: ''
+      body: ""
       footer:
         Change-type: patch
         change-type: patch
@@ -1799,30 +1796,30 @@
       author: Pagan Gazzard
       nested:
         - commits:
-            - subject: 'CI: Remove circleci deploy in favor of balenaCI'
+            - subject: "CI: Remove circleci deploy in favor of balenaCI"
               hash: 9e1137a305c6ded5c11209d292dab1c5cbabd0ee
-              body: ''
+              body: ""
               footer:
                 Change-type: patch
                 change-type: patch
               author: Pagan Gazzard
-            - subject: 'CI: Add node 12 to the test matrix'
+            - subject: "CI: Add node 12 to the test matrix"
               hash: ccad733c04197834893804a6f8ccb8c76a1bf562
-              body: ''
+              body: ""
               footer:
                 Change-type: patch
                 change-type: patch
               author: Pagan Gazzard
-            - subject: 'CI: Remove node 6 from the test matrix'
+            - subject: "CI: Remove node 6 from the test matrix"
               hash: 5dd121cd02ffd37962ecefbfe0c1f9ab76168285
-              body: ''
+              body: ""
               footer:
                 Change-type: patch
                 change-type: patch
               author: Pagan Gazzard
             - subject: Update dependencies and use resin-lint for automatic lint fixes
               hash: caab18277ab22f8d60c6feca21d731b69239f963
-              body: ''
+              body: ""
               footer:
                 Change-type: patch
                 change-type: patch
@@ -1832,7 +1829,7 @@
         - commits:
             - subject: Update dependencies
               hash: d991b20f6c90221c9a3734d0461540ec501576ad
-              body: ''
+              body: ""
               footer:
                 Change-type: patch
                 change-type: patch
@@ -1840,7 +1837,7 @@
           version: odata-parser-1.4.1
           date: 2020-04-10T14:30:05.458Z
         - commits:
-            - subject: '✨: Add support for canAccess method call on resource'
+            - subject: "✨: Add support for canAccess method call on resource"
               hash: bf99443b20616fef6344e3262832002d0d3909fd
               body: |
                 Add support for `canAccess` method call on resource
@@ -1855,9 +1852,9 @@
   version: 6.13.3
   date: 2020-04-14T12:07:43.079Z
 - commits:
-    - subject: "\U0001F4DD♻️ : Improve RelationshipMapping typing and docs"
+    - subject: "📝♻️ : Improve RelationshipMapping typing and docs"
       hash: 46ba8a414d0274455675a3fd93682791f2cf9727
-      body: ''
+      body: ""
       footer:
         Change-type: patch
         change-type: patch
@@ -1881,21 +1878,21 @@
 - commits:
     - subject: Add support for sum
       hash: 2b2a7dba023994be6bf3d1db80ca2699390250c1
-      body: ''
+      body: ""
       footer:
         Change-type: minor
         change-type: minor
       author: Pagan Gazzard
     - subject: Add support for average
       hash: 7cd03b2dcd6d15549f158b5a9970a59b93b23142
-      body: ''
+      body: ""
       footer:
         Change-type: minor
         change-type: minor
       author: Pagan Gazzard
     - subject: Add tests for count
       hash: 439e409c9b23bc6cb00bbdcc670a86f068f9fe3d
-      body: ''
+      body: ""
       footer:
         Change-type: patch
         change-type: patch
@@ -1905,7 +1902,7 @@
 - commits:
     - subject: Add support for coalesce
       hash: 4fa84d101ac97b32677bd6438e183a1883a28327
-      body: ''
+      body: ""
       footer:
         Change-type: minor
         change-type: minor
@@ -1925,21 +1922,21 @@
         - commits:
             - subject: Add node 12 to the test matrix
               hash: ecd938076fa0b473e0149940e71ac909a5f2cdfd
-              body: ''
+              body: ""
               footer:
                 Change-type: patch
                 change-type: patch
               author: Pagan Gazzard
             - subject: Update dependencies
               hash: 3aacccdbb1962f5cb7eeec8ca5fa62c5f42145e3
-              body: ''
+              body: ""
               footer:
                 Change-type: patch
                 change-type: patch
               author: Pagan Gazzard
             - subject: Add CODEOWNERS
               hash: d04a524767359dca21b7dfefc07e7e05a5607934
-              body: ''
+              body: ""
               footer:
                 Change-type: patch
                 change-type: patch
@@ -1951,7 +1948,7 @@
 - commits:
     - subject: Update resin-lint to 3.x and use it for auto-linting
       hash: bd82923590b10227dde854ac782f2f9f0417ef2f
-      body: ''
+      body: ""
       footer:
         Change-type: patch
         change-type: patch
@@ -1961,7 +1958,7 @@
 - commits:
     - subject: Fix query type check
       hash: e72755b88856c133ba54f3115abdd07ae6e4d9f6
-      body: ''
+      body: ""
       footer:
         Change-type: patch
         change-type: patch
@@ -1971,7 +1968,7 @@
 - commits:
     - subject: Add CODEOWNERS
       hash: 660c9caa7621f6a0d8e161b6f2fade5e3df88f0e
-      body: ''
+      body: ""
       footer:
         Change-type: patch
         change-type: patch
@@ -1981,7 +1978,7 @@
 - commits:
     - subject: Trim trigger names to the max of 63 characters
       hash: 05e1b93994e51afa7763aa0f721c76ef892fd469
-      body: ''
+      body: ""
       footer:
         Change-type: patch
         change-type: patch
@@ -1991,7 +1988,7 @@
 - commits:
     - subject: Update dev dependencies
       hash: 0994bf0a71631391752c04d54e7ce566286a71e4
-      body: ''
+      body: ""
       footer:
         Change-type: patch
         change-type: patch
@@ -2001,7 +1998,7 @@
 - commits:
     - subject: Add support for `CrossJoin`
       hash: b48e6cbf668312d038e509f06e947c5dead39ea4
-      body: ''
+      body: ""
       footer:
         Change-type: minor
         change-type: minor
@@ -2011,7 +2008,7 @@
 - commits:
     - subject: Update dependencies
       hash: 765b58fc2063ec3ab784c697b37f11c14a39752b
-      body: ''
+      body: ""
       footer:
         Change-type: patch
         change-type: patch
@@ -2021,7 +2018,7 @@
 - commits:
     - subject: Fix CHECK syntax
       hash: 4b3f6f301b0b3b57dbab10eaee44e1a7363bffaf
-      body: ''
+      body: ""
       footer:
         Change-type: patch
         change-type: patch
@@ -2031,7 +2028,7 @@
 - commits:
     - subject: Fix `compileRule` typings
       hash: c59026e90d600b90a68616e8629f201cf4646ada
-      body: ''
+      body: ""
       footer:
         Change-type: patch
         change-type: patch
@@ -2041,7 +2038,7 @@
 - commits:
     - subject: Add support for basic check constraints
       hash: 3c85919ddc7d35ada6e2788d28580f4ceb9a8170
-      body: ''
+      body: ""
       footer:
         Change-type: minor
         change-type: minor
@@ -2051,14 +2048,14 @@
 - commits:
     - subject: Allow combining/adding to existing NOT IN statements
       hash: e7010af9667c48db526d65d1286dd3c88f2bf831
-      body: ''
+      body: ""
       footer:
         Change-type: patch
         change-type: patch
       author: Pagan Gazzard
     - subject: Allow combining/adding to existing IN statements
       hash: 67d6b057ffb509daaeaba1212de5ec1cace6783a
-      body: ''
+      body: ""
       footer:
         Change-type: patch
         change-type: patch
@@ -2096,7 +2093,7 @@
 - commits:
     - subject: Add support for resolving directly circular dependencies on postgres
       hash: 0912d3d9d51af3b03f4fe253eb3c8ff341a66886
-      body: ''
+      body: ""
       footer:
         Change-type: minor
         change-type: minor
@@ -2106,7 +2103,7 @@
 - commits:
     - subject: Optimise finding of existing binds when adding a bind variable
       hash: 7f45a56eacc2a9fa69734a9f22778a83c4d4edf8
-      body: ''
+      body: ""
       footer:
         Change-type: patch
         change-type: patch
@@ -2116,7 +2113,7 @@
 - commits:
     - subject: Add support for inner/left/right/full joins
       hash: d2af541da7d0f7f2b6c25adb4929a410374e5887
-      body: ''
+      body: ""
       footer:
         Change-type: minor
         change-type: minor
@@ -2126,14 +2123,14 @@
 - commits:
     - subject: Change `IsDistinctFrom` for postgres to a version that can use indexes
       hash: 5046d5eb8127811eaced5308ea06d4ba092ed5f2
-      body: ''
+      body: ""
       footer:
         Change-type: patch
         change-type: patch
       author: Pagan Gazzard
     - subject: Optimise `IsDistinctFrom`/`IsNotDistinctFrom` when either arg is `Null`
       hash: 664385a73a8ab881d388141692a9cfad7d7b2358
-      body: ''
+      body: ""
       footer:
         Change-type: patch
         change-type: patch
@@ -2143,7 +2140,7 @@
 - commits:
     - subject: Add support for `IsDistinctFrom`/`IsNotDistinctFrom`
       hash: 5ba68820fc21f2a4bd622677d3abdc122bb78af2
-      body: ''
+      body: ""
       footer:
         Change-type: minor
         change-type: minor
@@ -2165,7 +2162,7 @@
 - commits:
     - subject: Use an abstract-sql-optimiser prepass to simplify getReferencedFields
       hash: 6fc850fc820d691c823ad698d8d499cf55126cf4
-      body: ''
+      body: ""
       footer:
         Change-type: patch
         change-type: patch
@@ -2175,7 +2172,7 @@
 - commits:
     - subject: Add support for computed fields
       hash: df53a1545b851da0ac188edac7cca6d34f1000f7
-      body: ''
+      body: ""
       footer:
         Change-type: minor
         change-type: minor
@@ -2185,7 +2182,7 @@
 - commits:
     - subject: Add tests for `getReferencedFields`
       hash: ae56c039a943bda5d7b75927be4ed3c9c5402261
-      body: ''
+      body: ""
       footer:
         Change-type: patch
         change-type: patch
@@ -2195,14 +2192,14 @@
 - commits:
     - subject: Update and fix lodash typings
       hash: 2bf073bbff3a94d66c31e07d98c3e298f5132b2c
-      body: ''
+      body: ""
       footer:
         Change-type: patch
         change-type: patch
       author: Pagan Gazzard
     - subject: Update husky/mocha dev dependencies
       hash: 29f7d52185186bdb1171fdf27a923eb38887d009
-      body: ''
+      body: ""
       footer:
         Change-type: patch
         change-type: patch
@@ -2225,7 +2222,7 @@
         - commits:
             - subject: Add .versionbot/CHANGELOG.yml for downstream changelogs
               hash: 45c5843b204def5a727b8ba8dfafb2a2347f50f3
-              body: ''
+              body: ""
               footer:
                 Change-type: patch
                 change-type: patch
@@ -2234,21 +2231,21 @@
           date: 2019-05-08T14:23:57.847Z
     - subject: Add node 12 tests
       hash: 094c059eb3c5fd6f3502c53e40ed4b90197ed5c2
-      body: ''
+      body: ""
       footer:
         Change-type: patch
         change-type: patch
       author: Pagan Gazzard
     - subject: Add repo.yml for upstream changelogs
       hash: 3f4bffe3a107a4b6fd30c15bf1e70c79e68e226e
-      body: ''
+      body: ""
       footer:
         Change-type: patch
         change-type: patch
       author: Pagan Gazzard
     - subject: Add .versionbot/CHANGELOG.yml for downstream changelogs
       hash: 5e4ab1569e5e7f7648d4c14df8d3bf9f834a4828
-      body: ''
+      body: ""
       footer:
         Change-type: patch
         change-type: patch
@@ -2257,222 +2254,222 @@
   date: 2019-05-08T16:45:44.728Z
 - commits:
     - author: Pagan Gazzard
-      body: ''
+      body: ""
       hash: ea7defa26fa3b5baf4e60d2a5aebbc8fc6677ffb
       subject: Make the composition of the create table statement clearer
     - author: Pagan Gazzard
-      body: ''
+      body: ""
       footers:
         change-type: minor
       hash: d18cf67029174de0a9933e1161241917f1f86263
       subject: Add support for trigger functions
     - author: Pagan Gazzard
-      body: ''
+      body: ""
       hash: c8174af61793d2d83e7a7f5ee1accc507ce32bc5
       subject: Fix husky warning
-  date: '2019-03-08T15:40:24Z'
+  date: 2019-03-08T15:40:24Z
   version: 6.4.0
 - commits:
     - author: Pagan Gazzard
-      body: ''
+      body: ""
       footers:
         change-type: patch
       hash: 2556425dd5912e919ffea9feb7a7b06a3071ad8a
       subject: Fix `FieldNode`s being detected as deprecated aliases
-  date: '2019-01-23T16:01:57Z'
+  date: 2019-01-23T16:01:57Z
   version: 6.3.6
 - commits:
     - author: Pagan Gazzard
-      body: ''
+      body: ""
       footers:
         change-type: patch
       hash: e31aa2834dd77fda437f455cfbd4c0e751aee22a
       subject: Improve typings
-  date: '2019-01-23T15:51:47Z'
+  date: 2019-01-23T15:51:47Z
   version: 6.3.5
 - commits:
     - author: Pagan Gazzard
-      body: ''
+      body: ""
       footers:
         change-type: patch
       hash: bf991a5946ce8195c471118bf653b62402ff25ed
       subject: Update to odata-to-abstract-sql v3.0.0
-  date: '2018-12-07T15:57:47Z'
+  date: 2018-12-07T15:57:47Z
   version: 6.3.4
 - commits:
     - author: Pagan Gazzard
-      body: ''
+      body: ""
       footers:
         change-type: patch
       hash: d3e2a7dc1fb41447ba2253a95493d5744b0e733e
       subject: Fix `FromNode` typing
-  date: '2018-11-23T20:18:18Z'
+  date: 2018-11-23T20:18:18Z
   version: 6.3.3
 - commits:
     - author: Pagan Gazzard
-      body: ''
+      body: ""
       footers:
         change-type: patch
       hash: b220e6ef86cf58c77cc176ada1599933fc894779
       subject: Fix the deprecated implicit alias check to account for implicit tables
-  date: '2018-11-21T17:00:20Z'
+  date: 2018-11-21T17:00:20Z
   version: 6.3.2
 - commits:
     - author: Pagan Gazzard
-      body: ''
+      body: ""
       footers:
         change-type: patch
       hash: 68b4f4e409e108f58c2c9ec87a8f4b7273bbac59
       subject: Support explicit table/alias nodes for the getXFields functions
-  date: '2018-11-21T11:55:10Z'
+  date: 2018-11-21T11:55:10Z
   version: 6.3.1
 - commits:
     - author: Pagan Gazzard
-      body: ''
+      body: ""
       footers:
         change-type: minor
       hash: 7c58c2390053c8be127d9a6f9222c804c8900fc6
       subject: Improve typings
-  date: '2018-11-20T16:25:30Z'
+  date: 2018-11-20T16:25:30Z
   version: 6.3.0
 - commits:
     - author: Pagan Gazzard
-      body: ''
+      body: ""
       footers:
         change-type: patch
       hash: 0a1a9f2d1b0d4a8141d9a20121bb0b52b52c4f16
       subject: Separate src/out dirs to avoid issues with importing .ts over .d.ts
-  date: '2018-11-16T17:25:27Z'
+  date: 2018-11-16T17:25:27Z
   version: 6.2.1
 - commits:
     - author: Pagan Gazzard
-      body: ''
+      body: ""
       footers:
         change-type: minor
       hash: 488577114c14ab341b036412f8e4aa12c5906fff
       subject: Convert AbstractSQLRules2SQL to typescript
     - author: Pagan Gazzard
-      body: ''
+      body: ""
       footers:
         change-type: minor
       hash: e61492d5c0e39423bbd836181956ea93d159be84
       subject: Convert AbstractSQLOptimiser to typescript
     - author: Pagan Gazzard
-      body: ''
+      body: ""
       hash: 96ec3960b57f21ee65ad87c33afc0639eb1c6807
       subject: Avoid throwing errors when matching `AnyValue` and share more code
-  date: '2018-11-16T14:31:23Z'
+  date: 2018-11-16T14:31:23Z
   version: 6.2.0
 - commits:
     - author: Pagan Gazzard
-      body: ''
+      body: ""
       footers:
         change-type: patch
       hash: ec53a5ea8c48d6cad97f68c6cd7929e47a828468
       subject: Add resin-lint for coffee files
     - author: Pagan Gazzard
-      body: ''
+      body: ""
       footers:
         change-type: patch
       hash: e458de0a1a329f25456bc0399829f3e74044bad6
       subject: Split the types for sbvr-types into a separate definition file
     - author: Pagan Gazzard
-      body: ''
+      body: ""
       footers:
         change-type: patch
       hash: 7dc05c675503a033f2a699314359129f8d5d7202
       subject: Add resin-lint for typescript and a commit hook to run it
-  date: '2018-11-13T17:27:46Z'
+  date: 2018-11-13T17:27:46Z
   version: 6.1.2
 - commits:
     - author: Pagan Gazzard
-      body: ''
+      body: ""
       footers:
         change-type: patch
       hash: 9c577699ba65edd22aeb12fe33221c7a1cabcdc2
       subject: Fix potentially incorrect `And` collapsing
     - author: Pagan Gazzard
-      body: ''
+      body: ""
       footers:
         change-type: patch
       hash: e06f352cfbc304aa9aee6b663dad04c98aa73d76
       subject: Optimise checking for aliases with a fast lookahead check
     - author: Pagan Gazzard
-      body: ''
+      body: ""
       hash: ca80fd227c00c6c227382d890aab5fda13da4ab6
       subject: Check for `AnyValue` last as it's an uncommon case and slow to fail
     - author: Pagan Gazzard
-      body: ''
+      body: ""
       hash: 6318861e21bc3b117ddd003380763c9cd3a243ea
       subject: Remove redundant `Null` match
-  date: '2018-11-12T12:40:48Z'
+  date: 2018-11-12T12:40:48Z
   version: 6.1.1
 - commits:
     - author: Pagan Gazzard
-      body: ''
+      body: ""
       footers:
         change-type: minor
       hash: 128c2dd63f8867d0bbcfca618c91b7c385b818d8
       subject: Switch to generating commonjs format
     - author: Pagan Gazzard
-      body: ''
+      body: ""
       hash: 731e42fe252114a50e600f91748334fbe7f162bb
       subject: Delete files that will be generated by the prepare script
     - author: Pagan Gazzard
-      body: ''
+      body: ""
       hash: 7e98d00022a2fb99de204880b7521ce5d9272f85
       subject: Remove unused coffeelint.json
     - author: Pagan Gazzard
-      body: ''
+      body: ""
       hash: 18f6341cb16f86ebe01f322ee57f5c23691a4ebb
       subject: Update dev dependencies
     - author: Pagan Gazzard
-      body: ''
+      body: ""
       hash: 3a946a40621cc7ce6d8e2b91b1df6cd0ec3b37ac
       subject: Remove unnecessary ometa-js import
-  date: '2018-11-03T13:36:10Z'
+  date: 2018-11-03T13:36:10Z
   version: 6.1.0
 - commits:
     - author: Pagan Gazzard
-      body: ''
+      body: ""
       footers:
         change-type: patch
       hash: 5ef9bb8f1dc91ba419b5ab6987f5985e0fcc68c9
       subject: Optimise the `Select` rule by removing redundant branches
     - author: Pagan Gazzard
-      body: ''
+      body: ""
       footers:
         change-type: patch
       hash: 014d13618d1dcb51491521fbce3e7e08e6b8aadd
       subject: Tighten alias/table name matches to strings
-  date: '2018-10-26T15:08:33Z'
+  date: 2018-10-26T15:08:33Z
   version: 6.0.1
 - commits:
     - author: Pagan Gazzard
-      body: '`dataTypeValidate` now rejects with error objects instead of strings'
+      body: "`dataTypeValidate` now rejects with error objects instead of strings"
       footers:
         change-type: major
         signed-off-by: Pagan Gazzard <page@resin.io>
       hash: e54c6fd1b0ea480f419fa3ed60817b0f85bfe0af
       subject: Update to sbvr-types 2.x
-  date: '2018-10-11T12:06:50Z'
+  date: 2018-10-11T12:06:50Z
   version: 6.0.0
 - commits:
     - author: Pagan Gazzard
-      body: ''
+      body: ""
       footers:
         change-type: patch
         signed-off-by: Pagan Gazzard <page@resin.io>
       hash: 830ac8d1a26fd204049ae6a3bcfaa885c1725e71
       subject: Update dependencies
     - author: Pagan Gazzard
-      body: ''
+      body: ""
       footers:
         change-type: patch
         signed-off-by: Pagan Gazzard <page@resin.io>
       hash: 7914a0d95296da50ff6900dcf109d4e95b823f8f
-      subject: 'Update lf-to-abstract-sql, updating tests to match'
-  date: '2018-10-04T09:30:27Z'
+      subject: Update lf-to-abstract-sql, updating tests to match
+  date: 2018-10-04T09:30:27Z
   version: 5.3.4
 - commits:
     - author: Rich Bayliss
@@ -2481,322 +2478,309 @@
         added to allow support for generating from the abstract SQL.
       footers:
         change-type: patch
-        connects-to: '#34'
+        connects-to: "#34"
         signed-off-by: Rich Bayliss <rich@resin.io>
       hash: 5b985c64db4e4251eec57dd1e7d37650289e188c
-      subject: 'feature: Add support for CASE/WHEN/ELSE/END'
-  date: '2018-08-13T22:24:07Z'
+      subject: "feature: Add support for CASE/WHEN/ELSE/END"
+  date: 2018-08-13T22:24:07Z
   version: 5.3.3
 - commits:
     - author: Pagan Gazzard
-      body: ''
+      body: ""
       footers:
         change-type: patch
         signed-off-by: Pagan Gazzard <page@resin.io>
       hash: 2554ad35c2b8fd6cbf940f088ad4468d2914f6ad
       subject: Don't try to merge `IS NULL` into an `IN` clause as it doesn't work
-  date: '2018-07-31T02:27:55Z'
+  date: 2018-07-31T02:27:55Z
   version: 5.3.2
 - commits:
     - author: Pagan Gazzard
-      body: ''
+      body: ""
       footers:
         change-type: patch
       hash: ca9af1b0b5ec55b18530cde60e4e87db6399ec42
-      subject: >-
-        Make sure direct table names are strings, this avoid issues if parsing a
-        SelectQuery fails.
-  date: '2018-06-24T17:37:06Z'
+      subject: Make sure direct table names are strings, this avoid issues if parsing
+        a SelectQuery fails.
+  date: 2018-06-24T17:37:06Z
   version: 5.3.1
 - commits:
     - author: Pagan Gazzard
-      body: ''
+      body: ""
       footers:
         change-type: minor
       hash: 32f8f3a21b77eb0c400efd873c432dad2ffbe328
-      subject: >-
-        Allow reusing bind parameters for the postgres backend rather than
+      subject: Allow reusing bind parameters for the postgres backend rather than
         duplicating for each instance.
-  date: '2018-06-14T18:26:52Z'
+  date: 2018-06-14T18:26:52Z
   version: 5.3.0
 - commits:
     - author: Pagan Gazzard
-      body: ''
+      body: ""
       footers:
         change-type: patch
       hash: e90d6e8b536884d5cd7c8dd491257d999e2a6671
       subject: Update lf-to-abstract-sql and fix tests.
-  date: '2018-06-09T14:19:08Z'
+  date: 2018-06-09T14:19:08Z
   version: 5.2.1
 - commits:
     - author: Pagan Gazzard
-      body: ''
+      body: ""
       footers:
         change-type: minor
       hash: 1ea7de24a665dcd8cf4213f04574582144b598ae
       subject: Add support for string bind keys
-  date: '2018-06-08T19:28:07Z'
+  date: 2018-06-08T19:28:07Z
   version: 5.2.0
 - commits:
     - author: Pagan Gazzard
-      body: ''
+      body: ""
       footers:
         change-type: patch
       hash: c2299f7f549b275f5588ac307c5e5ef57b9f98e2
       subject: Fix `test.skip`/`test.only`/etc for the sbvr tests
-  date: '2018-06-04T13:59:19Z'
+  date: 2018-06-04T13:59:19Z
   version: 5.1.2
 - commits:
     - author: Pagan Gazzard
-      body: ''
+      body: ""
       footers:
         change-type: patch
       hash: af7b5bc46c513dee389f9f840fa2d6412b8ea7ef
       subject: Update dependencies
-  date: '2018-06-04T12:48:05Z'
+  date: 2018-06-04T12:48:05Z
   version: 5.1.1
 - commits:
     - author: Pagan Gazzard
-      body: ''
+      body: ""
       footers:
         change-type: minor
       hash: ee70d47c46bf33c7ad1c3c7327876b6c4425e8d9
-      subject: >-
-        Change StartsWith to use LIKE instead of STRPOS so that it can make
+      subject: Change StartsWith to use LIKE instead of STRPOS so that it can make
         better use of indexes.
     - author: Pagan Gazzard
-      body: ''
+      body: ""
       footers:
         change-type: minor
       hash: c061f3a48c8c3ef2d5e702a787f9b25e53ec983e
-      subject: >-
-        Change EndsWith to use LIKE instead of RIGHT to avoid duplicating the
+      subject: Change EndsWith to use LIKE instead of RIGHT to avoid duplicating the
         needle.
     - author: Pagan Gazzard
-      body: ''
+      body: ""
       footers:
         change-type: minor
       hash: 0e92336f3cb6ab1f5a86bbb3f75e67eb6b60bd8b
       subject: Change CONTAINS to use LIKE instead of STRPOS.
-  date: '2018-06-01T19:14:03Z'
+  date: 2018-06-01T19:14:03Z
   version: 5.1.0
 - commits:
     - author: Pagan Gazzard
-      body: ''
+      body: ""
       footers:
         change-type: patch
       hash: 77bc57f58291a850b4c11e01dd14467c7fbb52d4
       subject: Update dependencies
-  date: '2018-05-10T08:26:42Z'
+  date: 2018-05-10T08:26:42Z
   version: 5.0.4
 - commits:
     - author: Pagan Gazzard
-      body: ''
+      body: ""
       footers:
         change-type: patch
       hash: 81f69104f914bb07b28b7170dee72b0c7b16ee6a
-      subject: >-
-        Switch types to using generated declaration files, this avoids issues
+      subject: Switch types to using generated declaration files, this avoids issues
         with the typescript code being rechecked downstream.
-  date: '2018-05-10T07:20:28Z'
+  date: 2018-05-10T07:20:28Z
   version: 5.0.3
 - commits:
     - author: Pagan Gazzard
-      body: ''
+      body: ""
       footers:
         change-type: patch
       hash: 9f6969e2016c720d38280330fd1829120cf06364
-      subject: 'Require npm 4+ to publish, to avoid issues with publishing'
-  date: '2018-05-10T07:00:26Z'
+      subject: Require npm 4+ to publish, to avoid issues with publishing
+  date: 2018-05-10T07:00:26Z
   version: 5.0.2
 - commits:
     - author: Pagan Gazzard
-      body: ''
+      body: ""
       footers:
         change-type: patch
       hash: fd90fcfcbe4e61641f06840df7a5d036870412fd
       subject: Move circle.yml to .circleci/config.yml
     - author: Pagan Gazzard
-      body: ''
+      body: ""
       footers:
         change-type: patch
       hash: 990769d3823ffd9a2d13953c772a097879fedb3a
       subject: Add node 10 to the circleci tests
-  date: '2018-04-30T16:19:40Z'
+  date: 2018-04-30T16:19:40Z
   version: 5.0.1
 - commits:
     - author: Pagan Gazzard
-      body: >-
-        As part of this we update lf-to-abstract-sql and odata-to-abstract-sql
-        to versions 2.0.0, so that they provide the correct format.
+      body: As part of this we update lf-to-abstract-sql and odata-to-abstract-sql to
+        versions 2.0.0, so that they provide the correct format.
       footers:
         change-type: major
       hash: 983f1b47d03a1cdd2a6d7064826c1082a45a00fe
-      subject: >-
-        Change the references format to expect a `resourceName` rather than a
+      subject: Change the references format to expect a `resourceName` rather than a
         `tableName`
-  date: '2018-04-25T19:03:10Z'
+  date: 2018-04-25T19:03:10Z
   version: 5.0.0
 - commits:
     - author: Pagan Gazzard
-      body: ''
+      body: ""
       footers:
         change-type: patch
       hash: 524858b49bbcc4a5e88613b60b3f65ef8422851d
       subject: Update tests to use odata-to-abstract-sql 1.2.0
-  date: '2018-04-25T18:40:12Z'
+  date: 2018-04-25T18:40:12Z
   version: 4.1.1
 - commits:
     - author: Pagan Gazzard
-      body: ''
+      body: ""
       footers:
         change-type: patch
       hash: 4fc8bf3aa7d8894fab789a26a419b873490f0f8c
-      subject: >-
-        Make sure the nested or optimisation hits the validator method directly,
-        avoiding other optimisations breaking it.
+      subject: Make sure the nested or optimisation hits the validator method
+        directly, avoiding other optimisations breaking it.
     - author: Pagan Gazzard
-      body: ''
+      body: ""
       footers:
         change-type: minor
       hash: f876eee8d382622539087f7937bd10d1a5d59a56
-      subject: >-
-        Support the `Or` -> `In` optimisation for cases where you have mixed
+      subject: Support the `Or` -> `In` optimisation for cases where you have mixed
         comparisons in an or block, allowing it to be used in a lot more cases.
-  date: '2018-04-23T20:28:35Z'
+  date: 2018-04-23T20:28:35Z
   version: 4.1.0
 - commits:
     - author: Pagan Gazzard
-      body: ''
+      body: ""
       footers:
         change-type: major
       hash: eccd334ddefcdb56c05f23fe8f318708c815db52
       subject: Generate numbered bindings for postgres rather than ?
-  date: '2018-04-11T20:06:15Z'
+  date: 2018-04-11T20:06:15Z
   version: 4.0.0
 - commits:
     - author: Pagan Gazzard
-      body: ''
+      body: ""
       footers:
         change-type: patch
       hash: cc74feda580ef0a9ac2f91bc64a1f9fac961747a
-      subject: >-
-        Make sure the nested or optimisation hits the validator method directly,
-        avoiding other optimisations breaking it.
+      subject: Make sure the nested or optimisation hits the validator method
+        directly, avoiding other optimisations breaking it.
     - author: Pagan Gazzard
-      body: ''
+      body: ""
       footers:
         change-type: minor
       hash: 6df5cb012b24933fd246f363ea39f0158e0ef870
-      subject: >-
-        Support the `Or` -> `In` optimisation for cases where you have mixed
+      subject: Support the `Or` -> `In` optimisation for cases where you have mixed
         comparisons in an or block, allowing it to be used in a lot more cases.
-  date: '2018-04-23T21:00:30Z'
+  date: 2018-04-23T21:00:30Z
   version: 3.4.0
 - commits:
     - author: Pagan Gazzard
-      body: ''
+      body: ""
       footers:
         change-type: minor
       hash: 6923d73e1ef12e5c790d95dcd4f3c8eb6bfb8c25
       subject: Add support for union queries.
-  date: '2018-01-05T13:05:45Z'
+  date: 2018-01-05T13:05:45Z
   version: 3.3.0
 - commits:
     - author: Pagan Gazzard
-      body: ''
+      body: ""
       footers:
         change-type: patch
       hash: f7bb6e18849679daad8c228bffe6b75fd2c65d6d
       subject: Update dependencies
-  date: '2018-01-05T13:00:32Z'
+  date: 2018-01-05T13:00:32Z
   version: 3.2.2
 - commits:
     - author: Pagan Gazzard
-      body: ''
+      body: ""
       footers:
         change-type: patch
       hash: 2cdbc543aa4029244293197818f2126191c1cc43
       subject: Set up circleci auto-publishing
     - author: Pagan Gazzard
-      body: ''
+      body: ""
       footers:
         change-type: patch
       hash: 6596e7f5fcbff9b1b5da3089582e509ad7eccce8
       subject: Lock types versions and fix type errors.
-  date: '2017-12-11T11:40:59Z'
+  date: 2017-12-11T11:40:59Z
   version: 3.2.1
 - commits:
     - author: Giovanni Garufi
-      body: ''
+      body: ""
       footers:
         change-type: minor
       hash: bb35941def89b6970e48736a475df1ba6ca7d236
       subject: Updated dependencies and rewrote tests to account for breaking changes
-  date: '2017-10-27T14:54:29Z'
+  date: 2017-10-27T14:54:29Z
   version: 3.2.0
 - commits:
     - author: Pagan Gazzard
-      body: ''
+      body: ""
       footers:
         change-type: minor
       hash: 9aeeb579082e2af89826bc396906c56dad54e77f
-      subject: >-
-        Convert AbstractSQLCompiler to typescript and add typings for the OMeta
+      subject: Convert AbstractSQLCompiler to typescript and add typings for the OMeta
         parts
     - author: Giovanni Garufi
-      body: ''
+      body: ""
       footers:
         change-type: patch
       hash: ac9b0863155df65d7b5df9cecad5c47bc3796262
       subject: Added versionist
-  date: '2017-10-02T16:00:53Z'
+  date: 2017-10-02T16:00:53Z
   version: 3.1.0
 - commits:
     - author: Akis Kesoglou
-      body: ''
+      body: ""
       hash: 7c49e2232753066807060233c07dae693b014f0e
       subject: Fix rule compilation that would not pass bindings along
-  date: '2017-09-19T11:41:22Z'
+  date: 2017-09-19T11:41:22Z
   version: 3.0.0
 - commits:
     - author: Pagan Gazzard
-      body: ''
+      body: ""
       hash: 1ab50bec419dc9c315caf98de369d5f03bb5798c
       subject: Fix checking for unresolved dependencies
-  date: '2017-09-01T11:41:57Z'
+  date: 2017-09-01T11:41:57Z
   version: 2.3.3
 - commits:
     - author: Pagan Gazzard
-      body: ''
+      body: ""
       hash: 7325bddc3a32ff50d107f13bcc3a676c3a49af25
-      subject: >-
-        Fix checking of dependencies when there is self-reference for a resource
-        where the resource name and table name are different
-  date: '2017-07-07T19:08:15Z'
+      subject: Fix checking of dependencies when there is self-reference for a
+        resource where the resource name and table name are different
+  date: 2017-07-07T19:08:15Z
   version: 2.3.2
 - commits:
     - author: dfunckt
-      body: ''
+      body: ""
       hash: d2fbe4c104d4869fd2fd135e9e894882f05e98eb
       subject: Fixed exception thrown while trying to compile schema
-  date: '2017-06-04T18:36:39Z'
+  date: 2017-06-04T18:36:39Z
   version: 2.3.1
 - commits:
     - author: Pagan Gazzard
-      body: ''
+      body: ""
       hash: 6fa501aab9a1b52d3b2d099718d3e39da0260b4e
       subject: Update coffeescript to ~1.12.6
     - author: Pagan Gazzard
-      body: ''
+      body: ""
       hash: dd6c82319746b27c212dcbe6a9ff55a721fd0650
       subject: Add the support necessary to be able to selectively run rules
-  date: '2017-05-29T15:27:22Z'
+  date: 2017-05-29T15:27:22Z
   version: 2.3.0
 - commits:
     - author: Pagan Gazzard
-      body: ''
+      body: ""
       hash: 4997ef8019ff324e84635f01755a8257ae0bb22f
       subject: Add support for numbered binds.
-  date: '2016-10-29T00:27:18Z'
+  date: 2016-10-29T00:27:18Z
   version: 2.2.0
