@@ -57,7 +57,7 @@ export type InNode = [
 	'In',
 	FieldNode | ReferencedFieldNode,
 	AbstractSqlType,
-	...AbstractSqlType[]
+	...AbstractSqlType[],
 ];
 export type NotExistsNode = ['NotExists', AbstractSqlType];
 export type ExistsNode = ['Exists', AbstractSqlType];
@@ -101,7 +101,7 @@ export type CoalesceNode = [
 	'Cast',
 	UnknownTypeNodes,
 	UnknownTypeNodes,
-	...UnknownTypeNodes[]
+	...UnknownTypeNodes[],
 ];
 export type UnknownTypeNodes =
 	| FieldNode
@@ -113,6 +113,11 @@ export type UnknownTypeNodes =
 
 export type TextNode = ['Text', string];
 export type ConcatenateNode = ['Concatenate', ...TextTypeNodes[]];
+export type ConcatenateWithSeparatorNode = [
+	'ConcatenateWithSeparator',
+	TextTypeNodes,
+	...TextTypeNodes[],
+];
 export type LikeNode = ['Like', AbstractSqlType, AbstractSqlType];
 export type ReplaceNode = [
 	'Replace',
@@ -122,6 +127,7 @@ export type ReplaceNode = [
 ];
 export type TextTypeNodes =
 	| ConcatenateNode
+	| ConcatenateWithSeparatorNode
 	| LikeNode
 	| ReplaceNode
 	| UnknownTypeNodes;
@@ -142,12 +148,12 @@ export type SelectQueryNode = [
 		| OrderByNode
 		| LimitNode
 		| OffsetNode
-	>
+	>,
 ];
 export type UnionQueryNode = [
 	'UnionQuery',
 	// tslint:disable-next-line:array-type typescript fails on a circular reference when `Array<T>` form
-	...(UnionQueryNode | SelectQueryNode)[]
+	...(UnionQueryNode | SelectQueryNode)[],
 ];
 export type InsertQueryNode = ['InsertQuery', ...AbstractSqlType[]];
 export type UpdateQueryNode = ['UpdateQuery', ...AbstractSqlType[]];
@@ -193,7 +199,7 @@ export type GroupByNode = ['GroupBy', Array<FieldNode | ReferencedFieldNode>];
 export type HavingNode = ['Having', BooleanTypeNodes];
 export type OrderByNode = [
 	'OrderBy',
-	...Array<['ASC' | 'DESC', FieldNode | ReferencedFieldNode]>
+	...Array<['ASC' | 'DESC', FieldNode | ReferencedFieldNode]>,
 ];
 export type LimitNode = ['Limit', NumberTypeNodes];
 export type OffsetNode = ['Offset', NumberTypeNodes];

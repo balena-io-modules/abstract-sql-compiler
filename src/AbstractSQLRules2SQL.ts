@@ -104,6 +104,7 @@ export const isTextValue = (
 		type === 'Text' ||
 		type === 'EmbeddedText' ||
 		type === 'Concatenate' ||
+		type === 'ConcatenateWithSeparator' ||
 		type === 'Lower' ||
 		type === 'Upper' ||
 		type === 'Trim' ||
@@ -863,6 +864,23 @@ const typeRules: Dictionary<MatchFn> = {
 		} else {
 			return '(' + comparators.join(' || ') + ')';
 		}
+	},
+	ConcatenateWithSeparator: (args, indent) => {
+		checkMinArgs('ConcatenateWithSeparator', args, 2);
+		const textParts = args.map((arg) => {
+			if (!isAbstractSqlQuery(arg)) {
+				throw new SyntaxError(
+					`Expected AbstractSqlQuery array but got ${typeof arg}`,
+				);
+			}
+			return TextValue(arg, indent);
+		});
+		if (engine === Engines.websql) {
+			throw new SyntaxError(
+				'ConcatenateWithSeparator not supported on: ' + engine,
+			);
+		}
+		return `CONCAT_WS(${textParts.join(', ')})`;
 	},
 	Replace: (args, indent) => {
 		checkArgs('Replace', args, 3);

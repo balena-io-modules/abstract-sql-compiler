@@ -273,6 +273,21 @@ const Concatenate: MatchFn = (args) => {
 	];
 };
 
+const ConcatenateWithSeparator: MatchFn = (args) => {
+	checkMinArgs('ConcatenateWithSeparator', args, 2);
+	return [
+		'ConcatenateWithSeparator',
+		...args.map((arg) => {
+			if (!isAbstractSqlQuery(arg)) {
+				throw new SyntaxError(
+					`Expected AbstractSqlQuery array but got ${typeof arg}`,
+				);
+			}
+			return TextValue(arg);
+		}),
+	];
+};
+
 const Text: MatchFn = matchArgs('Text', _.identity);
 
 const Value = (arg: any): AbstractSqlQuery => {
@@ -626,6 +641,7 @@ const typeRules: Dictionary<MatchFn> = {
 	Totalseconds: matchArgs('Totalseconds', DurationValue),
 	Concat: Concatenate,
 	Concatenate,
+	ConcatenateWithSeparator,
 	Replace: matchArgs('Replace', TextValue, TextValue, TextValue),
 	CharacterLength: matchArgs('CharacterLength', TextValue),
 	StrPos: matchArgs('StrPos', TextValue, TextValue),
