@@ -179,7 +179,7 @@ export interface FromTypeNode {
  */
 export type ResourceNode = ['Resource', string];
 
-type FromTypeNodes =
+export type FromTypeNodes =
 	| FromTypeNode[keyof FromTypeNode]
 	| AliasNode<FromTypeNode[keyof FromTypeNode]>;
 
@@ -430,6 +430,9 @@ const dataTypeGen = (
 	}
 };
 
+export const isAliasNode = <T>(
+	n: AliasNode<T> | AbstractSqlType,
+): n is AliasNode<T> => n[0] === 'Alias';
 export const isFromNode = (n: AbstractSqlType): n is FromNode =>
 	n[0] === 'From';
 export const isTableNode = (n: AbstractSqlType): n is TableNode =>
