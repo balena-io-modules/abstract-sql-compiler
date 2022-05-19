@@ -1,4 +1,16 @@
 - commits:
+    - subject: Expose `isAliasNode` helper
+      hash: 6f59b2d31e4dee5eef008e755d4ee2cb42dd50ba
+      body: ""
+      footer:
+        Change-type: minor
+        change-type: minor
+      author: Pagan Gazzard
+      nested: []
+  version: 7.20.0
+  title: "'Expose  helper'"
+  date: 2022-05-19T17:25:29.766Z
+- commits:
     - subject: Update dependencies
       hash: 923dd2d492246b99cc62d51a25dd96464e7c1e87
       body: |
