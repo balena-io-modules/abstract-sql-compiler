@@ -1,4 +1,19 @@
 - commits:
+    - subject: Add `modifyFields`/`modifyName` to table definition
+      hash: 54f7bd2061c175f7d8d4c7f0df9fed4c9c07237e
+      body: |
+        This is intended to be used to target tables differently for reads vs
+        writes, eg where you might read from a view/definition but want to
+        write to a physical table instead
+      footer:
+        Change-type: minor
+        change-type: minor
+      author: Pagan Gazzard
+      nested: []
+  version: 7.21.0
+  title: "'Add / to table definition'"
+  date: 2022-06-06T15:14:37.691Z
+- commits:
     - subject: Expose `isAliasNode` helper
       hash: 6f59b2d31e4dee5eef008e755d4ee2cb42dd50ba
       body: ""
