@@ -347,6 +347,8 @@ export interface AbstractSqlTable {
 	triggers?: Trigger[];
 	checks?: Check[];
 	definition?: Definition;
+	modifyFields?: AbstractSqlTable['fields'];
+	modifyName?: AbstractSqlTable['name'];
 }
 export interface SqlRule {
 	sql: string;
