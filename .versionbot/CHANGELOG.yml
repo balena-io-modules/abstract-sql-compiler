@@ -1,4 +1,16 @@
 - commits:
+    - subject: Switch from balenaCI to flowzone
+      hash: 7183de0901b40e56fa4ee8db8ae8f472faa0da20
+      body: ""
+      footer:
+        Change-type: patch
+        change-type: patch
+      author: Pagan Gazzard
+      nested: []
+  version: 7.20.1
+  title: ""
+  date: 2022-10-14T16:18:40.731Z
+- commits:
     - subject: Expose `isAliasNode` helper
       hash: 6f59b2d31e4dee5eef008e755d4ee2cb42dd50ba
       body: ""
@@ -699,8 +711,7 @@
             - subject: Add a `castType` property to type functions
               hash: 409077eb9d6c0315779ddd877220280c251b4eb5
               body: >
-                This allows specifying the correct type to cast to when
-                necessary
+                This allows specifying the correct type to cast to when necessary
 
                 rather than relying on the fact the currently all type functions happen
 
@@ -1428,8 +1439,7 @@
             - subject: Only add the destination of a link table if it's actually necessary
               hash: 463870590602492accc12ed53753f66862d42cd6
               body: >
-                This can significantly speed up queries by avoiding a join when
-                the
+                This can significantly speed up queries by avoiding a join when the
 
                 result is unused
               footer:
@@ -1585,8 +1595,7 @@
                     - subject: Improve aliased from handling in `getReferencedFields`
                       hash: dcfff55b813d38434208a9e07c818d1d32f521ef
                       body: >
-                        We do this by using basic scope info to prune aliased
-                        table references
+                        We do this by using basic scope info to prune aliased table references
 
                         which also allows us to handle aliased select queries in the from
                       footer:
