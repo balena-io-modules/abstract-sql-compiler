@@ -137,6 +137,8 @@ const UnknownValue: MetaMatchFn = (args) => {
 		case 'Bind':
 		case 'Cast':
 		case 'Coalesce':
+		case 'ExtractJSONPathAsText':
+		case 'ToJSON':
 			return typeRules[type](rest);
 		case 'SelectQuery':
 		case 'UnionQuery':
@@ -196,6 +198,9 @@ const { isJSONValue } = AbstractSQLRules2SQL;
 
 const { isDurationValue } = AbstractSQLRules2SQL;
 const DurationValue = MatchValue(isDurationValue);
+
+const { isArrayValue } = AbstractSQLRules2SQL;
+const ArrayValue = MatchValue(isArrayValue);
 
 const { isFieldValue } = AbstractSQLRules2SQL;
 const Field: MetaMatchFn = (args) => {
@@ -672,6 +677,17 @@ const typeRules: Dictionary<MatchFn> = {
 	ToDate: matchArgs('ToDate', DateValue),
 	DateTrunc: matchArgs('DateTrunc', TextValue, DateValue),
 	ToTime: matchArgs('ToTime', DateValue),
+	ExtractJSONPathAsText: (args) => {
+		checkMinArgs('ExtractJSONPathAsText', args, 1);
+		const json = TextValue(getAbstractSqlQuery(args, 0));
+		const path = ArrayValue(getAbstractSqlQuery(args, 1));
+		return ['ExtractJSONPathAsText', json, path];
+	},
+	TextArray: (args) => {
+		// Allow for populated and empty arrays
+		return ['TextArray', ...args.map(TextValue)];
+	},
+	ToJSON: matchArgs('ToJSON', AnyValue),
 	Coalesce: (args) => {
 		checkMinArgs('Coalesce', args, 2);
 		return ['Coalesce', ...args.map(AnyValue)];

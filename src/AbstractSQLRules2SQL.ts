@@ -77,6 +77,8 @@ const UnknownValue: MetaMatchFn = (args, indent) => {
 		case 'Bind':
 		case 'Cast':
 		case 'Coalesce':
+		case 'ToJSON':
+		case 'TextArray':
 			return typeRules[type](rest, indent);
 		case 'SelectQuery':
 		case 'UnionQuery':
@@ -109,6 +111,7 @@ export const isTextValue = (
 		type === 'Upper' ||
 		type === 'Trim' ||
 		type === 'Replace' ||
+		type === 'ExtractJSONPathAsText' ||
 		type === 'Substring' ||
 		type === 'Right'
 	);
@@ -184,12 +187,18 @@ export const isDateValue = (
 	);
 };
 const DateValue = MatchValue(isDateValue);
+export const isArrayValue = (
+	type: string | AbstractSqlQuery,
+): type is string => {
+	return type === 'TextArray';
+};
 
 export const isJSONValue = (
 	type: string | AbstractSqlQuery,
 ): type is string => {
-	return type === 'AggregateJSON';
+	return type === 'AggregateJSON' || type === 'ToJSON';
 };
+const JSONValue = MatchValue(isJSONValue);
 
 export const isDurationValue = (
 	type: string | AbstractSqlQuery,
@@ -782,6 +791,19 @@ const typeRules: Dictionary<MatchFn> = {
 		checkArgs('EmbeddedText', args, 1);
 		return `'${args[0]}'`;
 	},
+	TextArray: (args, indent) => {
+		const values = args.map((arg) => {
+			if (!isAbstractSqlQuery(arg)) {
+				throw new SyntaxError(
+					`Expected AbstractSqlQuery array but got ${typeof arg}`,
+				);
+			}
+			return TextValue(arg, indent);
+		});
+		return values.length
+			? `ARRAY[${values.join(', ')}]`
+			: 'CAST(ARRAY[] as TEXT[])';
+	},
 	Null: (args) => {
 		checkArgs('Null', args, 0);
 		return 'NULL';
@@ -889,6 +911,17 @@ const typeRules: Dictionary<MatchFn> = {
 		const replacement = TextValue(getAbstractSqlQuery(args, 2), indent);
 		return `REPLACE(${str}, ${find}, ${replacement})`;
 	},
+	ExtractJSONPathAsText: (args, indent) => {
+		checkMinArgs('ExtractJSONPathAsText', args, 1);
+		if (engine !== Engines.postgres) {
+			throw new SyntaxError(
+				'ExtractJSONPathAsText not supported on: ' + engine,
+			);
+		}
+		const json = JSONValue(getAbstractSqlQuery(args, 0), indent);
+		const path = TextValue(getAbstractSqlQuery(args, 1), indent);
+		return `${json} #>> ${path}`;
+	},
 	CharacterLength: (args, indent) => {
 		checkArgs('CharacterLength', args, 1);
 		const text = TextValue(getAbstractSqlQuery(args, 0), indent);
@@ -995,6 +1028,14 @@ const typeRules: Dictionary<MatchFn> = {
 		} else {
 			return `TIME(${date})`;
 		}
+	},
+	ToJSON: (args, indent) => {
+		checkMinArgs('ToJSON', args, 1);
+		if (engine !== Engines.postgres) {
+			throw new SyntaxError('ToJSON not supported on: ' + engine);
+		}
+		const value = AnyValue(getAbstractSqlQuery(args, 0), indent);
+		return `TO_JSON(${value})`;
 	},
 	Coalesce: (args, indent) => {
 		checkMinArgs('Coalesce', args, 2);
