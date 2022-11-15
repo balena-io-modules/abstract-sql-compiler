@@ -9,7 +9,7 @@ const {
 const _ = require('lodash');
 
 const postgresAgg = (field) =>
-	'coalesce(array_to_json(array_agg(' + field + ")), '[]')";
+	'COALESCE(ARRAY_TO_JSON(ARRAY_AGG(' + field + ")), '[]')";
 const mysqlAgg = (field) => "'[' || group_concat(" + field + ", ',') || ']'";
 const websqlAgg = mysqlAgg;
 
