@@ -1,4 +1,20 @@
 - commits:
+    - subject: Capitalize AggregateJSON SQL
+      hash: 73ac2303a5912408c76d21c861891bf3b506a788
+      body: |
+        Update AggregateJSON generated SQL to uppercase to match other
+        generated SQL.
+      footer:
+        Change-type: patch
+        change-type: patch
+        Signed-off-by: Josh Bowling <josh@monarci.com>
+        signed-off-by: Josh Bowling <josh@monarci.com>
+      author: Josh Bowling
+      nested: []
+  version: 7.20.3
+  title: ""
+  date: 2022-11-15T11:40:34.177Z
+- commits:
     - subject: "Dev: Disable package-lock.json generation"
       hash: 4d769c1a1d2f4f29ed85c6a31dd5b4dd6bced77d
       body: ""
