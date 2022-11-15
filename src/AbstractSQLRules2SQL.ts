@@ -808,7 +808,7 @@ const typeRules: Dictionary<MatchFn> = {
 		if (typeof field !== 'string') {
 			throw new SyntaxError('`AggregateJSON` field must be a string');
 		}
-		return `coalesce(array_to_json(array_agg("${table}".${escapeField(
+		return `COALESCE(ARRAY_TO_JSON(ARRAY_AGG("${table}".${escapeField(
 			field,
 		)})), '[]')`;
 	},
