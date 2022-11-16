@@ -1,4 +1,18 @@
 - commits:
+    - subject: "CI: Add more abstract-sql unit tests"
+      hash: 58f6210f55806ad15fd5e9c90079f208e64b781d
+      body: ""
+      footer:
+        Change-type: patch
+        change-type: patch
+        Signed-off-by: Josh Bowling <josh@monarci.com>
+        signed-off-by: Josh Bowling <josh@monarci.com>
+      author: Josh Bowling
+      nested: []
+  version: 7.20.6
+  title: ""
+  date: 2022-11-16T08:40:37.105Z
+- commits:
     - subject: Fix Right SQL generation
       hash: 8b6715c84ac7dab4c4248d19afa4b578c0d6c0ec
       body: ""
