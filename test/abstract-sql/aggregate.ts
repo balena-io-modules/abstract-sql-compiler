@@ -45,7 +45,7 @@ describe('Add', () => {
 	test(
 		['SelectQuery', ['Select', [['Add', ['Number', 5], ['Number', 3]]]]],
 		(result, sqlEquals) => {
-			it('should produce a valid addition statement', () => {
+			it('should produce a valid Add statement', () => {
 				sqlEquals(result.query, 'SELECT 5 + 3');
 			});
 		},
@@ -56,7 +56,7 @@ describe('Subtract', () => {
 	test(
 		['SelectQuery', ['Select', [['Subtract', ['Number', 5], ['Number', 3]]]]],
 		(result, sqlEquals) => {
-			it('should produce a valid subtraction statement', () => {
+			it('should produce a valid Subtract statement', () => {
 				sqlEquals(result.query, 'SELECT 5 - 3');
 			});
 		},
@@ -67,7 +67,7 @@ describe('Multiply', () => {
 	test(
 		['SelectQuery', ['Select', [['Multiply', ['Number', 5], ['Number', 3]]]]],
 		(result, sqlEquals) => {
-			it('should produce a valid multiplication statement', () => {
+			it('should produce a valid Multiply statement', () => {
 				sqlEquals(result.query, 'SELECT 5 * 3');
 			});
 		},
@@ -78,7 +78,7 @@ describe('Divide', () => {
 	test(
 		['SelectQuery', ['Select', [['Divide', ['Number', 10], ['Number', 5]]]]],
 		(result, sqlEquals) => {
-			it('should produce a valid division statement', () => {
+			it('should produce a valid Divide statement', () => {
 				sqlEquals(result.query, 'SELECT 10 / 5');
 			});
 		},
@@ -90,7 +90,7 @@ describe('Year', () => {
 		['SelectQuery', ['Select', [['Year', ['Date', '2022-10-10']]]]],
 		[['Date', '2022-10-10']],
 		(result, sqlEquals) => {
-			it('should produce a valid extract year statement', () => {
+			it('should produce a valid Year statement', () => {
 				sqlEquals(result.query, `SELECT EXTRACT('YEAR' FROM $1)`);
 			});
 		},
@@ -102,7 +102,7 @@ describe('Month', () => {
 		['SelectQuery', ['Select', [['Month', ['Date', '2022-10-10']]]]],
 		[['Date', '2022-10-10']],
 		(result, sqlEquals) => {
-			it('should produce a valid extract month statement', () => {
+			it('should produce a valid Month statement', () => {
 				sqlEquals(result.query, `SELECT EXTRACT('MONTH' FROM $1)`);
 			});
 		},
@@ -114,7 +114,7 @@ describe('Day', () => {
 		['SelectQuery', ['Select', [['Day', ['Date', '2022-10-10']]]]],
 		[['Date', '2022-10-10']],
 		(result, sqlEquals) => {
-			it('should produce a valid extract day statement', () => {
+			it('should produce a valid Day statement', () => {
 				sqlEquals(result.query, `SELECT EXTRACT('DAY' FROM $1)`);
 			});
 		},
@@ -129,7 +129,7 @@ describe('Hour', () => {
 		],
 		[['Date', '2022-10-10T10:10:10.000Z']],
 		(result, sqlEquals) => {
-			it('should produce a valid extract hour statement', () => {
+			it('should produce a valid Hour statement', () => {
 				sqlEquals(result.query, `SELECT EXTRACT('HOUR' FROM $1)`);
 			});
 		},
@@ -144,7 +144,7 @@ describe('Minute', () => {
 		],
 		[['Date', '2022-10-10T10:10:10.000Z']],
 		(result, sqlEquals) => {
-			it('should produce a valid extract minute statement', () => {
+			it('should produce a valid Minute statement', () => {
 				sqlEquals(result.query, `SELECT EXTRACT('MINUTE' FROM $1)`);
 			});
 		},
@@ -174,7 +174,7 @@ describe('Fractionalseconds', () => {
 		],
 		[['Date', '2022-10-10T10:10:10.000Z']],
 		(result, sqlEquals) => {
-			it('should produce a valid extract fractionalseconds statement', () => {
+			it('should produce a valid extract Fractionalseconds statement', () => {
 				sqlEquals(
 					result.query,
 					`SELECT EXTRACT('SECOND' FROM $1) - FLOOR(EXTRACT('SECOND' FROM $1))`,
@@ -204,7 +204,7 @@ describe('Totalseconds', () => {
 			],
 		],
 		(result, sqlEquals) => {
-			it('should produce a valid interval statement', () => {
+			it('should produce a valid Totalseconds statement', () => {
 				sqlEquals(
 					result.query,
 					`SELECT EXTRACT(EPOCH FROM INTERVAL '1 0:0:0.0')`,
@@ -224,7 +224,7 @@ describe('Concatenate', () => {
 			],
 		],
 		(result, sqlEquals) => {
-			it('should produce a valid concatenate statement', () => {
+			it('should produce a valid Concatenate statement', () => {
 				sqlEquals(result.query, `SELECT ('foo' || 'bar')`);
 			});
 		},
@@ -248,7 +248,7 @@ describe('ConcatenateWithSeparator', () => {
 			],
 		],
 		(result, sqlEquals) => {
-			it('should produce a valid concatenate with separator statement', () => {
+			it('should produce a valid ConcatenateWithSeparator statement', () => {
 				sqlEquals(result.query, `SELECT CONCAT_WS('|', 'foo', 'bar')`);
 			});
 		},
@@ -272,7 +272,7 @@ describe('Replace', () => {
 			],
 		],
 		(result, sqlEquals) => {
-			it('should produce a valid replace statement', () => {
+			it('should produce a valid Replace statement', () => {
 				sqlEquals(result.query, `SELECT REPLACE('foobar', 'bar', 'baz')`);
 			});
 		},
@@ -286,7 +286,7 @@ describe('CharacterLength', () => {
 			['Select', [['CharacterLength', ['EmbeddedText', 'foobar']]]],
 		],
 		(result, sqlEquals) => {
-			it('should produce a valid character length statement', () => {
+			it('should produce a valid CharacterLength statement', () => {
 				sqlEquals(result.query, `SELECT LENGTH('foobar')`);
 			});
 		},
@@ -303,7 +303,7 @@ describe('StrPos', () => {
 			],
 		],
 		(result, sqlEquals) => {
-			it('should produce a valid string position statement', () => {
+			it('should produce a valid StrPos statement', () => {
 				sqlEquals(result.query, `SELECT STRPOS('foobar', 'b')`);
 			});
 		},
@@ -331,7 +331,7 @@ describe('Duration', () => {
 			],
 		],
 		(result, sqlEquals) => {
-			it('should produce a valid interval statement', () => {
+			it('should produce a valid Duration statement', () => {
 				sqlEquals(result.query, `SELECT INTERVAL '1 2:3:4.0'`);
 			});
 		},
@@ -355,7 +355,7 @@ describe('Substring', () => {
 			],
 		],
 		(result, sqlEquals) => {
-			it('should produce a valid substring statement', () => {
+			it('should produce a valid Substring statement', () => {
 				sqlEquals(result.query, `SELECT SUBSTRING('foobar', 0, 5)`);
 			});
 		},
@@ -369,8 +369,119 @@ describe('Right', () => {
 			['Select', [['Right', ['EmbeddedText', 'foobar'], ['Number', 1]]]],
 		],
 		(result, sqlEquals) => {
-			it('should produce a valid right statement', () => {
+			it('should produce a valid Right statement', () => {
 				sqlEquals(result.query, `SELECT RIGHT('foobar', 1)`);
+			});
+		},
+	);
+});
+
+describe('Lower', () => {
+	test(
+		['SelectQuery', ['Select', [['Lower', ['EmbeddedText', 'FOOBAR']]]]],
+		(result, sqlEquals) => {
+			it('should produce a valid Lower statement', () => {
+				sqlEquals(result.query, `SELECT LOWER('FOOBAR')`);
+			});
+		},
+	);
+});
+
+describe('Upper', () => {
+	test(
+		['SelectQuery', ['Select', [['Upper', ['EmbeddedText', 'foobar']]]]],
+		(result, sqlEquals) => {
+			it('should produce a valid Upper statement', () => {
+				sqlEquals(result.query, `SELECT UPPER('foobar')`);
+			});
+		},
+	);
+});
+
+describe('Trim', () => {
+	test(
+		['SelectQuery', ['Select', [['Trim', ['EmbeddedText', ' foobar ']]]]],
+		(result, sqlEquals) => {
+			it('should produce a valid Trim statement', () => {
+				sqlEquals(result.query, `SELECT TRIM(' foobar ')`);
+			});
+		},
+	);
+});
+
+describe('Round', () => {
+	test(
+		['SelectQuery', ['Select', [['Round', ['Number', 10.4]]]]],
+		(result, sqlEquals) => {
+			it('should produce a valid Round statement', () => {
+				sqlEquals(result.query, `SELECT ROUND(10.4)`);
+			});
+		},
+	);
+});
+
+describe('Floor', () => {
+	test(
+		['SelectQuery', ['Select', [['Floor', ['Number', 10.4]]]]],
+		(result, sqlEquals) => {
+			it('should produce a valid Floor statement', () => {
+				sqlEquals(result.query, `SELECT FLOOR(10.4)`);
+			});
+		},
+	);
+});
+
+describe('Ceiling', () => {
+	test(
+		['SelectQuery', ['Select', [['Ceiling', ['Number', 10.4]]]]],
+		(result, sqlEquals) => {
+			it('should produce a valid Ceiling statement', () => {
+				sqlEquals(result.query, `SELECT CEILING(10.4)`);
+			});
+		},
+	);
+});
+
+describe('ToDate', () => {
+	test(
+		['SelectQuery', ['Select', [['ToDate', ['Date', '2022-10-10']]]]],
+		[['Date', '2022-10-10']],
+		(result, sqlEquals) => {
+			it('should produce a valid ToDate statement', () => {
+				sqlEquals(result.query, `SELECT DATE($1)`);
+			});
+		},
+	);
+});
+
+describe('DateTrunc', () => {
+	test(
+		[
+			'SelectQuery',
+			[
+				'Select',
+				[['DateTrunc', ['EmbeddedText', 'year'], ['Date', '2022-10-10']]],
+			],
+		],
+		[['Date', '2022-10-10']],
+		(result, sqlEquals) => {
+			it('should produce a valid DateTrunc statement', () => {
+				sqlEquals(result.query, `SELECT DATE_TRUNC('year', $1)`);
+			});
+		},
+	);
+});
+
+describe('ToTime', () => {
+	test(
+		[
+			'SelectQuery',
+			['Select', [['ToTime', ['Date', '2022-10-10T10:10:10.000Z']]]],
+		],
+		[['Date', '2022-10-10T10:10:10.000Z']],
+		(result, sqlEquals) => {
+			it('should produce a valid ToTime statement', () => {
+				sqlEquals(result.query, `SELECT CAST($1 AS TIME)`);
 			});
 		},
 	);
