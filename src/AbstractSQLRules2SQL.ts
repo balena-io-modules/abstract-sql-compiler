@@ -924,7 +924,7 @@ const typeRules: Dictionary<MatchFn> = {
 	Right: (args, indent) => {
 		checkArgs('Right', args, 2);
 		const str = TextValue(getAbstractSqlQuery(args, 0), indent);
-		const n = NumericValue(getAbstractSqlQuery(args, 0), indent);
+		const n = NumericValue(getAbstractSqlQuery(args, 1), indent);
 		if (engine === Engines.websql) {
 			return `SUBSTRING(${str}, -${n})`;
 		} else {

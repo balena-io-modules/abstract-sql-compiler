@@ -361,3 +361,17 @@ describe('Substring', () => {
 		},
 	);
 });
+
+describe('Right', () => {
+	test(
+		[
+			'SelectQuery',
+			['Select', [['Right', ['EmbeddedText', 'foobar'], ['Number', 1]]]],
+		],
+		(result, sqlEquals) => {
+			it('should produce a valid right statement', () => {
+				sqlEquals(result.query, `SELECT RIGHT('foobar', 1)`);
+			});
+		},
+	);
+});
