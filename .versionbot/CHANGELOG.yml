@@ -1,4 +1,18 @@
 - commits:
+    - subject: Update @balena/sbvr-types from 3.4.7 to 3.4.8
+      hash: 78094fe1bc74ed4027da4c817eeb9baf6301e1ed
+      body: ""
+      footer:
+        Change-type: patch
+        change-type: patch
+        Signed-off-by: Josh Bowling <josh@monarci.com>
+        signed-off-by: Josh Bowling <josh@monarci.com>
+      author: Josh Bowling
+      nested: []
+  version: 7.20.17
+  title: ""
+  date: 2022-11-17T06:58:43.581Z
+- commits:
     - subject: Update @balena/sbvr-parser from 1.4.1 to 1.4.2
       hash: 9a5e2bd062f61a70fa2ca72cd92850bbf6d735ff
       body: ""
