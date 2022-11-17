@@ -1,4 +1,18 @@
 - commits:
+    - subject: Update mocha from v9 to v10
+      hash: 76ca30fcf221646f83860cb0ad8b27962c82c7e8
+      body: ""
+      footer:
+        Change-type: patch
+        change-type: patch
+        Signed-off-by: Josh Bowling <josh@monarci.com>
+        signed-off-by: Josh Bowling <josh@monarci.com>
+      author: Josh Bowling
+      nested: []
+  version: 7.20.10
+  title: ""
+  date: 2022-11-17T02:13:27.241Z
+- commits:
     - subject: Update ts-node from 10.7.0 to 10.9.1
       hash: 455459905d8998b38c409e9898f4b57a89909a8a
       body: ""
