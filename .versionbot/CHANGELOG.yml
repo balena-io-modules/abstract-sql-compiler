@@ -1,4 +1,19 @@
 - commits:
+    - subject: Update dependency husky to 8.0.2
+      hash: d8f66bc3b81070cfca4c9fb0aec03d69ad2507b4
+      body: |
+        Update husky to 8.0.2
+
+        Update husky from 4.3.8 to 8.0.2
+      footer:
+        Change-type: patch
+        change-type: patch
+      author: Renovate Bot
+      nested: []
+  version: 7.20.21
+  title: ""
+  date: 2022-11-17T17:05:29.025Z
+- commits:
     - subject: "Dev: Move types to dev dependencies"
       hash: 1a7bc9dd069b8459e3bc3ddef9287bad13722232
       body: ""
