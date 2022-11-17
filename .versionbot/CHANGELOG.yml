@@ -1,4 +1,18 @@
 - commits:
+    - subject: Update @balena/sbvr-parser from 1.4.1 to 1.4.2
+      hash: 9a5e2bd062f61a70fa2ca72cd92850bbf6d735ff
+      body: ""
+      footer:
+        Change-type: patch
+        change-type: patch
+        Signed-off-by: Josh Bowling <josh@monarci.com>
+        signed-off-by: Josh Bowling <josh@monarci.com>
+      author: Josh Bowling
+      nested: []
+  version: 7.20.16
+  title: ""
+  date: 2022-11-17T04:55:32.540Z
+- commits:
     - subject: Update @balena/odata-parser from 2.2.9 to 2.4.2
       hash: 6e65367504a68f8d8c44585f5e73de6b3731a47b
       body: ""
