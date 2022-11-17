@@ -1,4 +1,18 @@
 - commits:
+    - subject: Update @balena/lf-to-abstract-sql from 4.5.1 to 4.5.2
+      hash: 86755bf75c1da3860a92f0022b28f98b07c0dfb9
+      body: ""
+      footer:
+        Change-type: patch
+        change-type: patch
+        Signed-off-by: Josh Bowling <josh@monarci.com>
+        signed-off-by: Josh Bowling <josh@monarci.com>
+      author: Josh Bowling
+      nested: []
+  version: 7.20.14
+  title: ""
+  date: 2022-11-17T04:40:35.353Z
+- commits:
     - subject: Update @balena/lint from 6.2.0 to 6.2.1
       hash: 2a18e065acb772f61280800c90fc8ead91893a26
       body: ""
