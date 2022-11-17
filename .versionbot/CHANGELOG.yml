@@ -1,4 +1,18 @@
 - commits:
+    - subject: Update @balena/lint from 6.2.0 to 6.2.1
+      hash: 2a18e065acb772f61280800c90fc8ead91893a26
+      body: ""
+      footer:
+        Change-type: patch
+        change-type: patch
+        Signed-off-by: Josh Bowling <josh@monarci.com>
+        signed-off-by: Josh Bowling <josh@monarci.com>
+      author: Josh Bowling
+      nested: []
+  version: 7.20.13
+  title: ""
+  date: 2022-11-17T04:28:32.011Z
+- commits:
     - subject: Update lint-staged from 12.4.1 to 13.0.3
       hash: 855361063154db3629cbe7e6fdab9e56950a7d46
       body: ""
