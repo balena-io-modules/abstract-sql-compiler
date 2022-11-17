@@ -1,4 +1,18 @@
 - commits:
+    - subject: Update @balena/odata-parser from 2.2.9 to 2.4.2
+      hash: 6e65367504a68f8d8c44585f5e73de6b3731a47b
+      body: ""
+      footer:
+        Change-type: patch
+        change-type: patch
+        Signed-off-by: Josh Bowling <josh@monarci.com>
+        signed-off-by: Josh Bowling <josh@monarci.com>
+      author: Josh Bowling
+      nested: []
+  version: 7.20.15
+  title: ""
+  date: 2022-11-17T04:48:02.420Z
+- commits:
     - subject: Update @balena/lf-to-abstract-sql from 4.5.1 to 4.5.2
       hash: 86755bf75c1da3860a92f0022b28f98b07c0dfb9
       body: ""
