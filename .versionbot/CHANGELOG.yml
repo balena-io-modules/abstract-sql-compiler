@@ -1,4 +1,18 @@
 - commits:
+    - subject: Update @types/lodash from 4.14.182 to 4.14.189
+      hash: 2d0b384a4ed5e8f81b1636469e3d09b38e847383
+      body: ""
+      footer:
+        Change-type: patch
+        change-type: patch
+        Signed-off-by: Josh Bowling <josh@monarci.com>
+        signed-off-by: Josh Bowling <josh@monarci.com>
+      author: Josh Bowling
+      nested: []
+  version: 7.20.18
+  title: ""
+  date: 2022-11-17T07:06:37.917Z
+- commits:
     - subject: Update @balena/sbvr-types from 3.4.7 to 3.4.8
       hash: 78094fe1bc74ed4027da4c817eeb9baf6301e1ed
       body: ""
