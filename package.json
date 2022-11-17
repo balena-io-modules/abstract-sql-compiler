@@ -18,7 +18,7 @@
   "dependencies": {
     "@balena/sbvr-types": "^3.4.8",
     "@types/lodash": "^4.14.189",
-    "@types/node": "^10.17.60",
+    "@types/node": "^18.11.9",
     "lodash": "^4.17.21"
   },
   "devDependencies": {
