@@ -1,4 +1,18 @@
 - commits:
+    - subject: Update lint-staged from 12.4.1 to 13.0.3
+      hash: 855361063154db3629cbe7e6fdab9e56950a7d46
+      body: ""
+      footer:
+        Change-type: patch
+        change-type: patch
+        Signed-off-by: Josh Bowling <josh@monarci.com>
+        signed-off-by: Josh Bowling <josh@monarci.com>
+      author: Josh Bowling
+      nested: []
+  version: 7.20.12
+  title: ""
+  date: 2022-11-17T04:18:59.433Z
+- commits:
     - subject: Update chai from 4.3.6 to 4.3.7
       hash: 2b4f9632e4f11045a6068f351a7352d3cf5a7ede
       body: ""
