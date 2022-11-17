@@ -1,4 +1,18 @@
 - commits:
+    - subject: "Dev: Move types to dev dependencies"
+      hash: 1a7bc9dd069b8459e3bc3ddef9287bad13722232
+      body: ""
+      footer:
+        Change-type: patch
+        change-type: patch
+        Signed-off-by: Josh Bowling <josh@monarci.com>
+        signed-off-by: Josh Bowling <josh@monarci.com>
+      author: Josh Bowling
+      nested: []
+  version: 7.20.20
+  title: ""
+  date: 2022-11-17T07:22:29.918Z
+- commits:
     - subject: Update @types/node from 10.17.60 to 18.11.9
       hash: f8a81cc5b6f4228eefe9ad9b985065953c2a34ce
       body: ""
