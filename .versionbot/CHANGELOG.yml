@@ -1,4 +1,18 @@
 - commits:
+    - subject: Update ts-node from 10.7.0 to 10.9.1
+      hash: 455459905d8998b38c409e9898f4b57a89909a8a
+      body: ""
+      footer:
+        Change-type: patch
+        change-type: patch
+        Signed-off-by: Josh Bowling <josh@monarci.com>
+        signed-off-by: Josh Bowling <josh@monarci.com>
+      author: Josh Bowling
+      nested: []
+  version: 7.20.9
+  title: ""
+  date: 2022-11-17T01:59:31.337Z
+- commits:
     - subject: Update typescript from 4.6.4 to 4.9.3
       hash: 21284107b2e539ec0e99a1ada2eb1fe7a32ca21f
       body: ""
