@@ -17,8 +17,6 @@
   "author": "",
   "dependencies": {
     "@balena/sbvr-types": "^3.4.8",
-    "@types/lodash": "^4.14.189",
-    "@types/node": "^18.11.9",
     "lodash": "^4.17.21"
   },
   "devDependencies": {
@@ -29,7 +27,9 @@
     "@resin/odata-to-abstract-sql": "^3.3.0",
     "@types/chai": "^4.3.4",
     "@types/common-tags": "^1.8.1",
+    "@types/lodash": "^4.14.189",
     "@types/mocha": "^10.0.0",
+    "@types/node": "^18.11.9",
     "chai": "^4.3.7",
     "common-tags": "^1.8.2",
     "husky": "^4.3.8",
