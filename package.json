@@ -22,7 +22,7 @@
     "lodash": "^4.17.21"
   },
   "devDependencies": {
-    "@balena/lf-to-abstract-sql": "^4.5.1",
+    "@balena/lf-to-abstract-sql": "^4.5.2",
     "@balena/lint": "^6.2.1",
     "@balena/odata-parser": "^2.2.9",
     "@balena/sbvr-parser": "^1.4.1",
