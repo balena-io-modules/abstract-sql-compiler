@@ -1,4 +1,18 @@
 - commits:
+    - subject: Update chai from 4.3.6 to 4.3.7
+      hash: 2b4f9632e4f11045a6068f351a7352d3cf5a7ede
+      body: ""
+      footer:
+        Change-type: patch
+        change-type: patch
+        Signed-off-by: Josh Bowling <josh@monarci.com>
+        signed-off-by: Josh Bowling <josh@monarci.com>
+      author: Josh Bowling
+      nested: []
+  version: 7.20.11
+  title: ""
+  date: 2022-11-17T02:27:29.935Z
+- commits:
     - subject: Update mocha from v9 to v10
       hash: 76ca30fcf221646f83860cb0ad8b27962c82c7e8
       body: ""
