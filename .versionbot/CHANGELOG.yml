@@ -1,4 +1,18 @@
 - commits:
+    - subject: Add ToJSON/ExtractJSONPathAsText functions
+      hash: bcac6051f3778edceba984c2af556298d6f4a872
+      body: ""
+      footer:
+        Change-type: minor
+        change-type: minor
+        Signed-off-by: Josh Bowling <josh@monarci.com>
+        signed-off-by: Josh Bowling <josh@monarci.com>
+      author: Josh Bowling
+      nested: []
+  version: 7.21.0
+  title: ""
+  date: 2022-11-18T14:11:36.432Z
+- commits:
     - subject: "Dev: Update pre-commit hook"
       hash: 8edebbe9d4b6d256b6898e3b16d7e8dca5e80c37
       body: ""
