@@ -103,15 +103,18 @@ export type CoalesceNode = [
 	UnknownTypeNodes,
 	...UnknownTypeNodes[],
 ];
+export type ToJSONNode = ['ToJSON', AnyTypeNodes];
 export type UnknownTypeNodes =
 	| FieldNode
 	| ReferencedFieldNode
 	| BindNode
 	| CastNode
 	| CoalesceNode
+	| ToJSONNode
 	| UnknownNode;
 
 export type TextNode = ['Text', string];
+export type JSONNode = ['JSON', string];
 export type ConcatenateNode = ['Concatenate', ...TextTypeNodes[]];
 export type ConcatenateWithSeparatorNode = [
 	'ConcatenateWithSeparator',
@@ -125,11 +128,19 @@ export type ReplaceNode = [
 	TextTypeNodes,
 	TextTypeNodes,
 ];
+export type ExtractJSONPathAsTextNode = [
+	'ExtractJSONPathAsText',
+	JSONNode,
+	TextArrayTypeNodes,
+];
+export type TextArrayTypeNodes = TextArrayNode | UnknownNode;
+export type TextArrayNode = ['TextArray', ...TextNode[]];
 export type TextTypeNodes =
 	| ConcatenateNode
 	| ConcatenateWithSeparatorNode
 	| LikeNode
 	| ReplaceNode
+	| ExtractJSONPathAsTextNode
 	| UnknownTypeNodes;
 
 export type SelectQueryNode = [
@@ -213,12 +224,12 @@ export type ValuesNodeTypes =
 	| NullNode
 	| BindNode
 	| TextNode
+	| JSONNode
 	| NumberNode;
 
 export type AliasNode<T> = ['Alias', T, string];
 
-export type AbstractSqlType =
-	| string
+export type AnyTypeNodes =
 	| NullNode
 	| DateNode
 	| BooleanTypeNodes
@@ -241,6 +252,9 @@ export type AbstractSqlType =
 	| GroupByNode
 	| HavingNode
 	| UnknownNode;
+
+export type AbstractSqlType = string | AnyTypeNodes;
+
 export type UnknownNode = AbstractSqlQuery;
 export interface AbstractSqlQuery extends Array<AbstractSqlType> {
 	0: string;
