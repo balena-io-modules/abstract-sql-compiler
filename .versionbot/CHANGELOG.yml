@@ -1,4 +1,18 @@
 - commits:
+    - subject: "Dev: Migrate husky setup for v8"
+      hash: 86255a81aba99a7fee2efb23d68a473e0382525d
+      body: ""
+      footer:
+        Change-type: patch
+        change-type: patch
+        Signed-off-by: Josh Bowling <josh@monarci.com>
+        signed-off-by: Josh Bowling <josh@monarci.com>
+      author: Josh Bowling
+      nested: []
+  version: 7.20.22
+  title: ""
+  date: 2022-11-18T01:01:29.917Z
+- commits:
     - subject: Update dependency husky to 8.0.2
       hash: d8f66bc3b81070cfca4c9fb0aec03d69ad2507b4
       body: |
