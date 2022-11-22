@@ -4,7 +4,9 @@ import {
 	AbstractSqlType,
 	EngineInstance,
 	FieldsNode,
+	isAliasNode,
 	isFromNode,
+	isTableNode,
 } from './AbstractSQLCompiler';
 import { AbstractSQLOptimiser } from './AbstractSQLOptimiser';
 
@@ -236,9 +238,13 @@ const checkQuery = (query: AbstractSqlQuery): ModifiedFields | undefined => {
 		return;
 	}
 
-	const table = froms[0][1];
+	let table = froms[0][1];
+	if (isAliasNode(table)) {
+		table = table[1];
+	}
+
 	let tableName: string;
-	if (table[0] === 'Table') {
+	if (isTableNode(table)) {
 		tableName = table[1];
 	} else if (typeof table === 'string') {
 		// Deprecated: Remove this when we drop implicit tables
