@@ -1,4 +1,16 @@
 - commits:
+    - subject: Add support for getting the modified fields of an aliased query
+      hash: 3dacd6339349596d4e365c809971a86030bae4dc
+      body: ""
+      footer:
+        Change-type: patch
+        change-type: patch
+      author: Pagan Gazzard
+      nested: []
+  version: 7.21.1
+  title: ""
+  date: 2022-11-22T20:29:32.720Z
+- commits:
     - subject: Add ToJSON/ExtractJSONPathAsText functions
       hash: bcac6051f3778edceba984c2af556298d6f4a872
       body: ""
