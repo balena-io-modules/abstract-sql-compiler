@@ -89,12 +89,54 @@ export type NumberTypeNodes =
 	| CountNode
 	| AverageNode
 	| SumNode
+	| SubtractDateDateNode
 	| UnknownTypeNodes;
 
 export type FieldNode = ['Field', string];
 export type ReferencedFieldNode = ['ReferencedField', string, string];
 export type DateTruncNode = ['DateTrunc', TextTypeNodes, DateTypeNodes];
-export type DateTypeNodes = DateNode | DateTruncNode;
+export type DateTypeNodes =
+	| DateNode
+	| DateTruncNode
+	| SubtractDateNumberNode
+	| SubtractDateDurationNode
+	| AddDateTypeNodes;
+
+// Date operations return different types dependent on the operand types
+// here we explicitly type the different nodes by the input types
+// timestamp, datetime, date are use synonymous here and all are simplified under date node
+// returns integer
+export type SubtractDateDateNode = [
+	'SubtractDateDate',
+	DateTypeNodes,
+	DateTypeNodes,
+];
+// returns date
+export type SubtractDateNumberNode = [
+	'SubtractDateNumber',
+	DateTypeNodes,
+	NumberTypeNodes,
+];
+// returns date (timestamp)
+export type SubtractDateDurationNode = [
+	'SubtractDateDuration',
+	DateTypeNodes,
+	DurationNode,
+];
+export type AddDateTypeNodes = AddDateNumberNode | AddDateDurationNode;
+// returns date
+export type AddDateNumberNode = [
+	'AddDateNumber',
+	DateTypeNodes,
+	NumberTypeNodes,
+];
+// return date
+export type AddDateDurationNode = [
+	'AddDateDuration',
+	DateTypeNodes,
+	DurationNode,
+];
+
 export type BindNode = ['Bind', number | string] | ['Bind', string, string];
 export type CastNode = ['Cast', AbstractSqlType, string];
 export type CoalesceNode = [

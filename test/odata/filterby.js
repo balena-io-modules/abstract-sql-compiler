@@ -1370,3 +1370,63 @@ AND ${sql}`,
 		});
 	});
 });
+
+run(function () {
+	const odata = "now() sub created_at lt duration'P1D'";
+	test(`/pilot?$filter=${odata}`, 'GET', [], (result, sqlEquals) => {
+		it('should select from pilot where "' + odata + '"', () => {
+			sqlEquals(
+				result.query,
+				`\
+SELECT ${pilotFieldsStr}
+FROM "pilot"
+WHERE CURRENT_TIMESTAMP - "pilot"."created at" < INTERVAL '1 0:0:0.0'`,
+			);
+		});
+	});
+});
+
+run(function () {
+	const odata = 'now() add now()';
+	test(`/pilot?$filter=${odata}`, 'GET', [], (result, sqlEquals) => {
+		it(
+			'should fail to add current_timestamp to current_timestamp where "' +
+				odata +
+				'"',
+			() => {
+				expect(result).to.be.empty;
+				expect(sqlEquals).to.be.undefined;
+			},
+		);
+	});
+});
+
+run(function () {
+	const odata = "created_at add duration'P1D' gt now()";
+	test(`/pilot?$filter=${odata}`, 'GET', [], (result, sqlEquals) => {
+		it('should select from pilot where "' + odata + '"', () => {
+			sqlEquals(
+				result.query,
+				`\
+SELECT ${pilotFieldsStr}
+FROM "pilot"
+WHERE "pilot"."created at" + INTERVAL '1 0:0:0.0' > CURRENT_TIMESTAMP`,
+			);
+		});
+	});
+});
+
+run(function () {
+	const odata = 'totalseconds(created_at) gt 1';
+	test(`/pilot?$filter=${odata}`, 'GET', [['Bind', 0]], (result, sqlEquals) => {
+		it('should select from pilot where "' + odata + '"', () => {
+			sqlEquals(
+				result.query,
+				`\
+SELECT ${pilotFieldsStr}
+FROM "pilot"
+WHERE EXTRACT(EPOCH FROM "pilot"."created at") > $1`,
+			);
+		});
+	});
+});

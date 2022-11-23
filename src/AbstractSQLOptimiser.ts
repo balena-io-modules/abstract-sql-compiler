@@ -385,6 +385,17 @@ const JoinMatch =
 		}
 	};
 
+const AddDateMatcher = tryMatches(
+	matchArgs('AddDateDuration', DateValue, DurationValue),
+	matchArgs('AddDateNumber', DateValue, NumericValue),
+);
+
+const SubtractDateMatcher = tryMatches(
+	matchArgs('SubtractDateDate', DateValue, DateValue),
+	matchArgs('SubtractDateDuration', DateValue, DurationValue),
+	matchArgs('SubtractDateNumber', DateValue, NumericValue),
+);
+
 const typeRules: Dictionary<MatchFn> = {
 	UnionQuery: (args) => {
 		checkMinArgs('UnionQuery', args, 2);
@@ -632,8 +643,17 @@ const typeRules: Dictionary<MatchFn> = {
 		}),
 		matchArgs('IsDistinctFrom', AnyValue, AnyValue),
 	),
-	Add: MathOp('Add'),
-	Subtract: MathOp('Subtract'),
+	Add: tryMatches(MathOp('Add'), Helper(AddDateMatcher)),
+	Subtract: tryMatches(MathOp('Subtract'), Helper(SubtractDateMatcher)),
+	SubtractDateDate: matchArgs('SubtractDateDate', DateValue, DateValue),
+	SubtractDateNumber: matchArgs('SubtractDateNumber', DateValue, NumericValue),
+	SubtractDateDuration: matchArgs(
+		'SubtractDateDuration',
+		DateValue,
+		DurationValue,
+	),
+	AddDateDuration: matchArgs('AddDateDuration', DateValue, DurationValue),
+	AddDateNumber: matchArgs('AddDateNumber', DateValue, NumericValue),
 	Multiply: MathOp('Multiply'),
 	Divide: MathOp('Divide'),
 	Year: ExtractNumericDatePart('Year'),

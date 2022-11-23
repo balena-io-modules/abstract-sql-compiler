@@ -145,7 +145,8 @@ export const isNumericValue = (
 		type === 'Ceiling' ||
 		type === 'Count' ||
 		type === 'Average' ||
-		type === 'Sum'
+		type === 'Sum' ||
+		type === 'SubtractDateDate'
 	);
 };
 const NumericValue = MatchValue(isNumericValue);
@@ -183,7 +184,11 @@ export const isDateValue = (
 		type === 'ToTime' ||
 		type === 'CurrentTimestamp' ||
 		type === 'CurrentDate' ||
-		type === 'DateTrunc'
+		type === 'DateTrunc' ||
+		type === 'AddDateNumber' ||
+		type === 'AddDateDuration' ||
+		type === 'SubtractDateDuration' ||
+		type === 'SubtractDateNumber'
 	);
 };
 const DateValue = MatchValue(isDateValue);
@@ -440,6 +445,75 @@ export const checkArgs = (matchName: string, args: any[], num: number) => {
 export const checkMinArgs = (matchName: string, args: any[], num: number) => {
 	if (args.length < num) {
 		throw new SyntaxError(`"${matchName}" requires at least ${num} arg(s)`);
+	}
+};
+
+const AddDateNumber: MatchFn = (args, indent) => {
+	checkArgs('AddDateNumber', args, 2);
+	const a = DateValue(getAbstractSqlQuery(args, 0), indent);
+	const b = NumericValue(getAbstractSqlQuery(args, 1), indent);
+
+	if (engine === Engines.postgres) {
+		return `${a} + ${b}`;
+	} else if (engine === Engines.mysql) {
+		return `ADDDATE(${a}, ${b})`;
+	} else {
+		throw new SyntaxError('AddDateNumber not supported on: ' + engine);
+	}
+};
+
+const AddDateDuration: MatchFn = (args, indent) => {
+	checkArgs('AddDateDuration', args, 2);
+	const a = DateValue(getAbstractSqlQuery(args, 0), indent);
+	const b = DurationValue(getAbstractSqlQuery(args, 1), indent);
+
+	if (engine === Engines.postgres) {
+		return `${a} + ${b}`;
+	} else if (engine === Engines.mysql) {
+		return `DATE_ADD(${a}, ${b})`;
+	} else {
+		throw new SyntaxError('AddDateDuration not supported on: ' + engine);
+	}
+};
+
+const SubtractDateDuration: MatchFn = (args, indent) => {
+	checkArgs('SubtractDateDuration', args, 2);
+	const a = DateValue(getAbstractSqlQuery(args, 0), indent);
+	const b = DurationValue(getAbstractSqlQuery(args, 1), indent);
+
+	if (engine === Engines.postgres) {
+		return `${a} - ${b}`;
+	} else if (engine === Engines.mysql) {
+		return `DATE_SUB(${a}, ${b})`;
+	} else {
+		throw new SyntaxError('SubtractDateDuration not supported on: ' + engine);
+	}
+};
+
+const SubtractDateNumber: MatchFn = (args, indent) => {
+	checkArgs('SubtractDateNumber', args, 2);
+	const a = DateValue(getAbstractSqlQuery(args, 0), indent);
+	const b = NumericValue(getAbstractSqlQuery(args, 1), indent);
+
+	if (engine === Engines.postgres) {
+		return `${a} - ${b}`;
+	} else if (engine === Engines.mysql) {
+		return `SUBDATE(${a}, ${b})`;
+	} else {
+		throw new SyntaxError('SubtractDateNumber not supported on: ' + engine);
+	}
+};
+
+const SubtractDateDate: MatchFn = (args, indent) => {
+	checkArgs('SubtractDateDate', args, 2);
+	const a = DateValue(getAbstractSqlQuery(args, 0), indent);
+	const b = DateValue(getAbstractSqlQuery(args, 1), indent);
+	if (engine === Engines.postgres) {
+		return `${a} - ${b}`;
+	} else if (engine === Engines.mysql) {
+		return `DATEDIFF(${a}, ${b})`;
+	} else {
+		throw new SyntaxError('SubtractDateDate not supported on: ' + engine);
 	}
 };
 
@@ -853,6 +927,11 @@ const typeRules: Dictionary<MatchFn> = {
 	Subtract: MathOp('Subtract'),
 	Multiply: MathOp('Multiply'),
 	Divide: MathOp('Divide'),
+	AddDateNumber, // returns date
+	AddDateDuration, // returns date
+	SubtractDateDate, // returns integer
+	SubtractDateNumber, // returns date
+	SubtractDateDuration, // returns date
 	Year: ExtractNumericDatePart('Year'),
 	Month: ExtractNumericDatePart('Month'),
 	Day: ExtractNumericDatePart('Day'),
