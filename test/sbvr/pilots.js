@@ -159,6 +159,7 @@ SELECT (
 		SELECT 1
 		FROM "pilot-can fly-plane" AS "pilot.0-can fly-plane.1"
 		WHERE "pilot.0-can fly-plane.1"."pilot" = "pilot.0"."id"
+		AND COALESCE("pilot.0-can fly-plane.1"."id" = ANY($1), 1)
 	)
 ) = 0 AS "result";`,
 	);
@@ -329,6 +330,7 @@ SELECT (
 		SELECT 1
 		FROM "pilot-can fly-plane" AS "pilot.1-can fly-plane.0"
 		WHERE "pilot.1-can fly-plane.0"."can fly-plane" = "plane.0"."id"
+		AND COALESCE("pilot.1-can fly-plane.0"."id" = ANY($1), 1)
 	)
 ) = 0 AS "result";`,
 	);
