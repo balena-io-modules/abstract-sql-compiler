@@ -21,6 +21,7 @@ import {
 	ReferencedFields,
 	RuleReferencedFields,
 	ModifiedFields,
+	addAffectedIdsBinds,
 } from './referenced-fields';
 
 export type { ReferencedFields, RuleReferencedFields, ModifiedFields };
@@ -146,6 +147,7 @@ export type CoalesceNode = [
 	...UnknownTypeNodes[],
 ];
 export type ToJSONNode = ['ToJSON', AnyTypeNodes];
+export type AnyNode = ['Any', UnknownTypeNodes];
 export type UnknownTypeNodes =
 	| FieldNode
 	| ReferencedFieldNode
@@ -153,6 +155,7 @@ export type UnknownTypeNodes =
 	| CastNode
 	| CoalesceNode
 	| ToJSONNode
+	| AnyNode
 	| UnknownNode;
 
 export type TextNode = ['Text', string];
@@ -185,24 +188,21 @@ export type TextTypeNodes =
 	| ExtractJSONPathAsTextNode
 	| UnknownTypeNodes;
 
-export type SelectQueryNode = [
-	'SelectQuery',
-	...Array<
-		| SelectNode
-		| FromNode
-		| InnerJoinNode
-		| LeftJoinNode
-		| RightJoinNode
-		| FullJoinNode
-		| CrossJoinNode
-		| WhereNode
-		| GroupByNode
-		| HavingNode
-		| OrderByNode
-		| LimitNode
-		| OffsetNode
-	>,
-];
+export type SelectQueryStatementNode =
+	| SelectNode
+	| FromNode
+	| InnerJoinNode
+	| LeftJoinNode
+	| RightJoinNode
+	| FullJoinNode
+	| CrossJoinNode
+	| WhereNode
+	| GroupByNode
+	| HavingNode
+	| OrderByNode
+	| LimitNode
+	| OffsetNode;
+export type SelectQueryNode = ['SelectQuery', ...SelectQueryStatementNode[]];
 export type UnionQueryNode = [
 	'UnionQuery',
 	// tslint:disable-next-line:array-type typescript fails on a circular reference when `Array<T>` form
@@ -236,7 +236,7 @@ export type FromTypeNodes =
 	| FromTypeNode[keyof FromTypeNode]
 	| AliasNode<FromTypeNode[keyof FromTypeNode]>;
 
-type AliasableFromTypeNodes = FromTypeNodes | AliasNode<FromTypeNodes>;
+export type AliasableFromTypeNodes = FromTypeNodes | AliasNode<FromTypeNodes>;
 
 export type SelectNode = ['Select', AbstractSqlType[]];
 export type FromNode = ['From', AliasableFromTypeNodes];
@@ -867,6 +867,7 @@ CREATE TABLE ${ifNotExistsStr}"${table.name}" (
 			if (typeof ruleSE !== 'string') {
 				throw new Error('Invalid structured English');
 			}
+			addAffectedIdsBinds(ruleBody);
 			const { query: ruleSQL, bindings: ruleBindings } = compileRule(
 				ruleBody,
 				engine,

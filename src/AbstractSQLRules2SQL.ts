@@ -78,6 +78,7 @@ const UnknownValue: MetaMatchFn = (args, indent) => {
 		case 'Cast':
 		case 'Coalesce':
 		case 'ToJSON':
+		case 'Any':
 		case 'TextArray':
 			return typeRules[type](rest, indent);
 		case 'SelectQuery':
@@ -1115,6 +1116,14 @@ const typeRules: Dictionary<MatchFn> = {
 		}
 		const value = AnyValue(getAbstractSqlQuery(args, 0), indent);
 		return `TO_JSON(${value})`;
+	},
+	Any: (args, indent) => {
+		checkMinArgs('Any', args, 1);
+		if (engine !== Engines.postgres) {
+			throw new SyntaxError('Any not supported on: ' + engine);
+		}
+		const value = AnyValue(getAbstractSqlQuery(args, 0), indent);
+		return `ANY(${value})`;
 	},
 	Coalesce: (args, indent) => {
 		checkMinArgs('Coalesce', args, 2);

@@ -171,6 +171,7 @@ const UnknownValue: MetaMatchFn = (args) => {
 		case 'Coalesce':
 		case 'ExtractJSONPathAsText':
 		case 'ToJSON':
+		case 'Any':
 			return typeRules[type](rest);
 		case 'SelectQuery':
 		case 'UnionQuery':
@@ -742,6 +743,7 @@ const typeRules: Dictionary<MatchFn> = {
 		return ['TextArray', ...args.map(TextValue)];
 	},
 	ToJSON: matchArgs('ToJSON', AnyValue),
+	Any: matchArgs('Any', AnyValue),
 	Coalesce: (args) => {
 		checkMinArgs('Coalesce', args, 2);
 		return ['Coalesce', ...args.map(AnyValue)];

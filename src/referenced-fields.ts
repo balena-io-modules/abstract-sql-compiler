@@ -2,16 +2,34 @@ import * as _ from 'lodash';
 import {
 	AbstractSqlQuery,
 	AbstractSqlType,
+	AliasableFromTypeNodes,
+	AliasNode,
+	AndNode,
+	BooleanTypeNodes,
 	EngineInstance,
+	EqualsNode,
+	ExistsNode,
 	FieldsNode,
+	FromNode,
+	FromTypeNodes,
+	InnerJoinNode,
+	InNode,
 	isAliasNode,
 	isFromNode,
 	isSelectNode,
 	isSelectQueryNode,
 	isTableNode,
+	NotNode,
 	SelectNode,
+	SelectQueryNode,
+	SelectQueryStatementNode,
+	TableNode,
+	WhereNode,
 } from './AbstractSQLCompiler';
 import { AbstractSQLOptimiser } from './AbstractSQLOptimiser';
+import { isAbstractSqlQuery } from './AbstractSQLRules2SQL';
+
+const SELECT_QUERY_TYPES = ['SelectQuery', 'UnionQuery'];
 
 export interface ReferencedFields {
 	[alias: string]: string[];
@@ -292,5 +310,251 @@ export const getModifiedFields: EngineInstance['getModifiedFields'] = (
 		return abstractSqlQuery.map(checkQuery);
 	} else {
 		return checkQuery(abstractSqlQuery);
+	}
+};
+
+type AliasedTable = {
+	tableName: string;
+	alias: string;
+};
+
+type BindCandidate = AliasedTable & {
+	scope: AbstractSqlQuery;
+};
+
+const findTablesInConstraint = (
+	constraint: BooleanTypeNodes,
+	candidates: BindCandidate[],
+) => {
+	// Recurse until we're sure that there are no more subqueries
+	switch (constraint[0]) {
+		case 'Equals':
+		case 'NotEquals':
+		case 'GreaterThan':
+		case 'GreaterThanOrEqual':
+		case 'LessThan':
+		case 'LessThanOrEqual':
+		case 'IsDistinctFrom':
+		case 'IsNotDistinctFrom':
+			const equalsNode = constraint as EqualsNode;
+			const left = equalsNode[1];
+			const right = equalsNode[2];
+			if (!isAbstractSqlQuery(left) || !isAbstractSqlQuery(right)) {
+				throw new Error(
+					'cannot introspect into the string form of AbstractSqlQuery',
+				);
+			}
+			if (SELECT_QUERY_TYPES.includes(left[0])) {
+				findBindCandidates(left, candidates);
+			}
+			if (SELECT_QUERY_TYPES.includes(right[0])) {
+				findBindCandidates(right, candidates);
+			}
+			break;
+		case 'In':
+		case 'NotIn':
+			const inNode = constraint as InNode;
+			for (const arg of inNode.slice(2)) {
+				if (!isAbstractSqlQuery(arg)) {
+					throw new Error(
+						'cannot introspect into the string form of AbstractSqlQuery',
+					);
+				}
+				if (SELECT_QUERY_TYPES.includes(arg[0])) {
+					findBindCandidates(arg, candidates);
+				}
+			}
+			break;
+		case 'Exists':
+		case 'NotExists':
+			const existsNode = constraint as ExistsNode;
+			const inner = existsNode[1];
+			if (!isAbstractSqlQuery(inner)) {
+				throw new Error(
+					'cannot introspect into the string form of AbstractSqlQuery',
+				);
+			}
+			if (SELECT_QUERY_TYPES.includes(inner[0])) {
+				findBindCandidates(inner, candidates);
+			}
+			break;
+		case 'Not':
+			const notNode = constraint as NotNode;
+			findTablesInConstraint(notNode[1], candidates);
+			break;
+		case 'And':
+		case 'Or':
+			const andNode = constraint as AndNode;
+			for (const arg of andNode.slice(1)) {
+				// TODO: type checking is going awry here for some reason
+				findTablesInConstraint(arg as any, candidates);
+			}
+			break;
+		default:
+			throw new Error(`unknown constraint type: ${constraint[0]}`);
+	}
+};
+
+const findTableInTableDefinition = (
+	statement: AliasableFromTypeNodes,
+	candidates: BindCandidate[],
+): AliasedTable | null => {
+	switch (statement[0]) {
+		case 'SelectQuery':
+		case 'UnionQuery':
+			findBindCandidates(statement, candidates);
+			return null;
+		case 'Table':
+			const tableNode = statement as TableNode;
+			return { tableName: tableNode[1], alias: tableNode[1] };
+		case 'Alias':
+			const aliasNode = statement as AliasNode<FromTypeNodes>;
+			const table = findTableInTableDefinition(aliasNode[1], candidates);
+			if (table) {
+				return { tableName: table.tableName, alias: aliasNode[2] };
+			}
+			return null;
+		default:
+			throw new Error(`unknown table definition type: ${statement[0]}`);
+	}
+};
+
+const findTableInStatement = (
+	statement: SelectQueryStatementNode,
+	candidates: BindCandidate[],
+): AliasedTable | null => {
+	switch (statement[0]) {
+		case 'Select':
+			// Select lists may contain subqueries so introspect into them as well
+			const selectNode = statement as SelectNode;
+			for (const arg of selectNode[1]) {
+				if (!isAbstractSqlQuery(arg)) {
+					throw new Error(
+						'cannot introspect into the string form of AbstractSqlQuery',
+					);
+				}
+				if (SELECT_QUERY_TYPES.includes(arg[0])) {
+					findBindCandidates(arg, candidates);
+				}
+			}
+			return null;
+		case 'From':
+		case 'CrossJoin':
+			const fromNode = statement as FromNode;
+			return findTableInTableDefinition(fromNode[1], candidates);
+		case 'Join':
+		case 'LeftJoin':
+		case 'RightJoin':
+		case 'FullJoin':
+			const joinNode = statement as InnerJoinNode;
+			if (joinNode[2]) {
+				findTablesInConstraint(joinNode[2][1], candidates);
+			}
+			return findTableInTableDefinition(joinNode[1], candidates);
+		case 'Where':
+			const whereNode = statement as WhereNode;
+			findTablesInConstraint(whereNode[1], candidates);
+			return null;
+		default:
+			return null;
+	}
+};
+
+const findBindCandidates = (
+	statement: AbstractSqlQuery,
+	candidates: BindCandidate[],
+) => {
+	switch (statement[0]) {
+		case 'SelectQuery':
+			const selectQueryNode = statement as SelectQueryNode;
+			const scope = statement;
+			for (const arg of selectQueryNode.slice(1)) {
+				if (!isAbstractSqlQuery(arg)) {
+					throw new Error(
+						'cannot introspect into the string form of AbstractSqlQuery',
+					);
+				}
+				const table = findTableInStatement(arg, candidates);
+				if (table) {
+					candidates.push({ ...table, scope });
+				}
+			}
+			break;
+		default:
+			throw new Error(
+				`findBindCandidates only supports SELECT queries, got ${statement[0]}`,
+			);
+	}
+};
+
+// TODO: lots
+// - Removing multiple candidates selecting from the same database table is too
+//   conservative. The correct criteria is to just remove any that are present
+//   in at least 2 disjoint subqueries. Because the problem is that in those
+//   cases there is no place in the query that has visibility inside both
+//   disjoint subqueries and that is a requirement for adding the corrent bind.
+// - We can miss subqueries as we don't recurse into everything.
+// - Ban on aggregates is not necessary but solving it requires additional
+//   complexity.
+// - We only care about and recognize `COUNT` aggregates right now.
+// - We assume the ID column is named "id".
+export const addAffectedIdsBinds = (abstractSql: AbstractSqlQuery) => {
+	const candidates: BindCandidate[] = [];
+	findBindCandidates(['SelectQuery', ['Where', abstractSql]], candidates);
+
+	// Count the number of references for each database table. Multiple
+	// candidates referencing the same table will be removed to conservatively
+	// avoid scoping issues
+	const seenTableNames: { [key: string]: number } = {};
+	for (const candidate of candidates) {
+		if (candidate.tableName in seenTableNames) {
+			seenTableNames[candidate.tableName] += 1;
+		} else {
+			seenTableNames[candidate.tableName] = 1;
+		}
+	}
+
+	// Add binds for affected IDs on selects that do not select aggregates nor
+	// select from the same database table.
+	candidateExamination: for (const candidate of candidates) {
+		if (seenTableNames[candidate.tableName] > 1) {
+			continue;
+		}
+
+		if (candidate.scope[0] === 'UnionQuery') {
+			throw new Error('addAffectedIdsBinds only supports SELECT queries');
+		}
+
+		const selectQueryNode = candidate.scope as SelectQueryNode;
+		let whereNode: WhereNode | null = null;
+		for (const statement of selectQueryNode.slice(1)) {
+			if (statement[0] === 'Select') {
+				for (const arg of statement[1]) {
+					if (arg[0] === 'Count') {
+						continue candidateExamination;
+					}
+				}
+			} else if (statement[0] === 'Where') {
+				whereNode = statement;
+			}
+		}
+		if (!whereNode) {
+			whereNode = ['Where', ['Boolean', true]];
+			selectQueryNode.push(whereNode);
+		}
+
+		whereNode[1] = [
+			'And',
+			whereNode[1],
+			[
+				'Coalesce',
+				[
+					'Equals',
+					['ReferencedField', candidate.alias, 'id'],
+					['Any', ['Bind', candidate.tableName]],
+				],
+				['Boolean', true],
+			],
+		];
 	}
 };
