@@ -24,7 +24,7 @@
     "@balena/lint": "^6.2.1",
     "@balena/odata-parser": "^2.4.2",
     "@balena/sbvr-parser": "^1.4.2",
-    "@resin/odata-to-abstract-sql": "^3.3.0",
+    "@resin/odata-to-abstract-sql": "^4.0.0",
     "@types/chai": "^4.3.4",
     "@types/common-tags": "^1.8.1",
     "@types/lodash": "^4.14.189",
