@@ -572,6 +572,8 @@ const compileSchema = (
 	engine: Engines,
 	ifNotExists: boolean,
 ): SqlModel => {
+	abstractSqlModel = optimizeSchema(abstractSqlModel, false);
+
 	let ifNotExistsStr = '';
 	let orReplaceStr = '';
 	if (ifNotExists) {
