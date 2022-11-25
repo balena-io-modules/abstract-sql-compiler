@@ -743,7 +743,7 @@ const typeRules: Dictionary<MatchFn> = {
 		return ['TextArray', ...args.map(TextValue)];
 	},
 	ToJSON: matchArgs('ToJSON', AnyValue),
-	Any: matchArgs('Any', AnyValue),
+	Any: matchArgs('Any', AnyValue, _.identity),
 	Coalesce: (args) => {
 		checkMinArgs('Coalesce', args, 2);
 		return ['Coalesce', ...args.map(AnyValue)];

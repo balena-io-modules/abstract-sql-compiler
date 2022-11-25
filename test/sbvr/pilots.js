@@ -152,23 +152,26 @@ $$;`,
 	test.rule(
 		'It is necessary that each pilot can fly at least 1 plane',
 		`\
-SELECT (
-	SELECT COUNT(*)
+SELECT NOT EXISTS (
+	SELECT 1
 	FROM "pilot" AS "pilot.0"
 	WHERE NOT EXISTS (
 		SELECT 1
 		FROM "pilot-can fly-plane" AS "pilot.0-can fly-plane.1"
 		WHERE "pilot.0-can fly-plane.1"."pilot" = "pilot.0"."id"
-		AND COALESCE("pilot.0-can fly-plane.1"."id" = ANY($1), 1)
+		AND ($1 = '{}'
+		OR "pilot.0-can fly-plane.1"."id" = ANY(CAST($1 AS INTEGER[])))
 	)
+	AND ($2 = '{}'
+	OR "pilot.0"."id" = ANY(CAST($2 AS INTEGER[])))
 ) = 0 AS "result";`,
 	);
 
 	test.rule(
 		'It is necessary that each pilot that is experienced, can fly at least 2 planes',
 		`\
-SELECT (
-	SELECT COUNT(*)
+SELECT NOT EXISTS (
+	SELECT 1
 	FROM "pilot" AS "pilot.0"
 	WHERE "pilot.0"."is experienced" = 1
 	AND NOT (
@@ -178,14 +181,16 @@ SELECT (
 			WHERE "pilot.0-can fly-plane.1"."pilot" = "pilot.0"."id"
 		) >= 2
 	)
+	AND ($1 = '{}'
+	OR "pilot.0"."id" = ANY(CAST($1 AS INTEGER[])))
 ) = 0 AS "result";`,
 	);
 
 	test.rule(
 		'It is necessary that each pilot that is not experienced, can fly at most 2 planes',
 		`\
-SELECT (
-	SELECT COUNT(*)
+SELECT NOT EXISTS (
+	SELECT 1
 	FROM "pilot" AS "pilot.0"
 	WHERE "pilot.0"."is experienced" = 0
 	AND (
@@ -193,14 +198,16 @@ SELECT (
 		FROM "pilot-can fly-plane" AS "pilot.0-can fly-plane.1"
 		WHERE "pilot.0-can fly-plane.1"."pilot" = "pilot.0"."id"
 	) >= 3
+	AND ($1 = '{}'
+	OR "pilot.0"."id" = ANY(CAST($1 AS INTEGER[])))
 ) = 0 AS "result";`,
 	);
 
 	test.rule(
 		'It is necessary that each pilot that can fly at most 2 planes, is not experienced',
 		`\
-SELECT (
-	SELECT COUNT(*)
+SELECT NOT EXISTS (
+	SELECT 1
 	FROM "pilot" AS "pilot.0"
 	WHERE NOT (
 		(
@@ -210,14 +217,16 @@ SELECT (
 		) >= 3
 	)
 	AND "pilot.0"."is experienced" != 0
+	AND ($1 = '{}'
+	OR "pilot.0"."id" = ANY(CAST($1 AS INTEGER[])))
 ) = 0 AS "result";`,
 	);
 
 	test.rule(
 		'It is necessary that each plane that at least 3 pilots can fly, has a name',
 		`\
-SELECT (
-	SELECT COUNT(*)
+SELECT NOT EXISTS (
+	SELECT 1
 	FROM "plane" AS "plane.0"
 	WHERE (
 		SELECT COUNT(*)
@@ -225,14 +234,16 @@ SELECT (
 		WHERE "pilot.1-can fly-plane.0"."can fly-plane" = "plane.0"."id"
 	) >= 3
 	AND "plane.0"."name" IS NULL
+	AND ($1 = '{}'
+	OR "plane.0"."id" = ANY(CAST($1 AS INTEGER[])))
 ) = 0 AS "result";`,
 	);
 
 	test.rule(
 		'It is necessary that each plane that at least 3 pilots that are experienced can fly, has a name',
 		`\
-SELECT (
-	SELECT COUNT(*)
+SELECT NOT EXISTS (
+	SELECT 1
 	FROM "plane" AS "plane.0"
 	WHERE (
 		SELECT COUNT(*)
@@ -243,13 +254,15 @@ SELECT (
 		AND "pilot.1-can fly-plane.0"."can fly-plane" = "plane.0"."id"
 	) >= 3
 	AND "plane.0"."name" IS NULL
+	AND ($1 = '{}'
+	OR "plane.0"."id" = ANY(CAST($1 AS INTEGER[])))
 ) = 0 AS "result";`,
 	);
 
 	(function () {
 		const sql = `\
-SELECT (
-	SELECT COUNT(*)
+SELECT NOT EXISTS (
+	SELECT 1
 	FROM "plane" AS "plane.0"
 	WHERE (
 		SELECT COUNT(*)
@@ -260,6 +273,8 @@ SELECT (
 		AND "pilot.1-can fly-plane.0"."can fly-plane" = "plane.0"."id"
 	) >= 3
 	AND "plane.0"."name" IS NULL
+	AND ($1 = '{}'
+	OR "plane.0"."id" = ANY(CAST($1 AS INTEGER[])))
 ) = 0 AS "result";`;
 		test.rule(
 			'It is necessary that each plane that at least 3 pilots that are not experienced can fly, has a name',
@@ -274,8 +289,8 @@ SELECT (
 	test.rule(
 		'It is necessary that each plane that at least 3 pilot that is experienced, can fly, has a name.',
 		`\
-SELECT (
-	SELECT COUNT(*)
+SELECT NOT EXISTS (
+	SELECT 1
 	FROM "plane" AS "plane.0"
 	WHERE (
 		SELECT COUNT(*)
@@ -286,14 +301,16 @@ SELECT (
 		AND "pilot.1-can fly-plane.0"."can fly-plane" = "plane.0"."id"
 	) >= 3
 	AND "plane.0"."name" IS NULL
+	AND ($1 = '{}'
+	OR "plane.0"."id" = ANY(CAST($1 AS INTEGER[])))
 ) = 0 AS "result";`,
 	);
 
 	test.rule(
 		'It is necessary that each plane that at least 3 pilots that a name is of can fly, has a name',
 		`\
-SELECT (
-	SELECT COUNT(*)
+SELECT NOT EXISTS (
+	SELECT 1
 	FROM "plane" AS "plane.0"
 	WHERE (
 		SELECT COUNT(*)
@@ -304,34 +321,41 @@ SELECT (
 		AND "pilot.1-can fly-plane.0"."can fly-plane" = "plane.0"."id"
 	) >= 3
 	AND "plane.0"."name" IS NULL
+	AND ($1 = '{}'
+	OR "plane.0"."id" = ANY(CAST($1 AS INTEGER[])))
 ) = 0 AS "result";`,
 	);
 
 	test.rule(
 		'It is necessary that each pilot has a years of experience that is greater than 0',
 		`\
-SELECT (
-	SELECT COUNT(*)
+SELECT NOT EXISTS (
+	SELECT 1
 	FROM "pilot" AS "pilot.0"
 	WHERE NOT (
 		0 < "pilot.0"."years of experience"
 		AND "pilot.0"."years of experience" IS NOT NULL
 	)
+	AND ($1 = '{}'
+	OR "pilot.0"."id" = ANY(CAST($1 AS INTEGER[])))
 ) = 0 AS "result";`,
 	);
 
 	test.rule(
 		'It is necessary that each plane can be flown by at least 1 pilot',
 		`\
-SELECT (
-	SELECT COUNT(*)
+SELECT NOT EXISTS (
+	SELECT 1
 	FROM "plane" AS "plane.0"
 	WHERE NOT EXISTS (
 		SELECT 1
 		FROM "pilot-can fly-plane" AS "pilot.1-can fly-plane.0"
 		WHERE "pilot.1-can fly-plane.0"."can fly-plane" = "plane.0"."id"
-		AND COALESCE("pilot.1-can fly-plane.0"."id" = ANY($1), 1)
+		AND ($1 = '{}'
+		OR "pilot.1-can fly-plane.0"."id" = ANY(CAST($1 AS INTEGER[])))
 	)
+	AND ($2 = '{}'
+	OR "plane.0"."id" = ANY(CAST($2 AS INTEGER[])))
 ) = 0 AS "result";`,
 	);
 
@@ -339,8 +363,8 @@ SELECT (
 	test.rule(
 		'It is necessary that each pilot that is experienced, can fly at least 2 planes or has a years of experience that is greater than 5',
 		`\
-SELECT (
-	SELECT COUNT(*)
+SELECT NOT EXISTS (
+	SELECT 1
 	FROM "pilot" AS "pilot.0"
 	WHERE "pilot.0"."is experienced" = 1
 	AND NOT (
@@ -352,14 +376,16 @@ SELECT (
 		OR 5 < "pilot.0"."years of experience"
 		AND "pilot.0"."years of experience" IS NOT NULL)
 	)
+	AND ($1 = '{}'
+	OR "pilot.0"."id" = ANY(CAST($1 AS INTEGER[])))
 ) = 0 AS "result";`,
 	);
 
 	test.rule(
 		'It is necessary that each pilot that is experienced or can fly at least 2 planes, has a years of experience that is greater than 5',
 		`\
-SELECT (
-	SELECT COUNT(*)
+SELECT NOT EXISTS (
+	SELECT 1
 	FROM "pilot" AS "pilot.0"
 	WHERE ("pilot.0"."is experienced" = 1
 	OR (
@@ -371,14 +397,16 @@ SELECT (
 		5 < "pilot.0"."years of experience"
 		AND "pilot.0"."years of experience" IS NOT NULL
 	)
+	AND ($1 = '{}'
+	OR "pilot.0"."id" = ANY(CAST($1 AS INTEGER[])))
 ) = 0 AS "result";`,
 	);
 
 	test.rule(
 		'It is necessary that each pilot that is experienced or can fly at least 3 planes or can fly exactly one plane, has a years of experience that is greater than 5',
 		`\
-SELECT (
-	SELECT COUNT(*)
+SELECT NOT EXISTS (
+	SELECT 1
 	FROM "pilot" AS "pilot.0"
 	WHERE ("pilot.0"."is experienced" = 1
 	OR (
@@ -395,14 +423,16 @@ SELECT (
 		5 < "pilot.0"."years of experience"
 		AND "pilot.0"."years of experience" IS NOT NULL
 	)
+	AND ($1 = '{}'
+	OR "pilot.0"."id" = ANY(CAST($1 AS INTEGER[])))
 ) = 0 AS "result";`,
 	);
 
 	test.rule(
 		'It is necessary that each pilot that is experienced, can fly at least 3 planes or exactly one plane',
 		`\
-SELECT (
-	SELECT COUNT(*)
+SELECT NOT EXISTS (
+	SELECT 1
 	FROM "pilot" AS "pilot.0"
 	WHERE "pilot.0"."is experienced" = 1
 	AND NOT (
@@ -417,14 +447,16 @@ SELECT (
 			WHERE "pilot.0-can fly-plane.2"."pilot" = "pilot.0"."id"
 		) = 1)
 	)
+	AND ($1 = '{}'
+	OR "pilot.0"."id" = ANY(CAST($1 AS INTEGER[])))
 ) = 0 AS "result";`,
 	);
 
 	test.rule(
 		'It is necessary that each pilot that can fly at least 3 planes or exactly one plane, is experienced',
 		`\
-SELECT (
-	SELECT COUNT(*)
+SELECT NOT EXISTS (
+	SELECT 1
 	FROM "pilot" AS "pilot.0"
 	WHERE ((
 		SELECT COUNT(*)
@@ -437,21 +469,23 @@ SELECT (
 		WHERE "pilot.0-can fly-plane.2"."pilot" = "pilot.0"."id"
 	) = 1)
 	AND "pilot.0"."is experienced" != 1
+	AND ($1 = '{}'
+	OR "pilot.0"."id" = ANY(CAST($1 AS INTEGER[])))
 ) = 0 AS "result";`,
 	);
 
 	test.rule(
 		'It is necessary that each pilot can fly at least one plane or a pilot can fly at least 10 planes',
 		`\
-SELECT ((
-	SELECT COUNT(*)
+SELECT (NOT EXISTS (
+	SELECT 1
 	FROM "pilot" AS "pilot.0"
 	WHERE NOT EXISTS (
 		SELECT 1
 		FROM "pilot-can fly-plane" AS "pilot.0-can fly-plane.1"
 		WHERE "pilot.0-can fly-plane.1"."pilot" = "pilot.0"."id"
 	)
-) = 0
+)
 OR EXISTS (
 	SELECT 1
 	FROM "pilot" AS "pilot.2"
@@ -460,14 +494,14 @@ OR EXISTS (
 		FROM "pilot-can fly-plane" AS "pilot.2-can fly-plane.3"
 		WHERE "pilot.2-can fly-plane.3"."pilot" = "pilot.2"."id"
 	) >= 10
-)) AS "result";`,
+)) = 0 AS "result";`,
 	);
 
 	test.rule(
 		'It is necessary that each plane that at least 3 pilots can fly or exactly one pilot can fly, has a name',
 		`\
-SELECT (
-	SELECT COUNT(*)
+SELECT NOT EXISTS (
+	SELECT 1
 	FROM "plane" AS "plane.0"
 	WHERE ((
 		SELECT COUNT(*)
@@ -480,6 +514,8 @@ SELECT (
 		WHERE "pilot.2-can fly-plane.0"."can fly-plane" = "plane.0"."id"
 	) = 1)
 	AND "plane.0"."name" IS NULL
+	AND ($1 = '{}'
+	OR "plane.0"."id" = ANY(CAST($1 AS INTEGER[])))
 ) = 0 AS "result";`,
 	);
 
@@ -487,8 +523,8 @@ SELECT (
 	test.rule(
 		'It is necessary that each pilot that is experienced, can fly at least 2 planes and has a years of experience that is greater than 5',
 		`\
-SELECT (
-	SELECT COUNT(*)
+SELECT NOT EXISTS (
+	SELECT 1
 	FROM "pilot" AS "pilot.0"
 	WHERE "pilot.0"."is experienced" = 1
 	AND NOT (
@@ -500,14 +536,16 @@ SELECT (
 		AND 5 < "pilot.0"."years of experience"
 		AND "pilot.0"."years of experience" IS NOT NULL
 	)
+	AND ($1 = '{}'
+	OR "pilot.0"."id" = ANY(CAST($1 AS INTEGER[])))
 ) = 0 AS "result";`,
 	);
 
 	test.rule(
 		'It is necessary that each pilot that is experienced and can fly at least 2 planes, has a years of experience that is greater than 5',
 		`\
-SELECT (
-	SELECT COUNT(*)
+SELECT NOT EXISTS (
+	SELECT 1
 	FROM "pilot" AS "pilot.0"
 	WHERE "pilot.0"."is experienced" = 1
 	AND (
@@ -519,14 +557,16 @@ SELECT (
 		5 < "pilot.0"."years of experience"
 		AND "pilot.0"."years of experience" IS NOT NULL
 	)
+	AND ($1 = '{}'
+	OR "pilot.0"."id" = ANY(CAST($1 AS INTEGER[])))
 ) = 0 AS "result";`,
 	);
 
 	test.rule(
 		'It is necessary that each pilot that is experienced, can fly at least 3 planes and exactly one plane',
 		`\
-SELECT (
-	SELECT COUNT(*)
+SELECT NOT EXISTS (
+	SELECT 1
 	FROM "pilot" AS "pilot.0"
 	WHERE "pilot.0"."is experienced" = 1
 	AND NOT (
@@ -541,14 +581,16 @@ SELECT (
 			WHERE "pilot.0-can fly-plane.2"."pilot" = "pilot.0"."id"
 		) = 1
 	)
+	AND ($1 = '{}'
+	OR "pilot.0"."id" = ANY(CAST($1 AS INTEGER[])))
 ) = 0 AS "result";`,
 	);
 
 	test.rule(
 		'It is necessary that each pilot that can fly at least 3 planes and exactly one plane, is experienced',
 		`\
-SELECT (
-	SELECT COUNT(*)
+SELECT NOT EXISTS (
+	SELECT 1
 	FROM "pilot" AS "pilot.0"
 	WHERE (
 		SELECT COUNT(*)
@@ -561,21 +603,23 @@ SELECT (
 		WHERE "pilot.0-can fly-plane.2"."pilot" = "pilot.0"."id"
 	) = 1
 	AND "pilot.0"."is experienced" != 1
+	AND ($1 = '{}'
+	OR "pilot.0"."id" = ANY(CAST($1 AS INTEGER[])))
 ) = 0 AS "result";`,
 	);
 
 	test.rule(
 		'It is necessary that each pilot can fly at least one plane and a pilot can fly at least 10 planes',
 		`\
-SELECT (
-	SELECT COUNT(*)
+SELECT NOT EXISTS (
+	SELECT 1
 	FROM "pilot" AS "pilot.0"
 	WHERE NOT EXISTS (
 		SELECT 1
 		FROM "pilot-can fly-plane" AS "pilot.0-can fly-plane.1"
 		WHERE "pilot.0-can fly-plane.1"."pilot" = "pilot.0"."id"
 	)
-) = 0
+)
 AND EXISTS (
 	SELECT 1
 	FROM "pilot" AS "pilot.2"
@@ -584,14 +628,14 @@ AND EXISTS (
 		FROM "pilot-can fly-plane" AS "pilot.2-can fly-plane.3"
 		WHERE "pilot.2-can fly-plane.3"."pilot" = "pilot.2"."id"
 	) >= 10
-) AS "result";`,
+) = 0 AS "result";`,
 	);
 
 	test.rule(
 		'It is necessary that each plane that at least 3 pilots can fly and exactly one pilot can fly, has a name',
 		`\
-SELECT (
-	SELECT COUNT(*)
+SELECT NOT EXISTS (
+	SELECT 1
 	FROM "plane" AS "plane.0"
 	WHERE (
 		SELECT COUNT(*)
@@ -604,6 +648,8 @@ SELECT (
 		WHERE "pilot.2-can fly-plane.0"."can fly-plane" = "plane.0"."id"
 	) = 1
 	AND "plane.0"."name" IS NULL
+	AND ($1 = '{}'
+	OR "plane.0"."id" = ANY(CAST($1 AS INTEGER[])))
 ) = 0 AS "result";`,
 	);
 
@@ -611,8 +657,8 @@ SELECT (
 	test.rule(
 		'It is necessary that each pilot that is experienced and can fly at least 3 planes or can fly exactly one plane, has a years of experience that is greater than 5',
 		`\
-SELECT (
-	SELECT COUNT(*)
+SELECT NOT EXISTS (
+	SELECT 1
 	FROM "pilot" AS "pilot.0"
 	WHERE "pilot.0"."is experienced" = 1
 	AND ((
@@ -629,14 +675,16 @@ SELECT (
 		5 < "pilot.0"."years of experience"
 		AND "pilot.0"."years of experience" IS NOT NULL
 	)
+	AND ($1 = '{}'
+	OR "pilot.0"."id" = ANY(CAST($1 AS INTEGER[])))
 ) = 0 AS "result";`,
 	);
 
 	test.rule(
 		'It is necessary that each pilot that can fly at least 3 planes or can fly exactly one plane and is experienced, has a years of experience that is greater than 5',
 		`\
-SELECT (
-	SELECT COUNT(*)
+SELECT NOT EXISTS (
+	SELECT 1
 	FROM "pilot" AS "pilot.0"
 	WHERE ((
 		SELECT COUNT(*)
@@ -653,6 +701,8 @@ SELECT (
 		5 < "pilot.0"."years of experience"
 		AND "pilot.0"."years of experience" IS NOT NULL
 	)
+	AND ($1 = '{}'
+	OR "pilot.0"."id" = ANY(CAST($1 AS INTEGER[])))
 ) = 0 AS "result";`,
 	);
 
@@ -660,8 +710,8 @@ SELECT (
 	test.rule(
 		'It is necessary that each pilot that is experienced, can fly at least 3 planes, and can fly at most 10 planes, has a years of experience that is greater than 5',
 		`\
-SELECT (
-	SELECT COUNT(*)
+SELECT NOT EXISTS (
+	SELECT 1
 	FROM "pilot" AS "pilot.0"
 	WHERE "pilot.0"."is experienced" = 1
 	AND (
@@ -680,14 +730,16 @@ SELECT (
 		5 < "pilot.0"."years of experience"
 		AND "pilot.0"."years of experience" IS NOT NULL
 	)
+	AND ($1 = '{}'
+	OR "pilot.0"."id" = ANY(CAST($1 AS INTEGER[])))
 ) = 0 AS "result";`,
 	);
 
 	test.rule(
 		'It is necessary that each pilot that is experienced, can fly at least 3 planes, or can fly exactly one plane, has a years of experience that is greater than 5',
 		`\
-SELECT (
-	SELECT COUNT(*)
+SELECT NOT EXISTS (
+	SELECT 1
 	FROM "pilot" AS "pilot.0"
 	WHERE ("pilot.0"."is experienced" = 1
 	OR (
@@ -704,14 +756,16 @@ SELECT (
 		5 < "pilot.0"."years of experience"
 		AND "pilot.0"."years of experience" IS NOT NULL
 	)
+	AND ($1 = '{}'
+	OR "pilot.0"."id" = ANY(CAST($1 AS INTEGER[])))
 ) = 0 AS "result";`,
 	);
 
 	test.rule(
 		'It is necessary that each pilot that is experienced, can fly at least 3 planes, and can fly at most 10 planes or has a name that has a Length (Type) that is greater than 10, has a years of experience that is greater than 5',
 		`\
-SELECT (
-	SELECT COUNT(*)
+SELECT NOT EXISTS (
+	SELECT 1
 	FROM "pilot" AS "pilot.0"
 	WHERE "pilot.0"."is experienced" = 1
 	AND (
@@ -733,14 +787,16 @@ SELECT (
 		5 < "pilot.0"."years of experience"
 		AND "pilot.0"."years of experience" IS NOT NULL
 	)
+	AND ($1 = '{}'
+	OR "pilot.0"."id" = ANY(CAST($1 AS INTEGER[])))
 ) = 0 AS "result";`,
 	);
 
 	test.rule(
 		'It is necessary that each pilot that is experienced, can fly at least 3 planes, or can fly exactly one plane and has a name that has a Length (Type) that is greater than 10, has a years of experience that is greater than 5',
 		`\
-SELECT (
-	SELECT COUNT(*)
+SELECT NOT EXISTS (
+	SELECT 1
 	FROM "pilot" AS "pilot.0"
 	WHERE ("pilot.0"."is experienced" = 1
 	OR (
@@ -760,14 +816,16 @@ SELECT (
 		5 < "pilot.0"."years of experience"
 		AND "pilot.0"."years of experience" IS NOT NULL
 	)
+	AND ($1 = '{}'
+	OR "pilot.0"."id" = ANY(CAST($1 AS INTEGER[])))
 ) = 0 AS "result";`,
 	);
 
 	test.rule(
 		'It is necessary that each pilot that is experienced, can fly at least 3 planes, or can fly exactly one plane and has a name that has a Length (Type) that is greater than 10, has a years of experience that is greater than 5',
 		`\
-SELECT (
-	SELECT COUNT(*)
+SELECT NOT EXISTS (
+	SELECT 1
 	FROM "pilot" AS "pilot.0"
 	WHERE ("pilot.0"."is experienced" = 1
 	OR (
@@ -787,14 +845,16 @@ SELECT (
 		5 < "pilot.0"."years of experience"
 		AND "pilot.0"."years of experience" IS NOT NULL
 	)
+	AND ($1 = '{}'
+	OR "pilot.0"."id" = ANY(CAST($1 AS INTEGER[])))
 ) = 0 AS "result";`,
 	);
 
 	test.rule(
 		'It is necessary that each pilot that is experienced, can fly at least 3 planes, or can fly exactly one plane and has a name that has a Length (Type) that is greater than 10, has a years of experience that is greater than 5',
 		`\
-SELECT (
-	SELECT COUNT(*)
+SELECT NOT EXISTS (
+	SELECT 1
 	FROM "pilot" AS "pilot.0"
 	WHERE ("pilot.0"."is experienced" = 1
 	OR (
@@ -814,14 +874,16 @@ SELECT (
 		5 < "pilot.0"."years of experience"
 		AND "pilot.0"."years of experience" IS NOT NULL
 	)
+	AND ($1 = '{}'
+	OR "pilot.0"."id" = ANY(CAST($1 AS INTEGER[])))
 ) = 0 AS "result";`,
 	);
 
 	test.rule(
 		'It is necessary that each pilot that is experienced, can fly exactly one plane or can fly at least 5 planes, and can fly at least 3 planes, has a years of experience that is greater than 5',
 		`\
-SELECT (
-	SELECT COUNT(*)
+SELECT NOT EXISTS (
+	SELECT 1
 	FROM "pilot" AS "pilot.0"
 	WHERE "pilot.0"."is experienced" = 1
 	AND ((
@@ -843,14 +905,16 @@ SELECT (
 		5 < "pilot.0"."years of experience"
 		AND "pilot.0"."years of experience" IS NOT NULL
 	)
+	AND ($1 = '{}'
+	OR "pilot.0"."id" = ANY(CAST($1 AS INTEGER[])))
 ) = 0 AS "result";`,
 	);
 
 	test.rule(
 		'It is necessary that each pilot that is experienced, can fly at least one plane and can fly at most 5 planes, or can fly at least 3 planes, has a years of experience that is greater than 5',
 		`\
-SELECT (
-	SELECT COUNT(*)
+SELECT NOT EXISTS (
+	SELECT 1
 	FROM "pilot" AS "pilot.0"
 	WHERE ("pilot.0"."is experienced" = 1
 	OR EXISTS (
@@ -874,14 +938,16 @@ SELECT (
 		5 < "pilot.0"."years of experience"
 		AND "pilot.0"."years of experience" IS NOT NULL
 	)
+	AND ($1 = '{}'
+	OR "pilot.0"."id" = ANY(CAST($1 AS INTEGER[])))
 ) = 0 AS "result";`,
 	);
 
 	test.rule(
 		'It is necessary that each pilot that is experienced, can fly at most 10 planes or has a name that has a Length (Type) that is greater than 10, and can fly at least 3 planes, has a years of experience that is greater than 5',
 		`\
-SELECT (
-	SELECT COUNT(*)
+SELECT NOT EXISTS (
+	SELECT 1
 	FROM "pilot" AS "pilot.0"
 	WHERE "pilot.0"."is experienced" = 1
 	AND (NOT (
@@ -903,14 +969,16 @@ SELECT (
 		5 < "pilot.0"."years of experience"
 		AND "pilot.0"."years of experience" IS NOT NULL
 	)
+	AND ($1 = '{}'
+	OR "pilot.0"."id" = ANY(CAST($1 AS INTEGER[])))
 ) = 0 AS "result";`,
 	);
 
 	test.rule(
 		'It is necessary that each pilot that is experienced, can fly exactly one plane and has a name that has a Length (Type) that is greater than 10, or can fly at least 3 planes, has a years of experience that is greater than 5',
 		`\
-SELECT (
-	SELECT COUNT(*)
+SELECT NOT EXISTS (
+	SELECT 1
 	FROM "pilot" AS "pilot.0"
 	WHERE ("pilot.0"."is experienced" = 1
 	OR (
@@ -930,14 +998,16 @@ SELECT (
 		5 < "pilot.0"."years of experience"
 		AND "pilot.0"."years of experience" IS NOT NULL
 	)
+	AND ($1 = '{}'
+	OR "pilot.0"."id" = ANY(CAST($1 AS INTEGER[])))
 ) = 0 AS "result";`,
 	);
 
 	test.rule(
 		'It is necessary that each pilot that can fly at most 10 planes or can fly at least 15 planes, and is experienced and can fly at least 3 planes, has a years of experience that is greater than 5',
 		`\
-SELECT (
-	SELECT COUNT(*)
+SELECT NOT EXISTS (
+	SELECT 1
 	FROM "pilot" AS "pilot.0"
 	WHERE (NOT (
 		(
@@ -961,14 +1031,16 @@ SELECT (
 		5 < "pilot.0"."years of experience"
 		AND "pilot.0"."years of experience" IS NOT NULL
 	)
+	AND ($1 = '{}'
+	OR "pilot.0"."id" = ANY(CAST($1 AS INTEGER[])))
 ) = 0 AS "result";`,
 	);
 
 	test.rule(
 		'It is necessary that each pilot that can fly at least one plane and at most 10 planes, or is experienced or can fly at least 3 planes, has a years of experience that is greater than 5',
 		`\
-SELECT (
-	SELECT COUNT(*)
+SELECT NOT EXISTS (
+	SELECT 1
 	FROM "pilot" AS "pilot.0"
 	WHERE (EXISTS (
 		SELECT 1
@@ -992,14 +1064,16 @@ SELECT (
 		5 < "pilot.0"."years of experience"
 		AND "pilot.0"."years of experience" IS NOT NULL
 	)
+	AND ($1 = '{}'
+	OR "pilot.0"."id" = ANY(CAST($1 AS INTEGER[])))
 ) = 0 AS "result";`,
 	);
 
 	test.rule(
 		'It is necessary that each pilot0 that can fly a plane0, can fly a plane1 that can be flown by a pilot1 that can fly the plane0',
 		`\
-SELECT (
-	SELECT COUNT(*)
+SELECT NOT EXISTS (
+	SELECT 1
 	FROM "pilot" AS "pilot.0",
 		"plane" AS "plane.1",
 		"pilot-can fly-plane" AS "pilot.0-can fly-plane.1"

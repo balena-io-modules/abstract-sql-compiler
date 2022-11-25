@@ -547,13 +547,13 @@ export const addAffectedIdsBinds = (abstractSql: AbstractSqlQuery) => {
 			'And',
 			whereNode[1],
 			[
-				'Coalesce',
+				'Or',
+				['Equals', ['Bind', candidate.tableName], ['EmbeddedText', '{}']],
 				[
 					'Equals',
 					['ReferencedField', candidate.alias, 'id'],
-					['Any', ['Bind', candidate.tableName]],
+					['Any', ['Bind', candidate.tableName], 'Integer'],
 				],
-				['Boolean', true],
 			],
 		];
 	}

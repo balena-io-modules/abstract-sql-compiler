@@ -1118,12 +1118,13 @@ const typeRules: Dictionary<MatchFn> = {
 		return `TO_JSON(${value})`;
 	},
 	Any: (args, indent) => {
-		checkMinArgs('Any', args, 1);
+		checkArgs('Any', args, 2);
 		if (engine !== Engines.postgres) {
 			throw new SyntaxError('Any not supported on: ' + engine);
 		}
 		const value = AnyValue(getAbstractSqlQuery(args, 0), indent);
-		return `ANY(${value})`;
+		const innerType = sbvrTypes[args[1] as string].types[engine];
+		return `ANY(CAST(${value} AS ${innerType}[]))`;
 	},
 	Coalesce: (args, indent) => {
 		checkMinArgs('Coalesce', args, 2);
