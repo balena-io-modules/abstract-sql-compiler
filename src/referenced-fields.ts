@@ -328,6 +328,8 @@ const findTablesInConstraint = (
 ) => {
 	// Recurse until we're sure that there are no more subqueries
 	switch (constraint[0]) {
+		case 'Boolean':
+			break;
 		case 'Equals':
 		case 'NotEquals':
 		case 'GreaterThan':
@@ -496,7 +498,8 @@ const findBindCandidates = (
 // - We can miss subqueries as we don't recurse into everything.
 // - Ban on aggregates is not necessary but solving it requires additional
 //   complexity.
-// - We only care about and recognize `COUNT` aggregates right now.
+// - We only care about and recognize `COUNT` aggregates and `GROUP BY`
+//   statements right now.
 // - We assume the ID column is named "id".
 export const addAffectedIdsBinds = (abstractSql: AbstractSqlQuery) => {
 	const candidates: BindCandidate[] = [];
@@ -534,6 +537,8 @@ export const addAffectedIdsBinds = (abstractSql: AbstractSqlQuery) => {
 						continue candidateExamination;
 					}
 				}
+			} else if (statement[0] === 'GroupBy') {
+				continue candidateExamination;
 			} else if (statement[0] === 'Where') {
 				whereNode = statement;
 			}
