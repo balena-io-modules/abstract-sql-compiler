@@ -129,10 +129,6 @@ const deprecated = (() => {
 			"Legacy alias format of `[node, alias]` is deprecated, use `['Alias', node, alias]` instead.",
 		legacyTable:
 			"Legacy table format of `tableName` is deprecated, use `['Table', tableName]` instead.",
-		legacyNull:
-			"Legacy null format of `null` is deprecated, use `['Null']` instead.",
-		legacyNullString:
-			"Legacy null format of `'Null'` is deprecated, use `['Null']` instead.",
 		legacyValuesBoolean:
 			"Legacy `Values` boolean format of `true|false` is deprecated, use `['Boolean', true|false]` instead.",
 		legacyAggregateJSON:
@@ -244,16 +240,6 @@ const AnyValue: MetaMatchFn<AnyTypeNodes> = (args) => {
 	return UnknownValue(args);
 };
 const UnknownValue: MetaMatchFn<UnknownTypeNodes> = (args) => {
-	if (args === null) {
-		helped = true;
-		deprecated.legacyNull();
-		args = ['Null'];
-	}
-	if ((args as any) === 'Null') {
-		helped = true;
-		deprecated.legacyNullString();
-		args = ['Null'];
-	}
 	const [type, ...rest] = args;
 	switch (type) {
 		case 'Null':
