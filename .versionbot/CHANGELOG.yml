@@ -1,4 +1,32 @@
 - commits:
+    - subject: Add deprecation notices to the legacy null formats of `null` and `'Null'`
+      hash: d4a8a31911b80c4c8ad46e5b6567496c232fad9b
+      body: ""
+      footer:
+        Change-type: patch
+        change-type: patch
+      author: Pagan Gazzard
+      nested: []
+    - subject: Add deprecation notice to the legacy table format of `tableName`
+      hash: c0847bf375bb40bae0141aab5e09f97a844f69c7
+      body: ""
+      footer:
+        Change-type: patch
+        change-type: patch
+      author: Pagan Gazzard
+      nested: []
+    - subject: Add deprecation notice to the legacy alias format of `[node, alias]`
+      hash: 75e04d107ad1d1ddd7f8e33fa53c3a70c46a35ac
+      body: ""
+      footer:
+        Change-type: patch
+        change-type: patch
+      author: Pagan Gazzard
+      nested: []
+  version: 7.22.1
+  title: ""
+  date: 2022-11-29T18:49:06.598Z
+- commits:
     - subject: Fix date fields used inside arithmetic expressions
       hash: 3368afd1e908890e79691372f9c496665a329e6a
       body: >
