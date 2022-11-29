@@ -127,8 +127,6 @@ const deprecated = (() => {
 	const deprecationMessages = {
 		legacyAlias:
 			"Legacy alias format of `[node, alias]` is deprecated, use `['Alias', node, alias]` instead.",
-		legacyTable:
-			"Legacy table format of `tableName` is deprecated, use `['Table', tableName]` instead.",
 		legacyValuesBoolean:
 			"Legacy `Values` boolean format of `true|false` is deprecated, use `['Boolean', true|false]` instead.",
 		legacyAggregateJSON:
@@ -480,10 +478,6 @@ const Value = (arg: string): ValuesNodeTypes => {
 };
 
 const FromMatch: MetaMatchFn<FromTypeNode[keyof FromTypeNode]> = (args) => {
-	if (typeof args === 'string') {
-		deprecated.legacyTable();
-		return ['Table', args];
-	}
 	const [type, ...rest] = args;
 	switch (type) {
 		case 'SelectQuery':
@@ -700,7 +694,7 @@ const typeRules = {
 	},
 	From: (args): FromNode => {
 		checkArgs('From', args, 1);
-		return ['From', MaybeAlias(args[0] as AbstractSqlQuery, FromMatch)];
+		return ['From', MaybeAlias(getAbstractSqlQuery(args, 0), FromMatch)];
 	},
 	Join: JoinMatch('Join'),
 	LeftJoin: JoinMatch('LeftJoin'),
