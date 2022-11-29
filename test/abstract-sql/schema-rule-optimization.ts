@@ -38,8 +38,8 @@ it('should convert a basic rule to a check', () => {
 								[
 									'SelectQuery',
 									['Select', []],
-									['From', ['test', 'test.0']],
-									['From', ['test', 'test.1']],
+									['From', [['Table', 'test'], 'test.0']],
+									['From', [['Table', 'test'], 'test.1']],
 									[
 										'Where',
 										[

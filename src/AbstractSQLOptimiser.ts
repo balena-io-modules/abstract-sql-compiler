@@ -27,8 +27,6 @@ const deprecated = (() => {
 	const deprecationMessages = {
 		legacyAlias:
 			"Legacy alias format of `[node, alias]` is deprecated, use `['Alias', node, alias]` instead.",
-		legacyTable:
-			"Legacy table format of `tableName` is deprecated, use `['Table', tableName]` instead.",
 	};
 	const result = {} as Record<keyof typeof deprecationMessages, () => void>;
 	for (const key of Object.keys(deprecationMessages) as Array<
@@ -337,10 +335,6 @@ const Value = (arg: any): AbstractSqlQuery => {
 };
 
 const FromMatch: MetaMatchFn = (args) => {
-	if (typeof args === 'string') {
-		deprecated.legacyTable();
-		return ['Table', args];
-	}
 	const [type, ...rest] = args;
 	switch (type) {
 		case 'SelectQuery':
