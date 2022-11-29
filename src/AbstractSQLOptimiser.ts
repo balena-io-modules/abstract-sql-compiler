@@ -23,6 +23,29 @@ type OptimisationMatchFn = (
 type MetaMatchFn = (args: AbstractSqlQuery) => AbstractSqlQuery;
 type MatchFn = (args: AbstractSqlType[]) => AbstractSqlQuery;
 
+const deprecated = (() => {
+	const deprecationMessages = {
+		legacyAlias:
+			"Legacy alias format of `[node, alias]` is deprecated, use `['Alias', node, alias]` instead.",
+		legacyTable:
+			"Legacy table format of `tableName` is deprecated, use `['Table', tableName]` instead.",
+		legacyNull:
+			"Legacy null format of `null` is deprecated, use `['Null']` instead.",
+		legacyNullString:
+			"Legacy null format of `'Null'` is deprecated, use `['Null']` instead.",
+	};
+	const result = {} as Record<keyof typeof deprecationMessages, () => void>;
+	for (const key of Object.keys(deprecationMessages) as Array<
+		keyof typeof deprecationMessages
+	>) {
+		result[key] = () => {
+			console.warn('pinejs-client deprecated:', deprecationMessages[key]);
+			result[key] = _.noop;
+		};
+	}
+	return result;
+})();
+
 const escapeForLike = (str: AbstractSqlType): ReplaceNode => [
 	'Replace',
 	[
@@ -125,8 +148,14 @@ const AnyValue: MetaMatchFn = (args) => {
 	return UnknownValue(args);
 };
 const UnknownValue: MetaMatchFn = (args) => {
-	if (args === null || (args as any) === 'Null') {
+	if (args === null) {
 		helped = true;
+		deprecated.legacyNull();
+		args = ['Null'];
+	}
+	if ((args as any) === 'Null') {
+		helped = true;
+		deprecated.legacyNullString();
 		args = ['Null'];
 	}
 	const [type, ...rest] = args;
@@ -320,6 +349,7 @@ const Value = (arg: any): AbstractSqlQuery => {
 
 const FromMatch: MetaMatchFn = (args) => {
 	if (typeof args === 'string') {
+		deprecated.legacyTable();
 		return ['Table', args];
 	}
 	const [type, ...rest] = args;
@@ -347,6 +377,7 @@ const MaybeAlias = (
 		typeof args[1] === 'string'
 	) {
 		helped = true;
+		deprecated.legacyAlias();
 		return ['Alias', matchFn(args[0] as any as AbstractSqlQuery), args[1]];
 	}
 	const [type, ...rest] = args;
