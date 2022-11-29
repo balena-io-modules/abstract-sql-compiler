@@ -29,6 +29,10 @@ const deprecated = (() => {
 			"Legacy alias format of `[node, alias]` is deprecated, use `['Alias', node, alias]` instead.",
 		legacyTable:
 			"Legacy table format of `tableName` is deprecated, use `['Table', tableName]` instead.",
+		legacyNull:
+			"Legacy null format of `null` is deprecated, use `['Null']` instead.",
+		legacyNullString:
+			"Legacy null format of `'Null'` is deprecated, use `['Null']` instead.",
 	};
 	const result = {} as Record<keyof typeof deprecationMessages, () => void>;
 	for (const key of Object.keys(deprecationMessages) as Array<
@@ -144,8 +148,14 @@ const AnyValue: MetaMatchFn = (args) => {
 	return UnknownValue(args);
 };
 const UnknownValue: MetaMatchFn = (args) => {
-	if (args === null || (args as any) === 'Null') {
+	if (args === null) {
 		helped = true;
+		deprecated.legacyNull();
+		args = ['Null'];
+	}
+	if ((args as any) === 'Null') {
+		helped = true;
+		deprecated.legacyNullString();
 		args = ['Null'];
 	}
 	const [type, ...rest] = args;
