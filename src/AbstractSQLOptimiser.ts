@@ -125,8 +125,6 @@ type MatchFn<T extends AnyTypeNodes> = (args: AbstractSqlType[]) => T;
 
 const deprecated = (() => {
 	const deprecationMessages = {
-		legacyAlias:
-			"Legacy alias format of `[node, alias]` is deprecated, use `['Alias', node, alias]` instead.",
 		legacyValuesBoolean:
 			"Legacy `Values` boolean format of `true|false` is deprecated, use `['Boolean', true|false]` instead.",
 		legacyAggregateJSON:
@@ -495,17 +493,6 @@ const MaybeAlias = <T extends AnyTypeNodes>(
 	args: AbstractSqlQuery,
 	matchFn: MetaMatchFn<T>,
 ): T | AliasNode<T> => {
-	if (
-		args.length === 2 &&
-		args[0] !== 'Table' &&
-		args[0] !== 'Count' &&
-		args[0] !== 'Field' &&
-		typeof args[1] === 'string'
-	) {
-		helped = true;
-		deprecated.legacyAlias();
-		return ['Alias', matchFn(args[0] as any as AbstractSqlQuery), args[1]];
-	}
 	const [type, ...rest] = args;
 	switch (type) {
 		case 'Alias':

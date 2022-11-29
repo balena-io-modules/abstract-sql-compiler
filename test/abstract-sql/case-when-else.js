@@ -6,6 +6,7 @@ const buildSelect = (withElse) => [
 		'Select',
 		[
 			[
+				'Alias',
 				[
 					'Case',
 					[
