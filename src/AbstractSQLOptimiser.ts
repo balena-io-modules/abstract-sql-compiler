@@ -23,6 +23,23 @@ type OptimisationMatchFn = (
 type MetaMatchFn = (args: AbstractSqlQuery) => AbstractSqlQuery;
 type MatchFn = (args: AbstractSqlType[]) => AbstractSqlQuery;
 
+const deprecated = (() => {
+	const deprecationMessages = {
+		legacyAlias:
+			"Legacy alias format of `[node, alias]` is deprecated, use `['Alias', node, alias]` instead.",
+	};
+	const result = {} as Record<keyof typeof deprecationMessages, () => void>;
+	for (const key of Object.keys(deprecationMessages) as Array<
+		keyof typeof deprecationMessages
+	>) {
+		result[key] = () => {
+			console.warn('pinejs-client deprecated:', deprecationMessages[key]);
+			result[key] = _.noop;
+		};
+	}
+	return result;
+})();
+
 const escapeForLike = (str: AbstractSqlType): ReplaceNode => [
 	'Replace',
 	[
@@ -347,6 +364,7 @@ const MaybeAlias = (
 		typeof args[1] === 'string'
 	) {
 		helped = true;
+		deprecated.legacyAlias();
 		return ['Alias', matchFn(args[0] as any as AbstractSqlQuery), args[1]];
 	}
 	const [type, ...rest] = args;
