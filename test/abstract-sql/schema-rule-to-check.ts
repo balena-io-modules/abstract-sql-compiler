@@ -41,7 +41,7 @@ it('should convert a basic rule to a check using NOT EXISTS', () => {
 								[
 									'SelectQuery',
 									['Select', []],
-									['From', [['Table', 'test'], 'test.0']],
+									['From', ['Alias', ['Table', 'test'], 'test.0']],
 									[
 										'Where',
 										[
@@ -112,7 +112,7 @@ it('should convert a basic rule to a check using COUNT(*) = 0', () => {
 							[
 								'SelectQuery',
 								['Select', [['Count', '*']]],
-								['From', [['Table', 'test'], 'test.0']],
+								['From', ['Alias', ['Table', 'test'], 'test.0']],
 								[
 									'Where',
 									[
@@ -188,6 +188,7 @@ it('should correctly shorten a converted check rule with a long name', () => {
 									[
 										'From',
 										[
+											'Alias',
 											['Table', 'test_table_with_very_very_long_name'],
 											'test_table_with_very_very_long_name.0',
 										],
@@ -275,7 +276,7 @@ it('should work with differing table/resource names using NOT EXISTS', () => {
 								[
 									'SelectQuery',
 									['Select', []],
-									['From', [['Table', 'test'], 'test.0']],
+									['From', ['Alias', ['Table', 'test'], 'test.0']],
 									[
 										'Where',
 										[
@@ -346,7 +347,7 @@ it('should work with differing table/resource names using COUNT(*) = 0', () => {
 							[
 								'SelectQuery',
 								['Select', [['Count', '*']]],
-								['From', [['Table', 'test'], 'test.0']],
+								['From', ['Alias', ['Table', 'test'], 'test.0']],
 								[
 									'Where',
 									[
