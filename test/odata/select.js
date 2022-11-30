@@ -35,7 +35,7 @@ test(
 				`\
 SELECT "pilot"."favourite colour" AS "favourite_colour"
 FROM "pilot"
-WHERE "pilot"."id" = ?`,
+WHERE ("pilot"."id") IS NOT NULL AND ("pilot"."id") = (?)`,
 			);
 		});
 	},
@@ -52,7 +52,7 @@ test(
 				`\
 SELECT "pilot"."favourite colour" AS "favourite_colour"
 FROM "pilot"
-WHERE "pilot"."id" = ?`,
+WHERE ("pilot"."id") IS NOT NULL AND ("pilot"."id") = (?)`,
 			);
 		});
 	},

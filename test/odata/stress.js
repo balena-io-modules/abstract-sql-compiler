@@ -4,7 +4,16 @@ const { pilotFields } = require('./fields');
 const pilotFieldsStr = pilotFields.join(', ');
 
 const filterIDs = _.range(1, 5000);
-const filterBindsString = _.map(filterIDs, _.constant('?')).join(', ');
+const filterBindsInString = _.map(filterIDs, () => '?').join(', ');
+const filterBindsOrString = _.map(
+	filterIDs,
+	() => '("pilot"."id") IS NOT NULL AND ("pilot"."id") = (?)',
+).join('\nOR ');
+const filterBindsNandString = _.map(
+	filterIDs,
+	() => 'NOT(("pilot"."id") IS NOT NULL AND ("pilot"."id") = (?))',
+).join('\nAND ');
+
 const filterBinds = _.map(filterIDs, (_n, i) => ['Bind', i]);
 
 let filterString = `id in (${filterIDs.join(', ')})`;
@@ -20,7 +29,7 @@ test(
 SELECT ${pilotFieldsStr}
 FROM "pilot"
 WHERE "pilot"."id" IN (` +
-					filterBindsString +
+					filterBindsInString +
 					')',
 			);
 		});
@@ -40,7 +49,7 @@ test(
 SELECT ${pilotFieldsStr}
 FROM "pilot"
 WHERE "pilot"."id" NOT IN (` +
-					filterBindsString +
+					filterBindsInString +
 					')',
 			);
 		});
@@ -59,9 +68,7 @@ test(
 				`\
 SELECT ${pilotFieldsStr}
 FROM "pilot"
-WHERE "pilot"."id" IN (` +
-					filterBindsString +
-					')',
+WHERE (${filterBindsOrString})`,
 			);
 		});
 	},
@@ -79,9 +86,7 @@ test(
 				`\
 SELECT ${pilotFieldsStr}
 FROM "pilot"
-WHERE "pilot"."id" NOT IN (` +
-					filterBindsString +
-					')',
+WHERE ${filterBindsNandString}`,
 			);
 		});
 	},

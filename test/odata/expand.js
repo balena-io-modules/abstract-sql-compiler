@@ -285,7 +285,7 @@ SELECT (
 	FROM (
 		SELECT ${fields}
 		FROM "licence" AS "pilot.licence"
-		WHERE "pilot.licence"."id" = ?
+		WHERE ("pilot.licence"."id") IS NOT NULL AND ("pilot.licence"."id") = (?)
 		AND "pilot"."licence" = "pilot.licence"."id"
 	) AS "pilot.licence"
 ) AS "licence", ${remainingPilotFields}
@@ -350,7 +350,7 @@ SELECT (
 		FROM "licence" AS "pilot.licence",
 			"pilot" AS "pilot.licence.is of-pilot"
 		WHERE "pilot.licence"."id" = "pilot.licence.is of-pilot"."licence"
-		AND "pilot.licence.is of-pilot"."id" = ?
+		AND ("pilot.licence.is of-pilot"."id") IS NOT NULL AND ("pilot.licence.is of-pilot"."id") = (?)
 		AND "pilot"."licence" = "pilot.licence"."id"
 	) AS "pilot.licence"
 ) AS "licence", ${remainingPilotFields}
