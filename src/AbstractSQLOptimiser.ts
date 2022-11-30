@@ -39,7 +39,10 @@ const deprecated = (() => {
 		keyof typeof deprecationMessages
 	>) {
 		result[key] = () => {
-			console.warn('pinejs-client deprecated:', deprecationMessages[key]);
+			console.warn(
+				'@balena/abstract-sql-compiler deprecated:',
+				deprecationMessages[key],
+			);
 			result[key] = _.noop;
 		};
 	}
