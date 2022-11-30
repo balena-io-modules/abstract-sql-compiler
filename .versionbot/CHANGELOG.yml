@@ -1,4 +1,16 @@
 - commits:
+    - subject: "Tests: update @balena/odata-to-abstract-sql to 5.x"
+      hash: e93dfd1cbf56a9df248ac199776dca44c71cbc11
+      body: ""
+      footer:
+        Change-type: patch
+        change-type: patch
+      author: Pagan Gazzard
+      nested: []
+  version: 7.22.3
+  title: ""
+  date: 2022-11-30T16:17:30.183Z
+- commits:
     - subject: Fix deprecation notice module name
       hash: 7272a823a00ffd6af52228f2cab4c95e3b3474b9
       body: ""
