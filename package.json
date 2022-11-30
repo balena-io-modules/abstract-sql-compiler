@@ -57,6 +57,9 @@
       "test/**/*.js"
     ]
   },
+  "engines": {
+    "node": ">=16.13.0"
+  },
   "versionist": {
     "publishedAt": "2022-12-08T15:38:24.441Z"
   }
