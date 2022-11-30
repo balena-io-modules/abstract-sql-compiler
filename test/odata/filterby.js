@@ -7,7 +7,7 @@ const { expect } = require('chai');
 const test = require('./test');
 const { clientModel } = test;
 const _ = require('lodash');
-const { odataNameToSqlName } = require('@resin/odata-to-abstract-sql');
+const { odataNameToSqlName } = require('@balena/odata-to-abstract-sql');
 const {
 	pilotFields,
 	teamFields,
@@ -300,31 +300,37 @@ const createMethodCall = function (method, ...args) {
 		case 'HOUR':
 		case 'MINUTE':
 			return {
-				sql: `EXTRACT('${method}' FROM ${args[0].sql})`,
+				sql: `EXTRACT('${method}' FROM DATE_TRUNC('milliseconds', ${args[0].sql}))`,
 				bindings: args[0].bindings,
 				odata,
 			};
 		case 'SECOND':
 			return {
-				sql: `FLOOR(EXTRACT('${method}' FROM ${args[0].sql}))`,
+				sql: `FLOOR(EXTRACT('${method}' FROM DATE_TRUNC('milliseconds', ${args[0].sql})))`,
 				bindings: args[0].bindings,
 				odata,
 			};
 		case 'FRACTIONALSECONDS':
 			return {
-				sql: `EXTRACT('SECOND' FROM ${args[0].sql}) - FLOOR(EXTRACT('SECOND' FROM ${args[0].sql}))`,
+				sql: `EXTRACT('SECOND' FROM DATE_TRUNC('milliseconds', ${args[0].sql})) - FLOOR(EXTRACT('SECOND' FROM DATE_TRUNC('milliseconds', ${args[0].sql})))`,
 				bindings: args[0].bindings,
 				odata,
 			};
 		case 'TIME':
 			return {
-				sql: `CAST(${args[0].sql} AS ${method})`,
+				sql: `CAST(DATE_TRUNC('milliseconds', ${args[0].sql}) AS ${method})`,
 				bindings: args[0].bindings,
 				odata,
 			};
 		case 'TOTALSECONDS':
 			return {
 				sql: `EXTRACT(EPOCH FROM ${args[0].sql})`,
+				bindings: args[0].bindings,
+				odata,
+			};
+		case 'DATE':
+			return {
+				sql: `DATE(DATE_TRUNC('milliseconds', ${args[0].sql}))`,
 				bindings: args[0].bindings,
 				odata,
 			};
@@ -1437,7 +1443,7 @@ run(function () {
 				`\
 SELECT ${pilotFieldsStr}
 FROM "pilot"
-WHERE CURRENT_TIMESTAMP - "pilot"."created at" < INTERVAL '1 0:0:0.0'`,
+WHERE CURRENT_TIMESTAMP - DATE_TRUNC('milliseconds', "pilot"."created at") < INTERVAL '1 0:0:0.0'`,
 			);
 		});
 	});
@@ -1467,14 +1473,14 @@ run(function () {
 				`\
 SELECT ${pilotFieldsStr}
 FROM "pilot"
-WHERE "pilot"."created at" + INTERVAL '1 0:0:0.0' > CURRENT_TIMESTAMP`,
+WHERE DATE_TRUNC('milliseconds', "pilot"."created at") + INTERVAL '1 0:0:0.0' > CURRENT_TIMESTAMP`,
 			);
 		});
 	});
 });
 
 run(function () {
-	const odata = 'totalseconds(created_at) gt 1';
+	const odata = "totalseconds(duration'P1D') gt 1";
 	test(`/pilot?$filter=${odata}`, 'GET', [['Bind', 0]], (result, sqlEquals) => {
 		it('should select from pilot where "' + odata + '"', () => {
 			sqlEquals(
@@ -1482,7 +1488,7 @@ run(function () {
 				`\
 SELECT ${pilotFieldsStr}
 FROM "pilot"
-WHERE EXTRACT(EPOCH FROM "pilot"."created at") > $1`,
+WHERE EXTRACT(EPOCH FROM INTERVAL '1 0:0:0.0') > $1`,
 			);
 		});
 	});
