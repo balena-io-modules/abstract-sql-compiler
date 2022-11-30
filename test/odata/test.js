@@ -1,6 +1,6 @@
 const fs = require('fs');
 const ODataParser = require('@balena/odata-parser');
-const { OData2AbstractSQL } = require('@resin/odata-to-abstract-sql');
+const { OData2AbstractSQL } = require('@balena/odata-to-abstract-sql');
 const sbvrModel = fs.readFileSync(require.resolve('../model.sbvr'), 'utf8');
 
 const AbstractSQLCompiler = require('../..');

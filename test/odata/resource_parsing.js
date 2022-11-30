@@ -37,7 +37,7 @@ test('/pilot(1)', 'GET', [['Bind', 0]], (result, sqlEquals) => {
 			`\
 SELECT ${pilotFieldsStr}
 FROM "pilot"
-WHERE "pilot"."id" = ?`,
+WHERE ("pilot"."id") IS NOT NULL AND ("pilot"."id") = (?)`,
 		);
 	});
 });
@@ -49,7 +49,7 @@ test("/pilot('TextKey')", 'GET', [['Bind', 0]], (result, sqlEquals) => {
 			`\
 SELECT ${pilotFieldsStr}
 FROM "pilot"
-WHERE "pilot"."id" = ?`,
+WHERE ("pilot"."id") IS NOT NULL AND ("pilot"."id") = (?)`,
 		);
 	});
 });
@@ -63,7 +63,7 @@ SELECT ${aliasLicenceFieldsStr}
 FROM "pilot",
 	"licence" AS "pilot.licence"
 WHERE "pilot"."licence" = "pilot.licence"."id"
-AND "pilot"."id" = ?`,
+AND ("pilot"."id") IS NOT NULL AND ("pilot"."id") = (?)`,
 		);
 	});
 });
@@ -77,7 +77,7 @@ SELECT ${aliasPilotLicenceFieldsStr}
 FROM "licence",
 	"pilot" AS "licence.is of-pilot"
 WHERE "licence"."id" = "licence.is of-pilot"."licence"
-AND "licence"."id" = ?`,
+AND ("licence"."id") IS NOT NULL AND ("licence"."id") = (?)`,
 		);
 	});
 });
@@ -97,7 +97,7 @@ FROM "pilot",
 	"plane" AS "pilot.pilot-can fly-plane.plane"
 WHERE "pilot.pilot-can fly-plane"."can fly-plane" = "pilot.pilot-can fly-plane.plane"."id"
 AND "pilot"."id" = "pilot.pilot-can fly-plane"."pilot"
-AND "pilot"."id" = ?`,
+AND ("pilot"."id") IS NOT NULL AND ("pilot"."id") = (?)`,
 			);
 		});
 	},
@@ -118,7 +118,7 @@ FROM "plane",
 	"pilot" AS "plane.pilot-can fly-plane.pilot"
 WHERE "plane.pilot-can fly-plane"."pilot" = "plane.pilot-can fly-plane.pilot"."id"
 AND "plane"."id" = "plane.pilot-can fly-plane"."can fly-plane"
-AND "plane"."id" = ?`,
+AND ("plane"."id") IS NOT NULL AND ("plane"."id") = (?)`,
 			);
 		});
 	},
@@ -130,7 +130,7 @@ test('/pilot(1)', 'DELETE', [['Bind', 0]], (result, sqlEquals) => {
 			result.query,
 			`\
 DELETE FROM "pilot"
-WHERE "pilot"."id" = ?`,
+WHERE ("pilot"."id") IS NOT NULL AND ("pilot"."id") = (?)`,
 		);
 	});
 });
@@ -158,7 +158,7 @@ SELECT "pilot"."id"
 FROM (
 	SELECT CAST(NULL AS TIMESTAMP) AS "created at", CAST(NULL AS TIMESTAMP) AS "modified at", CAST(? AS INTEGER) AS "id", CAST(NULL AS INTEGER) AS "person", CAST(NULL AS INTEGER) AS "is experienced", CAST(NULL AS VARCHAR(255)) AS "name", CAST(NULL AS INTEGER) AS "age", CAST(NULL AS INTEGER) AS "favourite colour", CAST(NULL AS INTEGER) AS "is on-team", CAST(NULL AS INTEGER) AS "licence", CAST(NULL AS TIMESTAMP) AS "hire date", CAST(NULL AS INTEGER) AS "was trained by-pilot"
 ) AS "pilot"
-WHERE "pilot"."id" = ?`,
+WHERE ("pilot"."id") IS NOT NULL AND ("pilot"."id") = (?)`,
 			);
 			sqlEquals(
 				result[1].query,
@@ -176,7 +176,7 @@ SET "created at" = DEFAULT,
 	"licence" = DEFAULT,
 	"hire date" = DEFAULT,
 	"was trained by-pilot" = DEFAULT
-WHERE "pilot"."id" = ?`,
+WHERE ("pilot"."id") IS NOT NULL AND ("pilot"."id") = (?)`,
 			);
 		});
 	},
@@ -219,7 +219,7 @@ INSERT INTO "pilot" DEFAULT VALUES`,
 				`\
 UPDATE "pilot"
 SET "is experienced" = ?
-WHERE "pilot"."id" = ?`,
+WHERE ("pilot"."id") IS NOT NULL AND ("pilot"."id") = (?)`,
 			);
 		});
 	};
@@ -237,7 +237,7 @@ test(
 				result.query,
 				`\
 DELETE FROM "pilot-can fly-plane"
-WHERE "pilot-can fly-plane"."id" = ?`,
+WHERE ("pilot-can fly-plane"."id") IS NOT NULL AND ("pilot-can fly-plane"."id") = (?)`,
 			);
 		});
 	},
@@ -266,7 +266,7 @@ SELECT "pilot-can fly-plane"."id"
 FROM (
 	SELECT CAST(NULL AS TIMESTAMP) AS "created at", CAST(NULL AS TIMESTAMP) AS "modified at", CAST(NULL AS INTEGER) AS "pilot", CAST(NULL AS INTEGER) AS "can fly-plane", CAST(? AS INTEGER) AS "id"
 ) AS "pilot-can fly-plane"
-WHERE "pilot-can fly-plane"."id" = ?`,
+WHERE ("pilot-can fly-plane"."id") IS NOT NULL AND ("pilot-can fly-plane"."id") = (?)`,
 			);
 			sqlEquals(
 				result[1].query,
@@ -277,7 +277,7 @@ SET "created at" = DEFAULT,
 	"pilot" = DEFAULT,
 	"can fly-plane" = DEFAULT,
 	"id" = ?
-WHERE "pilot-can fly-plane"."id" = ?`,
+WHERE ("pilot-can fly-plane"."id") IS NOT NULL AND ("pilot-can fly-plane"."id") = (?)`,
 			);
 		});
 	},
@@ -323,7 +323,7 @@ INSERT INTO "pilot-can fly-plane" DEFAULT VALUES`,
 				`\
 UPDATE "pilot-can fly-plane"
 SET "pilot" = ?
-WHERE "pilot-can fly-plane"."id" = ?`,
+WHERE ("pilot-can fly-plane"."id") IS NOT NULL AND ("pilot-can fly-plane"."id") = (?)`,
 			);
 		});
 	};
@@ -338,7 +338,7 @@ test('/pilot(1)/$links/licence', 'GET', [['Bind', 0]], (result, sqlEquals) => {
 			`\
 SELECT "pilot"."licence" AS "licence"
 FROM "pilot"
-WHERE "pilot"."id" = ?`,
+WHERE ("pilot"."id") IS NOT NULL AND ("pilot"."id") = (?)`,
 		);
 	});
 });
@@ -356,7 +356,7 @@ SELECT "pilot.pilot-can fly-plane"."can fly-plane" AS "plane"
 FROM "pilot",
 	"pilot-can fly-plane" AS "pilot.pilot-can fly-plane"
 WHERE "pilot"."id" = "pilot.pilot-can fly-plane"."pilot"
-AND "pilot"."id" = ?`,
+AND ("pilot"."id") IS NOT NULL AND ("pilot"."id") = (?)`,
 			);
 		});
 	},
@@ -377,7 +377,7 @@ test("/team('purple')", 'GET', [['Bind', 0]], (result, sqlEquals) => {
 			`\
 SELECT ${teamFieldsStr}
 FROM "team"
-WHERE "team"."favourite colour" = ?`,
+WHERE ("team"."favourite colour") IS NOT NULL AND ("team"."favourite colour") = (?)`,
 		);
 	});
 });
@@ -459,7 +459,8 @@ test(
 				`\
 SELECT COUNT(*) AS "$count"
 FROM "pilot"
-WHERE "pilot"."id" IN (?, ?)`,
+WHERE (("pilot"."id") IS NOT NULL AND ("pilot"."id") = (?)
+OR ("pilot"."id") IS NOT NULL AND ("pilot"."id") = (?))`,
 			);
 		});
 	},
@@ -476,7 +477,7 @@ test(
 				`\
 SELECT COUNT(*) AS "$count"
 FROM "pilot"
-WHERE ("pilot"."id" = ?
+WHERE (("pilot"."id") IS NOT NULL AND ("pilot"."id") = (?)
 OR "pilot"."id" IS NULL)`,
 			);
 		});
@@ -492,7 +493,7 @@ SELECT COUNT(*) AS "$count"
 FROM "pilot",
 	"licence" AS "pilot.licence"
 WHERE "pilot"."licence" = "pilot.licence"."id"
-AND "pilot"."id" = ?`,
+AND ("pilot"."id") IS NOT NULL AND ("pilot"."id") = (?)`,
 		);
 	});
 });

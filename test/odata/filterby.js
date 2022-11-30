@@ -7,7 +7,7 @@ const { expect } = require('chai');
 const test = require('./test');
 const { clientModel } = test;
 const _ = require('lodash');
-const { odataNameToSqlName } = require('@resin/odata-to-abstract-sql');
+const { odataNameToSqlName } = require('@balena/odata-to-abstract-sql');
 const {
 	pilotFields,
 	teamFields,
@@ -204,15 +204,40 @@ const createExpression = function (lhs, op, rhs) {
 	lhs = parseOperand(lhs);
 	rhs = parseOperand(rhs);
 	const bindings = lhs.bindings.concat(rhs.bindings);
-	if (['eq', 'ne'].includes(op) && [lhs.sql, rhs.sql].includes('NULL')) {
-		const nullCheck = op === 'eq' ? ' IS NULL' : ' IS NOT NULL';
-		if (lhs.sql === 'NULL') {
-			sql = rhs.sql + nullCheck;
+	if (['eq', 'ne'].includes(op)) {
+		if ([lhs.sql, rhs.sql].includes('NULL')) {
+			const nullCheck = op === 'eq' ? ' IS NULL' : ' IS NOT NULL';
+			if (lhs.sql === 'NULL') {
+				sql = rhs.sql + nullCheck;
+			} else {
+				sql = lhs.sql + nullCheck;
+			}
 		} else {
-			sql = lhs.sql + nullCheck;
+			const nullCheck = ' IS NOT NULL';
+			const lhsNullCheck =
+				lhs.sql === '?' ? '' : `(${lhs.sql})${nullCheck} AND `;
+			const rhsNullCheck =
+				rhs.sql === '?' ? '' : `(${rhs.sql})${nullCheck} AND `;
+			const bothNullCheck =
+				lhsNullCheck.length > 0 && rhsNullCheck.length > 0
+					? ` OR (${lhs.sql}) IS NULL AND (${rhs.sql}) IS NULL`
+					: '';
+
+			if (lhsNullCheck.length > 0 || rhsNullCheck.length > 0) {
+				if (op === 'ne') {
+					const mainCheck = `(${lhs.sql})${sqlOps.eq} (${rhs.sql})`;
+					sql = `NOT(${lhsNullCheck}${rhsNullCheck}${mainCheck}${bothNullCheck})`;
+				} else {
+					const mainCheck = `(${lhs.sql})${sqlOps[op]} (${rhs.sql})`;
+					sql = `${lhsNullCheck}${rhsNullCheck}${mainCheck}${bothNullCheck}`;
+				}
+			} else {
+				const mainCheck = `${lhs.sql}${sqlOps[op]} ${rhs.sql}`;
+				sql = `${lhsNullCheck}${rhsNullCheck}${mainCheck}${bothNullCheck}`;
+			}
 		}
 	} else {
-		sql = lhs.sql + sqlOps[op] + ' ' + rhs.sql;
+		sql = `${lhs.sql}${sqlOps[op]} ${rhs.sql}`;
 	}
 
 	if (sqlOpBrackets[op]) {
@@ -275,31 +300,37 @@ const createMethodCall = function (method, ...args) {
 		case 'HOUR':
 		case 'MINUTE':
 			return {
-				sql: `EXTRACT('${method}' FROM ${args[0].sql})`,
+				sql: `EXTRACT('${method}' FROM DATE_TRUNC('milliseconds', ${args[0].sql}))`,
 				bindings: args[0].bindings,
 				odata,
 			};
 		case 'SECOND':
 			return {
-				sql: `FLOOR(EXTRACT('${method}' FROM ${args[0].sql}))`,
+				sql: `FLOOR(EXTRACT('${method}' FROM DATE_TRUNC('milliseconds', ${args[0].sql})))`,
 				bindings: args[0].bindings,
 				odata,
 			};
 		case 'FRACTIONALSECONDS':
 			return {
-				sql: `EXTRACT('SECOND' FROM ${args[0].sql}) - FLOOR(EXTRACT('SECOND' FROM ${args[0].sql}))`,
+				sql: `EXTRACT('SECOND' FROM DATE_TRUNC('milliseconds', ${args[0].sql})) - FLOOR(EXTRACT('SECOND' FROM DATE_TRUNC('milliseconds', ${args[0].sql})))`,
 				bindings: args[0].bindings,
 				odata,
 			};
 		case 'TIME':
 			return {
-				sql: `CAST(${args[0].sql} AS ${method})`,
+				sql: `CAST(DATE_TRUNC('milliseconds', ${args[0].sql}) AS ${method})`,
 				bindings: args[0].bindings,
 				odata,
 			};
 		case 'TOTALSECONDS':
 			return {
 				sql: `EXTRACT(EPOCH FROM ${args[0].sql})`,
+				bindings: args[0].bindings,
+				odata,
+			};
+		case 'DATE':
+			return {
+				sql: `DATE(DATE_TRUNC('milliseconds', ${args[0].sql}))`,
 				bindings: args[0].bindings,
 				odata,
 			};
@@ -496,7 +527,7 @@ run(function () {
 					`\
 SELECT ${pilotFieldsStr}
 FROM "pilot"
-WHERE "pilot"."name" = ?`,
+WHERE ("pilot"."name") IS NOT NULL AND ("pilot"."name") = (?)`,
 				);
 			});
 		},
@@ -516,8 +547,8 @@ run(function () {
 					`\
 SELECT ${pilotFieldsStr}
 FROM "pilot"
-WHERE ("pilot"."name" = $1
-OR "pilot"."favourite colour" = $1)`,
+WHERE (("pilot"."name") IS NOT NULL AND ("pilot"."name") = ($1)
+OR ("pilot"."favourite colour") IS NOT NULL AND ("pilot"."favourite colour") = ($1))`,
 				);
 			});
 		},
@@ -564,9 +595,9 @@ FROM "pilot",
 	"pilot-can fly-plane" AS "pilot.pilot-can fly-plane",
 	"plane" AS "pilot.pilot-can fly-plane.can fly-plane"
 WHERE "pilot.pilot-can fly-plane"."can fly-plane" = "pilot.pilot-can fly-plane.can fly-plane"."id"
-AND "pilot.pilot-can fly-plane.can fly-plane"."id" = ?
+AND ("pilot.pilot-can fly-plane.can fly-plane"."id") IS NOT NULL AND ("pilot.pilot-can fly-plane.can fly-plane"."id") = (?)
 AND "pilot"."id" = "pilot.pilot-can fly-plane"."pilot"
-AND "pilot"."id" = ?`,
+AND ("pilot"."id") IS NOT NULL AND ("pilot"."id") = (?)`,
 					);
 				},
 			);
@@ -767,7 +798,7 @@ run(function () {
 					`\
 UPDATE "pilot"
 SET "name" = ?
-WHERE "pilot"."id" = ?
+WHERE ("pilot"."id") IS NOT NULL AND ("pilot"."id") = (?)
 AND "pilot"."id" IN ((
 	SELECT "pilot"."id"
 	FROM "pilot"
@@ -798,7 +829,7 @@ FROM (
 	SELECT CAST(NULL AS TIMESTAMP) AS "created at", CAST(NULL AS TIMESTAMP) AS "modified at", CAST(? AS INTEGER) AS "id", CAST(NULL AS INTEGER) AS "person", CAST(NULL AS INTEGER) AS "is experienced", CAST(? AS VARCHAR(255)) AS "name", CAST(NULL AS INTEGER) AS "age", CAST(NULL AS INTEGER) AS "favourite colour", CAST(NULL AS INTEGER) AS "is on-team", CAST(NULL AS INTEGER) AS "licence", CAST(NULL AS TIMESTAMP) AS "hire date", CAST(NULL AS INTEGER) AS "was trained by-pilot"
 ) AS "pilot"
 WHERE ${sql}
-AND "pilot"."id" = ?`,
+AND ("pilot"."id") IS NOT NULL AND ("pilot"."id") = (?)`,
 					);
 				});
 				it('and updates', () => {
@@ -818,7 +849,7 @@ SET "created at" = DEFAULT,
 	"licence" = DEFAULT,
 	"hire date" = DEFAULT,
 	"was trained by-pilot" = DEFAULT
-WHERE "pilot"."id" = ?
+WHERE ("pilot"."id") IS NOT NULL AND ("pilot"."id") = (?)
 AND "pilot"."id" IN ((
 	SELECT "pilot"."id"
 	FROM "pilot"
@@ -854,7 +885,7 @@ FROM "pilot",
 	"pilot-can fly-plane" AS "pilot.pilot-can fly-plane"
 WHERE ${sql}
 AND "pilot"."id" = "pilot.pilot-can fly-plane"."pilot"
-AND "pilot"."id" = ?`,
+AND ("pilot"."id") IS NOT NULL AND ("pilot"."id") = (?)`,
 					);
 				},
 			);
@@ -868,14 +899,21 @@ methodTest('startswith', 'name', "'P'");
 run(() => {
 	operandTest(createMethodCall('length', 'name'), 'eq', 4);
 });
+
 run(() => {
-	operandTest(createMethodCall('indexof', 'name', "'Pe'"), 'eq', 0);
+	operandTest(createMethodCall('indexof', 'name', "'Pe'"), 'eq', 0, {
+		sql: '(STRPOS("pilot"."name", $1) - 1) IS NOT NULL AND (STRPOS("pilot"."name", $1) - 1) = ($2)',
+	});
 });
 run(() => {
-	operandTest(createMethodCall('substring', 'name', 1), 'eq', "'ete'");
+	operandTest(createMethodCall('substring', 'name', 1), 'eq', "'ete'", {
+		sql: '(SUBSTRING("pilot"."name", $1 + 1)) IS NOT NULL AND (SUBSTRING("pilot"."name", $1 + 1)) = ($2)',
+	});
 });
 run(() => {
-	operandTest(createMethodCall('substring', 'name', 1, 2), 'eq', "'et'");
+	operandTest(createMethodCall('substring', 'name', 1, 2), 'eq', "'et'", {
+		sql: '(SUBSTRING("pilot"."name", $1 + 1, $2)) IS NOT NULL AND (SUBSTRING("pilot"."name", $1 + 1, $2)) = ($3)',
+	});
 });
 run(() => {
 	operandTest(createMethodCall('tolower', 'name'), 'eq', "'pete'");
@@ -892,11 +930,15 @@ run(() => {
 });
 run(function () {
 	const concat = createMethodCall('concat', 'name', "'%20'");
-	operandTest(createMethodCall('trim', concat), 'eq', "'Pete'");
+	operandTest(createMethodCall('trim', concat), 'eq', "'Pete'", {
+		sql: '(TRIM(("pilot"."name" || $1))) IS NOT NULL AND (TRIM(("pilot"."name" || $1))) = ($2)',
+	});
 });
 run(function () {
 	const concat = createMethodCall('concat', 'name', "'%20'");
-	operandTest(concat, 'eq', "'Pete%20'");
+	operandTest(concat, 'eq', "'Pete%20'", {
+		sql: '(("pilot"."name" || $1)) IS NOT NULL AND (("pilot"."name" || $1)) = ($2)',
+	});
 });
 run(() => {
 	operandTest(createMethodCall('year', 'hire_date'), 'eq', 2011);
@@ -957,6 +999,9 @@ run(() => {
 		createMethodCall('replace', 'name', "'ete'", "'at'"),
 		'eq',
 		"'Pat'",
+		{
+			sql: '(REPLACE("pilot"."name", $1, $2)) IS NOT NULL AND (REPLACE("pilot"."name", $1, $2)) = ($3)',
+		},
 	);
 });
 
@@ -977,7 +1022,7 @@ WHERE EXISTS (
 		"plane" AS "pilot.pilot-can fly-plane.plane"
 	WHERE "pilot"."id" = "pilot.pilot-can fly-plane"."pilot"
 	AND "pilot.pilot-can fly-plane"."can fly-plane" = "pilot.pilot-can fly-plane.plane"."id"
-	AND "pilot.pilot-can fly-plane.plane"."name" = ?
+	AND ("pilot.pilot-can fly-plane.plane"."name") IS NOT NULL AND ("pilot.pilot-can fly-plane.plane"."name") = (?)
 )`,
 			);
 		});
@@ -1001,7 +1046,7 @@ WHERE EXISTS (
 		"plane" AS "pilot.pilot-can fly-plane.plane"
 	WHERE "pilot"."id" = "pilot.pilot-can fly-plane"."pilot"
 	AND "pilot.pilot-can fly-plane"."can fly-plane" = "pilot.pilot-can fly-plane.plane"."id"
-	AND "pilot.pilot-can fly-plane.plane"."name" = ?
+	AND ("pilot.pilot-can fly-plane.plane"."name") IS NOT NULL AND ("pilot.pilot-can fly-plane.plane"."name") = (?)
 )`,
 			);
 		});
@@ -1012,11 +1057,11 @@ test(
 	"/pilot?$filter=can_fly__plane/any(d:d/plane/name eq 'Concorde') or (id eq 5 or id eq 10) or (name eq 'Peter' or name eq 'Harry')",
 	'GET',
 	[
+		['Bind', 0],
 		['Bind', 1],
 		['Bind', 2],
 		['Bind', 3],
 		['Bind', 4],
-		['Bind', 0],
 	],
 	(result, sqlEquals) => {
 		it('should select count(*) from pilot where id in (5,10)', () => {
@@ -1025,16 +1070,18 @@ test(
 				`\
 SELECT ${pilotFieldsStr}
 FROM "pilot"
-WHERE ("pilot"."id" IN (?, ?)
-OR "pilot"."name" IN (?, ?)
-OR EXISTS (
+WHERE (EXISTS (
 	SELECT 1
 	FROM "pilot-can fly-plane" AS "pilot.pilot-can fly-plane",
 		"plane" AS "pilot.pilot-can fly-plane.plane"
 	WHERE "pilot"."id" = "pilot.pilot-can fly-plane"."pilot"
 	AND "pilot.pilot-can fly-plane"."can fly-plane" = "pilot.pilot-can fly-plane.plane"."id"
-	AND "pilot.pilot-can fly-plane.plane"."name" = ?
-))`,
+	AND ("pilot.pilot-can fly-plane.plane"."name") IS NOT NULL AND ("pilot.pilot-can fly-plane.plane"."name") = (?)
+)
+OR ("pilot"."id") IS NOT NULL AND ("pilot"."id") = (?)
+OR ("pilot"."id") IS NOT NULL AND ("pilot"."id") = (?)
+OR ("pilot"."name") IS NOT NULL AND ("pilot"."name") = (?)
+OR ("pilot"."name") IS NOT NULL AND ("pilot"."name") = (?))`,
 			);
 		});
 	},
@@ -1044,11 +1091,11 @@ test(
 	"/pilot?$filter=not(can_fly__plane/any(d:d/plane/name eq 'Concorde') or (id eq 5 or id eq 10) or (name eq 'Peter' or name eq 'Harry'))",
 	'GET',
 	[
+		['Bind', 0],
 		['Bind', 1],
 		['Bind', 2],
 		['Bind', 3],
 		['Bind', 4],
-		['Bind', 0],
 	],
 	(result, sqlEquals) => {
 		it('should select count(*) from pilot where id in (5,10)', () => {
@@ -1058,16 +1105,18 @@ test(
 SELECT ${pilotFieldsStr}
 FROM "pilot"
 WHERE NOT (
-	("pilot"."id" IN (?, ?)
-	OR "pilot"."name" IN (?, ?)
-	OR EXISTS (
+	(EXISTS (
 		SELECT 1
 		FROM "pilot-can fly-plane" AS "pilot.pilot-can fly-plane",
 			"plane" AS "pilot.pilot-can fly-plane.plane"
 		WHERE "pilot"."id" = "pilot.pilot-can fly-plane"."pilot"
 		AND "pilot.pilot-can fly-plane"."can fly-plane" = "pilot.pilot-can fly-plane.plane"."id"
-		AND "pilot.pilot-can fly-plane.plane"."name" = ?
-	))
+		AND ("pilot.pilot-can fly-plane.plane"."name") IS NOT NULL AND ("pilot.pilot-can fly-plane.plane"."name") = (?)
+	)
+	OR ("pilot"."id") IS NOT NULL AND ("pilot"."id") = (?)
+	OR ("pilot"."id") IS NOT NULL AND ("pilot"."id") = (?)
+	OR ("pilot"."name") IS NOT NULL AND ("pilot"."name") = (?)
+	OR ("pilot"."name") IS NOT NULL AND ("pilot"."name") = (?))
 )`,
 			);
 		});
@@ -1091,7 +1140,9 @@ WHERE NOT EXISTS (
 		"plane" AS "pilot.pilot-can fly-plane.plane"
 	WHERE "pilot"."id" = "pilot.pilot-can fly-plane"."pilot"
 	AND "pilot.pilot-can fly-plane"."can fly-plane" = "pilot.pilot-can fly-plane.plane"."id"
-	AND "pilot.pilot-can fly-plane.plane"."name" != ?
+	AND NOT (
+		("pilot.pilot-can fly-plane.plane"."name") IS NOT NULL AND ("pilot.pilot-can fly-plane.plane"."name") = (?)
+	)
 )`,
 			);
 		});
@@ -1115,7 +1166,9 @@ WHERE NOT EXISTS (
 		"plane" AS "pilot.pilot-can fly-plane.plane"
 	WHERE "pilot"."id" = "pilot.pilot-can fly-plane"."pilot"
 	AND "pilot.pilot-can fly-plane"."can fly-plane" = "pilot.pilot-can fly-plane.plane"."id"
-	AND "pilot.pilot-can fly-plane.plane"."name" != ?
+	AND NOT (
+		("pilot.pilot-can fly-plane.plane"."name") IS NOT NULL AND ("pilot.pilot-can fly-plane.plane"."name") = (?)
+	)
 )`,
 			);
 		});
@@ -1139,7 +1192,7 @@ AND EXISTS (
 	SELECT 1
 	FROM "plane" AS "pilot.pilot-can fly-plane.plane"
 	WHERE "pilot.pilot-can fly-plane"."can fly-plane" = "pilot.pilot-can fly-plane.plane"."id"
-	AND "pilot.pilot-can fly-plane.plane"."name" = ?
+	AND ("pilot.pilot-can fly-plane.plane"."name") IS NOT NULL AND ("pilot.pilot-can fly-plane.plane"."name") = (?)
 )`,
 			);
 		});
@@ -1163,7 +1216,7 @@ AND EXISTS (
 	SELECT 1
 	FROM "plane" AS "pilot.pilot-can fly-plane.plane"
 	WHERE "pilot.pilot-can fly-plane"."can fly-plane" = "pilot.pilot-can fly-plane.plane"."id"
-	AND "pilot.pilot-can fly-plane.plane"."name" = ?
+	AND ("pilot.pilot-can fly-plane.plane"."name") IS NOT NULL AND ("pilot.pilot-can fly-plane.plane"."name") = (?)
 )`,
 			);
 		});
@@ -1187,7 +1240,9 @@ AND NOT EXISTS (
 	SELECT 1
 	FROM "plane" AS "pilot.pilot-can fly-plane.plane"
 	WHERE "pilot.pilot-can fly-plane"."can fly-plane" = "pilot.pilot-can fly-plane.plane"."id"
-	AND "pilot.pilot-can fly-plane.plane"."name" != ?
+	AND NOT (
+		("pilot.pilot-can fly-plane.plane"."name") IS NOT NULL AND ("pilot.pilot-can fly-plane.plane"."name") = (?)
+	)
 )`,
 			);
 		});
@@ -1211,7 +1266,9 @@ AND NOT EXISTS (
 	SELECT 1
 	FROM "plane" AS "pilot.pilot-can fly-plane.plane"
 	WHERE "pilot.pilot-can fly-plane"."can fly-plane" = "pilot.pilot-can fly-plane.plane"."id"
-	AND "pilot.pilot-can fly-plane.plane"."name" != ?
+	AND NOT (
+		("pilot.pilot-can fly-plane.plane"."name") IS NOT NULL AND ("pilot.pilot-can fly-plane.plane"."name") = (?)
+	)
 )`,
 			);
 		});
@@ -1222,11 +1279,11 @@ test(
 	"/pilot?$filter=can_fly__plane/any(d:d/plane/name eq 'Concorde') or (id eq 5 or name eq 'Peter') or (id eq 10 or name eq 'Harry')",
 	'GET',
 	[
-		['Bind', 1],
-		['Bind', 3],
-		['Bind', 2],
-		['Bind', 4],
 		['Bind', 0],
+		['Bind', 1],
+		['Bind', 2],
+		['Bind', 3],
+		['Bind', 4],
 	],
 	(result, sqlEquals) => {
 		it('should select count(*) from pilot where id in (5,10)', () => {
@@ -1235,16 +1292,18 @@ test(
 				`\
 SELECT ${pilotFieldsStr}
 FROM "pilot"
-WHERE ("pilot"."id" IN (?, ?)
-OR "pilot"."name" IN (?, ?)
-OR EXISTS (
+WHERE (EXISTS (
 	SELECT 1
 	FROM "pilot-can fly-plane" AS "pilot.pilot-can fly-plane",
 		"plane" AS "pilot.pilot-can fly-plane.plane"
 	WHERE "pilot"."id" = "pilot.pilot-can fly-plane"."pilot"
 	AND "pilot.pilot-can fly-plane"."can fly-plane" = "pilot.pilot-can fly-plane.plane"."id"
-	AND "pilot.pilot-can fly-plane.plane"."name" = ?
-))`,
+	AND ("pilot.pilot-can fly-plane.plane"."name") IS NOT NULL AND ("pilot.pilot-can fly-plane.plane"."name") = (?)
+)
+OR ("pilot"."id") IS NOT NULL AND ("pilot"."id") = (?)
+OR ("pilot"."name") IS NOT NULL AND ("pilot"."name") = (?)
+OR ("pilot"."id") IS NOT NULL AND ("pilot"."id") = (?)
+OR ("pilot"."name") IS NOT NULL AND ("pilot"."name") = (?))`,
 			);
 		});
 	},
@@ -1254,11 +1313,11 @@ test(
 	"/pilot?$filter=can_fly__plane/any(d:d/plane/name eq 'Concorde') and (id ne 5 and id ne 10) and (name ne 'Peter' and name ne 'Harry')",
 	'GET',
 	[
+		['Bind', 0],
 		['Bind', 1],
 		['Bind', 2],
 		['Bind', 3],
 		['Bind', 4],
-		['Bind', 0],
 	],
 	(result, sqlEquals) => {
 		it('should select count(*) from pilot where id in (5,10)', () => {
@@ -1267,16 +1326,18 @@ test(
 				`\
 SELECT ${pilotFieldsStr}
 FROM "pilot"
-WHERE "pilot"."id" NOT IN (?, ?)
-AND "pilot"."name" NOT IN (?, ?)
-AND EXISTS (
+WHERE EXISTS (
 	SELECT 1
 	FROM "pilot-can fly-plane" AS "pilot.pilot-can fly-plane",
 		"plane" AS "pilot.pilot-can fly-plane.plane"
 	WHERE "pilot"."id" = "pilot.pilot-can fly-plane"."pilot"
 	AND "pilot.pilot-can fly-plane"."can fly-plane" = "pilot.pilot-can fly-plane.plane"."id"
-	AND "pilot.pilot-can fly-plane.plane"."name" = ?
-)`,
+	AND ("pilot.pilot-can fly-plane.plane"."name") IS NOT NULL AND ("pilot.pilot-can fly-plane.plane"."name") = (?)
+)
+AND NOT(("pilot"."id") IS NOT NULL AND ("pilot"."id") = (?))
+AND NOT(("pilot"."id") IS NOT NULL AND ("pilot"."id") = (?))
+AND NOT(("pilot"."name") IS NOT NULL AND ("pilot"."name") = (?))
+AND NOT(("pilot"."name") IS NOT NULL AND ("pilot"."name") = (?))`,
 			);
 		});
 	},
@@ -1286,11 +1347,11 @@ test(
 	"/pilot?$filter=can_fly__plane/any(d:d/plane/name eq 'Concorde') and (id ne 5 and name ne 'Peter') and (id ne 10 and name ne 'Harry')",
 	'GET',
 	[
-		['Bind', 1],
-		['Bind', 3],
-		['Bind', 2],
-		['Bind', 4],
 		['Bind', 0],
+		['Bind', 1],
+		['Bind', 2],
+		['Bind', 3],
+		['Bind', 4],
 	],
 	(result, sqlEquals) => {
 		it('should select count(*) from pilot where id in (5,10)', () => {
@@ -1299,16 +1360,18 @@ test(
 				`\
 SELECT ${pilotFieldsStr}
 FROM "pilot"
-WHERE "pilot"."id" NOT IN (?, ?)
-AND "pilot"."name" NOT IN (?, ?)
-AND EXISTS (
+WHERE EXISTS (
 	SELECT 1
 	FROM "pilot-can fly-plane" AS "pilot.pilot-can fly-plane",
 		"plane" AS "pilot.pilot-can fly-plane.plane"
 	WHERE "pilot"."id" = "pilot.pilot-can fly-plane"."pilot"
 	AND "pilot.pilot-can fly-plane"."can fly-plane" = "pilot.pilot-can fly-plane.plane"."id"
-	AND "pilot.pilot-can fly-plane.plane"."name" = ?
-)`,
+	AND ("pilot.pilot-can fly-plane.plane"."name") IS NOT NULL AND ("pilot.pilot-can fly-plane.plane"."name") = (?)
+)
+AND NOT(("pilot"."id") IS NOT NULL AND ("pilot"."id") = (?))
+AND NOT(("pilot"."name") IS NOT NULL AND ("pilot"."name") = (?))
+AND NOT(("pilot"."id") IS NOT NULL AND ("pilot"."id") = (?))
+AND NOT(("pilot"."name") IS NOT NULL AND ("pilot"."name") = (?))`,
 			);
 		});
 	},
@@ -1380,7 +1443,7 @@ run(function () {
 				`\
 SELECT ${pilotFieldsStr}
 FROM "pilot"
-WHERE CURRENT_TIMESTAMP - "pilot"."created at" < INTERVAL '1 0:0:0.0'`,
+WHERE CURRENT_TIMESTAMP - DATE_TRUNC('milliseconds', "pilot"."created at") < INTERVAL '1 0:0:0.0'`,
 			);
 		});
 	});
@@ -1410,14 +1473,14 @@ run(function () {
 				`\
 SELECT ${pilotFieldsStr}
 FROM "pilot"
-WHERE "pilot"."created at" + INTERVAL '1 0:0:0.0' > CURRENT_TIMESTAMP`,
+WHERE DATE_TRUNC('milliseconds', "pilot"."created at") + INTERVAL '1 0:0:0.0' > CURRENT_TIMESTAMP`,
 			);
 		});
 	});
 });
 
 run(function () {
-	const odata = 'totalseconds(created_at) gt 1';
+	const odata = "totalseconds(duration'P1D') gt 1";
 	test(`/pilot?$filter=${odata}`, 'GET', [['Bind', 0]], (result, sqlEquals) => {
 		it('should select from pilot where "' + odata + '"', () => {
 			sqlEquals(
@@ -1425,7 +1488,7 @@ run(function () {
 				`\
 SELECT ${pilotFieldsStr}
 FROM "pilot"
-WHERE EXTRACT(EPOCH FROM "pilot"."created at") > $1`,
+WHERE EXTRACT(EPOCH FROM INTERVAL '1 0:0:0.0') > $1`,
 			);
 		});
 	});
