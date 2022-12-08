@@ -6,7 +6,10 @@ import {
 	FieldsNode,
 	isAliasNode,
 	isFromNode,
+	isSelectNode,
+	isSelectQueryNode,
 	isTableNode,
+	SelectNode,
 } from './AbstractSQLCompiler';
 import { AbstractSQLOptimiser } from './AbstractSQLOptimiser';
 
@@ -214,7 +217,21 @@ export const getRuleReferencedFields: EngineInstance['getRuleReferencedFields'] 
 	(ruleBody) => {
 		ruleBody = AbstractSQLOptimiser(ruleBody);
 		const referencedFields: RuleReferencedFields = {};
-		$getRuleReferencedFields(referencedFields, ruleBody, IsSafe.Insert);
+		if (
+			ruleBody[0] === 'Equals' &&
+			_.isEqual(ruleBody[2], ['Number', 0]) &&
+			isSelectQueryNode(ruleBody[1])
+		) {
+			const select = ruleBody[1].find(isSelectNode) as SelectNode;
+			select[1] = [];
+			$getRuleReferencedFields(
+				referencedFields,
+				ruleBody[1] as AbstractSqlQuery,
+				IsSafe.Delete,
+			);
+		} else {
+			$getRuleReferencedFields(referencedFields, ruleBody, IsSafe.Insert);
+		}
 		for (const tableName of Object.keys(referencedFields)) {
 			const tableRefs = referencedFields[tableName];
 			for (const method of Object.keys(tableRefs) as Array<

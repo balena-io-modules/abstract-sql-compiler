@@ -2,7 +2,7 @@ import { expect } from 'chai';
 import * as AbstractSqlCompiler from '../../src/AbstractSQLCompiler';
 
 describe('getRuleReferencedFields', () => {
-	it('should work with single table SELECT NOT EXISTS', () => {
+	it('should work with single table NOT EXISTS', () => {
 		expect(
 			AbstractSqlCompiler.postgres.getRuleReferencedFields([
 				'Not',
@@ -29,6 +29,40 @@ describe('getRuleReferencedFields', () => {
 						],
 					],
 				],
+			] as AbstractSqlCompiler.AbstractSqlQuery),
+		).to.deep.equal({
+			test: {
+				create: ['id'],
+				update: ['id'],
+				delete: [],
+			},
+		});
+	});
+	it('should work with single table COUNT(*) = 0', () => {
+		expect(
+			AbstractSqlCompiler.postgres.getRuleReferencedFields([
+				'Equals',
+				[
+					'SelectQuery',
+					['Select', [['Count', '*']]],
+					['From', ['test', 'test.0']],
+					[
+						'Where',
+						[
+							'Not',
+							[
+								'And',
+								[
+									'LessThan',
+									['Integer', 0],
+									['ReferencedField', 'test.0', 'id'],
+								],
+								['Exists', ['ReferencedField', 'test.0', 'id']],
+							],
+						],
+					],
+				],
+				['Number', 0],
 			] as AbstractSqlCompiler.AbstractSqlQuery),
 		).to.deep.equal({
 			test: {
