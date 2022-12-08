@@ -1,4 +1,16 @@
 - commits:
+    - subject: Add support for rules optimizations when using COUNT(*) = 0
+      hash: f45412c4dbec8bed287ef116b9c5f0afdc047f9f
+      body: ""
+      footer:
+        Change-type: minor
+        change-type: minor
+      author: Pagan Gazzard
+      nested: []
+  version: 7.23.0
+  title: ""
+  date: 2022-12-08T15:38:24.108Z
+- commits:
     - subject: "Flowzone: Allow external contributions"
       hash: de26e9d6cc65ab9a03fd9e1ac6027e0df198864d
       body: ""
