@@ -495,6 +495,10 @@ export const isTableNode = (n: AbstractSqlType): n is TableNode =>
 	n[0] === 'Table';
 export const isResourceNode = (n: AbstractSqlType): n is ResourceNode =>
 	n[0] === 'Resource';
+export const isSelectQueryNode = (n: AbstractSqlType): n is SelectQueryNode =>
+	n[0] === 'SelectQuery';
+export const isSelectNode = (n: AbstractSqlType): n is SelectNode =>
+	n[0] === 'Select';
 
 /**
  *

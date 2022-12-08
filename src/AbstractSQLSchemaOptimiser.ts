@@ -15,6 +15,7 @@ import {
 	BooleanTypeNodes,
 	WhereNode,
 	isFromNode,
+	isSelectQueryNode,
 } from './AbstractSQLCompiler';
 
 const countFroms = (n: AbstractSqlType[]) => {
@@ -65,10 +66,12 @@ export const optimizeSchema = (
 			const count = countFroms(ruleBody);
 			if (
 				count === 1 &&
-				ruleBody[0] === 'NotExists' &&
-				ruleBody[1][0] === 'SelectQuery'
+				(ruleBody[0] === 'NotExists' ||
+					(ruleBody[0] === 'Equals' &&
+						_.isEqual(ruleBody[2], ['Number', 0]))) &&
+				isSelectQueryNode(ruleBody[1])
 			) {
-				const selectQueryNodes = ruleBody[1].slice(1) as AbstractSqlType[];
+				const selectQueryNodes = ruleBody[1].slice(1);
 				if (
 					selectQueryNodes.every((n) =>
 						['Select', 'From', 'Where'].includes(n[0]),
