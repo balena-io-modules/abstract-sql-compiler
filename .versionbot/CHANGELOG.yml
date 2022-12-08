@@ -1,4 +1,18 @@
 - commits:
+    - subject: "Flowzone: Allow external contributions"
+      hash: de26e9d6cc65ab9a03fd9e1ac6027e0df198864d
+      body: ""
+      footer:
+        Change-type: patch
+        change-type: patch
+        Signed-off-by: Josh Bowling <josh@monarci.com>
+        signed-off-by: Josh Bowling <josh@monarci.com>
+      author: Josh Bowling
+      nested: []
+  version: 7.22.5
+  title: ""
+  date: 2022-12-08T01:00:02.914Z
+- commits:
     - subject: "Fix: move @balena/odata-to-abstract-sql to dev dependencies"
       hash: a5bd2c11c4e6f04a98c7784601a0d0e36ca7f6a2
       body: ""
