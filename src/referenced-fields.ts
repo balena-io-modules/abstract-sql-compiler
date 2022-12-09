@@ -19,6 +19,7 @@ import {
 	isSelectNode,
 	isSelectQueryNode,
 	isTableNode,
+	LfRuleInfo,
 	NotNode,
 	SelectNode,
 	SelectQueryNode,
@@ -501,7 +502,10 @@ const findBindCandidates = (
 // - We only care about and recognize `COUNT` aggregates and `GROUP BY`
 //   statements right now.
 // - We assume the ID column is named "id".
-export const addAffectedIdsBinds = (abstractSql: AbstractSqlQuery) => {
+export const addAffectedIdsBinds = (
+	abstractSql: AbstractSqlQuery,
+	lfRuleInfo: LfRuleInfo,
+) => {
 	const candidates: BindCandidate[] = [];
 	findBindCandidates(['SelectQuery', ['Where', abstractSql]], candidates);
 
@@ -517,49 +521,47 @@ export const addAffectedIdsBinds = (abstractSql: AbstractSqlQuery) => {
 		}
 	}
 
-	// Add binds for affected IDs on selects that do not select aggregates nor
-	// select from the same database table.
-	candidateExamination: for (const candidate of candidates) {
-		if (seenTableNames[candidate.tableName] > 1) {
-			continue;
-		}
-
-		if (candidate.scope[0] === 'UnionQuery') {
-			throw new Error('addAffectedIdsBinds only supports SELECT queries');
-		}
-
-		const selectQueryNode = candidate.scope as SelectQueryNode;
-		let whereNode: WhereNode | null = null;
-		for (const statement of selectQueryNode.slice(1)) {
-			if (statement[0] === 'Select') {
-				for (const arg of statement[1]) {
-					if (arg[0] === 'Count') {
-						continue candidateExamination;
-					}
-				}
-			} else if (statement[0] === 'GroupBy') {
-				continue candidateExamination;
-			} else if (statement[0] === 'Where') {
-				whereNode = statement;
-			}
-		}
-		if (!whereNode) {
-			whereNode = ['Where', ['Boolean', true]];
-			selectQueryNode.push(whereNode);
-		}
-
-		whereNode[1] = [
-			'And',
-			whereNode[1],
-			[
-				'Or',
-				['Equals', ['Bind', candidate.tableName], ['EmbeddedText', '{}']],
-				[
-					'Equals',
-					['ReferencedField', candidate.alias, 'id'],
-					['Any', ['Bind', candidate.tableName], 'Integer'],
-				],
-			],
-		];
+	// Currently we only apply this simple narrowing to the root table as there
+	// are multiple safety issues otherwise
+	const rootTableCandidate = candidates.find(
+		(candidate) => candidate.alias === lfRuleInfo.rootTable,
+	)!;
+	if (seenTableNames[rootTableCandidate.tableName] > 1) {
+		return;
 	}
+
+	if (rootTableCandidate.scope[0] === 'UnionQuery') {
+		throw new Error('addAffectedIdsBinds only supports SELECT queries');
+	}
+
+	const selectQueryNode = rootTableCandidate.scope as SelectQueryNode;
+	let whereNode: WhereNode | null = null;
+	for (const statement of selectQueryNode.slice(1)) {
+		if (statement[0] === 'Where') {
+			whereNode = statement;
+			break;
+		}
+	}
+	if (!whereNode) {
+		whereNode = ['Where', ['Boolean', true]];
+		selectQueryNode.push(whereNode);
+	}
+
+	whereNode[1] = [
+		'And',
+		whereNode[1],
+		[
+			'Or',
+			[
+				'Equals',
+				['Bind', rootTableCandidate.tableName],
+				['EmbeddedText', '{}'],
+			],
+			[
+				'Equals',
+				['ReferencedField', rootTableCandidate.alias, 'id'],
+				['Any', ['Bind', rootTableCandidate.tableName], 'Integer'],
+			],
+		],
+	];
 };

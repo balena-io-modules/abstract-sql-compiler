@@ -24,6 +24,7 @@ it('a table with a static definition should produce a view', () => {
 				},
 			},
 			rules: [],
+			lfInfo: { rules: {} },
 		}),
 	)
 		.to.have.property('createSchema')

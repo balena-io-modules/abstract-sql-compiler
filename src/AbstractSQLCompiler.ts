@@ -392,6 +392,14 @@ export interface AbstractSqlModel {
 		body: string;
 		language: 'plpgsql';
 	}>;
+	lfInfo: {
+		rules: {
+			[key: string]: LfRuleInfo;
+		};
+	};
+}
+export interface LfRuleInfo {
+	rootTable: string;
 }
 export interface SqlModel {
 	synonyms: {
@@ -869,7 +877,7 @@ CREATE TABLE ${ifNotExistsStr}"${table.name}" (
 			if (typeof ruleSE !== 'string') {
 				throw new Error('Invalid structured English');
 			}
-			addAffectedIdsBinds(ruleBody);
+			addAffectedIdsBinds(ruleBody, abstractSqlModel.lfInfo.rules[ruleSE]);
 			const { query: ruleSQL, bindings: ruleBindings } = compileRule(
 				ruleBody,
 				engine,

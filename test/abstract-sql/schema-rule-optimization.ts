@@ -74,6 +74,7 @@ it('should convert a basic rule to a check', () => {
 					['StructuredEnglish', 'Test rule abstract sql optimization'],
 				],
 			],
+			lfInfo: { rules: {} },
 		}),
 	)
 		.to.have.property('rules')
