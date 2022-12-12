@@ -20,7 +20,7 @@
     "lodash": "^4.17.21"
   },
   "devDependencies": {
-    "@balena/lf-to-abstract-sql": "4.7.0-build-retrieve-rule-root-table-d0e10f44e895acd72fd6ce99b09ba64823642cb5-1",
+    "@balena/lf-to-abstract-sql": "4.7.0-build-retrieve-rule-root-table-167680ba65e73235307370c3e211a211a14a1acc-1",
     "@balena/lint": "^6.2.1",
     "@balena/odata-parser": "^2.4.2",
     "@balena/odata-to-abstract-sql": "^5.7.2",
@@ -40,7 +40,7 @@
     "typescript": "^4.9.4"
   },
   "overrides": {
-    "@balena/lf-to-abstract-sql": "4.7.0-build-retrieve-rule-root-table-d0e10f44e895acd72fd6ce99b09ba64823642cb5-1"
+    "@balena/lf-to-abstract-sql": "4.7.0-build-retrieve-rule-root-table-167680ba65e73235307370c3e211a211a14a1acc-1"
   },
   "lint-staged": {
     "*.js": [

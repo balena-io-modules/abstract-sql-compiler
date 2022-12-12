@@ -399,7 +399,7 @@ export interface AbstractSqlModel {
 	};
 }
 export interface LfRuleInfo {
-	rootTable: string;
+	rootAlias: string;
 }
 export interface SqlModel {
 	synonyms: {

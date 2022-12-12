@@ -491,17 +491,28 @@ const findBindCandidates = (
 };
 
 // TODO: lots
-// - Removing multiple candidates selecting from the same database table is too
-//   conservative. The correct criteria is to just remove any that are present
-//   in at least 2 disjoint subqueries. Because the problem is that in those
-//   cases there is no place in the query that has visibility inside both
-//   disjoint subqueries and that is a requirement for adding the corrent bind.
+// - Narrowing rows simply by narrowing the IDs to those that were modified on
+//   some table is not safe most of the time. As far as we know, it is safe to
+//   do this with any table selected from one and quantified with a forall or
+//   not exists. Finding these cases is not trivial as, for example,
+//   "not not exists" is in the end in existential which is not safe with this
+//   method. Because of this we restrict ourselves to narrowing only the root
+//   table right now.
+// - Removing multiple candidates selecting from the same database table to
+//   avoid visibility issues is too conservative. The correct criteria is to
+//   just remove any that are present in at least 2 disjoint subqueries.
+//   The problem is that in those cases there is no single place in the query
+//   that has visibility inside both disjoint subqueries and that is a
+//   requirement for adding the corrent binds for narrowing.
 // - We can miss subqueries as we don't recurse into everything.
 // - Ban on aggregates is not necessary but solving it requires additional
 //   complexity.
 // - We only care about and recognize `COUNT` aggregates and `GROUP BY`
 //   statements right now.
 // - We assume the ID column is named "id".
+// - There are other techniques that cover cases that this simple narrowing
+//   does not. Currently that are two with their own kinks to work out:
+//   ID propagation and COUNT splitting.
 export const addAffectedIdsBinds = (
 	abstractSql: AbstractSqlQuery,
 	lfRuleInfo: LfRuleInfo,
@@ -524,9 +535,14 @@ export const addAffectedIdsBinds = (
 	// Currently we only apply this simple narrowing to the root table as there
 	// are multiple safety issues otherwise
 	const rootTableCandidate = candidates.find(
-		(candidate) => candidate.alias === lfRuleInfo.rootTable,
+		(candidate) => candidate.alias === lfRuleInfo.rootAlias,
 	)!;
-	if (seenTableNames[rootTableCandidate.tableName] > 1) {
+
+	// In some cases, due to optimizations, the rule's root table is not
+	// selected from in the actual query. We don't narrow in those cases and
+	// neither when the root table is selected from multiple times. The latter
+	// is probably safe but requires more thinking
+	if (!rootTableCandidate || seenTableNames[rootTableCandidate.tableName] > 1) {
 		return;
 	}
 
