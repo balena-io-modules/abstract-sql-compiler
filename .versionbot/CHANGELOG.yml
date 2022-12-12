@@ -1,4 +1,212 @@
 - commits:
+    - subject: Set minimum supported nodejs version to 16.13.0 and tsconfig to es2021
+      hash: 0fab61a2ef474b55200a714274b8e6d7b3335442
+      body: ""
+      footer:
+        Change-type: major
+        change-type: major
+      author: Pagan Gazzard
+      nested: []
+    - subject: Remove support for the legacy alias format of `[node, alias]`
+      hash: f621847cdc969e77a72b568b9d386b92c574012d
+      body: ""
+      footer:
+        Change-type: major
+        change-type: major
+      author: Pagan Gazzard
+      nested: []
+    - subject: Remove support for the legacy table format of `tableName`
+      hash: 0e356c8ba8f4ae050a3d049209d52a0465a42a42
+      body: ""
+      footer:
+        Change-type: major
+        change-type: major
+      author: Pagan Gazzard
+      nested: []
+    - subject: Remove support for the legacy null formats of `null` and `'Null'`
+      hash: 0f9616f1eee8cf005ffb278ae0260373b3d675a8
+      body: ""
+      footer:
+        Change-type: major
+        change-type: major
+      author: Pagan Gazzard
+      nested: []
+    - subject: Reflect the usage of BOOLEAN db type
+      hash: e61a4043a77bc773f6d9b19d06384885f3d289c2
+      body: ""
+      footer:
+        Change-type: major
+        change-type: major
+      author: Pagan Gazzard
+      nested: []
+    - subject: Update @balena/sbvr-types to 4.x
+      hash: 99d32d43b01bdaef4ea31555025f6604a589ef36
+      body: |
+        Update @balena/sbvr-types from 3.4.8 to 4.0.0
+      footer:
+        Change-type: major
+        change-type: major
+      author: Pagan Gazzard
+      nested:
+        - commits:
+            - subject: "Flowzone: Allow external contributions"
+              hash: 9f7bb028bbac327e6fe0711491d7c0f2c6464f98
+              body: ""
+              footer:
+                Change-type: patch
+                change-type: patch
+                Signed-off-by: Josh Bowling <josh@monarci.com>
+                signed-off-by: Josh Bowling <josh@monarci.com>
+              author: Josh Bowling
+          version: sbvr-types-3.4.19
+          title: ""
+          date: 2022-12-08T01:08:35.143Z
+        - commits:
+            - subject: "Tests: remove chai-as-promised"
+              hash: bb50fbe22649f9ce9a328fdb52bba3bce2c9efb4
+              body: ""
+              footer:
+                Change-type: patch
+                change-type: patch
+              author: Pagan Gazzard
+            - subject: "Tests: remove bluebird"
+              hash: 76fde2a906f7baa4e2ce6ddb62e5194cd67aa68a
+              body: ""
+              footer:
+                Change-type: patch
+                change-type: patch
+              author: Pagan Gazzard
+            - subject: "Tests: remove lodash"
+              hash: 916ff7b68b215a08b6a65e42c4034c0205ec6256
+              body: ""
+              footer:
+                Change-type: patch
+                change-type: patch
+              author: Pagan Gazzard
+          version: sbvr-types-3.4.18
+          title: ""
+          date: 2022-11-25T17:43:36.704Z
+        - commits:
+            - subject: Update dependencies
+              hash: e5d3ececb219aaf6380c9f56016a56c3c7c2023f
+              body: ""
+              footer:
+                Change-type: patch
+                change-type: patch
+              author: Pagan Gazzard
+          version: sbvr-types-3.4.17
+          title: ""
+          date: 2022-11-25T16:27:57.945Z
+        - commits:
+            - subject: Switch from `new Buffer` to `Buffer.from` to avoid deprecation warnings
+              hash: e671336ee310572b02253ba75d45b15d2c7acc76
+              body: ""
+              footer:
+                Change-type: patch
+                change-type: patch
+              author: Pagan Gazzard
+          version: sbvr-types-3.4.16
+          title: ""
+          date: 2022-11-25T16:23:18.014Z
+        - commits:
+            - subject: "Dev: Migrate husky setup for v8"
+              hash: d715082666edaa031ff971bf54f9fff5928bcbbe
+              body: ""
+              footer:
+                Change-type: patch
+                change-type: patch
+                Signed-off-by: Josh Bowling <josh@monarci.com>
+                signed-off-by: Josh Bowling <josh@monarci.com>
+              author: Josh Bowling
+          version: sbvr-types-3.4.15
+          title: ""
+          date: 2022-11-18T01:50:51.136Z
+        - commits:
+            - subject: Update dependency mocha to 10.1.0
+              hash: 90b854cd4b606d4ebe87fb2a108745e76acbfe0d
+              body: |
+                Update mocha to 10.1.0
+
+                Update mocha from 9.2.2 to 10.1.0
+              footer:
+                Change-type: patch
+                change-type: patch
+              author: Renovate Bot
+          version: sbvr-types-3.4.14
+          title: ""
+          date: 2022-11-17T18:52:52.811Z
+        - commits:
+            - subject: Update dependency lint-staged to 13.0.3
+              hash: 42b86a5d0767440f1896f8131b45b495d96a7a56
+              body: |
+                Update lint-staged to 13.0.3
+
+                Update lint-staged from 12.5.0 to 13.0.3
+              footer:
+                Change-type: patch
+                change-type: patch
+              author: Renovate Bot
+          version: sbvr-types-3.4.13
+          title: ""
+          date: 2022-11-17T17:53:05.536Z
+        - commits:
+            - subject: Update dependency husky to 8.0.2
+              hash: cbd735b63b3f39d9cdaa3b3a448a9c6294639a1b
+              body: |
+                Update husky to 8.0.2
+
+                Update husky from 4.3.8 to 8.0.2
+              footer:
+                Change-type: patch
+                change-type: patch
+              author: Renovate Bot
+          version: sbvr-types-3.4.12
+          title: ""
+          date: 2022-11-17T17:07:42.075Z
+        - commits:
+            - subject: "Dev: Add lint-fix npm script"
+              hash: 3842a36b2e9d32a2244b10d0cedfe0e74c4dbee2
+              body: ""
+              footer:
+                Change-type: patch
+                change-type: patch
+                Signed-off-by: Josh Bowling <josh@monarci.com>
+                signed-off-by: Josh Bowling <josh@monarci.com>
+              author: Josh Bowling
+          version: sbvr-types-3.4.11
+          title: ""
+          date: 2022-11-17T09:10:43.588Z
+        - commits:
+            - subject: "Dev: Move type deps to dev"
+              hash: bdfddfd6170e58b85db9646c11a21e43c5fd613c
+              body: ""
+              footer:
+                Change-type: patch
+                change-type: patch
+                Signed-off-by: Josh Bowling <josh@monarci.com>
+                signed-off-by: Josh Bowling <josh@monarci.com>
+              author: Josh Bowling
+          version: sbvr-types-3.4.10
+          title: ""
+          date: 2022-11-17T09:04:12.596Z
+        - commits:
+            - subject: Add .npmrc
+              hash: 05305cc123a70c25045c1dc53ba021946ce22dcb
+              body: >
+                Add .npmrc to disable package-lock.json generation on npm install
+              footer:
+                Change-type: patch
+                change-type: patch
+                Signed-off-by: Josh Bowling <josh@monarci.com>
+                signed-off-by: Josh Bowling <josh@monarci.com>
+              author: Josh Bowling
+          version: sbvr-types-3.4.9
+          title: ""
+          date: 2022-11-17T08:56:29.660Z
+  version: 8.0.0
+  title: ""
+  date: 2022-12-12T16:55:33.435Z
+- commits:
     - subject: Add support for rules optimizations when using COUNT(*) = 0
       hash: f45412c4dbec8bed287ef116b9c5f0afdc047f9f
       body: ""
