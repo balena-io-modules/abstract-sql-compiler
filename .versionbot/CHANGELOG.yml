@@ -1,4 +1,18 @@
 - commits:
+    - subject: Add binds for affected IDs in compiled rules
+      hash: 74d3cab30f02ad14757a065b6752696db7f1c0e4
+      body: ""
+      footer:
+        Change-type: major
+        change-type: major
+        Signed-off-by: Carol Schulze <carol@balena.io>
+        signed-off-by: Carol Schulze <carol@balena.io>
+      author: Carol Schulze
+      nested: []
+  version: 8.0.0
+  title: ""
+  date: 2022-12-14T12:18:15.253Z
+- commits:
     - subject: Add support for rules optimizations when using COUNT(*) = 0
       hash: f45412c4dbec8bed287ef116b9c5f0afdc047f9f
       body: ""
