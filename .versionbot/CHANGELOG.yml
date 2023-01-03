@@ -1,4 +1,18 @@
 - commits:
+    - subject: Integrate beta version of sbvr-types supporting WebResource
+      hash: bb7fa551c55fbcd1810da1332991f329c2aeb0e9
+      body: ""
+      footer:
+        Change-type: patch
+        change-type: patch
+        Signed-off-by: Ramiro Gonzalez <ramiro.gonzalez@balena.io>
+        signed-off-by: Ramiro Gonzalez <ramiro.gonzalez@balena.io>
+      author: Ramiro González Maciel
+      nested: []
+  version: 7.23.1
+  title: ""
+  date: 2023-01-03T13:36:37.140Z
+- commits:
     - subject: Add support for rules optimizations when using COUNT(*) = 0
       hash: f45412c4dbec8bed287ef116b9c5f0afdc047f9f
       body: ""
