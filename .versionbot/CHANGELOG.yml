@@ -1,4 +1,19 @@
 - commits:
+    - subject: Add `modifyFields`/`modifyName` to table definition
+      hash: 74b33620c1844d646bf5218b62cb3cacfae98aaa
+      body: |
+        This is intended to be used to target tables differently for reads vs
+        writes, eg where you might read from a view/definition but want to
+        write to a physical table instead
+      footer:
+        Change-type: minor
+        change-type: minor
+      author: Pagan Gazzard
+      nested: []
+  version: 7.24.0
+  title: ""
+  date: 2023-01-10T16:15:54.939Z
+- commits:
     - subject: Add support for rules optimizations when using COUNT(*) = 0
       hash: f45412c4dbec8bed287ef116b9c5f0afdc047f9f
       body: ""
