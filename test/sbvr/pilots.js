@@ -160,6 +160,8 @@ SELECT (
 		FROM "pilot-can fly-plane" AS "pilot.0-can fly-plane.1"
 		WHERE "pilot.0-can fly-plane.1"."pilot" = "pilot.0"."id"
 	)
+	AND ($1 = '{}'
+	OR "pilot.0"."id" = ANY(CAST($1 AS INTEGER[])))
 ) = 0 AS "result";`,
 	);
 
@@ -177,6 +179,8 @@ SELECT (
 			WHERE "pilot.0-can fly-plane.1"."pilot" = "pilot.0"."id"
 		) >= 2
 	)
+	AND ($1 = '{}'
+	OR "pilot.0"."id" = ANY(CAST($1 AS INTEGER[])))
 ) = 0 AS "result";`,
 	);
 
@@ -192,6 +196,8 @@ SELECT (
 		FROM "pilot-can fly-plane" AS "pilot.0-can fly-plane.1"
 		WHERE "pilot.0-can fly-plane.1"."pilot" = "pilot.0"."id"
 	) >= 3
+	AND ($1 = '{}'
+	OR "pilot.0"."id" = ANY(CAST($1 AS INTEGER[])))
 ) = 0 AS "result";`,
 	);
 
@@ -209,6 +215,8 @@ SELECT (
 		) >= 3
 	)
 	AND "pilot.0"."is experienced" != 0
+	AND ($1 = '{}'
+	OR "pilot.0"."id" = ANY(CAST($1 AS INTEGER[])))
 ) = 0 AS "result";`,
 	);
 
@@ -224,6 +232,8 @@ SELECT (
 		WHERE "pilot.1-can fly-plane.0"."can fly-plane" = "plane.0"."id"
 	) >= 3
 	AND "plane.0"."name" IS NULL
+	AND ($1 = '{}'
+	OR "plane.0"."id" = ANY(CAST($1 AS INTEGER[])))
 ) = 0 AS "result";`,
 	);
 
@@ -242,6 +252,8 @@ SELECT (
 		AND "pilot.1-can fly-plane.0"."can fly-plane" = "plane.0"."id"
 	) >= 3
 	AND "plane.0"."name" IS NULL
+	AND ($1 = '{}'
+	OR "plane.0"."id" = ANY(CAST($1 AS INTEGER[])))
 ) = 0 AS "result";`,
 	);
 
@@ -259,6 +271,8 @@ SELECT (
 		AND "pilot.1-can fly-plane.0"."can fly-plane" = "plane.0"."id"
 	) >= 3
 	AND "plane.0"."name" IS NULL
+	AND ($1 = '{}'
+	OR "plane.0"."id" = ANY(CAST($1 AS INTEGER[])))
 ) = 0 AS "result";`;
 		test.rule(
 			'It is necessary that each plane that at least 3 pilots that are not experienced can fly, has a name',
@@ -285,6 +299,8 @@ SELECT (
 		AND "pilot.1-can fly-plane.0"."can fly-plane" = "plane.0"."id"
 	) >= 3
 	AND "plane.0"."name" IS NULL
+	AND ($1 = '{}'
+	OR "plane.0"."id" = ANY(CAST($1 AS INTEGER[])))
 ) = 0 AS "result";`,
 	);
 
@@ -303,6 +319,8 @@ SELECT (
 		AND "pilot.1-can fly-plane.0"."can fly-plane" = "plane.0"."id"
 	) >= 3
 	AND "plane.0"."name" IS NULL
+	AND ($1 = '{}'
+	OR "plane.0"."id" = ANY(CAST($1 AS INTEGER[])))
 ) = 0 AS "result";`,
 	);
 
@@ -316,6 +334,8 @@ SELECT (
 		0 < "pilot.0"."years of experience"
 		AND "pilot.0"."years of experience" IS NOT NULL
 	)
+	AND ($1 = '{}'
+	OR "pilot.0"."id" = ANY(CAST($1 AS INTEGER[])))
 ) = 0 AS "result";`,
 	);
 
@@ -330,6 +350,8 @@ SELECT (
 		FROM "pilot-can fly-plane" AS "pilot.1-can fly-plane.0"
 		WHERE "pilot.1-can fly-plane.0"."can fly-plane" = "plane.0"."id"
 	)
+	AND ($1 = '{}'
+	OR "plane.0"."id" = ANY(CAST($1 AS INTEGER[])))
 ) = 0 AS "result";`,
 	);
 
@@ -350,6 +372,8 @@ SELECT (
 		OR 5 < "pilot.0"."years of experience"
 		AND "pilot.0"."years of experience" IS NOT NULL)
 	)
+	AND ($1 = '{}'
+	OR "pilot.0"."id" = ANY(CAST($1 AS INTEGER[])))
 ) = 0 AS "result";`,
 	);
 
@@ -369,6 +393,8 @@ SELECT (
 		5 < "pilot.0"."years of experience"
 		AND "pilot.0"."years of experience" IS NOT NULL
 	)
+	AND ($1 = '{}'
+	OR "pilot.0"."id" = ANY(CAST($1 AS INTEGER[])))
 ) = 0 AS "result";`,
 	);
 
@@ -393,6 +419,8 @@ SELECT (
 		5 < "pilot.0"."years of experience"
 		AND "pilot.0"."years of experience" IS NOT NULL
 	)
+	AND ($1 = '{}'
+	OR "pilot.0"."id" = ANY(CAST($1 AS INTEGER[])))
 ) = 0 AS "result";`,
 	);
 
@@ -415,6 +443,8 @@ SELECT (
 			WHERE "pilot.0-can fly-plane.2"."pilot" = "pilot.0"."id"
 		) = 1)
 	)
+	AND ($1 = '{}'
+	OR "pilot.0"."id" = ANY(CAST($1 AS INTEGER[])))
 ) = 0 AS "result";`,
 	);
 
@@ -435,6 +465,8 @@ SELECT (
 		WHERE "pilot.0-can fly-plane.2"."pilot" = "pilot.0"."id"
 	) = 1)
 	AND "pilot.0"."is experienced" != 1
+	AND ($1 = '{}'
+	OR "pilot.0"."id" = ANY(CAST($1 AS INTEGER[])))
 ) = 0 AS "result";`,
 	);
 
@@ -478,6 +510,8 @@ SELECT (
 		WHERE "pilot.2-can fly-plane.0"."can fly-plane" = "plane.0"."id"
 	) = 1)
 	AND "plane.0"."name" IS NULL
+	AND ($1 = '{}'
+	OR "plane.0"."id" = ANY(CAST($1 AS INTEGER[])))
 ) = 0 AS "result";`,
 	);
 
@@ -498,6 +532,8 @@ SELECT (
 		AND 5 < "pilot.0"."years of experience"
 		AND "pilot.0"."years of experience" IS NOT NULL
 	)
+	AND ($1 = '{}'
+	OR "pilot.0"."id" = ANY(CAST($1 AS INTEGER[])))
 ) = 0 AS "result";`,
 	);
 
@@ -517,6 +553,8 @@ SELECT (
 		5 < "pilot.0"."years of experience"
 		AND "pilot.0"."years of experience" IS NOT NULL
 	)
+	AND ($1 = '{}'
+	OR "pilot.0"."id" = ANY(CAST($1 AS INTEGER[])))
 ) = 0 AS "result";`,
 	);
 
@@ -539,6 +577,8 @@ SELECT (
 			WHERE "pilot.0-can fly-plane.2"."pilot" = "pilot.0"."id"
 		) = 1
 	)
+	AND ($1 = '{}'
+	OR "pilot.0"."id" = ANY(CAST($1 AS INTEGER[])))
 ) = 0 AS "result";`,
 	);
 
@@ -559,6 +599,8 @@ SELECT (
 		WHERE "pilot.0-can fly-plane.2"."pilot" = "pilot.0"."id"
 	) = 1
 	AND "pilot.0"."is experienced" != 1
+	AND ($1 = '{}'
+	OR "pilot.0"."id" = ANY(CAST($1 AS INTEGER[])))
 ) = 0 AS "result";`,
 	);
 
@@ -602,6 +644,8 @@ SELECT (
 		WHERE "pilot.2-can fly-plane.0"."can fly-plane" = "plane.0"."id"
 	) = 1
 	AND "plane.0"."name" IS NULL
+	AND ($1 = '{}'
+	OR "plane.0"."id" = ANY(CAST($1 AS INTEGER[])))
 ) = 0 AS "result";`,
 	);
 
@@ -627,6 +671,8 @@ SELECT (
 		5 < "pilot.0"."years of experience"
 		AND "pilot.0"."years of experience" IS NOT NULL
 	)
+	AND ($1 = '{}'
+	OR "pilot.0"."id" = ANY(CAST($1 AS INTEGER[])))
 ) = 0 AS "result";`,
 	);
 
@@ -651,6 +697,8 @@ SELECT (
 		5 < "pilot.0"."years of experience"
 		AND "pilot.0"."years of experience" IS NOT NULL
 	)
+	AND ($1 = '{}'
+	OR "pilot.0"."id" = ANY(CAST($1 AS INTEGER[])))
 ) = 0 AS "result";`,
 	);
 
@@ -678,6 +726,8 @@ SELECT (
 		5 < "pilot.0"."years of experience"
 		AND "pilot.0"."years of experience" IS NOT NULL
 	)
+	AND ($1 = '{}'
+	OR "pilot.0"."id" = ANY(CAST($1 AS INTEGER[])))
 ) = 0 AS "result";`,
 	);
 
@@ -702,6 +752,8 @@ SELECT (
 		5 < "pilot.0"."years of experience"
 		AND "pilot.0"."years of experience" IS NOT NULL
 	)
+	AND ($1 = '{}'
+	OR "pilot.0"."id" = ANY(CAST($1 AS INTEGER[])))
 ) = 0 AS "result";`,
 	);
 
@@ -731,6 +783,8 @@ SELECT (
 		5 < "pilot.0"."years of experience"
 		AND "pilot.0"."years of experience" IS NOT NULL
 	)
+	AND ($1 = '{}'
+	OR "pilot.0"."id" = ANY(CAST($1 AS INTEGER[])))
 ) = 0 AS "result";`,
 	);
 
@@ -758,6 +812,8 @@ SELECT (
 		5 < "pilot.0"."years of experience"
 		AND "pilot.0"."years of experience" IS NOT NULL
 	)
+	AND ($1 = '{}'
+	OR "pilot.0"."id" = ANY(CAST($1 AS INTEGER[])))
 ) = 0 AS "result";`,
 	);
 
@@ -785,6 +841,8 @@ SELECT (
 		5 < "pilot.0"."years of experience"
 		AND "pilot.0"."years of experience" IS NOT NULL
 	)
+	AND ($1 = '{}'
+	OR "pilot.0"."id" = ANY(CAST($1 AS INTEGER[])))
 ) = 0 AS "result";`,
 	);
 
@@ -812,6 +870,8 @@ SELECT (
 		5 < "pilot.0"."years of experience"
 		AND "pilot.0"."years of experience" IS NOT NULL
 	)
+	AND ($1 = '{}'
+	OR "pilot.0"."id" = ANY(CAST($1 AS INTEGER[])))
 ) = 0 AS "result";`,
 	);
 
@@ -841,6 +901,8 @@ SELECT (
 		5 < "pilot.0"."years of experience"
 		AND "pilot.0"."years of experience" IS NOT NULL
 	)
+	AND ($1 = '{}'
+	OR "pilot.0"."id" = ANY(CAST($1 AS INTEGER[])))
 ) = 0 AS "result";`,
 	);
 
@@ -872,6 +934,8 @@ SELECT (
 		5 < "pilot.0"."years of experience"
 		AND "pilot.0"."years of experience" IS NOT NULL
 	)
+	AND ($1 = '{}'
+	OR "pilot.0"."id" = ANY(CAST($1 AS INTEGER[])))
 ) = 0 AS "result";`,
 	);
 
@@ -901,6 +965,8 @@ SELECT (
 		5 < "pilot.0"."years of experience"
 		AND "pilot.0"."years of experience" IS NOT NULL
 	)
+	AND ($1 = '{}'
+	OR "pilot.0"."id" = ANY(CAST($1 AS INTEGER[])))
 ) = 0 AS "result";`,
 	);
 
@@ -928,6 +994,8 @@ SELECT (
 		5 < "pilot.0"."years of experience"
 		AND "pilot.0"."years of experience" IS NOT NULL
 	)
+	AND ($1 = '{}'
+	OR "pilot.0"."id" = ANY(CAST($1 AS INTEGER[])))
 ) = 0 AS "result";`,
 	);
 
@@ -959,6 +1027,8 @@ SELECT (
 		5 < "pilot.0"."years of experience"
 		AND "pilot.0"."years of experience" IS NOT NULL
 	)
+	AND ($1 = '{}'
+	OR "pilot.0"."id" = ANY(CAST($1 AS INTEGER[])))
 ) = 0 AS "result";`,
 	);
 
@@ -990,6 +1060,8 @@ SELECT (
 		5 < "pilot.0"."years of experience"
 		AND "pilot.0"."years of experience" IS NOT NULL
 	)
+	AND ($1 = '{}'
+	OR "pilot.0"."id" = ANY(CAST($1 AS INTEGER[])))
 ) = 0 AS "result";`,
 	);
 

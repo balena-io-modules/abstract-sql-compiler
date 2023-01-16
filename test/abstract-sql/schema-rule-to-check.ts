@@ -67,6 +67,7 @@ it('should convert a basic rule to a check using NOT EXISTS', () => {
 					],
 				],
 			],
+			lfInfo: { rules: {} },
 		}),
 	)
 		.to.have.property('createSchema')
@@ -138,6 +139,7 @@ it('should convert a basic rule to a check using COUNT(*) = 0', () => {
 					],
 				],
 			],
+			lfInfo: { rules: {} },
 		}),
 	)
 		.to.have.property('createSchema')
@@ -228,6 +230,7 @@ it('should correctly shorten a converted check rule with a long name', () => {
 					],
 				],
 			],
+			lfInfo: { rules: {} },
 		}),
 	)
 		.to.have.property('createSchema')
@@ -301,6 +304,7 @@ it('should work with differing table/resource names using NOT EXISTS', () => {
 					],
 				],
 			],
+			lfInfo: { rules: {} },
 		}),
 	)
 		.to.have.property('createSchema')
@@ -372,6 +376,7 @@ it('should work with differing table/resource names using COUNT(*) = 0', () => {
 					],
 				],
 			],
+			lfInfo: { rules: {} },
 		}),
 	)
 		.to.have.property('createSchema')

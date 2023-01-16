@@ -8,6 +8,7 @@ it('an empty abstractSql model should produce an empty schema', () => {
 			relationships: {},
 			tables: {},
 			rules: [],
+			lfInfo: { rules: {} },
 		}),
 	)
 		.to.have.property('createSchema')
@@ -36,6 +37,7 @@ it('a single table abstractSql model should produce an appropriate schema', () =
 				},
 			},
 			rules: [],
+			lfInfo: { rules: {} },
 		}),
 	)
 		.to.have.property('createSchema')
@@ -70,6 +72,7 @@ it('an abstractSql model with a check on a field should produce an appropriate s
 				},
 			},
 			rules: [],
+			lfInfo: { rules: {} },
 		}),
 	)
 		.to.have.property('createSchema')
@@ -107,6 +110,7 @@ describe('check constraints on table level', () => {
 					},
 				},
 				rules: [],
+				lfInfo: { rules: {} },
 			}),
 		)
 			.to.have.property('createSchema')
@@ -148,6 +152,7 @@ CREATE TABLE IF NOT EXISTS "test" (
 					},
 				},
 				rules: [],
+				lfInfo: { rules: {} },
 			}),
 		)
 			.to.have.property('createSchema')
