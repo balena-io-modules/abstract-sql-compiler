@@ -146,6 +146,7 @@ export type CoalesceNode = [
 	...UnknownTypeNodes[],
 ];
 export type ToJSONNode = ['ToJSON', AnyTypeNodes];
+export type AnyNode = ['Any', UnknownTypeNodes];
 export type UnknownTypeNodes =
 	| FieldNode
 	| ReferencedFieldNode
@@ -153,6 +154,7 @@ export type UnknownTypeNodes =
 	| CastNode
 	| CoalesceNode
 	| ToJSONNode
+	| AnyNode
 	| UnknownNode;
 
 export type TextNode = ['Text', string];
