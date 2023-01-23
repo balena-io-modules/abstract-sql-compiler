@@ -8,8 +8,7 @@ const {
 } = require('./fields');
 const _ = require('lodash');
 
-const postgresAgg = (field) =>
-	'COALESCE(ARRAY_TO_JSON(ARRAY_AGG(' + field + ")), '[]')";
+const postgresAgg = (field) => 'COALESCE(JSON_AGG(' + field + "), '[]')";
 const mysqlAgg = (field) => "'[' || group_concat(" + field + ", ',') || ']'";
 const websqlAgg = mysqlAgg;
 
