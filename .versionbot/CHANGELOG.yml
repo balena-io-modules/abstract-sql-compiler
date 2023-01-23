@@ -1,4 +1,22 @@
 - commits:
+    - subject: Change AggregateJSON to use `JSON_AGG` instead of
+        `ARRAY_TO_JSON`+`ARRAY_AGG`
+      hash: 360bbd95352d96be7ec0ce83521cd6e155b7da88
+      body: |
+        This increases the minimum postgres version for AggregateJSON from 9.2
+        to 9.3 but it is likely that other places already require postgres
+        >=9.3 and as such this should not increase the minimum version at all.
+        If it does somehow manage to then increasing the minimum from a 2012
+        postgres to 2013 should still be fine
+      footer:
+        Change-type: patch
+        change-type: patch
+      author: Pagan Gazzard
+      nested: []
+  version: 7.25.1
+  title: ""
+  date: 2023-01-23T19:03:56.421Z
+- commits:
     - subject: Add `modifyFields`/`modifyName` to table definition
       hash: 174c07b3923bb41fe50b413829b4268c1b28172e
       body: |
