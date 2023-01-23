@@ -378,11 +378,61 @@ const mathOps = {
 	Multiply: '*',
 	Divide: '/',
 };
+
+const mathOpsPrecedence = (() => {
+	const operatorsByPrecedence = [
+		['Add', 'Subtract'],
+		['Multiply', 'Divide'],
+	] as const;
+
+	const operatorPrecedence = {} as Record<keyof typeof mathOps, number>;
+	let precedence = 0;
+	for (const samePrecedenceOps of operatorsByPrecedence) {
+		for (const op of samePrecedenceOps) {
+			operatorPrecedence[op] = precedence;
+		}
+		precedence++;
+	}
+	return operatorPrecedence;
+})();
+
+const commutativeMathOps = new Set(['Add', 'Multiply']);
+
+const mathOpValue = (
+	parentOperator: keyof typeof mathOps,
+	args: AbstractSqlType[],
+	index: number,
+	indent: string,
+) => {
+	const operantSql = getAbstractSqlQuery(args, index);
+	const numericValue = NumericValue(operantSql, indent);
+	const [childNodeType] = operantSql;
+	if (childNodeType in mathOpsPrecedence) {
+		const childOperator = childNodeType as keyof typeof mathOpsPrecedence;
+		const parentOperatorPrecedence = mathOpsPrecedence[parentOperator];
+		const childOperatorPrecedence = mathOpsPrecedence[childOperator];
+		// We need to add parenthesis to preserve the order of operations in the AST
+		// * when the parent operator has higher precedence than the child operator
+		// * only to the right operand (given that we only support operators with
+		//   left associativity) when the parent operator is non-commutative and
+		//   has the same precedence as the child operator.
+		if (
+			childOperatorPrecedence < parentOperatorPrecedence ||
+			(index > 0 &&
+				childOperatorPrecedence === parentOperatorPrecedence &&
+				!commutativeMathOps.has(parentOperator))
+		) {
+			return `(${numericValue})`;
+		}
+	}
+	return numericValue;
+};
+
 const MathOp = (type: keyof typeof mathOps): MatchFn => {
 	return (args, indent) => {
 		checkArgs(type, args, 2);
-		const a = NumericValue(getAbstractSqlQuery(args, 0), indent);
-		const b = NumericValue(getAbstractSqlQuery(args, 1), indent);
+		const a = mathOpValue(type, args, 0, indent);
+		const b = mathOpValue(type, args, 1, indent);
 		return `${a} ${mathOps[type]} ${b}`;
 	};
 };

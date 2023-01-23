@@ -87,3 +87,364 @@ describe('Ceiling', () => {
 		},
 	);
 });
+
+describe('Math Operator Precedence', () => {
+	// Different precedence
+	test(
+		[
+			'SelectQuery',
+			[
+				'Select',
+				[['Add', ['Multiply', ['Number', 2], ['Number', 3]], ['Number', 4]]],
+			],
+		],
+		(result, sqlEquals) => {
+			it('should produce a valid Add statement when the first operand is a Multiply', () => {
+				sqlEquals(result.query, 'SELECT 2 * 3 + 4');
+			});
+		},
+	);
+
+	test(
+		[
+			'SelectQuery',
+			[
+				'Select',
+				[['Add', ['Number', 2], ['Multiply', ['Number', 3], ['Number', 4]]]],
+			],
+		],
+		(result, sqlEquals) => {
+			it('should produce a valid Add statement when the second operand is a Multiply', () => {
+				sqlEquals(result.query, 'SELECT 2 + 3 * 4');
+			});
+		},
+	);
+
+	test(
+		[
+			'SelectQuery',
+			[
+				'Select',
+				[
+					[
+						'Add',
+						['Multiply', ['Number', 2], ['Number', 3]],
+						['Multiply', ['Number', 4], ['Number', 5]],
+					],
+				],
+			],
+		],
+		(result, sqlEquals) => {
+			it('should produce a valid Add statement of two Multiplications', () => {
+				sqlEquals(result.query, 'SELECT 2 * 3 + 4 * 5');
+			});
+		},
+	);
+
+	test(
+		[
+			'SelectQuery',
+			[
+				'Select',
+				[['Multiply', ['Add', ['Number', 2], ['Number', 3]], ['Number', 4]]],
+			],
+		],
+		(result, sqlEquals) => {
+			it('should produce a valid Multiply statement when the first operand is an Add', () => {
+				sqlEquals(result.query, 'SELECT (2 + 3) * 4');
+			});
+		},
+	);
+
+	test(
+		[
+			'SelectQuery',
+			[
+				'Select',
+				[['Multiply', ['Number', 2], ['Add', ['Number', 3], ['Number', 4]]]],
+			],
+		],
+		(result, sqlEquals) => {
+			it('should produce a valid Multiply statement when the second operand is an Add', () => {
+				sqlEquals(result.query, 'SELECT 2 * (3 + 4)');
+			});
+		},
+	);
+
+	test(
+		[
+			'SelectQuery',
+			[
+				'Select',
+				[
+					[
+						'Multiply',
+						['Add', ['Number', 2], ['Number', 3]],
+						['Add', ['Number', 4], ['Number', 5]],
+					],
+				],
+			],
+		],
+		(result, sqlEquals) => {
+			it('should produce a valid Multiply statement of two Additions', () => {
+				sqlEquals(result.query, 'SELECT (2 + 3) * (4 + 5)');
+			});
+		},
+	);
+
+	test(
+		[
+			'SelectQuery',
+			[
+				'Select',
+				[
+					[
+						'Subtract',
+						['Multiply', ['Number', 2], ['Number', 3]],
+						['Multiply', ['Number', 4], ['Number', 5]],
+					],
+				],
+			],
+		],
+		(result, sqlEquals) => {
+			it('should produce a valid Subtract statement of two Multiplications', () => {
+				sqlEquals(result.query, 'SELECT 2 * 3 - 4 * 5');
+			});
+		},
+	);
+
+	test(
+		[
+			'SelectQuery',
+			[
+				'Select',
+				[
+					[
+						'Subtract',
+						['Divide', ['Number', 2], ['Number', 3]],
+						['Divide', ['Number', 4], ['Number', 5]],
+					],
+				],
+			],
+		],
+		(result, sqlEquals) => {
+			it('should produce a valid Subtract statement of two Divisions', () => {
+				sqlEquals(result.query, 'SELECT 2 / 3 - 4 / 5');
+			});
+		},
+	);
+
+	test(
+		[
+			'SelectQuery',
+			[
+				'Select',
+				[
+					[
+						'Divide',
+						['Add', ['Number', 2], ['Number', 3]],
+						['Add', ['Number', 4], ['Number', 5]],
+					],
+				],
+			],
+		],
+		(result, sqlEquals) => {
+			it('should produce a valid Divide statement of two Additions', () => {
+				sqlEquals(result.query, 'SELECT (2 + 3) / (4 + 5)');
+			});
+		},
+	);
+
+	test(
+		[
+			'SelectQuery',
+			[
+				'Select',
+				[
+					[
+						'Divide',
+						['Subtract', ['Number', 2], ['Number', 3]],
+						['Subtract', ['Number', 4], ['Number', 5]],
+					],
+				],
+			],
+		],
+		(result, sqlEquals) => {
+			it('should produce a valid Divide statement of two Subtractions', () => {
+				sqlEquals(result.query, 'SELECT (2 - 3) / (4 - 5)');
+			});
+		},
+	);
+
+	// Same Precedence Add/Subtract
+
+	test(
+		[
+			'SelectQuery',
+			[
+				'Select',
+				[
+					[
+						'Add',
+						['Add', ['Number', 2], ['Number', 3]],
+						['Add', ['Number', 4], ['Number', 5]],
+					],
+				],
+			],
+		],
+		(result, sqlEquals) => {
+			it('should produce a valid Add statement w/o parenthesis when there are nested Additions', () => {
+				sqlEquals(result.query, 'SELECT 2 + 3 + 4 + 5');
+			});
+		},
+	);
+
+	test(
+		[
+			'SelectQuery',
+			[
+				'Select',
+				[
+					[
+						'Add',
+						['Subtract', ['Number', 2], ['Number', 3]],
+						['Subtract', ['Number', 4], ['Number', 5]],
+					],
+				],
+			],
+		],
+		(result, sqlEquals) => {
+			it('should produce a valid Add statement w/o parenthesis when there are nested Subtractions', () => {
+				sqlEquals(result.query, 'SELECT 2 - 3 + 4 - 5');
+			});
+		},
+	);
+
+	test(
+		[
+			'SelectQuery',
+			[
+				'Select',
+				[
+					[
+						'Subtract',
+						['Add', ['Number', 2], ['Number', 3]],
+						['Add', ['Number', 4], ['Number', 5]],
+					],
+				],
+			],
+		],
+		(result, sqlEquals) => {
+			it('should produce a valid Subtract statement w/o parenthesis when there are nested Additions', () => {
+				sqlEquals(result.query, 'SELECT 2 + 3 - (4 + 5)');
+			});
+		},
+	);
+
+	test(
+		[
+			'SelectQuery',
+			[
+				'Select',
+				[
+					[
+						'Subtract',
+						['Subtract', ['Number', 2], ['Number', 3]],
+						['Subtract', ['Number', 4], ['Number', 5]],
+					],
+				],
+			],
+		],
+		(result, sqlEquals) => {
+			it('should produce a valid Add statement w/o parenthesis when there are nested Subtractions', () => {
+				sqlEquals(result.query, 'SELECT 2 - 3 - (4 - 5)');
+			});
+		},
+	);
+
+	// Same Precedence Multiply/Divide
+
+	test(
+		[
+			'SelectQuery',
+			[
+				'Select',
+				[
+					[
+						'Multiply',
+						['Multiply', ['Number', 2], ['Number', 3]],
+						['Multiply', ['Number', 4], ['Number', 5]],
+					],
+				],
+			],
+		],
+		(result, sqlEquals) => {
+			it('should produce a valid Multiply statement w/o parenthesis when there are nested Multiplications', () => {
+				sqlEquals(result.query, 'SELECT 2 * 3 * 4 * 5');
+			});
+		},
+	);
+
+	test(
+		[
+			'SelectQuery',
+			[
+				'Select',
+				[
+					[
+						'Multiply',
+						['Divide', ['Number', 2], ['Number', 3]],
+						['Divide', ['Number', 4], ['Number', 5]],
+					],
+				],
+			],
+		],
+		(result, sqlEquals) => {
+			it('should produce a valid Multiply statement w/o parenthesis when there are nested Divisions', () => {
+				sqlEquals(result.query, 'SELECT 2 / 3 * 4 / 5');
+			});
+		},
+	);
+
+	test(
+		[
+			'SelectQuery',
+			[
+				'Select',
+				[
+					[
+						'Divide',
+						['Multiply', ['Number', 2], ['Number', 3]],
+						['Multiply', ['Number', 4], ['Number', 5]],
+					],
+				],
+			],
+		],
+		(result, sqlEquals) => {
+			it('should produce a valid Divide statement w/o parenthesis when there are nested Multiplications', () => {
+				sqlEquals(result.query, 'SELECT 2 * 3 / (4 * 5)');
+			});
+		},
+	);
+
+	test(
+		[
+			'SelectQuery',
+			[
+				'Select',
+				[
+					[
+						'Divide',
+						['Divide', ['Number', 2], ['Number', 3]],
+						['Divide', ['Number', 4], ['Number', 5]],
+					],
+				],
+			],
+		],
+		(result, sqlEquals) => {
+			it('should produce a valid Multiply statement w/o parenthesis when there are nested Divisions', () => {
+				sqlEquals(result.query, 'SELECT 2 / 3 / (4 / 5)');
+			});
+		},
+	);
+});
