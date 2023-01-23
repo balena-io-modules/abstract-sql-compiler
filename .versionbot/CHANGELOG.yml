@@ -1,4 +1,19 @@
 - commits:
+    - subject: Add `modifyFields`/`modifyName` to table definition
+      hash: 174c07b3923bb41fe50b413829b4268c1b28172e
+      body: |
+        This is intended to be used to target tables differently for reads vs
+        writes, eg where you might read from a view/definition but want to
+        write to a physical table instead
+      footer:
+        Change-type: minor
+        change-type: minor
+      author: Pagan Gazzard
+      nested: []
+  version: 7.25.0
+  title: ""
+  date: 2023-01-23T17:39:22.841Z
+- commits:
     - subject: Add the AbstractSql node `Any`
       hash: ebc43d8139624a95f08b18ee290e89bb425a791a
       body: ""
