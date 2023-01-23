@@ -623,13 +623,19 @@ run(function () {
 			result.query,
 			`\
 INSERT INTO "pilot" ("name")
-SELECT "pilot"."name"
-FROM "pilot-can fly-plane" AS "pilot.pilot-can fly-plane",
-	"plane" AS "pilot.pilot-can fly-plane.plane",
-	(
+SELECT "$insert"."name"
+FROM (
 	SELECT CAST(NULL AS TIMESTAMP) AS "created at", CAST(NULL AS TIMESTAMP) AS "modified at", CAST(NULL AS INTEGER) AS "id", CAST(NULL AS INTEGER) AS "person", CAST(NULL AS INTEGER) AS "is experienced", CAST(? AS VARCHAR(255)) AS "name", CAST(NULL AS INTEGER) AS "age", CAST(NULL AS INTEGER) AS "favourite colour", CAST(NULL AS INTEGER) AS "is on-team", CAST(NULL AS INTEGER) AS "licence", CAST(NULL AS TIMESTAMP) AS "hire date", CAST(NULL AS INTEGER) AS "was trained by-pilot"
-) AS "pilot"
-${filterWhere.join('\n')}`,
+) AS "$insert"
+WHERE EXISTS (
+	SELECT 1
+	FROM "pilot-can fly-plane" AS "pilot.pilot-can fly-plane",
+		"plane" AS "pilot.pilot-can fly-plane.plane",
+		(
+		SELECT "$insert".*
+	) AS "pilot"
+	${filterWhere.join('\n\t')}
+)`,
 		);
 	};
 	const updateWhere = `\
@@ -759,11 +765,17 @@ run(function () {
 					result.query,
 					`\
 INSERT INTO "pilot" ("name")
-SELECT "pilot"."name"
+SELECT "$insert"."name"
 FROM (
 	SELECT CAST(NULL AS TIMESTAMP) AS "created at", CAST(NULL AS TIMESTAMP) AS "modified at", CAST(NULL AS INTEGER) AS "id", CAST(NULL AS INTEGER) AS "person", CAST(NULL AS INTEGER) AS "is experienced", CAST(? AS VARCHAR(255)) AS "name", CAST(NULL AS INTEGER) AS "age", CAST(NULL AS INTEGER) AS "favourite colour", CAST(NULL AS INTEGER) AS "is on-team", CAST(NULL AS INTEGER) AS "licence", CAST(NULL AS TIMESTAMP) AS "hire date", CAST(NULL AS INTEGER) AS "was trained by-pilot"
-) AS "pilot"
-WHERE ${sql}`,
+) AS "$insert"
+WHERE EXISTS (
+	SELECT 1
+	FROM (
+		SELECT "$insert".*
+	) AS "pilot"
+	WHERE ${sql}
+)`,
 				);
 			});
 		},
@@ -824,12 +836,18 @@ AND "pilot"."id" IN ((
 						result[0].query,
 						`\
 INSERT INTO "pilot" ("id", "name")
-SELECT "pilot"."id", "pilot"."name"
+SELECT "$insert"."id", "$insert"."name"
 FROM (
 	SELECT CAST(NULL AS TIMESTAMP) AS "created at", CAST(NULL AS TIMESTAMP) AS "modified at", CAST(? AS INTEGER) AS "id", CAST(NULL AS INTEGER) AS "person", CAST(NULL AS INTEGER) AS "is experienced", CAST(? AS VARCHAR(255)) AS "name", CAST(NULL AS INTEGER) AS "age", CAST(NULL AS INTEGER) AS "favourite colour", CAST(NULL AS INTEGER) AS "is on-team", CAST(NULL AS INTEGER) AS "licence", CAST(NULL AS TIMESTAMP) AS "hire date", CAST(NULL AS INTEGER) AS "was trained by-pilot"
-) AS "pilot"
-WHERE ${sql}
-AND ("pilot"."id") IS NOT NULL AND ("pilot"."id") = (?)`,
+) AS "$insert"
+WHERE EXISTS (
+	SELECT 1
+	FROM (
+		SELECT "$insert".*
+	) AS "pilot"
+	WHERE ${sql}
+	AND ("pilot"."id") IS NOT NULL AND ("pilot"."id") = (?)
+)`,
 					);
 				});
 				it('and updates', () => {
@@ -1398,11 +1416,17 @@ run(function () {
 					result.query,
 					`\
 INSERT INTO "team" ("favourite colour")
-SELECT "team"."favourite colour"
+SELECT "$insert"."favourite colour"
 FROM (
 	SELECT CAST(NULL AS TIMESTAMP) AS "created at", CAST(NULL AS TIMESTAMP) AS "modified at", CAST(? AS INTEGER) AS "favourite colour"
-) AS "team"
-WHERE ` + sql,
+) AS "$insert"
+WHERE EXISTS (
+	SELECT 1
+	FROM (
+		SELECT "$insert".*
+	) AS "team"
+	WHERE ${sql}
+)`,
 				);
 			});
 		},
