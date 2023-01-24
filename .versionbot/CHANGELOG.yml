@@ -1,4 +1,26 @@
 - commits:
+    - subject: Wrap Date & Duration operations with parenthesis when necessary
+      hash: 4d05dbf6d86bbc95b323e3571633e22c625a114d
+      body: ""
+      footer:
+        Change-type: patch
+        change-type: patch
+      author: Thodoris Greasidis
+      nested: []
+    - subject: Wrap composite math operations with parenthesis when necessary
+      hash: ab7d6b73808affbf8316f816b9e968e58e83d733
+      body: ""
+      footer:
+        Resolves: "#184"
+        resolves: "#184"
+        Change-type: patch
+        change-type: patch
+      author: Thodoris Greasidis
+      nested: []
+  version: 7.25.3
+  title: ""
+  date: 2023-01-24T16:19:22.753Z
+- commits:
     - subject: "Tests: update @balena/odata-to-abstract-sql to 5.8"
       hash: ade93b12c14a0a9c833845a9feb79f2feb4b6844
       body: ""
