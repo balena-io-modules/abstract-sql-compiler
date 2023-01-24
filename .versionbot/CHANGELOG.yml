@@ -1,4 +1,16 @@
 - commits:
+    - subject: "Tests: update @balena/odata-to-abstract-sql to 5.8"
+      hash: ade93b12c14a0a9c833845a9feb79f2feb4b6844
+      body: ""
+      footer:
+        Change-type: patch
+        change-type: patch
+      author: Thodoris Greasidis
+      nested: []
+  version: 7.25.2
+  title: ""
+  date: 2023-01-24T07:18:49.086Z
+- commits:
     - subject: Change AggregateJSON to use `JSON_AGG` instead of
         `ARRAY_TO_JSON`+`ARRAY_AGG`
       hash: 360bbd95352d96be7ec0ce83521cd6e155b7da88
