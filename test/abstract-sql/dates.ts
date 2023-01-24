@@ -154,3 +154,85 @@ describe('ToTime', () => {
 		},
 	);
 });
+
+describe('SubtractDateDate', () => {
+	test(
+		[
+			'SelectQuery',
+			[
+				'Select',
+				[['Subtract', ['Date', '2022-10-10'], ['Date', '2022-09-10']]],
+			],
+		],
+		[
+			['Date', '2022-10-10'],
+			['Date', '2022-09-10'],
+		],
+		(result, sqlEquals) => {
+			it('should produce a valid Subtract Data - Date statement', () => {
+				console.log(`result:${JSON.stringify(result, null, 2)}`);
+				sqlEquals(result.query, `SELECT $1 - $2`);
+			});
+		},
+	);
+});
+
+describe('SubtractDateDate', () => {
+	test(
+		['SelectQuery', ['Select', [['Subtract', ['Now'], ['Now']]]]],
+		(result, sqlEquals) => {
+			it('should produce a valid Subtract CURRENT_TIMESTAMP - CURRENT_TIMESTAMP statement', () => {
+				console.log(`result:${JSON.stringify(result, null, 2)}`);
+				sqlEquals(result.query, `SELECT CURRENT_TIMESTAMP - CURRENT_TIMESTAMP`);
+			});
+		},
+	);
+});
+
+test(
+	[
+		'SelectQuery',
+		[
+			'Select',
+			[
+				[
+					'Multiply',
+					['Subtract', ['Now'], ['Now']],
+					['Add', ['Number', 4], ['Number', 5]],
+				],
+			],
+		],
+	],
+	(result, sqlEquals) => {
+		it('should produce a valid Multiply statement of one Subtract Date - Date operand and an Add operation result', () => {
+			sqlEquals(
+				result.query,
+				'SELECT (CURRENT_TIMESTAMP - CURRENT_TIMESTAMP) * (4 + 5)',
+			);
+		});
+	},
+);
+
+test(
+	[
+		'SelectQuery',
+		[
+			'Select',
+			[
+				[
+					'Multiply',
+					['Subtract', ['Now'], ['Now']],
+					['Subtract', ['Now'], ['Now']],
+				],
+			],
+		],
+	],
+	(result, sqlEquals) => {
+		it('should produce a valid Multiply statement of two Subtract Date - Date operands', () => {
+			sqlEquals(
+				result.query,
+				'SELECT (CURRENT_TIMESTAMP - CURRENT_TIMESTAMP) * (CURRENT_TIMESTAMP - CURRENT_TIMESTAMP)',
+			);
+		});
+	},
+);
