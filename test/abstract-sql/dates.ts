@@ -154,3 +154,95 @@ describe('ToTime', () => {
 		},
 	);
 });
+
+describe('AddDateNumber', () => {
+	test(
+		[
+			'SelectQuery',
+			[
+				'Select',
+				[
+					[
+						'AddDateNumber',
+						['Date', '2022-10-10T10:10:10.000Z'],
+						['Number', 10],
+					],
+				],
+			],
+		],
+		[['Date', '2022-10-10T10:10:10.000Z']],
+		(result, sqlEquals) => {
+			it('should produce a valid Date addition statement', () => {
+				sqlEquals(result.query, `SELECT $1 + 10`);
+			});
+		},
+	);
+
+	test(
+		[
+			'SelectQuery',
+			[
+				'Select',
+				[
+					[
+						'AddDateNumber',
+						['Date', '2022-10-10T10:10:10.000Z'],
+						['Subtract', ['Number', 4], ['Number', 5]],
+					],
+				],
+			],
+		],
+		[['Date', '2022-10-10T10:10:10.000Z']],
+		(result, sqlEquals) => {
+			it('should produce a valid Date addition statement when the second operand is a math operation', () => {
+				sqlEquals(result.query, `SELECT $1 + (4 - 5)`);
+			});
+		},
+	);
+});
+
+describe('SubtractDateNumber', () => {
+	test(
+		[
+			'SelectQuery',
+			[
+				'Select',
+				[
+					[
+						'SubtractDateNumber',
+						['Date', '2022-10-10T10:10:10.000Z'],
+						['Number', 10],
+					],
+				],
+			],
+		],
+		[['Date', '2022-10-10T10:10:10.000Z']],
+		(result, sqlEquals) => {
+			it('should produce a valid Date subtraction statement', () => {
+				sqlEquals(result.query, `SELECT $1 - 10`);
+			});
+		},
+	);
+
+	test(
+		[
+			'SelectQuery',
+			[
+				'Select',
+				[
+					[
+						'SubtractDateNumber',
+						['Date', '2022-10-10T10:10:10.000Z'],
+						['Subtract', ['Number', 4], ['Number', 5]],
+					],
+				],
+			],
+		],
+		[['Date', '2022-10-10T10:10:10.000Z']],
+		(result, sqlEquals) => {
+			it('should produce a valid Date subtraction statement when the second operand is a math operation', () => {
+				sqlEquals(result.query, `SELECT $1 - (4 - 5)`);
+			});
+		},
+	);
+});

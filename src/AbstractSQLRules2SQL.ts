@@ -378,11 +378,26 @@ const mathOps = {
 	Multiply: '*',
 	Divide: '/',
 };
+
+const mathOpValue = (
+	args: AbstractSqlType[],
+	index: number,
+	indent: string,
+) => {
+	const operandAbstractSql = getAbstractSqlQuery(args, index);
+	const numericValue = NumericValue(operandAbstractSql, indent);
+	const [childNodeType] = operandAbstractSql;
+	if (childNodeType in mathOps) {
+		return `(${numericValue})`;
+	}
+	return numericValue;
+};
+
 const MathOp = (type: keyof typeof mathOps): MatchFn => {
 	return (args, indent) => {
 		checkArgs(type, args, 2);
-		const a = NumericValue(getAbstractSqlQuery(args, 0), indent);
-		const b = NumericValue(getAbstractSqlQuery(args, 1), indent);
+		const a = mathOpValue(args, 0, indent);
+		const b = mathOpValue(args, 1, indent);
 		return `${a} ${mathOps[type]} ${b}`;
 	};
 };
@@ -452,7 +467,7 @@ export const checkMinArgs = (matchName: string, args: any[], num: number) => {
 const AddDateNumber: MatchFn = (args, indent) => {
 	checkArgs('AddDateNumber', args, 2);
 	const a = DateValue(getAbstractSqlQuery(args, 0), indent);
-	const b = NumericValue(getAbstractSqlQuery(args, 1), indent);
+	const b = mathOpValue(args, 1, indent);
 
 	if (engine === Engines.postgres) {
 		return `${a} + ${b}`;
@@ -494,7 +509,7 @@ const SubtractDateDuration: MatchFn = (args, indent) => {
 const SubtractDateNumber: MatchFn = (args, indent) => {
 	checkArgs('SubtractDateNumber', args, 2);
 	const a = DateValue(getAbstractSqlQuery(args, 0), indent);
-	const b = NumericValue(getAbstractSqlQuery(args, 1), indent);
+	const b = mathOpValue(args, 1, indent);
 
 	if (engine === Engines.postgres) {
 		return `${a} - ${b}`;
