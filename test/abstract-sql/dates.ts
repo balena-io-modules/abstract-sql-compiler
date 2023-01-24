@@ -154,3 +154,344 @@ describe('ToTime', () => {
 		},
 	);
 });
+
+describe('AddDateDuration', () => {
+	test(
+		[
+			'SelectQuery',
+			[
+				'Select',
+				[
+					[
+						'AddDateDuration',
+						['Date', '2022-10-10T10:10:10.000Z'],
+						[
+							'Duration',
+							{
+								day: 1,
+							},
+						],
+					],
+				],
+			],
+		],
+		[['Date', '2022-10-10T10:10:10.000Z']],
+		(result, sqlEquals) => {
+			it('should produce a valid Date addition statement', () => {
+				sqlEquals(result.query, `SELECT $1 + INTERVAL '1 0:0:0.0'`);
+			});
+		},
+	);
+
+	test(
+		[
+			'SelectQuery',
+			[
+				'Select',
+				[
+					[
+						'AddDateDuration',
+						[
+							'AddDateDuration',
+							['Date', '2022-10-10T10:10:10.000Z'],
+							[
+								'Duration',
+								{
+									day: 1,
+								},
+							],
+						],
+						[
+							'Duration',
+							{
+								day: 2,
+							},
+						],
+					],
+				],
+			],
+		],
+		[['Date', '2022-10-10T10:10:10.000Z']],
+		(result, sqlEquals) => {
+			it('should produce a valid Date addition statement when the first operand returns a Date node', () => {
+				sqlEquals(
+					result.query,
+					`SELECT ($1 + INTERVAL '1 0:0:0.0') + INTERVAL '2 0:0:0.0'`,
+				);
+			});
+		},
+	);
+});
+
+describe('AddDateNumber', () => {
+	test(
+		[
+			'SelectQuery',
+			[
+				'Select',
+				[
+					[
+						'AddDateNumber',
+						['Date', '2022-10-10T10:10:10.000Z'],
+						['Number', 10],
+					],
+				],
+			],
+		],
+		[['Date', '2022-10-10T10:10:10.000Z']],
+		(result, sqlEquals) => {
+			it('should produce a valid Date addition statement', () => {
+				sqlEquals(result.query, `SELECT $1 + 10`);
+			});
+		},
+	);
+
+	test(
+		[
+			'SelectQuery',
+			[
+				'Select',
+				[
+					[
+						'AddDateNumber',
+						['Date', '2022-10-10T10:10:10.000Z'],
+						['Subtract', ['Number', 4], ['Number', 5]],
+					],
+				],
+			],
+		],
+		[['Date', '2022-10-10T10:10:10.000Z']],
+		(result, sqlEquals) => {
+			it('should produce a valid Date addition statement when the second operand is a math operation', () => {
+				sqlEquals(result.query, `SELECT $1 + (4 - 5)`);
+			});
+		},
+	);
+});
+
+describe('SubtractDateNumber', () => {
+	test(
+		[
+			'SelectQuery',
+			[
+				'Select',
+				[
+					[
+						'SubtractDateNumber',
+						['Date', '2022-10-10T10:10:10.000Z'],
+						['Number', 10],
+					],
+				],
+			],
+		],
+		[['Date', '2022-10-10T10:10:10.000Z']],
+		(result, sqlEquals) => {
+			it('should produce a valid Date subtraction statement', () => {
+				sqlEquals(result.query, `SELECT $1 - 10`);
+			});
+		},
+	);
+
+	test(
+		[
+			'SelectQuery',
+			[
+				'Select',
+				[
+					[
+						'SubtractDateNumber',
+						['Date', '2022-10-10T10:10:10.000Z'],
+						['Subtract', ['Number', 4], ['Number', 5]],
+					],
+				],
+			],
+		],
+		[['Date', '2022-10-10T10:10:10.000Z']],
+		(result, sqlEquals) => {
+			it('should produce a valid Date subtraction statement when the second operand is a math operation', () => {
+				sqlEquals(result.query, `SELECT $1 - (4 - 5)`);
+			});
+		},
+	);
+
+	test(
+		[
+			'SelectQuery',
+			[
+				'Select',
+				[
+					[
+						'SubtractDateNumber',
+						[
+							'AddDateNumber',
+							['Date', '2022-10-10T10:10:10.000Z'],
+							['Number', 1],
+						],
+						['Subtract', ['Number', 4], ['Number', 5]],
+					],
+				],
+			],
+		],
+		[['Date', '2022-10-10T10:10:10.000Z']],
+		(result, sqlEquals) => {
+			it('should produce a valid Date subtraction statement when first operand returns a Date and the second operand is a math operation', () => {
+				sqlEquals(result.query, `SELECT ($1 + 1) - (4 - 5)`);
+			});
+		},
+	);
+});
+
+describe('SubtractDateDate', () => {
+	test(
+		[
+			'SelectQuery',
+			[
+				'Select',
+				[['Multiply', ['SubtractDateDate', ['Now'], ['Now']], ['Number', 4]]],
+			],
+		],
+		(result, sqlEquals) => {
+			it('should produce a valid multiplication statement when the first operand is a SubtractDateDate operation and the second a number', () => {
+				sqlEquals(
+					result.query,
+					`SELECT (CURRENT_TIMESTAMP - CURRENT_TIMESTAMP) * 4`,
+				);
+			});
+		},
+	);
+
+	test(
+		[
+			'SelectQuery',
+			[
+				'Select',
+				[
+					[
+						'Multiply',
+						['SubtractDateDate', ['Now'], ['Now']],
+						['Subtract', ['Number', 4], ['Number', 5]],
+					],
+				],
+			],
+		],
+		(result, sqlEquals) => {
+			it('should produce a valid multiplication statement when the first operand is a SubtractDateDate operation and the second a math subtraction', () => {
+				sqlEquals(
+					result.query,
+					`SELECT (CURRENT_TIMESTAMP - CURRENT_TIMESTAMP) * (4 - 5)`,
+				);
+			});
+		},
+	);
+
+	test(
+		[
+			'SelectQuery',
+			[
+				'Select',
+				[
+					[
+						'SubtractDateDate',
+						[
+							'AddDateDuration',
+							['Now'],
+							[
+								'Duration',
+								{
+									day: 1,
+								},
+							],
+						],
+						[
+							'AddDateDuration',
+							['Date', '2022-10-10T10:10:10.000Z'],
+							[
+								'Duration',
+								{
+									day: 2,
+								},
+							],
+						],
+					],
+				],
+			],
+		],
+		[['Date', '2022-10-10T10:10:10.000Z']],
+		(result, sqlEquals) => {
+			it('should produce a valid SubtractDateDate operation when the operands return a Date node', () => {
+				sqlEquals(
+					result.query,
+					`SELECT (CURRENT_TIMESTAMP + INTERVAL '1 0:0:0.0') - ($1 + INTERVAL '2 0:0:0.0')`,
+				);
+			});
+		},
+	);
+});
+
+describe('SubtractDateDuration', () => {
+	test(
+		[
+			'SelectQuery',
+			[
+				'Select',
+				[
+					[
+						'SubtractDateDuration',
+						['Date', '2022-10-10T10:10:10.000Z'],
+						[
+							'Duration',
+							{
+								day: 1,
+							},
+						],
+					],
+				],
+			],
+		],
+		[['Date', '2022-10-10T10:10:10.000Z']],
+		(result, sqlEquals) => {
+			it('should produce a valid Date subtraction statement', () => {
+				sqlEquals(result.query, `SELECT $1 - INTERVAL '1 0:0:0.0'`);
+			});
+		},
+	);
+
+	test(
+		[
+			'SelectQuery',
+			[
+				'Select',
+				[
+					[
+						'SubtractDateDuration',
+						[
+							'AddDateDuration',
+							['Date', '2022-10-10T10:10:10.000Z'],
+							[
+								'Duration',
+								{
+									day: 1,
+								},
+							],
+						],
+						[
+							'Duration',
+							{
+								day: 2,
+							},
+						],
+					],
+				],
+			],
+		],
+		[['Date', '2022-10-10T10:10:10.000Z']],
+		(result, sqlEquals) => {
+			it('should produce a valid Date subtraction statement when the first operand returns a Date node', () => {
+				sqlEquals(
+					result.query,
+					`SELECT ($1 + INTERVAL '1 0:0:0.0') - INTERVAL '2 0:0:0.0'`,
+				);
+			});
+		},
+	);
+});
