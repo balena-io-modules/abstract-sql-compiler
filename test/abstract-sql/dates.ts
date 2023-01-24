@@ -245,4 +245,28 @@ describe('SubtractDateNumber', () => {
 			});
 		},
 	);
+
+	test(
+		[
+			'SelectQuery',
+			[
+				'Select',
+				[
+					[
+						'Multiply',
+						['SubtractDateDate', ['Now'], ['Now']],
+						['Subtract', ['Number', 4], ['Number', 5]],
+					],
+				],
+			],
+		],
+		(result, sqlEquals) => {
+			it('should produce a valid multiplication statement when the first operand is a SubtractDateDate operation and the second a math subtraction', () => {
+				sqlEquals(
+					result.query,
+					`SELECT (CURRENTTIMESTAMP - CURRENTTIMESTAMP) * (4 - 5)`,
+				);
+			});
+		},
+	);
 });
