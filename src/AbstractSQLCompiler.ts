@@ -11,6 +11,7 @@ import {
 	SqlResult,
 } from './AbstractSQLRules2SQL';
 export { Binding, SqlResult } from './AbstractSQLRules2SQL';
+export * as AbstractSQLOperations from './AbstractSQLOperations';
 import sbvrTypes = require('@balena/sbvr-types');
 import * as _ from 'lodash';
 import { optimizeSchema } from './AbstractSQLSchemaOptimiser';
