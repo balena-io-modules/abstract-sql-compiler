@@ -1,4 +1,5 @@
 import * as _ from 'lodash';
+import { Dictionary } from 'lodash';
 
 import {
 	AbstractSqlModel,
@@ -17,10 +18,6 @@ import {
 	TextTypeNodes,
 	UnknownTypeNodes,
 } from './AbstractSQLCompiler';
-
-interface Dictionary<T> {
-	[key: string]: T;
-}
 
 export type AliasValidNodeType =
 	| ReferencedFieldNode
