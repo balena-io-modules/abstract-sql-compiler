@@ -1,4 +1,19 @@
 - commits:
+    - subject: Optimize schema during compilation
+      hash: e0b6b48c1429077d3c3742c9ee6224233a532bf7
+      body: |
+        This optimizes and normalizes rules before compiling the schema.
+      footer:
+        Change-type: minor
+        change-type: minor
+        Signed-off-by: Carol Schulze <carol@balena.io>
+        signed-off-by: Carol Schulze <carol@balena.io>
+      author: Carol Schulze
+      nested: []
+  version: 7.26.0
+  title: ""
+  date: 2023-02-07T12:42:59.370Z
+- commits:
     - subject: Wrap Date & Duration operations with parenthesis when necessary
       hash: 4d05dbf6d86bbc95b323e3571633e22c625a114d
       body: ""
