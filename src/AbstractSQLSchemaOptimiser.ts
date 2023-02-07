@@ -34,6 +34,7 @@ const countFroms = (n: AbstractSqlType[]) => {
 
 export const optimizeSchema = (
 	abstractSqlModel: AbstractSqlModel,
+	createCheckConstraints: boolean = true,
 ): AbstractSqlModel => {
 	abstractSqlModel.rules = abstractSqlModel.rules
 		.map((rule): AbstractSqlQuery | undefined => {
@@ -65,6 +66,7 @@ export const optimizeSchema = (
 
 			const count = countFroms(ruleBody);
 			if (
+				createCheckConstraints &&
 				count === 1 &&
 				(ruleBody[0] === 'NotExists' ||
 					(ruleBody[0] === 'Equals' &&
