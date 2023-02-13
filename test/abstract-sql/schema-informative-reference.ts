@@ -74,6 +74,7 @@ describe('generate informative reference schema', () => {
 				relationships: {},
 				rules: [],
 				synonyms: {},
+				lfInfo: { rules: {} },
 			}),
 		)
 			.to.have.property('createSchema')
@@ -202,6 +203,7 @@ CREATE TABLE IF NOT EXISTS "term history" (
 				relationships: {},
 				rules: [],
 				synonyms: {},
+				lfInfo: { rules: {} },
 			}),
 		)
 			.to.have.property('createSchema')
@@ -301,6 +303,7 @@ CREATE TABLE IF NOT EXISTS "term history" (
 				relationships: {},
 				rules: [],
 				synonyms: {},
+				lfInfo: { rules: {} },
 			}),
 		)
 			.to.have.property('createSchema')
@@ -393,6 +396,7 @@ CREATE TABLE IF NOT EXISTS "term history" (
 				relationships: {},
 				rules: [],
 				synonyms: {},
+				lfInfo: { rules: {} },
 			}),
 		)
 			.to.have.property('createSchema')
