@@ -21,6 +21,7 @@ import {
 	ReferencedFields,
 	RuleReferencedFields,
 	ModifiedFields,
+	insertAffectedIdsBinds,
 } from './referenced-fields';
 
 export type { ReferencedFields, RuleReferencedFields, ModifiedFields };
@@ -187,24 +188,21 @@ export type TextTypeNodes =
 	| ExtractJSONPathAsTextNode
 	| UnknownTypeNodes;
 
-export type SelectQueryNode = [
-	'SelectQuery',
-	...Array<
-		| SelectNode
-		| FromNode
-		| InnerJoinNode
-		| LeftJoinNode
-		| RightJoinNode
-		| FullJoinNode
-		| CrossJoinNode
-		| WhereNode
-		| GroupByNode
-		| HavingNode
-		| OrderByNode
-		| LimitNode
-		| OffsetNode
-	>,
-];
+export type SelectQueryStatementNode =
+	| SelectNode
+	| FromNode
+	| InnerJoinNode
+	| LeftJoinNode
+	| RightJoinNode
+	| FullJoinNode
+	| CrossJoinNode
+	| WhereNode
+	| GroupByNode
+	| HavingNode
+	| OrderByNode
+	| LimitNode
+	| OffsetNode;
+export type SelectQueryNode = ['SelectQuery', ...SelectQueryStatementNode[]];
 export type UnionQueryNode = [
 	'UnionQuery',
 	// tslint:disable-next-line:array-type typescript fails on a circular reference when `Array<T>` form
@@ -238,7 +236,7 @@ export type FromTypeNodes =
 	| FromTypeNode[keyof FromTypeNode]
 	| AliasNode<FromTypeNode[keyof FromTypeNode]>;
 
-type AliasableFromTypeNodes = FromTypeNodes | AliasNode<FromTypeNodes>;
+export type AliasableFromTypeNodes = FromTypeNodes | AliasNode<FromTypeNodes>;
 
 export type SelectNode = ['Select', AbstractSqlType[]];
 export type FromNode = ['From', AliasableFromTypeNodes];
@@ -396,6 +394,17 @@ export interface AbstractSqlModel {
 		body: string;
 		language: 'plpgsql';
 	}>;
+	lfInfo: {
+		rules: {
+			[key: string]: LfRuleInfo;
+		};
+	};
+}
+export interface LfRuleInfo {
+	root: {
+		table: string;
+		alias: string;
+	};
 }
 export interface SqlModel {
 	synonyms: {
@@ -503,6 +512,8 @@ export const isSelectQueryNode = (n: AbstractSqlType): n is SelectQueryNode =>
 	n[0] === 'SelectQuery';
 export const isSelectNode = (n: AbstractSqlType): n is SelectNode =>
 	n[0] === 'Select';
+export const isWhereNode = (n: AbstractSqlType): n is WhereNode =>
+	n[0] === 'Where';
 
 /**
  *
@@ -873,6 +884,7 @@ CREATE TABLE ${ifNotExistsStr}"${table.name}" (
 			if (typeof ruleSE !== 'string') {
 				throw new Error('Invalid structured English');
 			}
+			insertAffectedIdsBinds(ruleBody, abstractSqlModel.lfInfo.rules[ruleSE]);
 			const { query: ruleSQL, bindings: ruleBindings } = compileRule(
 				ruleBody,
 				engine,

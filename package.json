@@ -1,6 +1,6 @@
 {
   "name": "@balena/abstract-sql-compiler",
-  "version": "7.26.0",
+  "version": "8.0.0",
   "description": "A translator for abstract sql into sql.",
   "main": "out/AbstractSQLCompiler.js",
   "types": "out/AbstractSQLCompiler.d.ts",
@@ -16,11 +16,11 @@
   "repository": "https://github.com/balena-io-modules/abstract-sql-compiler.git",
   "author": "",
   "dependencies": {
-    "@balena/sbvr-types": "^3.4.18",
+    "@balena/sbvr-types": "3.5.0-build-web-resource-2-cee49a331a438e988e109722d82dad2a04e88c0b-1",
     "lodash": "^4.17.21"
   },
   "devDependencies": {
-    "@balena/lf-to-abstract-sql": "^4.6.0",
+    "@balena/lf-to-abstract-sql": "^5.0.0",
     "@balena/lint": "^6.2.1",
     "@balena/odata-parser": "^2.4.2",
     "@balena/odata-to-abstract-sql": "^5.8.0",
@@ -58,6 +58,6 @@
     ]
   },
   "versionist": {
-    "publishedAt": "2023-02-07T12:42:59.778Z"
+    "publishedAt": "2023-02-13T14:04:26.240Z"
   }
 }
