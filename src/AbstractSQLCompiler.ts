@@ -141,7 +141,7 @@ export type AddDateDurationNode = [
 export type BindNode = ['Bind', number | string] | ['Bind', string, string];
 export type CastNode = ['Cast', AbstractSqlType, string];
 export type CoalesceNode = [
-	'Cast',
+	'Coalesce',
 	UnknownTypeNodes,
 	UnknownTypeNodes,
 	...UnknownTypeNodes[],

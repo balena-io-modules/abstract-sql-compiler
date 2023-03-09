@@ -8,12 +8,14 @@ import {
 	AndNode,
 	AnyNode,
 	AverageNode,
+	CastNode,
 	CountNode,
 	CrossJoinNode,
 	DateTruncNode,
 	EngineInstance,
 	EqualsNode,
 	ExistsNode,
+	ExtractJSONPathAsTextNode,
 	FieldsNode,
 	FromNode,
 	FromTypeNodes,
@@ -45,6 +47,7 @@ import {
 	SubtractDateNumberNode,
 	SumNode,
 	TableNode,
+	TextArrayNode,
 	ToJSONNode,
 	UnionQueryNode,
 	WhereNode,
@@ -361,6 +364,7 @@ const countTableSelects = (
 		case 'Alias':
 		case 'Any':
 		case 'Average':
+		case 'Cast':
 		case 'CharacterLength':
 		case 'CrossJoin':
 		case 'Exists':
@@ -376,6 +380,7 @@ const countTableSelects = (
 				| AliasNode<FromTypeNodes>
 				| AnyNode
 				| AverageNode
+				| CastNode
 				| CrossJoinNode
 				| ExistsNode
 				| FromNode
@@ -403,6 +408,7 @@ const countTableSelects = (
 		case 'AddDateNumber':
 		case 'DateTrunc':
 		case 'Equals':
+		case 'ExtractJSONPathAsText':
 		case 'GreaterThan':
 		case 'GreaterThanOrEqual':
 		case 'IsDistinctFrom':
@@ -420,6 +426,7 @@ const countTableSelects = (
 				| AddDateNumberNode
 				| DateTruncNode
 				| EqualsNode
+				| ExtractJSONPathAsTextNode
 				| GreaterThanNode
 				| GreaterThanOrEqualNode
 				| LessThanNode
@@ -460,11 +467,13 @@ const countTableSelects = (
 		case 'And':
 		case 'Or':
 		case 'SelectQuery':
+		case 'TextArray':
 		case 'UnionQuery':
 			const selectQueryNode = abstractSql as
 				| AndNode
 				| OrNode
 				| SelectQueryNode
+				| TextArrayNode
 				| UnionQueryNode;
 			for (const arg of selectQueryNode.slice(1)) {
 				assertAbstractSqlIsNotLegacy(arg);
