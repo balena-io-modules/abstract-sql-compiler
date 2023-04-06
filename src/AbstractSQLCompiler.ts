@@ -70,6 +70,12 @@ export type InNode = [
 	AbstractSqlType,
 	...AbstractSqlType[],
 ];
+export type NotInNode = [
+	'NotIn',
+	FieldNode | ReferencedFieldNode,
+	AbstractSqlType,
+	...AbstractSqlType[],
+];
 export type NotExistsNode = ['NotExists', AbstractSqlType];
 export type ExistsNode = ['Exists', AbstractSqlType];
 export type NotNode = ['Not', BooleanTypeNodes];
@@ -86,6 +92,7 @@ export type BooleanTypeNodes =
 	| LessThanNode
 	| LessThanOrEqualNode
 	| InNode
+	| NotInNode
 	| ExistsNode
 	| NotExistsNode
 	| NotNode

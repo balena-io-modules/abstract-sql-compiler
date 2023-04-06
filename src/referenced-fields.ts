@@ -40,6 +40,7 @@ import {
 	LfRuleInfo,
 	NotEqualsNode,
 	NotExistsNode,
+	NotInNode,
 	NotNode,
 	OrNode,
 	RightJoinNode,
@@ -488,8 +489,7 @@ const countTableSelects = (
 		// n-ary nodes but the slice starts at the third argument
 		case 'In':
 		case 'NotIn':
-			// TODO: `NotIn` has no node type defined
-			const inNode = abstractSql as InNode;
+			const inNode = abstractSql as InNode | NotInNode;
 			for (const arg of inNode.slice(2)) {
 				assertAbstractSqlIsNotLegacy(arg);
 				sum += countTableSelects(arg, table);
