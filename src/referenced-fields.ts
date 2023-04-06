@@ -9,6 +9,7 @@ import {
 	AnyNode,
 	AverageNode,
 	CastNode,
+	CharacterLengthNode,
 	CountNode,
 	CrossJoinNode,
 	DateTruncNode,
@@ -375,12 +376,12 @@ const countTableSelects = (
 		case 'Sum':
 		case 'ToJSON':
 		case 'Where':
-			// TODO: `CharacterLength` has no node type defined
 			const unaryOperation = abstractSql as
 				| AliasNode<FromTypeNodes>
 				| AnyNode
 				| AverageNode
 				| CastNode
+				| CharacterLengthNode
 				| CrossJoinNode
 				| ExistsNode
 				| FromNode

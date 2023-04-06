@@ -85,11 +85,13 @@ export type NumberNode = ['Number', number];
 export type CountNode = ['Count', '*'];
 export type AverageNode = ['Average', NumberTypeNodes];
 export type SumNode = ['Sum', NumberTypeNodes];
+export type CharacterLengthNode = ['CharacterLength', TextTypeNodes];
 export type NumberTypeNodes =
 	| NumberNode
 	| CountNode
 	| AverageNode
 	| SumNode
+	| CharacterLengthNode
 	| SubtractDateDateNode
 	| UnknownTypeNodes;
 
