@@ -27,7 +27,9 @@ import {
 	InnerJoinNode,
 	InNode,
 	isAliasNode,
+	IsDistinctFromNode,
 	isFromNode,
+	IsNotDistinctFromNode,
 	isSelectNode,
 	isSelectQueryNode,
 	isTableNode,
@@ -420,8 +422,6 @@ const countTableSelects = (
 		case 'SubtractDateDate':
 		case 'SubtractDateDuration':
 		case 'SubtractDateNumber':
-			// TODO: `IsDistinctFrom` and `IsNotDistinctFrom` have no node
-			// types defined
 			const binaryOperation = abstractSql as
 				| AddDateDurationNode
 				| AddDateNumberNode
@@ -430,6 +430,8 @@ const countTableSelects = (
 				| ExtractJSONPathAsTextNode
 				| GreaterThanNode
 				| GreaterThanOrEqualNode
+				| IsDistinctFromNode
+				| IsNotDistinctFromNode
 				| LessThanNode
 				| LessThanOrEqualNode
 				| NotEqualsNode

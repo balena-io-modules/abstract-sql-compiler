@@ -42,6 +42,16 @@ export type DurationNode = [
 export type BooleanNode = ['Boolean', boolean];
 export type EqualsNode = ['Equals', AbstractSqlType, AbstractSqlType];
 export type NotEqualsNode = ['NotEquals', AbstractSqlType, AbstractSqlType];
+export type IsDistinctFromNode = [
+	'IsDistinctFrom',
+	AbstractSqlType,
+	AbstractSqlType,
+];
+export type IsNotDistinctFromNode = [
+	'IsNotDistinctFrom',
+	AbstractSqlType,
+	AbstractSqlType,
+];
 export type GreaterThanNode = ['GreaterThan', AbstractSqlType, AbstractSqlType];
 export type GreaterThanOrEqualNode = [
 	'GreaterThanOrEqual',
@@ -69,6 +79,8 @@ export type BooleanTypeNodes =
 	| BooleanNode
 	| EqualsNode
 	| NotEqualsNode
+	| IsDistinctFromNode
+	| IsNotDistinctFromNode
 	| GreaterThanNode
 	| GreaterThanOrEqualNode
 	| LessThanNode
