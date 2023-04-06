@@ -9,6 +9,7 @@ import {
 	AnyNode,
 	AverageNode,
 	CastNode,
+	CharacterLengthNode,
 	CountNode,
 	CrossJoinNode,
 	DateTruncNode,
@@ -26,7 +27,9 @@ import {
 	InnerJoinNode,
 	InNode,
 	isAliasNode,
+	IsDistinctFromNode,
 	isFromNode,
+	IsNotDistinctFromNode,
 	isSelectNode,
 	isSelectQueryNode,
 	isTableNode,
@@ -37,6 +40,7 @@ import {
 	LfRuleInfo,
 	NotEqualsNode,
 	NotExistsNode,
+	NotInNode,
 	NotNode,
 	OrNode,
 	RightJoinNode,
@@ -375,12 +379,12 @@ const countTableSelects = (
 		case 'Sum':
 		case 'ToJSON':
 		case 'Where':
-			// TODO: `CharacterLength` has no node type defined
 			const unaryOperation = abstractSql as
 				| AliasNode<FromTypeNodes>
 				| AnyNode
 				| AverageNode
 				| CastNode
+				| CharacterLengthNode
 				| CrossJoinNode
 				| ExistsNode
 				| FromNode
@@ -419,8 +423,6 @@ const countTableSelects = (
 		case 'SubtractDateDate':
 		case 'SubtractDateDuration':
 		case 'SubtractDateNumber':
-			// TODO: `IsDistinctFrom` and `IsNotDistinctFrom` have no node
-			// types defined
 			const binaryOperation = abstractSql as
 				| AddDateDurationNode
 				| AddDateNumberNode
@@ -429,6 +431,8 @@ const countTableSelects = (
 				| ExtractJSONPathAsTextNode
 				| GreaterThanNode
 				| GreaterThanOrEqualNode
+				| IsDistinctFromNode
+				| IsNotDistinctFromNode
 				| LessThanNode
 				| LessThanOrEqualNode
 				| NotEqualsNode
@@ -485,8 +489,7 @@ const countTableSelects = (
 		// n-ary nodes but the slice starts at the third argument
 		case 'In':
 		case 'NotIn':
-			// TODO: `NotIn` has no node type defined
-			const inNode = abstractSql as InNode;
+			const inNode = abstractSql as InNode | NotInNode;
 			for (const arg of inNode.slice(2)) {
 				assertAbstractSqlIsNotLegacy(arg);
 				sum += countTableSelects(arg, table);

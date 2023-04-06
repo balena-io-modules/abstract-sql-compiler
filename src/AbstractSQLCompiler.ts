@@ -42,6 +42,16 @@ export type DurationNode = [
 export type BooleanNode = ['Boolean', boolean];
 export type EqualsNode = ['Equals', AbstractSqlType, AbstractSqlType];
 export type NotEqualsNode = ['NotEquals', AbstractSqlType, AbstractSqlType];
+export type IsDistinctFromNode = [
+	'IsDistinctFrom',
+	AbstractSqlType,
+	AbstractSqlType,
+];
+export type IsNotDistinctFromNode = [
+	'IsNotDistinctFrom',
+	AbstractSqlType,
+	AbstractSqlType,
+];
 export type GreaterThanNode = ['GreaterThan', AbstractSqlType, AbstractSqlType];
 export type GreaterThanOrEqualNode = [
 	'GreaterThanOrEqual',
@@ -60,6 +70,12 @@ export type InNode = [
 	AbstractSqlType,
 	...AbstractSqlType[],
 ];
+export type NotInNode = [
+	'NotIn',
+	FieldNode | ReferencedFieldNode,
+	AbstractSqlType,
+	...AbstractSqlType[],
+];
 export type NotExistsNode = ['NotExists', AbstractSqlType];
 export type ExistsNode = ['Exists', AbstractSqlType];
 export type NotNode = ['Not', BooleanTypeNodes];
@@ -69,11 +85,14 @@ export type BooleanTypeNodes =
 	| BooleanNode
 	| EqualsNode
 	| NotEqualsNode
+	| IsDistinctFromNode
+	| IsNotDistinctFromNode
 	| GreaterThanNode
 	| GreaterThanOrEqualNode
 	| LessThanNode
 	| LessThanOrEqualNode
 	| InNode
+	| NotInNode
 	| ExistsNode
 	| NotExistsNode
 	| NotNode
@@ -85,11 +104,13 @@ export type NumberNode = ['Number', number];
 export type CountNode = ['Count', '*'];
 export type AverageNode = ['Average', NumberTypeNodes];
 export type SumNode = ['Sum', NumberTypeNodes];
+export type CharacterLengthNode = ['CharacterLength', TextTypeNodes];
 export type NumberTypeNodes =
 	| NumberNode
 	| CountNode
 	| AverageNode
 	| SumNode
+	| CharacterLengthNode
 	| SubtractDateDateNode
 	| UnknownTypeNodes;
 
