@@ -1,4 +1,32 @@
 - commits:
+    - subject: Add `NotInNode` type
+      hash: 9870d746344033db53ec14fddc23a8580b863ad9
+      body: ""
+      footer:
+        Change-type: patch
+        change-type: patch
+      author: Pagan Gazzard
+      nested: []
+    - subject: Add `IsDistinctFromNode`/`IsNotDistinctFromNode` types
+      hash: 09887280a6394a61a31c955602ccb2a0fe98c9b8
+      body: ""
+      footer:
+        Change-type: patch
+        change-type: patch
+      author: Pagan Gazzard
+      nested: []
+    - subject: Add `CharacterLengthNode` type
+      hash: 1fbab42cee8128025756076dc826dacda4ea1597
+      body: ""
+      footer:
+        Change-type: patch
+        change-type: patch
+      author: Pagan Gazzard
+      nested: []
+  version: 8.0.2
+  title: ""
+  date: 2023-04-06T18:12:29.893Z
+- commits:
     - subject: Adds Cast node type to tree parsing
       hash: cbdb559bfce3c77f9bce9e07f05777f58965f324
       body: ""
