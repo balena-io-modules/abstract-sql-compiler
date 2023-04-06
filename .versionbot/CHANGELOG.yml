@@ -1,4 +1,16 @@
 - commits:
+    - subject: Adds Cast node type to tree parsing
+      hash: cbdb559bfce3c77f9bce9e07f05777f58965f324
+      body: ""
+      footer:
+        Change-type: patch
+        change-type: patch
+      author: Otávio Jacobi
+      nested: []
+  version: 8.0.1
+  title: ""
+  date: 2023-04-06T17:59:29.723Z
+- commits:
     - subject: Add binds for affected IDs in compiled rules
       hash: 7d4bfac3b0dbcc6f916c90837398aff1e84588bc
       body: |
