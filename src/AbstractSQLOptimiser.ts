@@ -673,6 +673,7 @@ const typeRules: Dictionary<MatchFn> = {
 		}),
 		matchArgs('IsDistinctFrom', AnyValue, AnyValue),
 	),
+	Between: matchArgs('Between', AnyValue, AnyValue, AnyValue),
 	Add: tryMatches(MathOp('Add'), Helper(AddDateMatcher)),
 	Subtract: tryMatches(MathOp('Subtract'), Helper(SubtractDateMatcher)),
 	SubtractDateDate: matchArgs('SubtractDateDate', DateValue, DateValue),

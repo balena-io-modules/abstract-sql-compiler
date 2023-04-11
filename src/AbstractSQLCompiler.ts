@@ -64,6 +64,7 @@ export type LessThanOrEqualNode = [
 	AbstractSqlType,
 	AbstractSqlType,
 ];
+export type BetweenNode = ['Between', AnyTypeNodes, AnyTypeNodes, AnyTypeNodes];
 export type InNode = [
 	'In',
 	FieldNode | ReferencedFieldNode,
@@ -91,6 +92,7 @@ export type BooleanTypeNodes =
 	| GreaterThanOrEqualNode
 	| LessThanNode
 	| LessThanOrEqualNode
+	| BetweenNode
 	| InNode
 	| NotInNode
 	| ExistsNode

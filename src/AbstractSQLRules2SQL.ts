@@ -950,6 +950,13 @@ const typeRules: Dictionary<MatchFn> = {
 		checkArgs('IsDistinctFrom', args, 2);
 		return 'NOT(' + isNotDistinctFrom(args, indent) + ')';
 	},
+	Between: (args, indent) => {
+		checkArgs('Between', args, 3);
+		const v = AnyValue(getAbstractSqlQuery(args, 0), indent);
+		const a = AnyValue(getAbstractSqlQuery(args, 1), indent);
+		const b = AnyValue(getAbstractSqlQuery(args, 2), indent);
+		return `${v} BETWEEN ${a} AND (${b})`;
+	},
 	Add: MathOp('Add'),
 	Subtract: MathOp('Subtract'),
 	Multiply: MathOp('Multiply'),
