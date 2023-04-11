@@ -55,6 +55,34 @@ describe('Divide', () => {
 	);
 });
 
+describe('BitwiseAnd', () => {
+	test(
+		[
+			'SelectQuery',
+			['Select', [['BitwiseAnd', ['Number', 10], ['Number', 5]]]],
+		],
+		(result, sqlEquals) => {
+			it('should produce a valid BitwiseAnd statement', () => {
+				sqlEquals(result.query, 'SELECT 10 & 5');
+			});
+		},
+	);
+});
+
+describe('BitwiseShiftRight', () => {
+	test(
+		[
+			'SelectQuery',
+			['Select', [['BitwiseShiftRight', ['Number', 10], ['Number', 5]]]],
+		],
+		(result, sqlEquals) => {
+			it('should produce a valid BitwiseShiftRight statement', () => {
+				sqlEquals(result.query, 'SELECT 10 >> 5');
+			});
+		},
+	);
+});
+
 describe('Round', () => {
 	test(
 		['SelectQuery', ['Select', [['Round', ['Number', 10.4]]]]],
