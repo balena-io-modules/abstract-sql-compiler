@@ -282,13 +282,8 @@ const NumberMatch = (type: string): MatchFn => {
 		return arg;
 	});
 };
-const mathOps = {
-	Add: '+',
-	Subtract: '-',
-	Multiply: '*',
-	Divide: '/',
-};
-const MathOp = (type: keyof typeof mathOps): MatchFn => {
+
+const MathOp = (type: AbstractSQLRules2SQL.MathOps): MatchFn => {
 	return matchArgs(type, NumericValue, NumericValue);
 };
 
@@ -691,6 +686,8 @@ const typeRules: Dictionary<MatchFn> = {
 	AddDateNumber: matchArgs('AddDateNumber', DateValue, NumericValue),
 	Multiply: MathOp('Multiply'),
 	Divide: MathOp('Divide'),
+	BitwiseAnd: MathOp('BitwiseAnd'),
+	BitwiseShiftRight: MathOp('BitwiseShiftRight'),
 	Year: ExtractNumericDatePart('Year'),
 	Month: ExtractNumericDatePart('Month'),
 	Day: ExtractNumericDatePart('Day'),

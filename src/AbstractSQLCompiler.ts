@@ -105,11 +105,19 @@ export type CountNode = ['Count', '*'];
 export type AverageNode = ['Average', NumberTypeNodes];
 export type SumNode = ['Sum', NumberTypeNodes];
 export type CharacterLengthNode = ['CharacterLength', TextTypeNodes];
+export type BitwiseAndNode = ['BitwiseAnd', NumberTypeNodes, NumberTypeNodes];
+export type BitwiseShiftRightNode = [
+	'BitwiseShiftRight',
+	NumberTypeNodes,
+	NumberTypeNodes,
+];
 export type NumberTypeNodes =
 	| NumberNode
 	| CountNode
 	| AverageNode
 	| SumNode
+	| BitwiseAndNode
+	| BitwiseShiftRightNode
 	| CharacterLengthNode
 	| SubtractDateDateNode
 	| UnknownTypeNodes;

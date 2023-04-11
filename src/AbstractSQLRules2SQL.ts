@@ -377,7 +377,10 @@ const mathOps = {
 	Subtract: '-',
 	Multiply: '*',
 	Divide: '/',
+	BitwiseAnd: '&',
+	BitwiseShiftRight: '>>',
 };
+export type MathOps = keyof typeof mathOps;
 
 const mathOperatorNodeTypes = new Set([
 	...Object.keys(mathOps),
@@ -951,6 +954,8 @@ const typeRules: Dictionary<MatchFn> = {
 	Subtract: MathOp('Subtract'),
 	Multiply: MathOp('Multiply'),
 	Divide: MathOp('Divide'),
+	BitwiseAnd: MathOp('BitwiseAnd'),
+	BitwiseShiftRight: MathOp('BitwiseShiftRight'),
 	AddDateNumber, // returns date
 	AddDateDuration, // returns date
 	SubtractDateDate, // returns integer
