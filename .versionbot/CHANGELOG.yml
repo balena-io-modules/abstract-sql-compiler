@@ -1,4 +1,16 @@
 - commits:
+    - subject: Add `BitwiseAnd`/`BitwiseShiftRight` node types
+      hash: f155d1daca54086b653fa590e3248c5ef805afff
+      body: ""
+      footer:
+        Change-type: minor
+        change-type: minor
+      author: Pagan Gazzard
+      nested: []
+  version: 8.1.0
+  title: ""
+  date: 2023-04-11T14:11:01.677Z
+- commits:
     - subject: Add `NotInNode` type
       hash: 9870d746344033db53ec14fddc23a8580b863ad9
       body: ""
