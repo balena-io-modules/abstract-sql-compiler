@@ -102,6 +102,8 @@ export type BooleanTypeNodes =
 	| OrNode
 	| UnknownTypeNodes;
 
+export type IntegerNode = ['Integer', number];
+export type RealNode = ['Real', number];
 export type NumberNode = ['Number', number];
 export type CountNode = ['Count', '*'];
 export type AverageNode = ['Average', NumberTypeNodes];
@@ -115,6 +117,8 @@ export type BitwiseShiftRightNode = [
 ];
 export type NumberTypeNodes =
 	| NumberNode
+	| IntegerNode
+	| RealNode
 	| CountNode
 	| AverageNode
 	| SumNode
@@ -298,7 +302,10 @@ export type ValuesNodeTypes =
 	| BindNode
 	| TextNode
 	| JSONNode
-	| NumberNode;
+	| NumberNode
+	| IntegerNode
+	| RealNode
+	| BooleanNode;
 
 export type AliasNode<T> = ['Alias', T, string];
 

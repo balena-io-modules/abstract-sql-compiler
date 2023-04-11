@@ -548,10 +548,6 @@ const SubtractDateDate: MatchFn = (args, indent) => {
 
 const Value = (arg: any, indent: string): string => {
 	switch (arg) {
-		case true:
-			return '1';
-		case false:
-			return '0';
 		case 'Default':
 			return 'DEFAULT';
 		default:
@@ -564,6 +560,7 @@ const Value = (arg: any, indent: string): string => {
 				case 'Number':
 				case 'Real':
 				case 'Integer':
+				case 'Boolean':
 					return typeRules[type](rest, indent);
 				default:
 					throw new SyntaxError(`Invalid type for Value ${type}`);

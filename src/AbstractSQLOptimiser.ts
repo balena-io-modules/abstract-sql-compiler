@@ -4,8 +4,15 @@ import { Dictionary } from 'lodash';
 import {
 	AbstractSqlQuery,
 	AbstractSqlType,
+	BindNode,
 	DurationNode,
+	IntegerNode,
+	NullNode,
+	NumberNode,
+	RealNode,
 	ReplaceNode,
+	TextNode,
+	ValuesNodeTypes,
 } from './AbstractSQLCompiler';
 import * as AbstractSQLRules2SQL from './AbstractSQLRules2SQL';
 
@@ -33,6 +40,8 @@ const deprecated = (() => {
 			"Legacy null format of `null` is deprecated, use `['Null']` instead.",
 		legacyNullString:
 			"Legacy null format of `'Null'` is deprecated, use `['Null']` instead.",
+		legacyValuesBoolean:
+			"Legacy `Values` boolean format of `true|false` is deprecated, use `['Boolean', true|false]` instead.",
 	};
 	const result = {} as Record<keyof typeof deprecationMessages, () => void>;
 	for (const key of Object.keys(deprecationMessages) as Array<
@@ -323,10 +332,12 @@ const ConcatenateWithSeparator: MatchFn = (args) => {
 
 const Text: MatchFn = matchArgs('Text', _.identity);
 
-const Value = (arg: any): AbstractSqlQuery => {
+const Value = (arg: any): ValuesNodeTypes => {
 	switch (arg) {
 		case true:
 		case false:
+			deprecated.legacyValuesBoolean();
+			return ['Boolean', arg];
 		case 'Default':
 			return arg;
 		default:
@@ -339,7 +350,14 @@ const Value = (arg: any): AbstractSqlQuery => {
 				case 'Number':
 				case 'Real':
 				case 'Integer':
-					return typeRules[type](rest);
+				case 'Boolean':
+					return typeRules[type](rest) as
+						| NullNode
+						| BindNode
+						| TextNode
+						| NumberNode
+						| RealNode
+						| IntegerNode;
 				default:
 					throw new SyntaxError(`Invalid type for Value ${type}`);
 			}
