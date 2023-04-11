@@ -1,4 +1,16 @@
 - commits:
+    - subject: Add `Between` node type
+      hash: 4880072eeab6af198df47777b6579dcacc3d7fb1
+      body: ""
+      footer:
+        Change-type: minor
+        change-type: minor
+      author: Pagan Gazzard
+      nested: []
+  version: 8.2.0
+  title: ""
+  date: 2023-04-11T14:19:22.378Z
+- commits:
     - subject: Add `BitwiseAnd`/`BitwiseShiftRight` node types
       hash: f155d1daca54086b653fa590e3248c5ef805afff
       body: ""
