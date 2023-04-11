@@ -1,4 +1,17 @@
 - commits:
+    - subject: Support boolean nodes in a ValuesNode
+      hash: d589fb6cd92a3a7570e3b2ebea14acbb84807d8a
+      body: |
+        This also deprecates the legacy use of direct true/false entries
+      footer:
+        Change-type: minor
+        change-type: minor
+      author: Pagan Gazzard
+      nested: []
+  version: 8.3.0
+  title: ""
+  date: 2023-04-11T14:56:54.403Z
+- commits:
     - subject: Add `Between` node type
       hash: 4880072eeab6af198df47777b6579dcacc3d7fb1
       body: ""
