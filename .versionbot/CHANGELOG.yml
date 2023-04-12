@@ -1,4 +1,16 @@
 - commits:
+    - subject: Remove typing for non-existent JSON node
+      hash: 76181d438f0f37463642704d7908c1774040c2c2
+      body: ""
+      footer:
+        Change-type: patch
+        change-type: patch
+      author: Pagan Gazzard
+      nested: []
+  version: 8.3.7
+  title: ""
+  date: 2023-04-12T16:38:07.014Z
+- commits:
     - subject: Tighten the `isXValue` function typings
       hash: 91485cd9c88faaaed9b1280bc34eb3a99628057e
       body: ""
