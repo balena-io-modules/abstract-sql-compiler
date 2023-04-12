@@ -15,6 +15,13 @@ import {
 	UpsertQueryNode,
 	CoalesceNode,
 	DurationNode,
+	StrictTextTypeNodes,
+	StrictNumberTypeNodes,
+	StrictBooleanTypeNodes,
+	StrictDateTypeNodes,
+	StrictDurationTypeNodes,
+	StrictTextArrayTypeNodes,
+	StrictJSONTypeNodes,
 } from './AbstractSQLCompiler';
 
 export type Binding =
@@ -92,7 +99,7 @@ const UnknownValue: MetaMatchFn = (args, indent) => {
 	}
 };
 const MatchValue =
-	(matcher: (type: string | AbstractSqlQuery) => type is string): MetaMatchFn =>
+	(matcher: (type: unknown) => type is string): MetaMatchFn =>
 	(args, indent) => {
 		const [type, ...rest] = args;
 		if (matcher(type)) {
@@ -100,9 +107,7 @@ const MatchValue =
 		}
 		return UnknownValue(args, indent);
 	};
-export const isTextValue = (
-	type: string | AbstractSqlQuery,
-): type is string => {
+export const isTextValue = (type: unknown): type is StrictTextTypeNodes[0] => {
 	return (
 		type === 'Text' ||
 		type === 'EmbeddedText' ||
@@ -119,8 +124,8 @@ export const isTextValue = (
 };
 const TextValue = MatchValue(isTextValue);
 export const isNumericValue = (
-	type: string | AbstractSqlQuery,
-): type is string => {
+	type: unknown,
+): type is StrictNumberTypeNodes[0] => {
 	return (
 		type === 'Number' ||
 		type === 'Real' ||
@@ -152,8 +157,8 @@ export const isNumericValue = (
 };
 const NumericValue = MatchValue(isNumericValue);
 export const isBooleanValue = (
-	type: string | AbstractSqlQuery,
-): type is string => {
+	type: unknown,
+): type is StrictBooleanTypeNodes[0] => {
 	return (
 		type === 'Boolean' ||
 		type === 'Not' ||
@@ -176,9 +181,7 @@ export const isBooleanValue = (
 	);
 };
 const BooleanValue = MatchValue(isBooleanValue);
-export const isDateValue = (
-	type: string | AbstractSqlQuery,
-): type is string => {
+export const isDateValue = (type: unknown): type is StrictDateTypeNodes[0] => {
 	return (
 		type === 'Date' ||
 		type === 'ToDate' ||
@@ -194,27 +197,27 @@ export const isDateValue = (
 };
 const DateValue = MatchValue(isDateValue);
 export const isArrayValue = (
-	type: string | AbstractSqlQuery,
-): type is string => {
+	type: unknown,
+): type is StrictTextArrayTypeNodes[0] => {
 	return type === 'TextArray';
 };
 
 export const isJSONValue = (
-	type: string | AbstractSqlQuery,
-): type is string => {
-	return type === 'AggregateJSON' || type === 'ToJSON';
+	type: unknown,
+): type is 'AggregateJSON' | StrictJSONTypeNodes[0] => {
+	return type === 'JSON' || type === 'AggregateJSON' || type === 'ToJSON';
 };
 const JSONValue = MatchValue(isJSONValue);
 
 export const isDurationValue = (
-	type: string | AbstractSqlQuery,
-): type is string => {
+	type: unknown,
+): type is StrictDurationTypeNodes[0] => {
 	return type === 'Duration';
 };
 const DurationValue = MatchValue(isDurationValue);
 
 export const isFieldValue = (
-	type: string | AbstractSqlQuery,
+	type: unknown,
 ): type is 'Field' | 'ReferencedField' => {
 	return type === 'Field' || type === 'ReferencedField';
 };
