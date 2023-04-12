@@ -1,4 +1,24 @@
 - commits:
+    - subject: Correctly treat `Value` nodes as rewritten to `Text` by the optimizer
+      hash: c9dbc4cfb3fa392e87a0775accdd6811b3c273b4
+      body: ""
+      footer:
+        Change-type: patch
+        change-type: patch
+      author: Pagan Gazzard
+      nested: []
+    - subject: Add EmbeddedTextNode typing
+      hash: d00ac00ca7af4d17b437c3d5511af8e506615db4
+      body: ""
+      footer:
+        Change-type: patch
+        change-type: patch
+      author: Pagan Gazzard
+      nested: []
+  version: 8.3.5
+  title: ""
+  date: 2023-04-12T16:01:45.643Z
+- commits:
     - subject: Enforce the first argument of ExtractJSONPathAsText is a JSON type node
       hash: 08865295d4cd3ded56d77a30d33c0434e1da52b9
       body: ""
