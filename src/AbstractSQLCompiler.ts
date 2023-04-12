@@ -104,6 +104,22 @@ export type BooleanTypeNodes =
 	| OrNode
 	| UnknownTypeNodes;
 
+export type YearNode = ['Year', DateTypeNodes];
+export type MonthNode = ['Month', DateTypeNodes];
+export type DayNode = ['Day', DateTypeNodes];
+export type HourNode = ['Hour', DateTypeNodes];
+export type MinuteNode = ['Minute', DateTypeNodes];
+export type SecondNode = ['Second', DateTypeNodes];
+export type FractionalsecondsNode = ['Fractionalseconds', DateTypeNodes];
+export type ExtractNumericDateTypeNodes =
+	| YearNode
+	| MonthNode
+	| DayNode
+	| HourNode
+	| MinuteNode
+	| SecondNode
+	| FractionalsecondsNode;
+
 export type IntegerNode = ['Integer', number];
 export type RealNode = ['Real', number];
 export type NumberNode = ['Number', number];
@@ -112,12 +128,6 @@ export type SubtractNode = ['Subtract', NumberTypeNodes, NumberTypeNodes];
 export type MultiplyNode = ['Multiply', NumberTypeNodes, NumberTypeNodes];
 export type DivideNode = ['Divide', NumberTypeNodes, NumberTypeNodes];
 export type StrPosNode = ['StrPos', TextTypeNodes, TextTypeNodes];
-export type YearNode = ['Year', DateTypeNodes];
-export type MonthNode = ['Month', DateTypeNodes];
-export type DayNode = ['Day', DateTypeNodes];
-export type HourNode = ['Hour', DateTypeNodes];
-export type MinuteNode = ['Minute', DateTypeNodes];
-export type SecondNode = ['Second', DateTypeNodes];
 export type RoundNode = ['Round', NumberTypeNodes];
 export type FloorNode = ['Floor', NumberTypeNodes];
 export type CeilingNode = ['Ceiling', NumberTypeNodes];
@@ -140,12 +150,7 @@ export type NumberTypeNodes =
 	| MultiplyNode
 	| DivideNode
 	| StrPosNode
-	| YearNode
-	| MonthNode
-	| DayNode
-	| HourNode
-	| MinuteNode
-	| SecondNode
+	| ExtractNumericDateTypeNodes
 	| RoundNode
 	| FloorNode
 	| CeilingNode
@@ -221,9 +226,9 @@ export type BindNode = ['Bind', number | string] | ['Bind', string, string];
 export type CastNode = ['Cast', AbstractSqlType, string];
 export type CoalesceNode = [
 	'Coalesce',
-	UnknownTypeNodes,
-	UnknownTypeNodes,
-	...UnknownTypeNodes[],
+	AnyTypeNodes,
+	AnyTypeNodes,
+	...AnyTypeNodes[],
 ];
 export type ToJSONNode = ['ToJSON', AnyTypeNodes];
 export type AnyNode = ['Any', UnknownTypeNodes];
@@ -234,12 +239,13 @@ export type UnknownTypeNodes =
 	| CastNode
 	| CaseNode
 	| CoalesceNode
-	| ToJSONNode
 	| AnyNode
 	| UnknownNode;
 
-export type TextNode = ['Text', string];
 export type JSONNode = ['JSON', string];
+export type JSONTypeNodes = JSONNode | ToJSONNode | UnknownTypeNodes;
+
+export type TextNode = ['Text', string];
 export type ConcatenateNode = ['Concatenate', ...TextTypeNodes[]];
 export type ConcatenateWithSeparatorNode = [
 	'ConcatenateWithSeparator',
@@ -259,10 +265,10 @@ export type ReplaceNode = [
 ];
 export type ExtractJSONPathAsTextNode = [
 	'ExtractJSONPathAsText',
-	JSONNode,
+	JSONTypeNodes,
 	TextArrayTypeNodes,
 ];
-export type TextArrayTypeNodes = TextArrayNode | UnknownNode;
+export type TextArrayTypeNodes = TextArrayNode | UnknownTypeNodes;
 export type TextArrayNode = ['TextArray', ...TextNode[]];
 export type TextTypeNodes =
 	| TextNode

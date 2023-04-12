@@ -107,7 +107,7 @@ export const optimizeSchema = (
 								}
 							});
 						};
-						convertReferencedFieldsToFields(whereNode as AbstractSqlType[]);
+						convertReferencedFieldsToFields(whereNode);
 
 						const tableName = fromNode[1];
 						const sha = sbvrTypes.SHA.validateSync(
