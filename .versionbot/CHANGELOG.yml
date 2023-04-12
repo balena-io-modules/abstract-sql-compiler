@@ -1,4 +1,16 @@
 - commits:
+    - subject: Add more node typings
+      hash: 047954b6f66abb041bee74373f37c38d71cdc4d7
+      body: ""
+      footer:
+        Change-type: patch
+        change-type: patch
+      author: Pagan Gazzard
+      nested: []
+  version: 8.3.1
+  title: ""
+  date: 2023-04-12T13:14:25.174Z
+- commits:
     - subject: Support boolean nodes in a ValuesNode
       hash: d589fb6cd92a3a7570e3b2ebea14acbb84807d8a
       body: |
