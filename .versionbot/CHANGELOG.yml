@@ -1,4 +1,16 @@
 - commits:
+    - subject: Enforce the first argument of ExtractJSONPathAsText is a JSON type node
+      hash: 08865295d4cd3ded56d77a30d33c0434e1da52b9
+      body: ""
+      footer:
+        Change-type: patch
+        change-type: patch
+      author: Pagan Gazzard
+      nested: []
+  version: 8.3.4
+  title: ""
+  date: 2023-04-12T15:55:47.432Z
+- commits:
     - subject: Improve node typings
       hash: 2cb83cf242052c581ee5412e3a90ed87cf5fd39e
       body: ""
