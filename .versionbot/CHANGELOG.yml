@@ -1,4 +1,16 @@
 - commits:
+    - subject: Tighten the `isXValue` function typings
+      hash: 91485cd9c88faaaed9b1280bc34eb3a99628057e
+      body: ""
+      footer:
+        Change-type: patch
+        change-type: patch
+      author: Pagan Gazzard
+      nested: []
+  version: 8.3.6
+  title: ""
+  date: 2023-04-12T16:18:20.829Z
+- commits:
     - subject: Correctly treat `Value` nodes as rewritten to `Text` by the optimizer
       hash: c9dbc4cfb3fa392e87a0775accdd6811b3c273b4
       body: ""
