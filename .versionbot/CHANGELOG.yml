@@ -1,4 +1,16 @@
 - commits:
+    - subject: Improve typings
+      hash: 43e75ef37de956d1b583bc62b307b04e0f8455c1
+      body: ""
+      footer:
+        Change-type: patch
+        change-type: patch
+      author: Pagan Gazzard
+      nested: []
+  version: 8.3.8
+  title: ""
+  date: 2023-04-12T17:26:10.992Z
+- commits:
     - subject: Remove typing for non-existent JSON node
       hash: 76181d438f0f37463642704d7908c1774040c2c2
       body: ""
