@@ -243,8 +243,7 @@ export type UnknownTypeNodes =
 	| AnyNode
 	| UnknownNode;
 
-export type JSONNode = ['JSON', string];
-export type StrictJSONTypeNodes = JSONNode | ToJSONNode;
+export type StrictJSONTypeNodes = ToJSONNode;
 export type JSONTypeNodes = StrictJSONTypeNodes | UnknownTypeNodes;
 
 export type EmbeddedTextNode = ['EmbeddedText', string];
@@ -372,7 +371,6 @@ export type ValuesNodeTypes =
 	| BindNode
 	| TextNode
 	| EmbeddedTextNode
-	| JSONNode
 	| NumberNode
 	| IntegerNode
 	| RealNode

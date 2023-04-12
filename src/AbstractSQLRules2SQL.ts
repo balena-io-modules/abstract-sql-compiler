@@ -205,7 +205,7 @@ export const isArrayValue = (
 export const isJSONValue = (
 	type: unknown,
 ): type is 'AggregateJSON' | StrictJSONTypeNodes[0] => {
-	return type === 'JSON' || type === 'AggregateJSON' || type === 'ToJSON';
+	return type === 'AggregateJSON' || type === 'ToJSON';
 };
 const JSONValue = MatchValue(isJSONValue);
 

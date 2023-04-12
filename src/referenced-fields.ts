@@ -510,7 +510,6 @@ const countTableSelects = (
 		case 'EmbeddedText':
 		case 'GroupBy':
 		case 'Integer':
-		case 'JSON':
 		case 'Null':
 		case 'Number':
 		case 'ReferencedField':
