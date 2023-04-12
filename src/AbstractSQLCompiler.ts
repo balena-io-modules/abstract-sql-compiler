@@ -65,6 +65,7 @@ export type LessThanOrEqualNode = [
 	AbstractSqlType,
 ];
 export type BetweenNode = ['Between', AnyTypeNodes, AnyTypeNodes, AnyTypeNodes];
+export type LikeNode = ['Like', AbstractSqlType, AbstractSqlType];
 export type InNode = [
 	'In',
 	FieldNode | ReferencedFieldNode,
@@ -93,6 +94,7 @@ export type BooleanTypeNodes =
 	| LessThanNode
 	| LessThanOrEqualNode
 	| BetweenNode
+	| LikeNode
 	| InNode
 	| NotInNode
 	| ExistsNode
@@ -105,6 +107,20 @@ export type BooleanTypeNodes =
 export type IntegerNode = ['Integer', number];
 export type RealNode = ['Real', number];
 export type NumberNode = ['Number', number];
+export type AddNode = ['Add', NumberTypeNodes, NumberTypeNodes];
+export type SubtractNode = ['Subtract', NumberTypeNodes, NumberTypeNodes];
+export type MultiplyNode = ['Multiply', NumberTypeNodes, NumberTypeNodes];
+export type DivideNode = ['Divide', NumberTypeNodes, NumberTypeNodes];
+export type StrPosNode = ['StrPos', TextTypeNodes, TextTypeNodes];
+export type YearNode = ['Year', DateTypeNodes];
+export type MonthNode = ['Month', DateTypeNodes];
+export type DayNode = ['Day', DateTypeNodes];
+export type HourNode = ['Hour', DateTypeNodes];
+export type MinuteNode = ['Minute', DateTypeNodes];
+export type SecondNode = ['Second', DateTypeNodes];
+export type RoundNode = ['Round', NumberTypeNodes];
+export type FloorNode = ['Floor', NumberTypeNodes];
+export type CeilingNode = ['Ceiling', NumberTypeNodes];
 export type CountNode = ['Count', '*'];
 export type AverageNode = ['Average', NumberTypeNodes];
 export type SumNode = ['Sum', NumberTypeNodes];
@@ -119,6 +135,20 @@ export type NumberTypeNodes =
 	| NumberNode
 	| IntegerNode
 	| RealNode
+	| AddNode
+	| SubtractNode
+	| MultiplyNode
+	| DivideNode
+	| StrPosNode
+	| YearNode
+	| MonthNode
+	| DayNode
+	| HourNode
+	| MinuteNode
+	| SecondNode
+	| RoundNode
+	| FloorNode
+	| CeilingNode
 	| CountNode
 	| AverageNode
 	| SumNode
@@ -131,8 +161,16 @@ export type NumberTypeNodes =
 export type FieldNode = ['Field', string];
 export type ReferencedFieldNode = ['ReferencedField', string, string];
 export type DateTruncNode = ['DateTrunc', TextTypeNodes, DateTypeNodes];
+export type ToDateNode = ['ToDate', DateTypeNodes];
+export type ToTimeNode = ['ToTime', DateTypeNodes];
+export type CurrentTimestampNode = ['CurrentTimestamp'];
+export type CurrentDateNode = ['CurrentDate'];
 export type DateTypeNodes =
 	| DateNode
+	| ToDateNode
+	| ToTimeNode
+	| CurrentTimestampNode
+	| CurrentDateNode
 	| DateTruncNode
 	| SubtractDateNumberNode
 	| SubtractDateDurationNode
@@ -173,6 +211,12 @@ export type AddDateDurationNode = [
 	DurationNode,
 ];
 
+export type WhenNode = ['When', BooleanTypeNodes, AnyTypeNodes];
+export type ElseNode = ['Else', AnyTypeNodes];
+export type CaseNode =
+	| ['Case', ...WhenNode[]]
+	| ['Case', ...WhenNode[], ElseNode];
+
 export type BindNode = ['Bind', number | string] | ['Bind', string, string];
 export type CastNode = ['Cast', AbstractSqlType, string];
 export type CoalesceNode = [
@@ -188,6 +232,7 @@ export type UnknownTypeNodes =
 	| ReferencedFieldNode
 	| BindNode
 	| CastNode
+	| CaseNode
 	| CoalesceNode
 	| ToJSONNode
 	| AnyNode
@@ -201,7 +246,11 @@ export type ConcatenateWithSeparatorNode = [
 	TextTypeNodes,
 	...TextTypeNodes[],
 ];
-export type LikeNode = ['Like', AbstractSqlType, AbstractSqlType];
+export type LowerNode = ['Lower', TextTypeNodes];
+export type UpperNode = ['Upper', TextTypeNodes];
+export type TrimNode = ['Trim', TextTypeNodes];
+export type SubstringNode = ['Substring', TextTypeNodes];
+export type RightNode = ['Right', TextTypeNodes];
 export type ReplaceNode = [
 	'Replace',
 	TextTypeNodes,
@@ -216,9 +265,14 @@ export type ExtractJSONPathAsTextNode = [
 export type TextArrayTypeNodes = TextArrayNode | UnknownNode;
 export type TextArrayNode = ['TextArray', ...TextNode[]];
 export type TextTypeNodes =
+	| TextNode
 	| ConcatenateNode
 	| ConcatenateWithSeparatorNode
-	| LikeNode
+	| LowerNode
+	| UpperNode
+	| TrimNode
+	| SubstringNode
+	| RightNode
 	| ReplaceNode
 	| ExtractJSONPathAsTextNode
 	| UnknownTypeNodes;
@@ -311,7 +365,7 @@ export type AliasNode<T> = ['Alias', T, string];
 
 export type AnyTypeNodes =
 	| NullNode
-	| DateNode
+	| DateTypeNodes
 	| BooleanTypeNodes
 	| NumberTypeNodes
 	| TextTypeNodes
@@ -330,8 +384,7 @@ export type AnyTypeNodes =
 	| FullJoinNode
 	| CrossJoinNode
 	| GroupByNode
-	| HavingNode
-	| UnknownNode;
+	| HavingNode;
 
 export type AbstractSqlType = string | AnyTypeNodes;
 
@@ -694,9 +747,7 @@ $$;`);
 			}
 			let definitionAbstractSql = definition.abstractSql;
 			// If there are any resource nodes then it's a dynamic definition and cannot become a view
-			if (
-				containsNode(definitionAbstractSql as AbstractSqlType[], isResourceNode)
-			) {
+			if (containsNode(definitionAbstractSql, isResourceNode)) {
 				return;
 			}
 			if (isTableNode(definitionAbstractSql)) {
