@@ -14,6 +14,7 @@ import {
 	DeleteQueryNode,
 	UpsertQueryNode,
 	CoalesceNode,
+	DurationNode,
 } from './AbstractSQLCompiler';
 
 export type Binding =
@@ -1261,7 +1262,7 @@ const typeRules: Dictionary<MatchFn> = {
 			throw new SyntaxError('Durations not supported on: ' + engine);
 		}
 		// TODO: The abstract sql type should accommodate this
-		let duration = args[0] as any as Dictionary<string>;
+		let duration = args[0] as DurationNode[1];
 		if (duration == null || typeof duration !== 'object') {
 			throw new SyntaxError(
 				`Duration must be an object, got ${typeof duration}`,

@@ -4,11 +4,15 @@ import { Dictionary } from 'lodash';
 import {
 	AbstractSqlQuery,
 	AbstractSqlType,
+	AndNode,
 	BindNode,
+	CaseNode,
 	DurationNode,
 	IntegerNode,
 	NullNode,
 	NumberNode,
+	OrNode,
+	OrderByNode,
 	RealNode,
 	ReplaceNode,
 	TextNode,
@@ -527,7 +531,7 @@ const typeRules: Dictionary<MatchFn> = {
 			...groups.OrderBy,
 			...groups.Limit,
 			...groups.Offset,
-		] as AbstractSqlQuery;
+		];
 	},
 	Select: (args) => {
 		checkArgs('Select', args, 1);
@@ -574,10 +578,10 @@ const typeRules: Dictionary<MatchFn> = {
 				if (order !== 'ASC' && order !== 'DESC') {
 					throw new SyntaxError(`Can only order by "ASC" or "DESC"`);
 				}
-				const value = AnyValue(getAbstractSqlQuery(arg, 1));
+				const value = Field(getAbstractSqlQuery(arg, 1));
 				return [order, value];
 			}),
-		] as AbstractSqlQuery;
+		] as OrderByNode;
 	},
 	Limit: matchArgs('Limit', NumericValue),
 	Offset: matchArgs('Offset', NumericValue),
@@ -791,7 +795,7 @@ const typeRules: Dictionary<MatchFn> = {
 						throw new SyntaxError('Case can only contain When/Else');
 				}
 			}),
-		] as AbstractSqlQuery;
+		] as CaseNode;
 	},
 	And: tryMatches(
 		Helper<OptimisationMatchFn>((args) => {
@@ -821,7 +825,7 @@ const typeRules: Dictionary<MatchFn> = {
 				return false;
 			}
 
-			return ['And', ...conditions] as AbstractSqlQuery;
+			return ['And', ...conditions] as AndNode;
 		}),
 		Helper<OptimisationMatchFn>((args) => {
 			checkMinArgs('And', args, 2);
@@ -843,7 +847,7 @@ const typeRules: Dictionary<MatchFn> = {
 				return ['Boolean', false] as AbstractSqlQuery;
 			}
 			if (maybeHelped) {
-				return ['And', ...conditions] as AbstractSqlQuery;
+				return ['And', ...conditions] as AndNode;
 			}
 			return false;
 		}),
@@ -901,7 +905,7 @@ const typeRules: Dictionary<MatchFn> = {
 					];
 				}
 			});
-			return ['And', ...fields, ...others] as AbstractSqlQuery;
+			return ['And', ...fields, ...others] as AndNode;
 		}),
 		(args) => {
 			checkMinArgs('And', args, 2);
@@ -946,7 +950,7 @@ const typeRules: Dictionary<MatchFn> = {
 				return false;
 			}
 
-			return ['Or', ...conditions] as AbstractSqlQuery;
+			return ['Or', ...conditions] as OrNode;
 		}),
 		Helper<OptimisationMatchFn>((args) => {
 			checkMinArgs('Or', args, 2);
@@ -968,7 +972,7 @@ const typeRules: Dictionary<MatchFn> = {
 				return ['Boolean', true] as AbstractSqlQuery;
 			}
 			if (maybeHelped) {
-				return ['Or', ...conditions] as AbstractSqlQuery;
+				return ['Or', ...conditions] as OrNode;
 			}
 			return false;
 		}),

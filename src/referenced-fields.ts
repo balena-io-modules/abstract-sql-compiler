@@ -270,11 +270,7 @@ export const getRuleReferencedFields: EngineInstance['getRuleReferencedFields'] 
 		) {
 			const select = ruleBody[1].find(isSelectNode) as SelectNode;
 			select[1] = [];
-			$getRuleReferencedFields(
-				referencedFields,
-				ruleBody[1] as AbstractSqlQuery,
-				IsSafe.Delete,
-			);
+			$getRuleReferencedFields(referencedFields, ruleBody[1], IsSafe.Delete);
 		} else {
 			$getRuleReferencedFields(referencedFields, ruleBody, IsSafe.Insert);
 		}

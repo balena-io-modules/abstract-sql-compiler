@@ -29,7 +29,7 @@ describe('getRuleReferencedFields', () => {
 						],
 					],
 				],
-			] as AbstractSqlCompiler.AbstractSqlQuery),
+			]),
 		).to.deep.equal({
 			test: {
 				create: ['id'],
@@ -63,7 +63,7 @@ describe('getRuleReferencedFields', () => {
 					],
 				],
 				['Number', 0],
-			] as AbstractSqlCompiler.AbstractSqlQuery),
+			]),
 		).to.deep.equal({
 			test: {
 				create: ['id'],
@@ -101,7 +101,7 @@ describe('getRuleReferencedFields', () => {
 						],
 					],
 				],
-			] as AbstractSqlCompiler.AbstractSqlQuery),
+			]),
 		).to.deep.equal({
 			test: {
 				create: ['id'],
@@ -135,7 +135,7 @@ describe('getRuleReferencedFields', () => {
 						],
 					],
 				],
-			] as AbstractSqlCompiler.AbstractSqlQuery),
+			]),
 		).to.deep.equal({
 			test: {
 				create: [],
@@ -165,7 +165,7 @@ describe('getRuleReferencedFields', () => {
 						],
 					],
 				],
-			] as AbstractSqlCompiler.AbstractSqlQuery),
+			]),
 		).to.deep.equal({
 			test: {
 				create: [],
@@ -184,7 +184,7 @@ describe('getRuleReferencedFields', () => {
 					['Select', [['Count', '*']]],
 					['From', ['Table', 'test']],
 				],
-			] as AbstractSqlCompiler.AbstractSqlQuery),
+			]),
 		).to.deep.equal({
 			test: {
 				create: [''],
@@ -228,7 +228,7 @@ describe('getRuleReferencedFields', () => {
 						],
 					],
 				],
-			] as AbstractSqlCompiler.AbstractSqlQuery),
+			]),
 		).to.deep.equal({
 			test: {
 				create: ['id'],
@@ -257,7 +257,7 @@ describe('getRuleReferencedFields', () => {
 						['Where', ['Equals', ['Field', 'id'], ['Field', 'test']]],
 					],
 				],
-			] as AbstractSqlCompiler.AbstractSqlQuery),
+			]),
 		).to.deep.equal({
 			test: {
 				// We assume any unreferenced field can come from any of the scoped tables
@@ -307,7 +307,7 @@ describe('getRuleReferencedFields', () => {
 						],
 					],
 				],
-			] as AbstractSqlCompiler.AbstractSqlQuery),
+			]),
 		).to.deep.equal({
 			test: {
 				create: ['id'],
@@ -333,7 +333,7 @@ describe('getRuleReferencedFields', () => {
 					['GroupBy', [['ReferencedField', 'test', 'field']]],
 					['Having', ['GreaterThanOrEqual', ['Count', '*'], ['Number', 2]]],
 				],
-			] as AbstractSqlCompiler.AbstractSqlQuery),
+			]),
 		).to.deep.equal({
 			test: {
 				create: ['field', ''],
