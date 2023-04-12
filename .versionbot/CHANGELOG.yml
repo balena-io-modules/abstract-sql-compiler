@@ -1,5 +1,17 @@
 - commits:
     - subject: Add more node typings
+      hash: db162a8a4d645c2f37c968224d667ed753e534dd
+      body: ""
+      footer:
+        Change-type: patch
+        change-type: patch
+      author: Pagan Gazzard
+      nested: []
+  version: 8.3.2
+  title: ""
+  date: 2023-04-12T15:01:22.252Z
+- commits:
+    - subject: Add more node typings
       hash: 047954b6f66abb041bee74373f37c38d71cdc4d7
       body: ""
       footer:
