@@ -38,6 +38,8 @@ export type DurationNode = [
 		second?: number;
 	},
 ];
+export type StrictDurationTypeNodes = DurationNode;
+export type DurationTypeNodes = StrictDurationTypeNodes | UnknownTypeNodes;
 
 export type BooleanNode = ['Boolean', boolean];
 export type EqualsNode = ['Equals', AnyTypeNodes, AnyTypeNodes];
@@ -79,7 +81,7 @@ export type ExistsNode = ['Exists', AnyTypeNodes];
 export type NotNode = ['Not', BooleanTypeNodes];
 export type AndNode = ['And', ...BooleanTypeNodes[]];
 export type OrNode = ['Or', ...BooleanTypeNodes[]];
-export type BooleanTypeNodes =
+export type StrictBooleanTypeNodes =
 	| BooleanNode
 	| EqualsNode
 	| NotEqualsNode
@@ -97,8 +99,8 @@ export type BooleanTypeNodes =
 	| NotExistsNode
 	| NotNode
 	| AndNode
-	| OrNode
-	| UnknownTypeNodes;
+	| OrNode;
+export type BooleanTypeNodes = StrictBooleanTypeNodes | UnknownTypeNodes;
 
 export type YearNode = ['Year', DateTypeNodes];
 export type MonthNode = ['Month', DateTypeNodes];
@@ -115,6 +117,7 @@ export type ExtractNumericDateTypeNodes =
 	| MinuteNode
 	| SecondNode
 	| FractionalsecondsNode;
+export type TotalsecondsNode = ['Totalseconds', DurationTypeNodes];
 
 export type IntegerNode = ['Integer', number];
 export type RealNode = ['Real', number];
@@ -137,7 +140,7 @@ export type BitwiseShiftRightNode = [
 	NumberTypeNodes,
 	NumberTypeNodes,
 ];
-export type NumberTypeNodes =
+export type StrictNumberTypeNodes =
 	| NumberNode
 	| IntegerNode
 	| RealNode
@@ -147,6 +150,7 @@ export type NumberTypeNodes =
 	| DivideNode
 	| StrPosNode
 	| ExtractNumericDateTypeNodes
+	| TotalsecondsNode
 	| RoundNode
 	| FloorNode
 	| CeilingNode
@@ -156,8 +160,8 @@ export type NumberTypeNodes =
 	| BitwiseAndNode
 	| BitwiseShiftRightNode
 	| CharacterLengthNode
-	| SubtractDateDateNode
-	| UnknownTypeNodes;
+	| SubtractDateDateNode;
+export type NumberTypeNodes = StrictNumberTypeNodes | UnknownTypeNodes;
 
 export type FieldNode = ['Field', string];
 export type ReferencedFieldNode = ['ReferencedField', string, string];
@@ -166,7 +170,7 @@ export type ToDateNode = ['ToDate', DateTypeNodes];
 export type ToTimeNode = ['ToTime', DateTypeNodes];
 export type CurrentTimestampNode = ['CurrentTimestamp'];
 export type CurrentDateNode = ['CurrentDate'];
-export type DateTypeNodes =
+export type StrictDateTypeNodes =
 	| DateNode
 	| ToDateNode
 	| ToTimeNode
@@ -176,6 +180,7 @@ export type DateTypeNodes =
 	| SubtractDateNumberNode
 	| SubtractDateDurationNode
 	| AddDateTypeNodes;
+export type DateTypeNodes = StrictDateTypeNodes | UnknownTypeNodes;
 
 // Date operations return different types dependent on the operand types
 // here we explicitly type the different nodes by the input types
@@ -239,7 +244,8 @@ export type UnknownTypeNodes =
 	| UnknownNode;
 
 export type JSONNode = ['JSON', string];
-export type JSONTypeNodes = JSONNode | ToJSONNode | UnknownTypeNodes;
+export type StrictJSONTypeNodes = JSONNode | ToJSONNode;
+export type JSONTypeNodes = StrictJSONTypeNodes | UnknownTypeNodes;
 
 export type EmbeddedTextNode = ['EmbeddedText', string];
 export type TextNode = ['Text', string];
@@ -270,9 +276,10 @@ export type ExtractJSONPathAsTextNode = [
 	JSONTypeNodes,
 	TextArrayTypeNodes,
 ];
-export type TextArrayTypeNodes = TextArrayNode | UnknownTypeNodes;
+export type StrictTextArrayTypeNodes = TextArrayNode;
+export type TextArrayTypeNodes = StrictTextArrayTypeNodes | UnknownTypeNodes;
 export type TextArrayNode = ['TextArray', ...TextNode[]];
-export type TextTypeNodes =
+export type StrictTextTypeNodes =
 	| TextNode
 	| EmbeddedTextNode
 	| ConcatenateNode
@@ -283,8 +290,8 @@ export type TextTypeNodes =
 	| SubstringNode
 	| RightNode
 	| ReplaceNode
-	| ExtractJSONPathAsTextNode
-	| UnknownTypeNodes;
+	| ExtractJSONPathAsTextNode;
+export type TextTypeNodes = StrictTextTypeNodes | UnknownTypeNodes;
 
 export type SelectQueryStatementNode =
 	| SelectNode

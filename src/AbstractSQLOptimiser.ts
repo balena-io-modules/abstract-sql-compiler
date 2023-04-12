@@ -17,6 +17,10 @@ import {
 	RealNode,
 	ReplaceNode,
 	SelectQueryNode,
+	StrictBooleanTypeNodes,
+	StrictDateTypeNodes,
+	StrictNumberTypeNodes,
+	StrictTextTypeNodes,
 	TextNode,
 	ValuesNodeTypes,
 } from './AbstractSQLCompiler';
@@ -205,7 +209,16 @@ const MatchValue =
 		return UnknownValue(args);
 	};
 
-const isTextValue = (type: string | AbstractSqlQuery): type is string => {
+const isTextValue = (
+	type: unknown,
+): type is
+	| 'Value'
+	| 'Concat'
+	| 'Tolower'
+	| 'ToLower'
+	| 'Toupper'
+	| 'ToUpper'
+	| StrictTextTypeNodes[0] => {
 	return (
 		type === 'Value' ||
 		type === 'Concat' ||
@@ -218,7 +231,9 @@ const isTextValue = (type: string | AbstractSqlQuery): type is string => {
 };
 const TextValue = MatchValue(isTextValue);
 
-const isNumericValue = (type: string | AbstractSqlQuery): type is string => {
+const isNumericValue = (
+	type: unknown,
+): type is 'IndexOf' | 'Indexof' | StrictNumberTypeNodes[0] => {
 	return (
 		type === 'IndexOf' ||
 		type === 'Indexof' ||
@@ -227,7 +242,14 @@ const isNumericValue = (type: string | AbstractSqlQuery): type is string => {
 };
 const NumericValue = MatchValue(isNumericValue);
 
-const isBooleanValue = (type: string | AbstractSqlQuery): type is string => {
+const isBooleanValue = (
+	type: unknown,
+): type is
+	| 'Contains'
+	| 'Substringof'
+	| 'Startswith'
+	| 'Endswith'
+	| StrictBooleanTypeNodes[0] => {
 	return (
 		type === 'Contains' ||
 		type === 'Substringof' ||
@@ -238,7 +260,7 @@ const isBooleanValue = (type: string | AbstractSqlQuery): type is string => {
 };
 const BooleanValue = MatchValue(isBooleanValue);
 
-const isDateValue = (type: string | AbstractSqlQuery): type is string => {
+const isDateValue = (type: unknown): type is 'Now' | StrictDateTypeNodes[0] => {
 	return type === 'Now' || AbstractSQLRules2SQL.isDateValue(type);
 };
 const DateValue = MatchValue(isDateValue);
