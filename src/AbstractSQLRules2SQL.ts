@@ -104,7 +104,6 @@ export const isTextValue = (
 	type: string | AbstractSqlQuery,
 ): type is string => {
 	return (
-		type === 'Value' ||
 		type === 'Text' ||
 		type === 'EmbeddedText' ||
 		type === 'Concatenate' ||
@@ -1251,7 +1250,6 @@ const typeRules: Dictionary<MatchFn> = {
 		return AddBind(['Bind', bind]);
 	},
 	Text,
-	Value: Text,
 	Date: (args) => {
 		checkArgs('Date', args, 1);
 		return AddBind(['Date', args[0]]);

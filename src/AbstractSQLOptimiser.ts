@@ -207,6 +207,7 @@ const MatchValue =
 
 const isTextValue = (type: string | AbstractSqlQuery): type is string => {
 	return (
+		type === 'Value' ||
 		type === 'Concat' ||
 		type === 'Tolower' ||
 		type === 'ToLower' ||
