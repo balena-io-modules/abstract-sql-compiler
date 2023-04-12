@@ -40,46 +40,42 @@ export type DurationNode = [
 ];
 
 export type BooleanNode = ['Boolean', boolean];
-export type EqualsNode = ['Equals', AbstractSqlType, AbstractSqlType];
-export type NotEqualsNode = ['NotEquals', AbstractSqlType, AbstractSqlType];
-export type IsDistinctFromNode = [
-	'IsDistinctFrom',
-	AbstractSqlType,
-	AbstractSqlType,
-];
+export type EqualsNode = ['Equals', AnyTypeNodes, AnyTypeNodes];
+export type NotEqualsNode = ['NotEquals', AnyTypeNodes, AnyTypeNodes];
+export type IsDistinctFromNode = ['IsDistinctFrom', AnyTypeNodes, AnyTypeNodes];
 export type IsNotDistinctFromNode = [
 	'IsNotDistinctFrom',
-	AbstractSqlType,
-	AbstractSqlType,
+	AnyTypeNodes,
+	AnyTypeNodes,
 ];
-export type GreaterThanNode = ['GreaterThan', AbstractSqlType, AbstractSqlType];
+export type GreaterThanNode = ['GreaterThan', AnyTypeNodes, AnyTypeNodes];
 export type GreaterThanOrEqualNode = [
 	'GreaterThanOrEqual',
-	AbstractSqlType,
-	AbstractSqlType,
+	AnyTypeNodes,
+	AnyTypeNodes,
 ];
-export type LessThanNode = ['LessThan', AbstractSqlType, AbstractSqlType];
+export type LessThanNode = ['LessThan', AnyTypeNodes, AnyTypeNodes];
 export type LessThanOrEqualNode = [
 	'LessThanOrEqual',
-	AbstractSqlType,
-	AbstractSqlType,
+	AnyTypeNodes,
+	AnyTypeNodes,
 ];
 export type BetweenNode = ['Between', AnyTypeNodes, AnyTypeNodes, AnyTypeNodes];
-export type LikeNode = ['Like', AbstractSqlType, AbstractSqlType];
+export type LikeNode = ['Like', AnyTypeNodes, AnyTypeNodes];
 export type InNode = [
 	'In',
 	FieldNode | ReferencedFieldNode,
-	AbstractSqlType,
-	...AbstractSqlType[],
+	AnyTypeNodes,
+	...AnyTypeNodes[],
 ];
 export type NotInNode = [
 	'NotIn',
 	FieldNode | ReferencedFieldNode,
-	AbstractSqlType,
-	...AbstractSqlType[],
+	AnyTypeNodes,
+	...AnyTypeNodes[],
 ];
-export type NotExistsNode = ['NotExists', AbstractSqlType];
-export type ExistsNode = ['Exists', AbstractSqlType];
+export type NotExistsNode = ['NotExists', AnyTypeNodes];
+export type ExistsNode = ['Exists', AnyTypeNodes];
 export type NotNode = ['Not', BooleanTypeNodes];
 export type AndNode = ['And', ...BooleanTypeNodes[]];
 export type OrNode = ['Or', ...BooleanTypeNodes[]];
@@ -223,7 +219,7 @@ export type CaseNode =
 	| ['Case', ...WhenNode[], ElseNode];
 
 export type BindNode = ['Bind', number | string] | ['Bind', string, string];
-export type CastNode = ['Cast', AbstractSqlType, string];
+export type CastNode = ['Cast', AnyTypeNodes, string];
 export type CoalesceNode = [
 	'Coalesce',
 	AnyTypeNodes,
@@ -246,9 +242,14 @@ export type JSONNode = ['JSON', string];
 export type JSONTypeNodes = JSONNode | ToJSONNode | UnknownTypeNodes;
 
 export type TextNode = ['Text', string];
-export type ConcatenateNode = ['Concatenate', ...TextTypeNodes[]];
+export type ConcatenateNode = [
+	'Concatenate',
+	TextTypeNodes,
+	...TextTypeNodes[],
+];
 export type ConcatenateWithSeparatorNode = [
 	'ConcatenateWithSeparator',
+	TextTypeNodes,
 	TextTypeNodes,
 	...TextTypeNodes[],
 ];
