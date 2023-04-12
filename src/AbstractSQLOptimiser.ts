@@ -5,6 +5,7 @@ import {
 	AbstractSqlQuery,
 	AbstractSqlType,
 	AndNode,
+	AnyTypeNodes,
 	BindNode,
 	CaseNode,
 	DurationNode,
@@ -15,6 +16,7 @@ import {
 	OrderByNode,
 	RealNode,
 	ReplaceNode,
+	SelectQueryNode,
 	TextNode,
 	ValuesNodeTypes,
 } from './AbstractSQLCompiler';
@@ -86,11 +88,11 @@ const Helper = <F extends (...args: any[]) => any>(fn: F) => {
 	};
 };
 
-const isEmptySelectQuery = (query: AbstractSqlQuery): boolean => {
+const isEmptySelectQuery = (query: AnyTypeNodes): boolean => {
 	const [type, ...rest] = query;
 	switch (type) {
 		case 'SelectQuery':
-			for (const arg of rest) {
+			for (const arg of rest as SelectQueryNode) {
 				if (arg[0] === 'Where') {
 					const maybeBool = arg[1];
 					if (maybeBool[0] === 'Boolean') {
@@ -241,6 +243,7 @@ const isDateValue = (type: string | AbstractSqlQuery): type is string => {
 const DateValue = MatchValue(isDateValue);
 
 const { isJSONValue } = AbstractSQLRules2SQL;
+const JSONValue = MatchValue(isJSONValue);
 
 const { isDurationValue } = AbstractSQLRules2SQL;
 const DurationValue = MatchValue(isDurationValue);
@@ -336,16 +339,17 @@ const ConcatenateWithSeparator: MatchFn = (args) => {
 
 const Text: MatchFn = matchArgs('Text', _.identity);
 
-const Value = (arg: any): ValuesNodeTypes => {
-	switch (arg) {
+const Value = (arg: string): ValuesNodeTypes => {
+	const $arg = arg as boolean | string;
+	switch ($arg) {
 		case true:
 		case false:
 			deprecated.legacyValuesBoolean();
-			return ['Boolean', arg];
+			return ['Boolean', $arg];
 		case 'Default':
-			return arg;
+			return $arg;
 		default:
-			const [type, ...rest] = arg;
+			const [type, ...rest] = $arg;
 			switch (type) {
 				case 'Null':
 				case 'Bind':
@@ -754,7 +758,7 @@ const typeRules: Dictionary<MatchFn> = {
 	ToTime: matchArgs('ToTime', DateValue),
 	ExtractJSONPathAsText: (args) => {
 		checkMinArgs('ExtractJSONPathAsText', args, 1);
-		const json = TextValue(getAbstractSqlQuery(args, 0));
+		const json = JSONValue(getAbstractSqlQuery(args, 0));
 		const path = ArrayValue(getAbstractSqlQuery(args, 1));
 		return ['ExtractJSONPathAsText', json, path];
 	},
