@@ -1,4 +1,16 @@
 - commits:
+    - subject: Improve node typings
+      hash: 2cb83cf242052c581ee5412e3a90ed87cf5fd39e
+      body: ""
+      footer:
+        Change-type: patch
+        change-type: patch
+      author: Pagan Gazzard
+      nested: []
+  version: 8.3.3
+  title: ""
+  date: 2023-04-12T15:43:13.357Z
+- commits:
     - subject: Add more node typings
       hash: db162a8a4d645c2f37c968224d667ed753e534dd
       body: ""
