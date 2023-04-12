@@ -1,5 +1,5 @@
 import { stripIndent } from 'common-tags';
-import { AbstractSqlQuery } from '../../src/AbstractSQLCompiler';
+import { AnyTypeNodes } from '../../src/AbstractSQLCompiler';
 
 type TestCb = (
 	result: { query: string },
@@ -7,15 +7,11 @@ type TestCb = (
 ) => void;
 // tslint:disable-next-line no-var-requires
 const test = require('./test') as ((
-	query: AbstractSqlQuery,
+	query: AnyTypeNodes,
 	binds: any[][] | TestCb,
 	cb?: TestCb,
 ) => void) & {
-	mysql: (
-		query: AbstractSqlQuery,
-		binds: any[][] | TestCb,
-		cb?: TestCb,
-	) => void;
+	mysql: (query: AnyTypeNodes, binds: any[][] | TestCb, cb?: TestCb) => void;
 };
 
 describe('Date trunc function on ReferencedField for milliseconds', () => {
