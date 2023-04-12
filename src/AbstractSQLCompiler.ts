@@ -262,8 +262,13 @@ export type ConcatenateWithSeparatorNode = [
 export type LowerNode = ['Lower', TextTypeNodes];
 export type UpperNode = ['Upper', TextTypeNodes];
 export type TrimNode = ['Trim', TextTypeNodes];
-export type SubstringNode = ['Substring', TextTypeNodes];
-export type RightNode = ['Right', TextTypeNodes];
+export type SubstringNode = [
+	'Substring',
+	TextTypeNodes,
+	NumberTypeNodes,
+	NumberTypeNodes?,
+];
+export type RightNode = ['Right', TextTypeNodes, NumberTypeNodes];
 export type ReplaceNode = [
 	'Replace',
 	TextTypeNodes,
@@ -277,7 +282,7 @@ export type ExtractJSONPathAsTextNode = [
 ];
 export type StrictTextArrayTypeNodes = TextArrayNode;
 export type TextArrayTypeNodes = StrictTextArrayTypeNodes | UnknownTypeNodes;
-export type TextArrayNode = ['TextArray', ...TextNode[]];
+export type TextArrayNode = ['TextArray', ...TextTypeNodes[]];
 export type StrictTextTypeNodes =
 	| TextNode
 	| EmbeddedTextNode
@@ -342,7 +347,7 @@ export type FromTypeNodes =
 
 export type AliasableFromTypeNodes = FromTypeNodes | AliasNode<FromTypeNodes>;
 
-export type SelectNode = ['Select', AbstractSqlType[]];
+export type SelectNode = ['Select', AnyTypeNodes[]];
 export type FromNode = ['From', AliasableFromTypeNodes];
 export type InnerJoinNode = ['Join', AliasableFromTypeNodes, OnNode?];
 export type LeftJoinNode = ['LeftJoin', AliasableFromTypeNodes, OnNode?];
@@ -384,6 +389,7 @@ export type AnyTypeNodes =
 	| BooleanTypeNodes
 	| NumberTypeNodes
 	| TextTypeNodes
+	| JSONTypeNodes
 	| UnknownTypeNodes
 	| DurationNode
 	| SelectQueryNode
@@ -627,17 +633,14 @@ export const isWhereNode = (n: AbstractSqlType): n is WhereNode =>
  * @param checkNodeTypeFn A function that checks if a given node is the correct type
  */
 const containsNode = (
-	n: AbstractSqlType[],
-	checkNodeTypeFn: (n: AbstractSqlType[number]) => boolean,
+	n: AnyTypeNodes,
+	checkNodeTypeFn: (n: AnyTypeNodes) => boolean,
 ): boolean => {
 	if (checkNodeTypeFn(n)) {
 		return true;
 	}
 	for (const p of n) {
-		if (
-			Array.isArray(p) &&
-			containsNode(p as AbstractSqlType[], checkNodeTypeFn)
-		) {
+		if (Array.isArray(p) && containsNode(p as AnyTypeNodes, checkNodeTypeFn)) {
 			return true;
 		}
 	}
