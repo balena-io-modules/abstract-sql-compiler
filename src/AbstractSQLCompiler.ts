@@ -241,6 +241,7 @@ export type UnknownTypeNodes =
 export type JSONNode = ['JSON', string];
 export type JSONTypeNodes = JSONNode | ToJSONNode | UnknownTypeNodes;
 
+export type EmbeddedTextNode = ['EmbeddedText', string];
 export type TextNode = ['Text', string];
 export type ConcatenateNode = [
 	'Concatenate',
@@ -273,6 +274,7 @@ export type TextArrayTypeNodes = TextArrayNode | UnknownTypeNodes;
 export type TextArrayNode = ['TextArray', ...TextNode[]];
 export type TextTypeNodes =
 	| TextNode
+	| EmbeddedTextNode
 	| ConcatenateNode
 	| ConcatenateWithSeparatorNode
 	| LowerNode
@@ -362,6 +364,7 @@ export type ValuesNodeTypes =
 	| NullNode
 	| BindNode
 	| TextNode
+	| EmbeddedTextNode
 	| JSONNode
 	| NumberNode
 	| IntegerNode
