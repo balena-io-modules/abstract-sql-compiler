@@ -1,4 +1,16 @@
 - commits:
+    - subject: Fix DateNode/AnyNode typings
+      hash: aab549e8cf4e274a2a8b93814da393451acc4238
+      body: ""
+      footer:
+        Change-type: patch
+        change-type: patch
+      author: Pagan Gazzard
+      nested: []
+  version: 8.3.10
+  title: ""
+  date: 2023-04-13T10:27:14.478Z
+- commits:
     - subject: Update dependencies
       hash: 39058b2dacac51da96158d594b2d72e3238d0cbc
       body: |
