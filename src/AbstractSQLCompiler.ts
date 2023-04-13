@@ -27,7 +27,7 @@ import {
 export type { ReferencedFields, RuleReferencedFields, ModifiedFields };
 
 export type NullNode = ['Null'];
-export type DateNode = ['Date', Date];
+export type DateNode = ['Date', Date | number | string];
 export type DurationNode = [
 	'Duration',
 	{
@@ -232,7 +232,7 @@ export type CoalesceNode = [
 	...AnyTypeNodes[],
 ];
 export type ToJSONNode = ['ToJSON', AnyTypeNodes];
-export type AnyNode = ['Any', UnknownTypeNodes];
+export type AnyNode = ['Any', AnyTypeNodes, string];
 export type UnknownTypeNodes =
 	| FieldNode
 	| ReferencedFieldNode
@@ -319,7 +319,7 @@ export type UnionQueryNode = [
 ];
 export type InsertQueryNode = ['InsertQuery', ...AbstractSqlType[]];
 export type UpdateQueryNode = ['UpdateQuery', ...AbstractSqlType[]];
-export type DeleteQueryNode = ['DeleteQuery', ...AbstractSqlType[]];
+export type DeleteQueryNode = ['DeleteQuery', ...Array<FromNode | WhereNode>];
 export type UpsertQueryNode = ['UpsertQuery', InsertQueryNode, UpdateQueryNode];
 
 /**
