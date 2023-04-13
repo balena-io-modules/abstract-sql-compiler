@@ -1,4 +1,26 @@
 - commits:
+    - subject: Do not allow ON clauses for CROSS JOIN as it is invalid
+      hash: d47bf63d3a14cdbb4cb0aeb7544e41a9288699f4
+      body: ""
+      footer:
+        Change-type: patch
+        change-type: patch
+      author: Pagan Gazzard
+      nested: []
+    - subject: Stop accepting `ExtractJSONPathAsText`/`ToJSON` as unknown node types
+      hash: 6fcb2c4257f9fc50f6b4b1070dec86ace9f71237
+      body: |
+        We know what type they return and they should be explicitly accepted as
+        those types instead where it is valid to do so
+      footer:
+        Change-type: patch
+        change-type: patch
+      author: Pagan Gazzard
+      nested: []
+  version: 8.3.11
+  title: ""
+  date: 2023-04-13T11:28:36.049Z
+- commits:
     - subject: Fix DateNode/AnyNode typings
       hash: aab549e8cf4e274a2a8b93814da393451acc4238
       body: ""
