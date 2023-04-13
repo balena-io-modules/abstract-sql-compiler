@@ -1,4 +1,41 @@
 - commits:
+    - subject: Update dependencies
+      hash: 39058b2dacac51da96158d594b2d72e3238d0cbc
+      body: |
+        Update @balena/sbvr-types from 3.4.18 to 3.5.0
+      footer:
+        Change-type: patch
+        change-type: patch
+      author: Pagan Gazzard
+      nested:
+        - commits:
+            - subject: Add Big Serial type
+              hash: 49460ad51fcbc60f81e61329c573a1af5b207a46
+              body: ""
+              footer:
+                Change-type: minor
+                change-type: minor
+              author: Josh Bowling
+          version: sbvr-types-3.5.0
+          title: ""
+          date: 2023-03-21T11:16:27.398Z
+        - commits:
+            - subject: "Flowzone: Allow external contributions"
+              hash: 9f7bb028bbac327e6fe0711491d7c0f2c6464f98
+              body: ""
+              footer:
+                Change-type: patch
+                change-type: patch
+                Signed-off-by: Josh Bowling <josh@monarci.com>
+                signed-off-by: Josh Bowling <josh@monarci.com>
+              author: Josh Bowling
+          version: sbvr-types-3.4.19
+          title: ""
+          date: 2022-12-08T01:08:35.143Z
+  version: 8.3.9
+  title: ""
+  date: 2023-04-13T10:09:53.529Z
+- commits:
     - subject: Improve typings
       hash: 43e75ef37de956d1b583bc62b307b04e0f8455c1
       body: ""
