@@ -453,9 +453,11 @@ const JoinMatch =
 		const [type, ...rest] = getAbstractSqlQuery(args, 1);
 		switch (type) {
 			case 'On':
-				checkArgs('On', rest, 1);
-				const ruleBody = BooleanValue(getAbstractSqlQuery(rest, 0));
-				return [joinType, from, ['On', ruleBody]];
+				if (joinType !== 'CrossJoin') {
+					checkArgs('On', rest, 1);
+					const ruleBody = BooleanValue(getAbstractSqlQuery(rest, 0));
+					return [joinType, from, ['On', ruleBody]];
+				}
 			default:
 				throw new SyntaxError(
 					`'${joinType}' clause does not support '${type}' clause`,
