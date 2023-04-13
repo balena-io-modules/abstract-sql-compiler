@@ -22,6 +22,7 @@ import {
 	StrictNumberTypeNodes,
 	StrictTextTypeNodes,
 	TextNode,
+	TextTypeNodes,
 	ValuesNodeTypes,
 } from './AbstractSQLCompiler';
 import * as AbstractSQLRules2SQL from './AbstractSQLRules2SQL';
@@ -68,7 +69,7 @@ const deprecated = (() => {
 	return result;
 })();
 
-const escapeForLike = (str: AbstractSqlType): ReplaceNode => [
+const escapeForLike = (str: TextTypeNodes): ReplaceNode => [
 	'Replace',
 	[
 		'Replace',
@@ -188,8 +189,6 @@ const UnknownValue: MetaMatchFn = (args) => {
 		case 'Bind':
 		case 'Cast':
 		case 'Coalesce':
-		case 'ExtractJSONPathAsText':
-		case 'ToJSON':
 		case 'Any':
 			return typeRules[type](rest);
 		case 'SelectQuery':
@@ -881,8 +880,8 @@ const typeRules: Dictionary<MatchFn> = {
 		Helper<OptimisationMatchFn>((args) => {
 			checkMinArgs('And', args, 2);
 			// Optimise id != 1 AND id != 2 AND id != 3 -> id NOT IN [1, 2, 3]
-			const fieldBuckets: Dictionary<AbstractSqlQuery[]> = {};
-			const others: AbstractSqlQuery[] = [];
+			const fieldBuckets: Dictionary<AnyTypeNodes[]> = {};
+			const others: AnyTypeNodes[] = [];
 			let maybeHelped = false;
 			args.map((arg) => {
 				if (!isAbstractSqlQuery(arg)) {
@@ -1006,8 +1005,8 @@ const typeRules: Dictionary<MatchFn> = {
 		Helper<OptimisationMatchFn>((args) => {
 			checkMinArgs('Or', args, 2);
 			// Optimise id = 1 OR id = 2 OR id = 3 -> id IN [1, 2, 3]
-			const fieldBuckets: Dictionary<AbstractSqlQuery[]> = {};
-			const others: AbstractSqlQuery[] = [];
+			const fieldBuckets: Dictionary<AnyTypeNodes[]> = {};
+			const others: AnyTypeNodes[] = [];
 			let maybeHelped = false;
 			args.map((arg) => {
 				if (!isAbstractSqlQuery(arg)) {
@@ -1057,7 +1056,7 @@ const typeRules: Dictionary<MatchFn> = {
 					];
 				}
 			});
-			return ['Or', ...fields, ...others] as AbstractSqlQuery;
+			return ['Or', ...fields, ...others] as OrNode;
 		}),
 		(args) => {
 			checkMinArgs('Or', args, 2);
@@ -1399,7 +1398,7 @@ const typeRules: Dictionary<MatchFn> = {
 	Contains: rewriteMatch(
 		'Contains',
 		[TextValue, TextValue],
-		Helper<MatchFn>(([haystack, needle]) => [
+		Helper<MatchFn>(([haystack, needle]: [TextTypeNodes, TextTypeNodes]) => [
 			'Like',
 			haystack,
 			[
@@ -1413,7 +1412,7 @@ const typeRules: Dictionary<MatchFn> = {
 	Substringof: rewriteMatch(
 		'Substringof',
 		[TextValue, TextValue],
-		Helper<MatchFn>(([needle, haystack]) => [
+		Helper<MatchFn>(([needle, haystack]: [TextTypeNodes, TextTypeNodes]) => [
 			'Like',
 			haystack,
 			[
@@ -1427,7 +1426,7 @@ const typeRules: Dictionary<MatchFn> = {
 	Startswith: rewriteMatch(
 		'Startswith',
 		[TextValue, TextValue],
-		Helper<MatchFn>(([haystack, needle]) => [
+		Helper<MatchFn>(([haystack, needle]: [TextTypeNodes, TextTypeNodes]) => [
 			'Like',
 			haystack,
 			['Concatenate', escapeForLike(needle), ['EmbeddedText', '%']],
@@ -1436,7 +1435,7 @@ const typeRules: Dictionary<MatchFn> = {
 	Endswith: rewriteMatch(
 		'Endswith',
 		[TextValue, TextValue],
-		Helper<MatchFn>(([haystack, needle]) => [
+		Helper<MatchFn>(([haystack, needle]: [TextTypeNodes, TextTypeNodes]) => [
 			'Like',
 			haystack,
 			['Concatenate', ['EmbeddedText', '%'], escapeForLike(needle)],
