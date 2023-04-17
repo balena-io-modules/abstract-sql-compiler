@@ -359,10 +359,7 @@ export type TableNode = ['Table', string];
 export type WhereNode = ['Where', BooleanTypeNodes];
 export type GroupByNode = ['GroupBy', Array<FieldNode | ReferencedFieldNode>];
 export type HavingNode = ['Having', BooleanTypeNodes];
-export type OrderByNode = [
-	'OrderBy',
-	...Array<['ASC' | 'DESC', FieldNode | ReferencedFieldNode]>,
-];
+export type OrderByNode = ['OrderBy', ...Array<['ASC' | 'DESC', AnyTypeNodes]>];
 export type LimitNode = ['Limit', NumberTypeNodes];
 export type OffsetNode = ['Offset', NumberTypeNodes];
 export type FieldsNode = ['Fields', string[]];
