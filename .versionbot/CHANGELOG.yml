@@ -1,4 +1,18 @@
 - commits:
+    - subject: Revert tightening of `OrderBy` to only field nodes
+      hash: 1c25d9b8d011791a9e98a5929ad48cdd9f3bab6b
+      body: |
+        It can in fact be a lot of different things and that is now also
+        reflected in the typing
+      footer:
+        Change-type: patch
+        change-type: patch
+      author: Pagan Gazzard
+      nested: []
+  version: 8.3.12
+  title: ""
+  date: 2023-04-17T16:53:20.918Z
+- commits:
     - subject: Do not allow ON clauses for CROSS JOIN as it is invalid
       hash: d47bf63d3a14cdbb4cb0aeb7544e41a9288699f4
       body: ""
