@@ -233,14 +233,16 @@ export type CoalesceNode = [
 ];
 export type AnyNode = ['Any', AnyTypeNodes, string];
 export type UnknownTypeNodes =
+	| SelectQueryNode
+	| UnionQueryNode
+	| NullNode
 	| FieldNode
 	| ReferencedFieldNode
 	| BindNode
 	| CastNode
 	| CaseNode
 	| CoalesceNode
-	| AnyNode
-	| UnknownNode;
+	| AnyNode;
 
 export type ToJSONNode = ['ToJSON', AnyTypeNodes];
 export type AggregateJSONNode = [
@@ -301,14 +303,17 @@ export type StrictTextTypeNodes =
 	| ExtractJSONPathAsTextNode;
 export type TextTypeNodes = StrictTextTypeNodes | UnknownTypeNodes;
 
-export type SelectQueryStatementNode =
-	| SelectNode
-	| FromNode
+export type JoinTypeNodes =
 	| InnerJoinNode
 	| LeftJoinNode
 	| RightJoinNode
 	| FullJoinNode
-	| CrossJoinNode
+	| CrossJoinNode;
+
+export type SelectQueryStatementNode =
+	| SelectNode
+	| FromNode
+	| JoinTypeNodes
 	| WhereNode
 	| GroupByNode
 	| HavingNode
@@ -321,8 +326,14 @@ export type UnionQueryNode = [
 	// tslint:disable-next-line:array-type typescript fails on a circular reference when `Array<T>` form
 	...(UnionQueryNode | SelectQueryNode)[],
 ];
-export type InsertQueryNode = ['InsertQuery', ...AbstractSqlType[]];
-export type UpdateQueryNode = ['UpdateQuery', ...AbstractSqlType[]];
+export type InsertQueryNode = [
+	'InsertQuery',
+	...Array<FromNode | FieldsNode | ValuesNode | WhereNode>,
+];
+export type UpdateQueryNode = [
+	'UpdateQuery',
+	...Array<FromNode | FieldsNode | ValuesNode | WhereNode>,
+];
 export type DeleteQueryNode = ['DeleteQuery', ...Array<FromNode | WhereNode>];
 export type UpsertQueryNode = ['UpsertQuery', InsertQueryNode, UpdateQueryNode];
 
@@ -366,7 +377,8 @@ export type TableNode = ['Table', string];
 export type WhereNode = ['Where', BooleanTypeNodes];
 export type GroupByNode = ['GroupBy', Array<FieldNode | ReferencedFieldNode>];
 export type HavingNode = ['Having', BooleanTypeNodes];
-export type OrderByNode = ['OrderBy', ...Array<['ASC' | 'DESC', AnyTypeNodes]>];
+type OrderBy = ['ASC' | 'DESC', AnyTypeNodes];
+export type OrderByNode = ['OrderBy', ...OrderBy[]];
 export type LimitNode = ['Limit', NumberTypeNodes];
 export type OffsetNode = ['Offset', NumberTypeNodes];
 export type FieldsNode = ['Fields', string[]];
@@ -388,30 +400,24 @@ export type ValuesNodeTypes =
 export type AliasNode<T> = ['Alias', T, string];
 
 export type AnyTypeNodes =
-	| NullNode
 	| DateTypeNodes
 	| BooleanTypeNodes
 	| NumberTypeNodes
 	| TextTypeNodes
 	| JSONTypeNodes
+	| TextArrayTypeNodes
 	| UnknownTypeNodes
 	| DurationNode
-	| SelectQueryNode
 	| InsertQueryNode
 	| UpdateQueryNode
 	| DeleteQueryNode
 	| UpsertQueryNode
-	| SelectNode
 	| ValuesNode
-	| InnerJoinNode
-	| LeftJoinNode
-	| RightJoinNode
-	| FullJoinNode
-	| CrossJoinNode
-	| GroupByNode
-	| HavingNode;
+	| SelectQueryStatementNode
+	| FromTypeNodes
+	| UnknownNode;
 
-export type AbstractSqlType = string | AnyTypeNodes;
+export type AbstractSqlType = string | string[] | AnyTypeNodes;
 
 export type UnknownNode = AbstractSqlQuery;
 export interface AbstractSqlQuery extends Array<AbstractSqlType> {
