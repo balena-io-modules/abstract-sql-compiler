@@ -231,7 +231,6 @@ export type CoalesceNode = [
 	AnyTypeNodes,
 	...AnyTypeNodes[],
 ];
-export type ToJSONNode = ['ToJSON', AnyTypeNodes];
 export type AnyNode = ['Any', AnyTypeNodes, string];
 export type UnknownTypeNodes =
 	| FieldNode
@@ -243,7 +242,12 @@ export type UnknownTypeNodes =
 	| AnyNode
 	| UnknownNode;
 
-export type StrictJSONTypeNodes = ToJSONNode;
+export type ToJSONNode = ['ToJSON', AnyTypeNodes];
+export type AggregateJSONNode = [
+	'AggregateJSON',
+	FieldNode | ReferencedFieldNode,
+];
+export type StrictJSONTypeNodes = AggregateJSONNode | ToJSONNode;
 export type JSONTypeNodes = StrictJSONTypeNodes | UnknownTypeNodes;
 
 export type EmbeddedTextNode = ['EmbeddedText', string];

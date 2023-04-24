@@ -202,9 +202,7 @@ export const isArrayValue = (
 	return type === 'TextArray';
 };
 
-export const isJSONValue = (
-	type: unknown,
-): type is 'AggregateJSON' | StrictJSONTypeNodes[0] => {
+export const isJSONValue = (type: unknown): type is StrictJSONTypeNodes[0] => {
 	return type === 'AggregateJSON' || type === 'ToJSON';
 };
 const JSONValue = MatchValue(isJSONValue);
@@ -919,21 +917,13 @@ const typeRules: Dictionary<MatchFn> = {
 		checkArgs('CurrentDate', args, 0);
 		return 'CURRENT_DATE';
 	},
-	AggregateJSON: (args) => {
+	AggregateJSON: (args, indent) => {
 		checkArgs('AggregateJSON', args, 1);
-		args = getAbstractSqlQuery(args, 0);
-		checkArgs("AggregateJSON's argument", args, 2);
 		if (engine !== Engines.postgres) {
 			throw new SyntaxError('AggregateJSON not supported on: ' + engine);
 		}
-		const [table, field] = args;
-		if (typeof table !== 'string') {
-			throw new SyntaxError('`AggregateJSON` table must be a string');
-		}
-		if (typeof field !== 'string') {
-			throw new SyntaxError('`AggregateJSON` field must be a string');
-		}
-		return `COALESCE(JSON_AGG("${table}".${escapeField(field)}), '[]')`;
+		const field = Field(getAbstractSqlQuery(args, 0), indent);
+		return `COALESCE(JSON_AGG(${field}), '[]')`;
 	},
 	Equals: Comparison('Equals'),
 	GreaterThan: Comparison('GreaterThan'),

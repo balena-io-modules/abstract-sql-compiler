@@ -53,6 +53,8 @@ const deprecated = (() => {
 			"Legacy null format of `'Null'` is deprecated, use `['Null']` instead.",
 		legacyValuesBoolean:
 			"Legacy `Values` boolean format of `true|false` is deprecated, use `['Boolean', true|false]` instead.",
+		legacyAggregateJSON:
+			"Legacy `AggregateJSON` format of `['AggregateJSON', [tableName, fieldName]]` is deprecated, use `['AggregateJSON', ['ReferencedField, tableName, fieldName]]` instead.",
 	};
 	const result = {} as Record<keyof typeof deprecationMessages, () => void>;
 	for (const key of Object.keys(deprecationMessages) as Array<
@@ -633,7 +635,18 @@ const typeRules: Dictionary<MatchFn> = {
 	Null: matchArgs('Null'),
 	CurrentTimestamp: matchArgs('CurrentTimestamp'),
 	CurrentDate: matchArgs('CurrentDate'),
-	AggregateJSON: matchArgs('AggregateJSON', _.identity),
+	AggregateJSON: tryMatches(
+		Helper<OptimisationMatchFn>((args) => {
+			checkArgs('AggregateJSON', args, 1);
+			const fieldArg = getAbstractSqlQuery(args, 0);
+			if (!isFieldValue(fieldArg[0])) {
+				deprecated.legacyAggregateJSON();
+				return ['AggregateJSON', ['ReferencedField', ...fieldArg]];
+			}
+			return false;
+		}),
+		matchArgs('AggregateJSON', Field),
+	),
 	Equals: tryMatches(
 		Helper<OptimisationMatchFn>((args) => {
 			checkArgs('Equals', args, 2);
