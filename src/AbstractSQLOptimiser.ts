@@ -125,8 +125,6 @@ type MatchFn<T extends AnyTypeNodes> = (args: AbstractSqlType[]) => T;
 
 const deprecated = (() => {
 	const deprecationMessages = {
-		legacyValuesBoolean:
-			"Legacy `Values` boolean format of `true|false` is deprecated, use `['Boolean', true|false]` instead.",
 		legacyAggregateJSON:
 			"Legacy `AggregateJSON` format of `['AggregateJSON', [tableName, fieldName]]` is deprecated, use `['AggregateJSON', ['ReferencedField, tableName, fieldName]]` instead.",
 	};
@@ -442,17 +440,12 @@ const ConcatenateWithSeparator: MatchFn<ConcatenateWithSeparatorNode> = (
 
 const Text = matchArgs<TextNode>('Text', _.identity);
 
-const Value = (arg: string): ValuesNodeTypes => {
-	const $arg = arg as boolean | string;
-	switch ($arg) {
-		case true:
-		case false:
-			deprecated.legacyValuesBoolean();
-			return ['Boolean', $arg];
+const Value = (arg: string | AbstractSqlQuery): ValuesNodeTypes => {
+	switch (arg) {
 		case 'Default':
-			return $arg;
+			return arg;
 		default:
-			const [type, ...rest] = $arg;
+			const [type, ...rest] = arg;
 			switch (type) {
 				case 'Null':
 				case 'Bind':
