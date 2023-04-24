@@ -123,26 +123,6 @@ type OptimisationMatchFn<T extends AnyTypeNodes> =
 type MetaMatchFn<T extends AnyTypeNodes> = (args: AbstractSqlQuery) => T;
 type MatchFn<T extends AnyTypeNodes> = (args: AbstractSqlType[]) => T;
 
-const deprecated = (() => {
-	const deprecationMessages = {
-		legacyAggregateJSON:
-			"Legacy `AggregateJSON` format of `['AggregateJSON', [tableName, fieldName]]` is deprecated, use `['AggregateJSON', ['ReferencedField, tableName, fieldName]]` instead.",
-	};
-	const result = {} as Record<keyof typeof deprecationMessages, () => void>;
-	for (const key of Object.keys(deprecationMessages) as Array<
-		keyof typeof deprecationMessages
-	>) {
-		result[key] = () => {
-			console.warn(
-				'@balena/abstract-sql-compiler deprecated:',
-				deprecationMessages[key],
-			);
-			result[key] = _.noop;
-		};
-	}
-	return result;
-})();
-
 let helped = false;
 let noBinds = false;
 const Helper = <F extends (...args: any[]) => any>(fn: F) => {
@@ -734,21 +714,7 @@ const typeRules = {
 	Null: matchArgs<NullNode>('Null'),
 	CurrentTimestamp: matchArgs<CurrentTimestampNode>('CurrentTimestamp'),
 	CurrentDate: matchArgs<CurrentDateNode>('CurrentDate'),
-	AggregateJSON: tryMatches(
-		Helper<OptimisationMatchFn<AggregateJSONNode>>((args) => {
-			checkArgs('AggregateJSON', args, 1);
-			const fieldArg = getAbstractSqlQuery(args, 0);
-			if (!isFieldValue(fieldArg[0])) {
-				deprecated.legacyAggregateJSON();
-				return [
-					'AggregateJSON',
-					['ReferencedField', ...fieldArg] as ReferencedFieldNode,
-				];
-			}
-			return false;
-		}),
-		matchArgs<AggregateJSONNode>('AggregateJSON', Field),
-	),
+	AggregateJSON: matchArgs<AggregateJSONNode>('AggregateJSON', Field),
 	Equals: tryMatches<NotExistsNode | EqualsNode>(
 		Helper<OptimisationMatchFn<NotExistsNode>>((args) => {
 			checkArgs('Equals', args, 2);
