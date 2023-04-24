@@ -345,15 +345,18 @@ export type FromTypeNodes =
 	| FromTypeNode[keyof FromTypeNode]
 	| AliasNode<FromTypeNode[keyof FromTypeNode]>;
 
-export type AliasableFromTypeNodes = FromTypeNodes | AliasNode<FromTypeNodes>;
+/**
+ * @deprecated `FromTypeNodes` already includes aliased versions
+ */
+export type AliasableFromTypeNodes = FromTypeNodes;
 
 export type SelectNode = ['Select', AnyTypeNodes[]];
-export type FromNode = ['From', AliasableFromTypeNodes];
-export type InnerJoinNode = ['Join', AliasableFromTypeNodes, OnNode?];
-export type LeftJoinNode = ['LeftJoin', AliasableFromTypeNodes, OnNode?];
-export type RightJoinNode = ['RightJoin', AliasableFromTypeNodes, OnNode?];
-export type FullJoinNode = ['FullJoin', AliasableFromTypeNodes, OnNode?];
-export type CrossJoinNode = ['CrossJoin', AliasableFromTypeNodes];
+export type FromNode = ['From', FromTypeNodes];
+export type InnerJoinNode = ['Join', FromTypeNodes, OnNode?];
+export type LeftJoinNode = ['LeftJoin', FromTypeNodes, OnNode?];
+export type RightJoinNode = ['RightJoin', FromTypeNodes, OnNode?];
+export type FullJoinNode = ['FullJoin', FromTypeNodes, OnNode?];
+export type CrossJoinNode = ['CrossJoin', FromTypeNodes];
 export type OnNode = ['On', BooleanTypeNodes];
 export type TableNode = ['Table', string];
 export type WhereNode = ['Where', BooleanTypeNodes];
