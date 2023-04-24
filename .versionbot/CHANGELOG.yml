@@ -1,4 +1,16 @@
 - commits:
+    - subject: Deprecate `AliasableFromTypeNodes` type as it's redundant
+      hash: 283da4816fe5e6d672e4959b05800861625dda99
+      body: ""
+      footer:
+        Change-type: patch
+        change-type: patch
+      author: Pagan Gazzard
+      nested: []
+  version: 8.3.13
+  title: ""
+  date: 2023-04-24T12:00:41.593Z
+- commits:
     - subject: Revert tightening of `OrderBy` to only field nodes
       hash: 1c25d9b8d011791a9e98a5929ad48cdd9f3bab6b
       body: |
