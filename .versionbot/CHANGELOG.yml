@@ -1,4 +1,17 @@
 - commits:
+    - subject: Add support for using field type nodes with an AggregateJSON node
+      hash: 19c2760ecf76b4097d7d3045c2eefbf74fd7c2da
+      body: |
+        This also deprecates the legacy version
+      footer:
+        Change-type: minor
+        change-type: minor
+      author: Pagan Gazzard
+      nested: []
+  version: 8.4.0
+  title: ""
+  date: 2023-04-24T12:05:48.116Z
+- commits:
     - subject: Deprecate `AliasableFromTypeNodes` type as it's redundant
       hash: 283da4816fe5e6d672e4959b05800861625dda99
       body: ""
