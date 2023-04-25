@@ -4,26 +4,106 @@ import { Dictionary } from 'lodash';
 import {
 	AbstractSqlQuery,
 	AbstractSqlType,
+	AddDateDurationNode,
+	AddDateNumberNode,
+	AddNode,
+	AggregateJSONNode,
+	AliasNode,
 	AndNode,
+	AnyNode,
 	AnyTypeNodes,
+	BetweenNode,
 	BindNode,
+	BitwiseAndNode,
+	BitwiseShiftRightNode,
+	BooleanNode,
+	BooleanTypeNodes,
 	CaseNode,
+	CastNode,
+	CeilingNode,
+	CharacterLengthNode,
+	CoalesceNode,
+	ConcatenateNode,
+	ConcatenateWithSeparatorNode,
+	CrossJoinNode,
+	CurrentDateNode,
+	CurrentTimestampNode,
+	DateTruncNode,
+	DeleteQueryNode,
+	DivideNode,
 	DurationNode,
+	ElseNode,
+	EqualsNode,
+	ExistsNode,
+	ExtractJSONPathAsTextNode,
+	ExtractNumericDateTypeNodes,
+	FieldNode,
+	FieldsNode,
+	FloorNode,
+	FromNode,
+	FullJoinNode,
+	GreaterThanNode,
+	GreaterThanOrEqualNode,
+	GroupByNode,
+	HavingNode,
+	InNode,
+	InnerJoinNode,
+	InsertQueryNode,
 	IntegerNode,
+	IsDistinctFromNode,
+	IsNotDistinctFromNode,
+	JSONTypeNodes,
+	JoinTypeNodes,
+	LeftJoinNode,
+	LessThanNode,
+	LessThanOrEqualNode,
+	LikeNode,
+	LimitNode,
+	LowerNode,
+	MultiplyNode,
+	NotEqualsNode,
+	NotExistsNode,
+	NotNode,
 	NullNode,
 	NumberNode,
+	NumberTypeNodes,
+	OffsetNode,
 	OrNode,
 	OrderByNode,
 	RealNode,
+	ReferencedFieldNode,
 	ReplaceNode,
-	SelectQueryNode,
 	StrictBooleanTypeNodes,
 	StrictDateTypeNodes,
 	StrictNumberTypeNodes,
 	StrictTextTypeNodes,
+	RightJoinNode,
+	RightNode,
+	RoundNode,
+	SelectNode,
+	SelectQueryNode,
+	StrPosNode,
+	SubtractDateDateNode,
+	SubtractDateDurationNode,
+	SubtractDateNumberNode,
+	SubtractNode,
+	TableNode,
+	TextArrayTypeNodes,
 	TextNode,
 	TextTypeNodes,
+	ToDateNode,
+	ToJSONNode,
+	ToTimeNode,
+	TrimNode,
+	UnionQueryNode,
+	UnknownTypeNodes,
+	UpdateQueryNode,
+	UpperNode,
+	ValuesNode,
 	ValuesNodeTypes,
+	WhenNode,
+	WhereNode,
+	FromTypeNode,
 } from './AbstractSQLCompiler';
 import * as AbstractSQLRules2SQL from './AbstractSQLRules2SQL';
 
@@ -35,11 +115,11 @@ const {
 	isNotNullable,
 } = AbstractSQLRules2SQL;
 
-type OptimisationMatchFn = (
-	args: AbstractSqlType[],
-) => AbstractSqlQuery | false;
-type MetaMatchFn = (args: AbstractSqlQuery) => AbstractSqlQuery;
-type MatchFn = (args: AbstractSqlType[]) => AbstractSqlQuery;
+type OptimisationMatchFn<T extends AnyTypeNodes> =
+	| ((args: AbstractSqlType[]) => T | false)
+	| ((args: AbstractSqlType[]) => T);
+type MetaMatchFn<T extends AnyTypeNodes> = (args: AbstractSqlQuery) => T;
+type MatchFn<T extends AnyTypeNodes> = (args: AbstractSqlType[]) => T;
 
 const deprecated = (() => {
 	const deprecationMessages = {
@@ -114,28 +194,29 @@ const isEmptySelectQuery = (query: AnyTypeNodes): boolean => {
 };
 
 const rewriteMatch =
-	(
-		name: string,
+	<I extends AnyTypeNodes, O extends AnyTypeNodes>(
+		name: I[0],
 		matchers: Array<(args: AbstractSqlType) => AbstractSqlType>,
-		rewriteFn: MatchFn,
-	): MatchFn =>
+		rewriteFn: MatchFn<O>,
+	): MatchFn<O> =>
 	(args) => {
 		checkArgs(name, args, matchers.length);
 		return rewriteFn(
 			args.map((arg, index) => {
-				// Type cast because of cases where not all nodes are arrays, but we do handle them correctly where they can occur
-				return matchers[index](arg as AbstractSqlType);
+				return matchers[index](arg);
 			}),
 		);
 	};
 
-const matchArgs = (
-	name: string,
+const matchArgs = <T extends AnyTypeNodes>(
+	name: T[0],
 	...matchers: Array<(args: AbstractSqlType) => AbstractSqlType>
-): MatchFn => rewriteMatch(name, matchers, (args) => [name, ...args]);
+): MatchFn<T> => rewriteMatch(name, matchers, (args) => [name, ...args] as T);
 
-const tryMatches = (...matchers: OptimisationMatchFn[]): MatchFn => {
-	return (args) => {
+const tryMatches = <T extends AnyTypeNodes>(
+	...matchers: Array<OptimisationMatchFn<T>>
+): MatchFn<T> => {
+	return (args): T => {
 		let err;
 		for (const matcher of matchers) {
 			try {
@@ -151,7 +232,7 @@ const tryMatches = (...matchers: OptimisationMatchFn[]): MatchFn => {
 	};
 };
 
-const AnyValue: MetaMatchFn = (args) => {
+const AnyValue: MetaMatchFn<AnyTypeNodes> = (args) => {
 	const [type, ...rest] = args;
 	if (type === 'Case') {
 		return typeRules[type](rest);
@@ -172,7 +253,7 @@ const AnyValue: MetaMatchFn = (args) => {
 
 	return UnknownValue(args);
 };
-const UnknownValue: MetaMatchFn = (args) => {
+const UnknownValue: MetaMatchFn<UnknownTypeNodes> = (args) => {
 	if (args === null) {
 		helped = true;
 		deprecated.legacyNull();
@@ -201,11 +282,13 @@ const UnknownValue: MetaMatchFn = (args) => {
 	}
 };
 const MatchValue =
-	(matcher: (type: string | AbstractSqlQuery) => type is string): MetaMatchFn =>
+	<T extends AnyTypeNodes>(
+		matcher: (type: unknown) => type is T[0],
+	): MetaMatchFn<T | UnknownTypeNodes> =>
 	(args) => {
 		const [type, ...rest] = args;
 		if (matcher(type)) {
-			return typeRules[type](rest);
+			return typeRules[type as keyof typeof typeRules](rest) as T;
 		}
 		return UnknownValue(args);
 	};
@@ -230,7 +313,9 @@ const isTextValue = (
 		AbstractSQLRules2SQL.isTextValue(type)
 	);
 };
-const TextValue = MatchValue(isTextValue);
+const TextValue = MatchValue<TextTypeNodes>(
+	isTextValue as typeof AbstractSQLRules2SQL.isTextValue,
+);
 
 const isNumericValue = (
 	type: unknown,
@@ -259,7 +344,9 @@ const isBooleanValue = (
 		AbstractSQLRules2SQL.isBooleanValue(type)
 	);
 };
-const BooleanValue = MatchValue(isBooleanValue);
+const BooleanValue = MatchValue<BooleanTypeNodes>(
+	isBooleanValue as typeof AbstractSQLRules2SQL.isBooleanValue,
+);
 
 const isDateValue = (type: unknown): type is 'Now' | StrictDateTypeNodes[0] => {
 	return type === 'Now' || AbstractSQLRules2SQL.isDateValue(type);
@@ -267,16 +354,16 @@ const isDateValue = (type: unknown): type is 'Now' | StrictDateTypeNodes[0] => {
 const DateValue = MatchValue(isDateValue);
 
 const { isJSONValue } = AbstractSQLRules2SQL;
-const JSONValue = MatchValue(isJSONValue);
+const JSONValue = MatchValue<JSONTypeNodes>(isJSONValue);
 
 const { isDurationValue } = AbstractSQLRules2SQL;
 const DurationValue = MatchValue(isDurationValue);
 
 const { isArrayValue } = AbstractSQLRules2SQL;
-const ArrayValue = MatchValue(isArrayValue);
+const ArrayValue = MatchValue<TextArrayTypeNodes>(isArrayValue);
 
 const { isFieldValue } = AbstractSQLRules2SQL;
-const Field: MetaMatchFn = (args) => {
+const Field: MetaMatchFn<FieldNode | ReferencedFieldNode> = (args) => {
 	const [type, ...rest] = args;
 	if (isFieldValue(type)) {
 		return typeRules[type](rest);
@@ -290,7 +377,7 @@ const AnyNotNullValue = (args: any): boolean => {
 };
 
 const FieldOp =
-	(type: string): OptimisationMatchFn =>
+	(type: string): OptimisationMatchFn<AnyTypeNodes> =>
 	(args) => {
 		if (
 			AnyNotNullValue(args[0]) === false ||
@@ -309,12 +396,12 @@ const FieldOp =
 const FieldEquals = FieldOp('Equals');
 const FieldNotEquals = FieldOp('NotEquals');
 
-const Comparison = (
+const Comparison = <T extends AnyTypeNodes>(
 	comparison: keyof typeof AbstractSQLRules2SQL.comparisons,
-): MatchFn => {
-	return matchArgs(comparison, AnyValue, AnyValue);
+): MatchFn<T> => {
+	return matchArgs<T>(comparison, AnyValue, AnyValue);
 };
-const NumberMatch = (type: string): MatchFn => {
+const NumberMatch = <T extends AnyTypeNodes>(type: T[0]): MatchFn<T> => {
 	return matchArgs(type, (arg) => {
 		if (typeof arg !== 'number') {
 			throw new SyntaxError(`${type} expected number but got ${typeof arg}`);
@@ -323,45 +410,65 @@ const NumberMatch = (type: string): MatchFn => {
 	});
 };
 
-const MathOp = (type: AbstractSQLRules2SQL.MathOps): MatchFn => {
+type ExtractNodeType<T, U> = T extends any[]
+	? T[0] extends U
+		? T
+		: never
+	: never;
+const MathOp = <
+	T extends ExtractNodeType<NumberTypeNodes, AbstractSQLRules2SQL.MathOps>,
+>(
+	type: T[0],
+): MatchFn<T> => {
 	return matchArgs(type, NumericValue, NumericValue);
 };
 
-const ExtractNumericDatePart = (type: string): MatchFn => {
+const ExtractNumericDatePart = <T extends ExtractNumericDateTypeNodes>(
+	type: T[0],
+): MatchFn<T> => {
 	return matchArgs(type, DateValue);
 };
 
-const Concatenate: MatchFn = (args) => {
+const Concatenate: MatchFn<ConcatenateNode> = (args) => {
 	checkMinArgs('Concatenate', args, 1);
 	return [
 		'Concatenate',
-		...args.map((arg) => {
+		...(args.map((arg) => {
 			if (!isAbstractSqlQuery(arg)) {
 				throw new SyntaxError(
 					`Expected AbstractSqlQuery array but got ${typeof arg}`,
 				);
 			}
 			return TextValue(arg);
-		}),
+		}) as [
+			ReturnType<typeof TextValue>,
+			...Array<ReturnType<typeof TextValue>>,
+		]),
 	];
 };
 
-const ConcatenateWithSeparator: MatchFn = (args) => {
+const ConcatenateWithSeparator: MatchFn<ConcatenateWithSeparatorNode> = (
+	args,
+) => {
 	checkMinArgs('ConcatenateWithSeparator', args, 2);
 	return [
 		'ConcatenateWithSeparator',
-		...args.map((arg) => {
+		...(args.map((arg) => {
 			if (!isAbstractSqlQuery(arg)) {
 				throw new SyntaxError(
 					`Expected AbstractSqlQuery array but got ${typeof arg}`,
 				);
 			}
 			return TextValue(arg);
-		}),
+		}) as [
+			ReturnType<typeof TextValue>,
+			ReturnType<typeof TextValue>,
+			...Array<ReturnType<typeof TextValue>>,
+		]),
 	];
 };
 
-const Text: MatchFn = matchArgs('Text', _.identity);
+const Text = matchArgs<TextNode>('Text', _.identity);
 
 const Value = (arg: string): ValuesNodeTypes => {
 	const $arg = arg as boolean | string;
@@ -396,7 +503,7 @@ const Value = (arg: string): ValuesNodeTypes => {
 	}
 };
 
-const FromMatch: MetaMatchFn = (args) => {
+const FromMatch: MetaMatchFn<FromTypeNode[keyof FromTypeNode]> = (args) => {
 	if (typeof args === 'string') {
 		deprecated.legacyTable();
 		return ['Table', args];
@@ -408,16 +515,16 @@ const FromMatch: MetaMatchFn = (args) => {
 			return typeRules[type](rest);
 		case 'Table':
 			checkArgs('Table', rest, 1);
-			return ['Table', rest[0]];
+			return ['Table', rest[0] as TableNode[1]];
 		default:
 			throw new SyntaxError(`From does not support ${type}`);
 	}
 };
 
-const MaybeAlias = (
+const MaybeAlias = <T extends AnyTypeNodes>(
 	args: AbstractSqlQuery,
-	matchFn: MetaMatchFn,
-): AbstractSqlQuery => {
+	matchFn: MetaMatchFn<T>,
+): T | AliasNode<T> => {
 	if (
 		args.length === 2 &&
 		args[0] !== 'Table' &&
@@ -433,24 +540,28 @@ const MaybeAlias = (
 	switch (type) {
 		case 'Alias':
 			checkArgs('Alias', rest, 2);
-			return ['Alias', matchFn(getAbstractSqlQuery(rest, 0)), rest[1]];
+			return [
+				'Alias',
+				matchFn(getAbstractSqlQuery(rest, 0)),
+				rest[1] as AliasNode<T>[2],
+			];
 		default:
 			return matchFn(args);
 	}
 };
 
-const Lower = matchArgs('Lower', TextValue);
-const Upper = matchArgs('Upper', TextValue);
+const Lower = matchArgs<LowerNode>('Lower', TextValue);
+const Upper = matchArgs<UpperNode>('Upper', TextValue);
 
 const JoinMatch =
-	(joinType: string): MatchFn =>
+	<T extends JoinTypeNodes>(joinType: T[0]): MatchFn<T> =>
 	(args) => {
 		if (args.length !== 1 && args.length !== 2) {
 			throw new SyntaxError(`"${joinType}" requires 1/2 arg(s)`);
 		}
 		const from = MaybeAlias(getAbstractSqlQuery(args, 0), FromMatch);
 		if (args.length === 1) {
-			return [joinType, from];
+			return [joinType, from] as T;
 		}
 		const [type, ...rest] = getAbstractSqlQuery(args, 1);
 		switch (type) {
@@ -458,7 +569,7 @@ const JoinMatch =
 				if (joinType !== 'CrossJoin') {
 					checkArgs('On', rest, 1);
 					const ruleBody = BooleanValue(getAbstractSqlQuery(rest, 0));
-					return [joinType, from, ['On', ruleBody]];
+					return [joinType, from, ['On', ruleBody]] as unknown as T;
 				}
 			default:
 				throw new SyntaxError(
@@ -472,14 +583,24 @@ const AddDateMatcher = tryMatches(
 	matchArgs('AddDateNumber', DateValue, NumericValue),
 );
 
-const SubtractDateMatcher = tryMatches(
-	matchArgs('SubtractDateDate', DateValue, DateValue),
-	matchArgs('SubtractDateDuration', DateValue, DurationValue),
-	matchArgs('SubtractDateNumber', DateValue, NumericValue),
+const SubtractDateMatcher = tryMatches<
+	SubtractDateDateNode | SubtractDateDurationNode | SubtractDateNumberNode
+>(
+	matchArgs<SubtractDateDateNode>('SubtractDateDate', DateValue, DateValue),
+	matchArgs<SubtractDateDurationNode>(
+		'SubtractDateDuration',
+		DateValue,
+		DurationValue,
+	),
+	matchArgs<SubtractDateNumberNode>(
+		'SubtractDateNumber',
+		DateValue,
+		NumericValue,
+	),
 );
 
-const typeRules: Dictionary<MatchFn> = {
-	UnionQuery: (args) => {
+const typeRules = {
+	UnionQuery: (args): UnionQueryNode => {
 		checkMinArgs('UnionQuery', args, 2);
 		return [
 			'UnionQuery',
@@ -500,16 +621,23 @@ const typeRules: Dictionary<MatchFn> = {
 			}),
 		];
 	},
-	SelectQuery: (args) => {
-		const tables: AbstractSqlQuery[] = [];
-		let select: AbstractSqlQuery[] = [];
+	SelectQuery: (args): SelectQueryNode => {
+		const tables: Array<
+			| FromNode
+			| InnerJoinNode
+			| LeftJoinNode
+			| RightJoinNode
+			| FullJoinNode
+			| CrossJoinNode
+		> = [];
+		let select: SelectNode[] = [];
 		const groups = {
-			Where: [] as AbstractSqlQuery[],
-			GroupBy: [] as AbstractSqlQuery[],
-			Having: [] as AbstractSqlQuery[],
-			OrderBy: [] as AbstractSqlQuery[],
-			Limit: [] as AbstractSqlQuery[],
-			Offset: [] as AbstractSqlQuery[],
+			Where: [] as WhereNode[],
+			GroupBy: [] as GroupByNode[],
+			Having: [] as HavingNode[],
+			OrderBy: [] as OrderByNode[],
+			Limit: [] as LimitNode[],
+			Offset: [] as OffsetNode[],
 		};
 		for (const arg of args) {
 			if (!isAbstractSqlQuery(arg)) {
@@ -531,7 +659,15 @@ const typeRules: Dictionary<MatchFn> = {
 				case 'RightJoin':
 				case 'FullJoin':
 				case 'CrossJoin':
-					tables.push(typeRules[type](rest));
+					tables.push(
+						typeRules[type](rest) as
+							| FromNode
+							| InnerJoinNode
+							| LeftJoinNode
+							| RightJoinNode
+							| FullJoinNode
+							| CrossJoinNode,
+					);
 					break;
 				case 'Where':
 				case 'GroupBy':
@@ -544,7 +680,16 @@ const typeRules: Dictionary<MatchFn> = {
 							`'SelectQuery' can only accept one '${type}'`,
 						);
 					}
-					groups[type] = [typeRules[type](rest)];
+					groups[type] = [
+						typeRules[type](rest) as
+							| WhereNode
+							| GroupByNode
+							| HavingNode
+							| OrderByNode
+							| LimitNode
+							// The cast as any is because I couldn't find a way to automatically match up the correct type based upon the group we're assigning
+							| OffsetNode as any,
+					];
 					break;
 				default:
 					throw new SyntaxError(`'SelectQuery' does not support '${type}'`);
@@ -563,7 +708,7 @@ const typeRules: Dictionary<MatchFn> = {
 			...groups.Offset,
 		];
 	},
-	Select: (args) => {
+	Select: (args): SelectNode => {
 		checkArgs('Select', args, 1);
 		return [
 			'Select',
@@ -575,9 +720,9 @@ const typeRules: Dictionary<MatchFn> = {
 				}
 				return MaybeAlias(arg, AnyValue);
 			}),
-		] as AbstractSqlQuery;
+		];
 	},
-	From: (args) => {
+	From: (args): FromNode => {
 		checkArgs('From', args, 1);
 		return ['From', MaybeAlias(args[0] as AbstractSqlQuery, FromMatch)];
 	},
@@ -590,12 +735,12 @@ const typeRules: Dictionary<MatchFn> = {
 		const from = MaybeAlias(getAbstractSqlQuery(args, 0), FromMatch);
 		return ['CrossJoin', from];
 	},
-	Where: matchArgs('Where', BooleanValue),
+	Where: matchArgs<WhereNode>('Where', BooleanValue),
 	GroupBy: (args) => {
 		checkArgs('GroupBy', args, 1);
 		const groups = getAbstractSqlQuery(args, 0);
 		checkMinArgs('GroupBy groups', groups, 1);
-		return ['GroupBy', groups.map(AnyValue)] as AbstractSqlQuery;
+		return ['GroupBy', groups.map(AnyValue)] as GroupByNode;
 	},
 	Having: matchArgs('Having', BooleanValue),
 	OrderBy: (args) => {
@@ -624,31 +769,38 @@ const typeRules: Dictionary<MatchFn> = {
 	},
 	Average: matchArgs('Average', NumericValue),
 	Sum: matchArgs('Sum', NumericValue),
-	Field: matchArgs('Field', _.identity),
-	ReferencedField: matchArgs('ReferencedField', _.identity, _.identity),
-	Cast: matchArgs('Cast', AnyValue, _.identity),
+	Field: matchArgs<FieldNode>('Field', _.identity),
+	ReferencedField: matchArgs<ReferencedFieldNode>(
+		'ReferencedField',
+		_.identity,
+		_.identity,
+	),
+	Cast: matchArgs<CastNode>('Cast', AnyValue, _.identity),
 	Number: NumberMatch('Number'),
 	Real: NumberMatch('Real'),
 	Integer: NumberMatch('Integer'),
-	Boolean: matchArgs('Boolean', _.identity),
+	Boolean: matchArgs<BooleanNode>('Boolean', _.identity),
 	EmbeddedText: matchArgs('EmbeddedText', _.identity),
-	Null: matchArgs('Null'),
-	CurrentTimestamp: matchArgs('CurrentTimestamp'),
-	CurrentDate: matchArgs('CurrentDate'),
+	Null: matchArgs<NullNode>('Null'),
+	CurrentTimestamp: matchArgs<CurrentTimestampNode>('CurrentTimestamp'),
+	CurrentDate: matchArgs<CurrentDateNode>('CurrentDate'),
 	AggregateJSON: tryMatches(
-		Helper<OptimisationMatchFn>((args) => {
+		Helper<OptimisationMatchFn<AggregateJSONNode>>((args) => {
 			checkArgs('AggregateJSON', args, 1);
 			const fieldArg = getAbstractSqlQuery(args, 0);
 			if (!isFieldValue(fieldArg[0])) {
 				deprecated.legacyAggregateJSON();
-				return ['AggregateJSON', ['ReferencedField', ...fieldArg]];
+				return [
+					'AggregateJSON',
+					['ReferencedField', ...fieldArg] as ReferencedFieldNode,
+				];
 			}
 			return false;
 		}),
-		matchArgs('AggregateJSON', Field),
+		matchArgs<AggregateJSONNode>('AggregateJSON', Field),
 	),
-	Equals: tryMatches(
-		Helper<OptimisationMatchFn>((args) => {
+	Equals: tryMatches<NotExistsNode | EqualsNode>(
+		Helper<OptimisationMatchFn<NotExistsNode>>((args) => {
 			checkArgs('Equals', args, 2);
 			let valueIndex;
 			if (args[0][0] === 'Null') {
@@ -661,10 +813,10 @@ const typeRules: Dictionary<MatchFn> = {
 
 			return ['NotExists', getAbstractSqlQuery(args, valueIndex)];
 		}),
-		Comparison('Equals'),
+		Comparison<EqualsNode>('Equals'),
 	),
-	NotEquals: tryMatches(
-		Helper<OptimisationMatchFn>((args) => {
+	NotEquals: tryMatches<NotEqualsNode | ExistsNode>(
+		Helper<OptimisationMatchFn<ExistsNode>>((args) => {
 			checkArgs('NotEquals', args, 2);
 			let valueIndex;
 			if (args[0][0] === 'Null') {
@@ -677,15 +829,15 @@ const typeRules: Dictionary<MatchFn> = {
 
 			return ['Exists', getAbstractSqlQuery(args, valueIndex)];
 		}),
-		Comparison('NotEquals'),
+		Comparison<NotEqualsNode>('NotEquals'),
 	),
-	GreaterThan: Comparison('GreaterThan'),
-	GreaterThanOrEqual: Comparison('GreaterThanOrEqual'),
-	LessThan: Comparison('LessThan'),
-	LessThanOrEqual: Comparison('LessThanOrEqual'),
-	Like: Comparison('Like'),
+	GreaterThan: Comparison<GreaterThanNode>('GreaterThan'),
+	GreaterThanOrEqual: Comparison<GreaterThanOrEqualNode>('GreaterThanOrEqual'),
+	LessThan: Comparison<LessThanNode>('LessThan'),
+	LessThanOrEqual: Comparison<LessThanOrEqualNode>('LessThanOrEqual'),
+	Like: Comparison<LikeNode>('Like'),
 	IsNotDistinctFrom: tryMatches(
-		Helper<OptimisationMatchFn>((args) => {
+		Helper<OptimisationMatchFn<NotExistsNode>>((args) => {
 			checkArgs('IsNotDistinctFrom', args, 2);
 			let valueIndex;
 			if (args[0][0] === 'Null') {
@@ -698,20 +850,19 @@ const typeRules: Dictionary<MatchFn> = {
 
 			return ['NotExists', getAbstractSqlQuery(args, valueIndex)];
 		}),
-		Helper<OptimisationMatchFn>((args) => {
-			checkArgs('IsDistinctFrom', args, 2);
-			if (
-				isNotNullable(getAbstractSqlQuery(args, 0)) &&
-				isNotNullable(getAbstractSqlQuery(args, 1))
-			) {
-				return ['Equals', ...args];
+		Helper<OptimisationMatchFn<EqualsNode>>((args) => {
+			checkArgs('IsNotDistinctFrom', args, 2);
+			const a = getAbstractSqlQuery(args, 0);
+			const b = getAbstractSqlQuery(args, 1);
+			if (isNotNullable(a) && isNotNullable(b)) {
+				return ['Equals', a, b];
 			}
 			return false;
 		}),
-		matchArgs('IsNotDistinctFrom', AnyValue, AnyValue),
+		matchArgs<IsNotDistinctFromNode>('IsNotDistinctFrom', AnyValue, AnyValue),
 	),
 	IsDistinctFrom: tryMatches(
-		Helper<OptimisationMatchFn>((args) => {
+		Helper<OptimisationMatchFn<ExistsNode>>((args) => {
 			checkArgs('IsDistinctFrom', args, 2);
 			let valueIndex;
 			if (args[0][0] === 'Null') {
@@ -724,34 +875,54 @@ const typeRules: Dictionary<MatchFn> = {
 
 			return ['Exists', getAbstractSqlQuery(args, valueIndex)];
 		}),
-		Helper<OptimisationMatchFn>((args) => {
+		Helper<OptimisationMatchFn<NotEqualsNode>>((args) => {
 			checkArgs('IsDistinctFrom', args, 2);
-			if (
-				isNotNullable(getAbstractSqlQuery(args, 0)) &&
-				isNotNullable(getAbstractSqlQuery(args, 1))
-			) {
-				return ['NotEquals', ...args];
+			const a = getAbstractSqlQuery(args, 0);
+			const b = getAbstractSqlQuery(args, 1);
+			if (isNotNullable(a) && isNotNullable(b)) {
+				return ['NotEquals', a, b];
 			}
 			return false;
 		}),
-		matchArgs('IsDistinctFrom', AnyValue, AnyValue),
+		matchArgs<IsDistinctFromNode>('IsDistinctFrom', AnyValue, AnyValue),
 	),
-	Between: matchArgs('Between', AnyValue, AnyValue, AnyValue),
-	Add: tryMatches(MathOp('Add'), Helper(AddDateMatcher)),
-	Subtract: tryMatches(MathOp('Subtract'), Helper(SubtractDateMatcher)),
-	SubtractDateDate: matchArgs('SubtractDateDate', DateValue, DateValue),
-	SubtractDateNumber: matchArgs('SubtractDateNumber', DateValue, NumericValue),
-	SubtractDateDuration: matchArgs(
+	Between: matchArgs<BetweenNode>('Between', AnyValue, AnyValue, AnyValue),
+	Add: tryMatches(MathOp<AddNode>('Add'), Helper(AddDateMatcher)),
+	Subtract: tryMatches<
+		| SubtractNode
+		| SubtractDateDateNode
+		| SubtractDateNumberNode
+		| SubtractDateDurationNode
+	>(MathOp<SubtractNode>('Subtract'), Helper(SubtractDateMatcher)),
+	SubtractDateDate: matchArgs<SubtractDateDateNode>(
+		'SubtractDateDate',
+		DateValue,
+		DateValue,
+	),
+	SubtractDateNumber: matchArgs<SubtractDateNumberNode>(
+		'SubtractDateNumber',
+		DateValue,
+		NumericValue,
+	),
+	SubtractDateDuration: matchArgs<SubtractDateDurationNode>(
 		'SubtractDateDuration',
 		DateValue,
 		DurationValue,
 	),
-	AddDateDuration: matchArgs('AddDateDuration', DateValue, DurationValue),
-	AddDateNumber: matchArgs('AddDateNumber', DateValue, NumericValue),
-	Multiply: MathOp('Multiply'),
-	Divide: MathOp('Divide'),
-	BitwiseAnd: MathOp('BitwiseAnd'),
-	BitwiseShiftRight: MathOp('BitwiseShiftRight'),
+	AddDateDuration: matchArgs<AddDateDurationNode>(
+		'AddDateDuration',
+		DateValue,
+		DurationValue,
+	),
+	AddDateNumber: matchArgs<AddDateNumberNode>(
+		'AddDateNumber',
+		DateValue,
+		NumericValue,
+	),
+	Multiply: MathOp<MultiplyNode>('Multiply'),
+	Divide: MathOp<DivideNode>('Divide'),
+	BitwiseAnd: MathOp<BitwiseAndNode>('BitwiseAnd'),
+	BitwiseShiftRight: MathOp<BitwiseShiftRightNode>('BitwiseShiftRight'),
 	Year: ExtractNumericDatePart('Year'),
 	Month: ExtractNumericDatePart('Month'),
 	Day: ExtractNumericDatePart('Day'),
@@ -763,9 +934,9 @@ const typeRules: Dictionary<MatchFn> = {
 	Concat: Concatenate,
 	Concatenate,
 	ConcatenateWithSeparator,
-	Replace: matchArgs('Replace', TextValue, TextValue, TextValue),
-	CharacterLength: matchArgs('CharacterLength', TextValue),
-	StrPos: matchArgs('StrPos', TextValue, TextValue),
+	Replace: matchArgs<ReplaceNode>('Replace', TextValue, TextValue, TextValue),
+	CharacterLength: matchArgs<CharacterLengthNode>('CharacterLength', TextValue),
+	StrPos: matchArgs<StrPosNode>('StrPos', TextValue, TextValue),
 	Substring: (args) => {
 		checkMinArgs('Substring', args, 2);
 		const str = TextValue(getAbstractSqlQuery(args, 0));
@@ -779,21 +950,21 @@ const typeRules: Dictionary<MatchFn> = {
 		});
 		return ['Substring', str, ...nums];
 	},
-	Right: matchArgs('Right', TextValue, NumericValue),
+	Right: matchArgs<RightNode>('Right', TextValue, NumericValue),
 	Tolower: Lower,
 	ToLower: Lower,
 	Lower,
 	Toupper: Upper,
 	ToUpper: Upper,
 	Upper,
-	Trim: matchArgs('Trim', TextValue),
-	Round: matchArgs('Round', NumericValue),
-	Floor: matchArgs('Floor', NumericValue),
-	Ceiling: matchArgs('Ceiling', NumericValue),
-	ToDate: matchArgs('ToDate', DateValue),
-	DateTrunc: matchArgs('DateTrunc', TextValue, DateValue),
-	ToTime: matchArgs('ToTime', DateValue),
-	ExtractJSONPathAsText: (args) => {
+	Trim: matchArgs<TrimNode>('Trim', TextValue),
+	Round: matchArgs<RoundNode>('Round', NumericValue),
+	Floor: matchArgs<FloorNode>('Floor', NumericValue),
+	Ceiling: matchArgs<CeilingNode>('Ceiling', NumericValue),
+	ToDate: matchArgs<ToDateNode>('ToDate', DateValue),
+	DateTrunc: matchArgs<DateTruncNode>('DateTrunc', TextValue, DateValue),
+	ToTime: matchArgs<ToTimeNode>('ToTime', DateValue),
+	ExtractJSONPathAsText: (args): ExtractJSONPathAsTextNode => {
 		checkMinArgs('ExtractJSONPathAsText', args, 1);
 		const json = JSONValue(getAbstractSqlQuery(args, 0));
 		const path = ArrayValue(getAbstractSqlQuery(args, 1));
@@ -803,17 +974,24 @@ const typeRules: Dictionary<MatchFn> = {
 		// Allow for populated and empty arrays
 		return ['TextArray', ...args.map(TextValue)];
 	},
-	ToJSON: matchArgs('ToJSON', AnyValue),
-	Any: matchArgs('Any', AnyValue, _.identity),
-	Coalesce: (args) => {
+	ToJSON: matchArgs<ToJSONNode>('ToJSON', AnyValue),
+	Any: matchArgs<AnyNode>('Any', AnyValue, _.identity),
+	Coalesce: (args): CoalesceNode => {
 		checkMinArgs('Coalesce', args, 2);
-		return ['Coalesce', ...args.map(AnyValue)];
+		return [
+			'Coalesce',
+			...(args.map(AnyValue) as [
+				AnyTypeNodes,
+				AnyTypeNodes,
+				...AnyTypeNodes[],
+			]),
+		];
 	},
 	Case: (args) => {
 		checkMinArgs('Case', args, 1);
 		return [
 			'Case',
-			...args.map((arg, index) => {
+			...args.map((arg, index): WhenNode | ElseNode => {
 				if (!isAbstractSqlQuery(arg)) {
 					throw new SyntaxError(
 						`Expected AbstractSqlQuery array but got ${typeof arg}`,
@@ -839,13 +1017,13 @@ const typeRules: Dictionary<MatchFn> = {
 		] as CaseNode;
 	},
 	And: tryMatches(
-		Helper<OptimisationMatchFn>((args) => {
+		Helper<OptimisationMatchFn<AnyTypeNodes>>((args) => {
 			if (args.length !== 1) {
 				return false;
 			}
 			return getAbstractSqlQuery(args, 0);
 		}),
-		Helper<OptimisationMatchFn>((args) => {
+		Helper<OptimisationMatchFn<AndNode>>((args) => {
 			checkMinArgs('And', args, 2);
 			// Collapse nested ANDs.
 			let maybeHelped = false;
@@ -868,7 +1046,7 @@ const typeRules: Dictionary<MatchFn> = {
 
 			return ['And', ...conditions] as AndNode;
 		}),
-		Helper<OptimisationMatchFn>((args) => {
+		Helper<OptimisationMatchFn<BooleanNode | AndNode>>((args) => {
 			checkMinArgs('And', args, 2);
 			// Reduce any booleans
 			let maybeHelped = false;
@@ -885,14 +1063,14 @@ const typeRules: Dictionary<MatchFn> = {
 				return true;
 			});
 			if (containsFalse) {
-				return ['Boolean', false] as AbstractSqlQuery;
+				return ['Boolean', false];
 			}
 			if (maybeHelped) {
 				return ['And', ...conditions] as AndNode;
 			}
 			return false;
 		}),
-		Helper<OptimisationMatchFn>((args) => {
+		Helper<OptimisationMatchFn<AndNode>>((args) => {
 			checkMinArgs('And', args, 2);
 			// Optimise id != 1 AND id != 2 AND id != 3 -> id NOT IN [1, 2, 3]
 			const fieldBuckets: Dictionary<AnyTypeNodes[]> = {};
@@ -964,13 +1142,13 @@ const typeRules: Dictionary<MatchFn> = {
 		},
 	),
 	Or: tryMatches(
-		Helper<OptimisationMatchFn>((args) => {
+		Helper<OptimisationMatchFn<AnyTypeNodes>>((args) => {
 			if (args.length !== 1) {
 				return false;
 			}
 			return getAbstractSqlQuery(args, 0);
 		}),
-		Helper<OptimisationMatchFn>((args) => {
+		Helper<OptimisationMatchFn<OrNode>>((args) => {
 			checkMinArgs('Or', args, 2);
 			// Collapse nested ORs.
 			let maybeHelped = false;
@@ -993,7 +1171,7 @@ const typeRules: Dictionary<MatchFn> = {
 
 			return ['Or', ...conditions] as OrNode;
 		}),
-		Helper<OptimisationMatchFn>((args) => {
+		Helper<OptimisationMatchFn<BooleanNode | OrNode>>((args) => {
 			checkMinArgs('Or', args, 2);
 			// Reduce any booleans
 			let maybeHelped = false;
@@ -1010,14 +1188,14 @@ const typeRules: Dictionary<MatchFn> = {
 				return true;
 			});
 			if (containsTrue) {
-				return ['Boolean', true] as AbstractSqlQuery;
+				return ['Boolean', true];
 			}
 			if (maybeHelped) {
 				return ['Or', ...conditions] as OrNode;
 			}
 			return false;
 		}),
-		Helper<OptimisationMatchFn>((args) => {
+		Helper<OptimisationMatchFn<InNode | OrNode>>((args) => {
 			checkMinArgs('Or', args, 2);
 			// Optimise id = 1 OR id = 2 OR id = 3 -> id IN [1, 2, 3]
 			const fieldBuckets: Dictionary<AnyTypeNodes[]> = {};
@@ -1095,12 +1273,12 @@ const typeRules: Dictionary<MatchFn> = {
 		if (args.length !== 1 && args.length !== 2) {
 			throw new SyntaxError(`"Bind" requires 1/2 arg(s)`);
 		}
-		return ['Bind', ...args];
+		return ['Bind', ...args] as BindNode;
 	},
 	Text,
 	Value: Text,
 	Date: matchArgs('Date', _.identity),
-	Duration: (args) => {
+	Duration: (args): DurationNode => {
 		checkArgs('Duration', args, 1);
 
 		let duration = args[0] as DurationNode[1];
@@ -1116,26 +1294,26 @@ const typeRules: Dictionary<MatchFn> = {
 		if (_(duration).omit('negative').isEmpty()) {
 			throw new SyntaxError('Invalid duration');
 		}
-		return ['Duration', duration] as AbstractSqlQuery;
+		return ['Duration', duration];
 	},
-	Exists: tryMatches(
-		Helper<OptimisationMatchFn>((args) => {
+	Exists: tryMatches<ExistsNode | BooleanNode>(
+		Helper<OptimisationMatchFn<BooleanNode>>((args) => {
 			checkArgs('Exists', args, 1);
 			const arg = getAbstractSqlQuery(args, 0);
 			if (isNotNullable(arg)) {
-				return ['Boolean', true] as AbstractSqlQuery;
+				return ['Boolean', true];
 			}
 			return false;
 		}),
-		Helper<OptimisationMatchFn>((args) => {
+		Helper<OptimisationMatchFn<BooleanNode>>((args) => {
 			checkArgs('Exists', args, 1);
 			const arg = getAbstractSqlQuery(args, 0);
 			if (isEmptySelectQuery(arg)) {
-				return ['Boolean', false] as AbstractSqlQuery;
+				return ['Boolean', false];
 			}
 			return false;
 		}),
-		(args) => {
+		(args): ExistsNode => {
 			checkArgs('Exists', args, 1);
 			const arg = getAbstractSqlQuery(args, 0);
 			const [type, ...rest] = arg;
@@ -1148,24 +1326,24 @@ const typeRules: Dictionary<MatchFn> = {
 			}
 		},
 	),
-	NotExists: tryMatches(
-		Helper<OptimisationMatchFn>((args) => {
+	NotExists: tryMatches<BooleanNode | NotExistsNode>(
+		Helper<OptimisationMatchFn<BooleanNode>>((args) => {
 			checkArgs('Exists', args, 1);
 			const arg = getAbstractSqlQuery(args, 0);
 			if (isNotNullable(arg)) {
-				return ['Boolean', false] as AbstractSqlQuery;
+				return ['Boolean', false];
 			}
 			return false;
 		}),
-		Helper<OptimisationMatchFn>((args) => {
+		Helper<OptimisationMatchFn<BooleanNode>>((args) => {
 			checkArgs('Exists', args, 1);
 			const arg = getAbstractSqlQuery(args, 0);
 			if (isEmptySelectQuery(arg)) {
-				return ['Boolean', true] as AbstractSqlQuery;
+				return ['Boolean', true];
 			}
 			return false;
 		}),
-		(args) => {
+		(args): NotExistsNode => {
 			checkArgs('NotExists', args, 1);
 			const arg = getAbstractSqlQuery(args, 0);
 			const [type, ...rest] = arg;
@@ -1178,30 +1356,32 @@ const typeRules: Dictionary<MatchFn> = {
 			}
 		},
 	),
-	Not: tryMatches(
-		Helper<OptimisationMatchFn>((args) => {
-			checkArgs('Not', args, 1);
-			const [type, ...rest] = getAbstractSqlQuery(args, 0);
-			switch (type) {
-				case 'Not':
-					return BooleanValue(rest[0] as AbstractSqlQuery);
-				case 'Equals':
-					return typeRules.NotEquals(rest);
-				case 'NotEquals':
-					return typeRules.Equals(rest);
-				case 'In':
-					return typeRules.NotIn(rest);
-				case 'NotIn':
-					return typeRules.In(rest);
-				case 'Exists':
-					return typeRules.NotExists(rest);
-				case 'NotExists':
-					return typeRules.Exists(rest);
-				default:
-					return false;
-			}
-		}),
-		matchArgs('Not', BooleanValue),
+	Not: tryMatches<NotNode | BooleanTypeNodes | NotEqualsNode | ExistsNode>(
+		Helper<OptimisationMatchFn<BooleanTypeNodes | NotEqualsNode | ExistsNode>>(
+			(args): BooleanTypeNodes | NotEqualsNode | ExistsNode | false => {
+				checkArgs('Not', args, 1);
+				const [type, ...rest] = getAbstractSqlQuery(args, 0);
+				switch (type) {
+					case 'Not':
+						return BooleanValue(rest[0] as AbstractSqlQuery);
+					case 'Equals':
+						return typeRules.NotEquals(rest);
+					case 'NotEquals':
+						return typeRules.Equals(rest);
+					case 'In':
+						return typeRules.NotIn(rest);
+					case 'NotIn':
+						return typeRules.In(rest);
+					case 'Exists':
+						return typeRules.NotExists(rest);
+					case 'NotExists':
+						return typeRules.Exists(rest);
+					default:
+						return false;
+				}
+			},
+		),
+		matchArgs<NotNode>('Not', BooleanValue),
 	),
 	In: (args) => {
 		checkMinArgs('In', args, 2);
@@ -1213,7 +1393,7 @@ const typeRules: Dictionary<MatchFn> = {
 				);
 			}
 			return AnyValue(arg);
-		});
+		}) as [AnyTypeNodes, ...AnyTypeNodes[]];
 		return ['In', field, ...vals];
 	},
 	NotIn: (args) => {
@@ -1226,14 +1406,14 @@ const typeRules: Dictionary<MatchFn> = {
 				);
 			}
 			return AnyValue(arg);
-		});
+		}) as [AnyTypeNodes, ...AnyTypeNodes[]];
 		return ['NotIn', field, ...vals];
 	},
-	InsertQuery: (args) => {
-		const tables: AbstractSqlQuery[] = [];
-		let fields: AbstractSqlQuery[] = [];
-		let values: AbstractSqlQuery[] = [];
-		const where: AbstractSqlQuery[] = [];
+	InsertQuery: (args): InsertQueryNode => {
+		const tables: FromNode[] = [];
+		let fields: FieldsNode[] = [];
+		let values: ValuesNode[] = [];
+		const where: WhereNode[] = [];
 		for (const arg of args) {
 			if (!isAbstractSqlQuery(arg)) {
 				throw new SyntaxError('`InsertQuery` args must all be arrays');
@@ -1247,7 +1427,7 @@ const typeRules: Dictionary<MatchFn> = {
 						);
 					}
 					checkMinArgs('Update fields', rest, 1);
-					fields = [arg];
+					fields = [arg as FieldsNode];
 					break;
 				case 'Values':
 					if (values.length !== 0) {
@@ -1261,12 +1441,17 @@ const typeRules: Dictionary<MatchFn> = {
 						switch (valuesType) {
 							case 'SelectQuery':
 							case 'UnionQuery':
-								values = [['Values', typeRules[valuesType](valuesRest)]];
+								values = [
+									[
+										'Values',
+										typeRules[valuesType](valuesRest) as
+											| SelectQueryNode
+											| UnionQueryNode,
+									],
+								];
 								break;
 							default:
-								values = [
-									['Values', valuesArray.map(Value)] as AbstractSqlQuery,
-								];
+								values = [['Values', valuesArray.map(Value)] as ValuesNode];
 						}
 					}
 					break;
@@ -1294,26 +1479,20 @@ const typeRules: Dictionary<MatchFn> = {
 		if (
 			fields.length !== 0 &&
 			values.length !== 0 &&
-			!['SelectQuery', 'UnionQuery'].includes(values[0][0] as string) &&
+			!['SelectQuery', 'UnionQuery'].includes(values[0][0]) &&
 			fields[0].length !== values[0].length
 		) {
 			throw new SyntaxError(
 				"'InsertQuery' requires Fields and Values components to have the same length or use a query for Values",
 			);
 		}
-		return [
-			'InsertQuery',
-			...tables,
-			...fields,
-			...values,
-			...where,
-		] as AbstractSqlQuery;
+		return ['InsertQuery', ...tables, ...fields, ...values, ...where];
 	},
-	UpdateQuery: (args) => {
-		const tables: AbstractSqlQuery[] = [];
-		let fields: AbstractSqlQuery[] = [];
-		let values: AbstractSqlQuery[] = [];
-		let where: AbstractSqlQuery[] = [];
+	UpdateQuery: (args): UpdateQueryNode => {
+		const tables: FromNode[] = [];
+		let fields: FieldsNode[] = [];
+		let values: ValuesNode[] = [];
+		let where: WhereNode[] = [];
 		for (const arg of args) {
 			if (!isAbstractSqlQuery(arg)) {
 				throw new SyntaxError('`UpdateQuery` args must all be arrays');
@@ -1327,7 +1506,7 @@ const typeRules: Dictionary<MatchFn> = {
 						);
 					}
 					checkMinArgs('Update fields', rest, 1);
-					fields = [arg];
+					fields = [arg as FieldsNode];
 					break;
 				case 'Values':
 					if (values.length !== 0) {
@@ -1338,7 +1517,7 @@ const typeRules: Dictionary<MatchFn> = {
 					checkArgs('Update values', rest, 1);
 					const valuesArray = getAbstractSqlQuery(rest, 0);
 					checkMinArgs('Update values array', valuesArray, 1);
-					values = [['Values', valuesArray.map(Value)] as AbstractSqlQuery];
+					values = [['Values', valuesArray.map(Value)]];
 					break;
 				case 'From':
 					tables.push(typeRules[type](rest));
@@ -1365,17 +1544,11 @@ const typeRules: Dictionary<MatchFn> = {
 			throw new SyntaxError("'UpdateQuery' requires a Values component");
 		}
 
-		return [
-			'UpdateQuery',
-			...tables,
-			...fields,
-			...values,
-			...where,
-		] as AbstractSqlQuery;
+		return ['UpdateQuery', ...tables, ...fields, ...values, ...where];
 	},
-	DeleteQuery: (args) => {
-		const tables: AbstractSqlQuery[] = [];
-		let where: AbstractSqlQuery[] = [];
+	DeleteQuery: (args): DeleteQueryNode => {
+		const tables: FromNode[] = [];
+		let where: WhereNode[] = [];
 		for (const arg of args) {
 			if (!isAbstractSqlQuery(arg)) {
 				throw new SyntaxError('`DeleteQuery` args must all be arrays');
@@ -1401,80 +1574,92 @@ const typeRules: Dictionary<MatchFn> = {
 			throw new SyntaxError("'DeleteQuery' must have a From component");
 		}
 
-		return ['DeleteQuery', ...tables, ...where] as AbstractSqlQuery;
+		return ['DeleteQuery', ...tables, ...where];
 	},
 
 	// Virtual functions
 	Now: rewriteMatch(
 		'Now',
 		[],
-		Helper<MatchFn>(([]) => ['CurrentTimestamp']),
+		Helper<MatchFn<CurrentTimestampNode>>(() => ['CurrentTimestamp']),
 	),
 	Contains: rewriteMatch(
 		'Contains',
 		[TextValue, TextValue],
-		Helper<MatchFn>(([haystack, needle]: [TextTypeNodes, TextTypeNodes]) => [
-			'Like',
-			haystack,
-			[
-				'Concatenate',
-				['EmbeddedText', '%'],
-				escapeForLike(needle),
-				['EmbeddedText', '%'],
+		Helper<MatchFn<LikeNode>>(
+			([haystack, needle]: [TextTypeNodes, TextTypeNodes]) => [
+				'Like',
+				haystack,
+				[
+					'Concatenate',
+					['EmbeddedText', '%'],
+					escapeForLike(needle),
+					['EmbeddedText', '%'],
+				],
 			],
-		]),
+		),
 	),
 	Substringof: rewriteMatch(
 		'Substringof',
 		[TextValue, TextValue],
-		Helper<MatchFn>(([needle, haystack]: [TextTypeNodes, TextTypeNodes]) => [
-			'Like',
-			haystack,
-			[
-				'Concatenate',
-				['EmbeddedText', '%'],
-				escapeForLike(needle),
-				['EmbeddedText', '%'],
+		Helper<MatchFn<LikeNode>>(
+			([needle, haystack]: [TextTypeNodes, TextTypeNodes]) => [
+				'Like',
+				haystack,
+				[
+					'Concatenate',
+					['EmbeddedText', '%'],
+					escapeForLike(needle),
+					['EmbeddedText', '%'],
+				],
 			],
-		]),
+		),
 	),
 	Startswith: rewriteMatch(
 		'Startswith',
 		[TextValue, TextValue],
-		Helper<MatchFn>(([haystack, needle]: [TextTypeNodes, TextTypeNodes]) => [
-			'Like',
-			haystack,
-			['Concatenate', escapeForLike(needle), ['EmbeddedText', '%']],
-		]),
+		Helper<MatchFn<LikeNode>>(
+			([haystack, needle]: [TextTypeNodes, TextTypeNodes]) => [
+				'Like',
+				haystack,
+				['Concatenate', escapeForLike(needle), ['EmbeddedText', '%']],
+			],
+		),
 	),
 	Endswith: rewriteMatch(
 		'Endswith',
 		[TextValue, TextValue],
-		Helper<MatchFn>(([haystack, needle]: [TextTypeNodes, TextTypeNodes]) => [
-			'Like',
-			haystack,
-			['Concatenate', ['EmbeddedText', '%'], escapeForLike(needle)],
-		]),
+		Helper<MatchFn<LikeNode>>(
+			([haystack, needle]: [TextTypeNodes, TextTypeNodes]) => [
+				'Like',
+				haystack,
+				['Concatenate', ['EmbeddedText', '%'], escapeForLike(needle)],
+			],
+		),
 	),
 	IndexOf: rewriteMatch(
 		'IndexOf',
 		[TextValue, TextValue],
-		Helper<MatchFn>(([haystack, needle]) => [
-			'Subtract',
-			['StrPos', haystack, needle],
-			['Number', 1],
-		]),
+		Helper<MatchFn<SubtractNode>>(
+			([haystack, needle]: [TextTypeNodes, TextTypeNodes]) => [
+				'Subtract',
+				['StrPos', haystack, needle],
+				['Number', 1],
+			],
+		),
 	),
 	Indexof: rewriteMatch(
 		'Indexof',
 		[TextValue, TextValue],
-		Helper<MatchFn>(([haystack, needle]) => [
-			'Subtract',
-			['StrPos', haystack, needle],
-			['Number', 1],
-		]),
+		Helper<MatchFn<SubtractNode>>(
+			([haystack, needle]: [TextTypeNodes, TextTypeNodes]) => [
+				'Subtract',
+				['StrPos', haystack, needle],
+				['Number', 1],
+			],
+		),
 	),
-};
+} satisfies Dictionary<MatchFn<AnyTypeNodes>>;
 
 export const AbstractSQLOptimiser = (
 	abstractSQL: AbstractSqlQuery,
@@ -1511,7 +1696,7 @@ export const AbstractSQLOptimiser = (
 				];
 				break;
 			default:
-				abstractSQL = AnyValue(abstractSQL);
+				abstractSQL = AnyValue(abstractSQL) as AbstractSqlQuery;
 		}
 	} while (helped);
 	return abstractSQL;
