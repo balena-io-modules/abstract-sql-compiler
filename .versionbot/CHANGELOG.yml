@@ -1,4 +1,16 @@
 - commits:
+    - subject: Add much finer grained typings for abstract-sql-optimizer
+      hash: 92bc7e93ca1b17401d902d66c68e090e50f70d1a
+      body: ""
+      footer:
+        Change-type: patch
+        change-type: patch
+      author: Pagan Gazzard
+      nested: []
+  version: 8.4.1
+  title: ""
+  date: 2023-04-25T10:03:26.380Z
+- commits:
     - subject: Add support for using field type nodes with an AggregateJSON node
       hash: 19c2760ecf76b4097d7d3045c2eefbf74fd7c2da
       body: |
@@ -1594,7 +1606,8 @@
             - subject: Add a `castType` property to type functions
               hash: 409077eb9d6c0315779ddd877220280c251b4eb5
               body: >
-                This allows specifying the correct type to cast to when necessary
+                This allows specifying the correct type to cast to when
+                necessary
 
                 rather than relying on the fact the currently all type functions happen
 
@@ -2322,7 +2335,8 @@
             - subject: Only add the destination of a link table if it's actually necessary
               hash: 463870590602492accc12ed53753f66862d42cd6
               body: >
-                This can significantly speed up queries by avoiding a join when the
+                This can significantly speed up queries by avoiding a join when
+                the
 
                 result is unused
               footer:
@@ -2478,7 +2492,8 @@
                     - subject: Improve aliased from handling in `getReferencedFields`
                       hash: dcfff55b813d38434208a9e07c818d1d32f521ef
                       body: >
-                        We do this by using basic scope info to prune aliased table references
+                        We do this by using basic scope info to prune aliased
+                        table references
 
                         which also allows us to handle aliased select queries in the from
                       footer:
