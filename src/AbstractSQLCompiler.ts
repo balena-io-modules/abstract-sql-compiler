@@ -521,6 +521,7 @@ export interface AbstractSqlModel {
 			[key: string]: LfRuleInfo;
 		};
 	};
+	modelName?: string;
 }
 export interface LfRuleInfo {
 	root: {
