@@ -1,4 +1,24 @@
 - commits:
+    - subject: Use native `StartsWith` node type for postgres
+      hash: 0e0055782f05eccf3d7d8bf01f2d6810e738c4e6
+      body: ""
+      footer:
+        Change-type: minor
+        change-type: minor
+      author: Pagan Gazzard
+      nested: []
+    - subject: Convert `EscapeForLike` into a standalone node type
+      hash: 9732e2e6e678262dfb25c8fbe5d935e4d6201296
+      body: ""
+      footer:
+        Change-type: minor
+        change-type: minor
+      author: Pagan Gazzard
+      nested: []
+  version: 8.5.0
+  title: ""
+  date: 2023-04-27T14:11:46.912Z
+- commits:
     - subject: Add much finer grained typings for abstract-sql-optimizer
       hash: 92bc7e93ca1b17401d902d66c68e090e50f70d1a
       body: ""
