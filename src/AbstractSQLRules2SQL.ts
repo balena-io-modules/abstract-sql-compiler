@@ -178,7 +178,8 @@ export const isBooleanValue = (
 		type === 'NotEquals' ||
 		type === 'Like' ||
 		type === 'IsNotDistinctFrom' ||
-		type === 'IsDistinctFrom'
+		type === 'IsDistinctFrom' ||
+		type === 'StartsWith'
 	);
 };
 const BooleanValue = MatchValue(isBooleanValue);
@@ -1045,6 +1046,22 @@ const typeRules: Dictionary<MatchFn> = {
 			return `STRPOS(${haystack}, ${needle})`;
 		} else {
 			return `INSTR(${haystack}, ${needle})`;
+		}
+	},
+	StartsWith: (args, indent) => {
+		checkArgs('StartsWith', args, 2);
+		const haystack = TextValue(getAbstractSqlQuery(args, 0), indent);
+		const needle = TextValue(getAbstractSqlQuery(args, 1), indent);
+		if (engine === Engines.postgres) {
+			return `STARTS_WITH(${haystack}, ${needle})`;
+		} else {
+			return typeRules.Like(
+				[
+					haystack,
+					['Concatenate', ['EscapeForLike', needle], ['EmbeddedText', '%']],
+				],
+				indent,
+			);
 		}
 	},
 	Substring: (args, indent) => {

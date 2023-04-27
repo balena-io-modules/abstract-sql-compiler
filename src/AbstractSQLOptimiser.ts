@@ -104,6 +104,7 @@ import {
 	WhenNode,
 	WhereNode,
 	FromTypeNode,
+	StartsWithNode,
 	EscapeForLikeNode,
 } from './AbstractSQLCompiler';
 import * as AbstractSQLRules2SQL from './AbstractSQLRules2SQL';
@@ -926,6 +927,7 @@ const typeRules = {
 	Replace: matchArgs<ReplaceNode>('Replace', TextValue, TextValue, TextValue),
 	CharacterLength: matchArgs<CharacterLengthNode>('CharacterLength', TextValue),
 	StrPos: matchArgs<StrPosNode>('StrPos', TextValue, TextValue),
+	StartsWith: matchArgs<StartsWithNode>('StartsWith', TextValue, TextValue),
 	Substring: (args) => {
 		checkMinArgs('Substring', args, 2);
 		const str = TextValue(getAbstractSqlQuery(args, 0));
@@ -1609,11 +1611,11 @@ const typeRules = {
 	Startswith: rewriteMatch(
 		'Startswith',
 		[TextValue, TextValue],
-		Helper<MatchFn<LikeNode>>(
+		Helper<MatchFn<StartsWithNode>>(
 			([haystack, needle]: [TextTypeNodes, TextTypeNodes]) => [
-				'Like',
+				'StartsWith',
 				haystack,
-				['Concatenate', ['EscapeForLike', needle], ['EmbeddedText', '%']],
+				needle,
 			],
 		),
 	),
