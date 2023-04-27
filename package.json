@@ -9,7 +9,6 @@
     "pretest": "npm run build",
     "test": "mocha",
     "posttest": "npm run lint",
-    "prepublish": "require-npm4-to-publish",
     "prepare": "node -e \"try { require('husky').install() } catch (e) {if (e.code !== 'MODULE_NOT_FOUND') throw e}\" && npm run build",
     "lint-fix": "balena-lint --fix -e js -e ts src/ test/",
     "lint": "balena-lint -e js -e ts src/ test/ && tsc --noEmit && tsc --noEmit --project tsconfig.js.json"
@@ -36,7 +35,6 @@
     "husky": "^8.0.3",
     "lint-staged": "^13.2.1",
     "mocha": "^10.2.0",
-    "require-npm4-to-publish": "^1.0.0",
     "ts-node": "^10.9.1",
     "typescript": "^5.0.4"
   },
