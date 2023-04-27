@@ -286,6 +286,7 @@ export type ExtractJSONPathAsTextNode = [
 	JSONTypeNodes,
 	TextArrayTypeNodes,
 ];
+export type EscapeForLikeNode = ['EscapeForLike', TextTypeNodes];
 export type StrictTextArrayTypeNodes = TextArrayNode;
 export type TextArrayTypeNodes = StrictTextArrayTypeNodes | UnknownTypeNodes;
 export type TextArrayNode = ['TextArray', ...TextTypeNodes[]];
@@ -300,7 +301,8 @@ export type StrictTextTypeNodes =
 	| SubstringNode
 	| RightNode
 	| ReplaceNode
-	| ExtractJSONPathAsTextNode;
+	| ExtractJSONPathAsTextNode
+	| EscapeForLikeNode;
 export type TextTypeNodes = StrictTextTypeNodes | UnknownTypeNodes;
 
 export type JoinTypeNodes =

@@ -119,7 +119,8 @@ export const isTextValue = (type: unknown): type is StrictTextTypeNodes[0] => {
 		type === 'Replace' ||
 		type === 'ExtractJSONPathAsText' ||
 		type === 'Substring' ||
-		type === 'Right'
+		type === 'Right' ||
+		type === 'EscapeForLike'
 	);
 };
 const TextValue = MatchValue(isTextValue);
@@ -1498,6 +1499,28 @@ const typeRules: Dictionary<MatchFn> = {
 		}
 
 		return 'DELETE FROM ' + tables.join(', ') + where;
+	},
+	EscapeForLike: (args, indent) => {
+		checkArgs('EscapeForLike', args, 1);
+		const textTypeNode = getAbstractSqlQuery(args, 0);
+		return typeRules.Replace(
+			[
+				[
+					'Replace',
+					[
+						'Replace',
+						textTypeNode,
+						['EmbeddedText', '\\'],
+						['EmbeddedText', '\\\\'],
+					],
+					['EmbeddedText', '_'],
+					['EmbeddedText', '\\_'],
+				],
+				['EmbeddedText', '%'],
+				['EmbeddedText', '\\%'],
+			],
+			indent,
+		);
 	},
 };
 
