@@ -104,6 +104,8 @@ import {
 	WhenNode,
 	WhereNode,
 	FromTypeNode,
+	StartsWithNode,
+	EscapeForLikeNode,
 } from './AbstractSQLCompiler';
 import * as AbstractSQLRules2SQL from './AbstractSQLRules2SQL';
 
@@ -150,18 +152,6 @@ const deprecated = (() => {
 	}
 	return result;
 })();
-
-const escapeForLike = (str: TextTypeNodes): ReplaceNode => [
-	'Replace',
-	[
-		'Replace',
-		['Replace', str, ['EmbeddedText', '\\'], ['EmbeddedText', '\\\\']],
-		['EmbeddedText', '_'],
-		['EmbeddedText', '\\_'],
-	],
-	['EmbeddedText', '%'],
-	['EmbeddedText', '\\%'],
-];
 
 let helped = false;
 let noBinds = false;
@@ -937,6 +927,7 @@ const typeRules = {
 	Replace: matchArgs<ReplaceNode>('Replace', TextValue, TextValue, TextValue),
 	CharacterLength: matchArgs<CharacterLengthNode>('CharacterLength', TextValue),
 	StrPos: matchArgs<StrPosNode>('StrPos', TextValue, TextValue),
+	StartsWith: matchArgs<StartsWithNode>('StartsWith', TextValue, TextValue),
 	Substring: (args) => {
 		checkMinArgs('Substring', args, 2);
 		const str = TextValue(getAbstractSqlQuery(args, 0));
@@ -1577,6 +1568,8 @@ const typeRules = {
 		return ['DeleteQuery', ...tables, ...where];
 	},
 
+	EscapeForLike: matchArgs<EscapeForLikeNode>('EscapeForLike', TextValue),
+
 	// Virtual functions
 	Now: rewriteMatch(
 		'Now',
@@ -1593,7 +1586,7 @@ const typeRules = {
 				[
 					'Concatenate',
 					['EmbeddedText', '%'],
-					escapeForLike(needle),
+					['EscapeForLike', needle],
 					['EmbeddedText', '%'],
 				],
 			],
@@ -1609,7 +1602,7 @@ const typeRules = {
 				[
 					'Concatenate',
 					['EmbeddedText', '%'],
-					escapeForLike(needle),
+					['EscapeForLike', needle],
 					['EmbeddedText', '%'],
 				],
 			],
@@ -1618,11 +1611,11 @@ const typeRules = {
 	Startswith: rewriteMatch(
 		'Startswith',
 		[TextValue, TextValue],
-		Helper<MatchFn<LikeNode>>(
+		Helper<MatchFn<StartsWithNode>>(
 			([haystack, needle]: [TextTypeNodes, TextTypeNodes]) => [
-				'Like',
+				'StartsWith',
 				haystack,
-				['Concatenate', escapeForLike(needle), ['EmbeddedText', '%']],
+				needle,
 			],
 		),
 	),
@@ -1633,7 +1626,7 @@ const typeRules = {
 			([haystack, needle]: [TextTypeNodes, TextTypeNodes]) => [
 				'Like',
 				haystack,
-				['Concatenate', ['EmbeddedText', '%'], escapeForLike(needle)],
+				['Concatenate', ['EmbeddedText', '%'], ['EscapeForLike', needle]],
 			],
 		),
 	),

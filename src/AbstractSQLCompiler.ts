@@ -81,6 +81,7 @@ export type ExistsNode = ['Exists', AnyTypeNodes];
 export type NotNode = ['Not', BooleanTypeNodes];
 export type AndNode = ['And', ...BooleanTypeNodes[]];
 export type OrNode = ['Or', ...BooleanTypeNodes[]];
+export type StartsWithNode = ['StartsWith', TextTypeNodes, TextTypeNodes];
 export type StrictBooleanTypeNodes =
 	| BooleanNode
 	| EqualsNode
@@ -99,7 +100,8 @@ export type StrictBooleanTypeNodes =
 	| NotExistsNode
 	| NotNode
 	| AndNode
-	| OrNode;
+	| OrNode
+	| StartsWithNode;
 export type BooleanTypeNodes = StrictBooleanTypeNodes | UnknownTypeNodes;
 
 export type YearNode = ['Year', DateTypeNodes];
@@ -286,6 +288,7 @@ export type ExtractJSONPathAsTextNode = [
 	JSONTypeNodes,
 	TextArrayTypeNodes,
 ];
+export type EscapeForLikeNode = ['EscapeForLike', TextTypeNodes];
 export type StrictTextArrayTypeNodes = TextArrayNode;
 export type TextArrayTypeNodes = StrictTextArrayTypeNodes | UnknownTypeNodes;
 export type TextArrayNode = ['TextArray', ...TextTypeNodes[]];
@@ -300,7 +303,8 @@ export type StrictTextTypeNodes =
 	| SubstringNode
 	| RightNode
 	| ReplaceNode
-	| ExtractJSONPathAsTextNode;
+	| ExtractJSONPathAsTextNode
+	| EscapeForLikeNode;
 export type TextTypeNodes = StrictTextTypeNodes | UnknownTypeNodes;
 
 export type JoinTypeNodes =

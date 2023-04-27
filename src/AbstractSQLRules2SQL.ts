@@ -119,7 +119,8 @@ export const isTextValue = (type: unknown): type is StrictTextTypeNodes[0] => {
 		type === 'Replace' ||
 		type === 'ExtractJSONPathAsText' ||
 		type === 'Substring' ||
-		type === 'Right'
+		type === 'Right' ||
+		type === 'EscapeForLike'
 	);
 };
 const TextValue = MatchValue(isTextValue);
@@ -177,7 +178,8 @@ export const isBooleanValue = (
 		type === 'NotEquals' ||
 		type === 'Like' ||
 		type === 'IsNotDistinctFrom' ||
-		type === 'IsDistinctFrom'
+		type === 'IsDistinctFrom' ||
+		type === 'StartsWith'
 	);
 };
 const BooleanValue = MatchValue(isBooleanValue);
@@ -1046,6 +1048,22 @@ const typeRules: Dictionary<MatchFn> = {
 			return `INSTR(${haystack}, ${needle})`;
 		}
 	},
+	StartsWith: (args, indent) => {
+		checkArgs('StartsWith', args, 2);
+		const haystack = TextValue(getAbstractSqlQuery(args, 0), indent);
+		const needle = TextValue(getAbstractSqlQuery(args, 1), indent);
+		if (engine === Engines.postgres) {
+			return `STARTS_WITH(${haystack}, ${needle})`;
+		} else {
+			return typeRules.Like(
+				[
+					haystack,
+					['Concatenate', ['EscapeForLike', needle], ['EmbeddedText', '%']],
+				],
+				indent,
+			);
+		}
+	},
 	Substring: (args, indent) => {
 		checkMinArgs('Substring', args, 2);
 		const str = TextValue(getAbstractSqlQuery(args, 0), indent);
@@ -1498,6 +1516,28 @@ const typeRules: Dictionary<MatchFn> = {
 		}
 
 		return 'DELETE FROM ' + tables.join(', ') + where;
+	},
+	EscapeForLike: (args, indent) => {
+		checkArgs('EscapeForLike', args, 1);
+		const textTypeNode = getAbstractSqlQuery(args, 0);
+		return typeRules.Replace(
+			[
+				[
+					'Replace',
+					[
+						'Replace',
+						textTypeNode,
+						['EmbeddedText', '\\'],
+						['EmbeddedText', '\\\\'],
+					],
+					['EmbeddedText', '_'],
+					['EmbeddedText', '\\_'],
+				],
+				['EmbeddedText', '%'],
+				['EmbeddedText', '\\%'],
+			],
+			indent,
+		);
 	},
 };
 
