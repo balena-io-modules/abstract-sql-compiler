@@ -25,7 +25,7 @@ describe('Insert boolean value', () => {
 					result.query,
 					`\
 INSERT INTO "test" ("foo")
-VALUES (1)`,
+VALUES (TRUE)`,
 				);
 			});
 		},

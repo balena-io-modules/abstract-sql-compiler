@@ -11,7 +11,7 @@ describe('getRuleReferencedFields', () => {
 					[
 						'SelectQuery',
 						['Select', []],
-						['From', ['test', 'test.0']],
+						['From', ['Alias', ['Table', 'test'], 'test.0']],
 						[
 							'Where',
 							[
@@ -45,7 +45,7 @@ describe('getRuleReferencedFields', () => {
 				[
 					'SelectQuery',
 					['Select', [['Count', '*']]],
-					['From', ['test', 'test.0']],
+					['From', ['Alias', ['Table', 'test'], 'test.0']],
 					[
 						'Where',
 						[
@@ -82,8 +82,8 @@ describe('getRuleReferencedFields', () => {
 					[
 						'SelectQuery',
 						['Select', []],
-						['From', ['test', 'test.0']],
-						['From', ['test', 'test.1']],
+						['From', ['Alias', ['Table', 'test'], 'test.0']],
+						['From', ['Alias', ['Table', 'test'], 'test.1']],
 						[
 							'Where',
 							[
@@ -118,7 +118,7 @@ describe('getRuleReferencedFields', () => {
 				[
 					'SelectQuery',
 					['Select', []],
-					['From', ['test', 'test.0']],
+					['From', ['Alias', ['Table', 'test'], 'test.0']],
 					[
 						'Where',
 						[
@@ -152,7 +152,7 @@ describe('getRuleReferencedFields', () => {
 				[
 					'SelectQuery',
 					['Select', []],
-					['From', ['test', 'test.0']],
+					['From', ['Alias', ['Table', 'test'], 'test.0']],
 					[
 						'Where',
 						[
@@ -203,7 +203,7 @@ describe('getRuleReferencedFields', () => {
 					[
 						'SelectQuery',
 						['Select', []],
-						['From', ['test', 'test.0']],
+						['From', ['Alias', ['Table', 'test'], 'test.0']],
 						[
 							'Where',
 							[
@@ -213,7 +213,7 @@ describe('getRuleReferencedFields', () => {
 									[
 										'SelectQuery',
 										['Select', []],
-										['From', ['test2', 'test2.0']],
+										['From', ['Alias', ['Table', 'test2'], 'test2.0']],
 										[
 											'Where',
 											[
@@ -252,8 +252,8 @@ describe('getRuleReferencedFields', () => {
 					[
 						'SelectQuery',
 						['Select', []],
-						['From', ['test', 'test.0']],
-						['From', ['test2', 'test2.0']],
+						['From', ['Alias', ['Table', 'test'], 'test.0']],
+						['From', ['Alias', ['Table', 'test2'], 'test2.0']],
 						['Where', ['Equals', ['Field', 'id'], ['Field', 'test']]],
 					],
 				],
@@ -282,7 +282,7 @@ describe('getRuleReferencedFields', () => {
 					[
 						'SelectQuery',
 						['Select', []],
-						['From', ['test', 'test.0']],
+						['From', ['Alias', ['Table', 'test'], 'test.0']],
 						[
 							'Where',
 							[
@@ -292,7 +292,7 @@ describe('getRuleReferencedFields', () => {
 									[
 										'SelectQuery',
 										['Select', [['Count', '*']]],
-										['From', ['test2', 'test2.0']],
+										['From', ['Alias', ['Table', 'test2'], 'test2.0']],
 										[
 											'Where',
 											[

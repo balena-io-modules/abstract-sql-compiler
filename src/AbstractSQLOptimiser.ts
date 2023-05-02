@@ -123,36 +123,6 @@ type OptimisationMatchFn<T extends AnyTypeNodes> =
 type MetaMatchFn<T extends AnyTypeNodes> = (args: AbstractSqlQuery) => T;
 type MatchFn<T extends AnyTypeNodes> = (args: AbstractSqlType[]) => T;
 
-const deprecated = (() => {
-	const deprecationMessages = {
-		legacyAlias:
-			"Legacy alias format of `[node, alias]` is deprecated, use `['Alias', node, alias]` instead.",
-		legacyTable:
-			"Legacy table format of `tableName` is deprecated, use `['Table', tableName]` instead.",
-		legacyNull:
-			"Legacy null format of `null` is deprecated, use `['Null']` instead.",
-		legacyNullString:
-			"Legacy null format of `'Null'` is deprecated, use `['Null']` instead.",
-		legacyValuesBoolean:
-			"Legacy `Values` boolean format of `true|false` is deprecated, use `['Boolean', true|false]` instead.",
-		legacyAggregateJSON:
-			"Legacy `AggregateJSON` format of `['AggregateJSON', [tableName, fieldName]]` is deprecated, use `['AggregateJSON', ['ReferencedField, tableName, fieldName]]` instead.",
-	};
-	const result = {} as Record<keyof typeof deprecationMessages, () => void>;
-	for (const key of Object.keys(deprecationMessages) as Array<
-		keyof typeof deprecationMessages
-	>) {
-		result[key] = () => {
-			console.warn(
-				'@balena/abstract-sql-compiler deprecated:',
-				deprecationMessages[key],
-			);
-			result[key] = _.noop;
-		};
-	}
-	return result;
-})();
-
 let helped = false;
 let noBinds = false;
 const Helper = <F extends (...args: any[]) => any>(fn: F) => {
@@ -244,16 +214,6 @@ const AnyValue: MetaMatchFn<AnyTypeNodes> = (args) => {
 	return UnknownValue(args);
 };
 const UnknownValue: MetaMatchFn<UnknownTypeNodes> = (args) => {
-	if (args === null) {
-		helped = true;
-		deprecated.legacyNull();
-		args = ['Null'];
-	}
-	if ((args as any) === 'Null') {
-		helped = true;
-		deprecated.legacyNullString();
-		args = ['Null'];
-	}
 	const [type, ...rest] = args;
 	switch (type) {
 		case 'Null':
@@ -460,17 +420,12 @@ const ConcatenateWithSeparator: MatchFn<ConcatenateWithSeparatorNode> = (
 
 const Text = matchArgs<TextNode>('Text', _.identity);
 
-const Value = (arg: string): ValuesNodeTypes => {
-	const $arg = arg as boolean | string;
-	switch ($arg) {
-		case true:
-		case false:
-			deprecated.legacyValuesBoolean();
-			return ['Boolean', $arg];
+const Value = (arg: string | AbstractSqlQuery): ValuesNodeTypes => {
+	switch (arg) {
 		case 'Default':
-			return $arg;
+			return arg;
 		default:
-			const [type, ...rest] = $arg;
+			const [type, ...rest] = arg;
 			switch (type) {
 				case 'Null':
 				case 'Bind':
@@ -494,10 +449,6 @@ const Value = (arg: string): ValuesNodeTypes => {
 };
 
 const FromMatch: MetaMatchFn<FromTypeNode[keyof FromTypeNode]> = (args) => {
-	if (typeof args === 'string') {
-		deprecated.legacyTable();
-		return ['Table', args];
-	}
 	const [type, ...rest] = args;
 	switch (type) {
 		case 'SelectQuery':
@@ -515,17 +466,6 @@ const MaybeAlias = <T extends AnyTypeNodes>(
 	args: AbstractSqlQuery,
 	matchFn: MetaMatchFn<T>,
 ): T | AliasNode<T> => {
-	if (
-		args.length === 2 &&
-		args[0] !== 'Table' &&
-		args[0] !== 'Count' &&
-		args[0] !== 'Field' &&
-		typeof args[1] === 'string'
-	) {
-		helped = true;
-		deprecated.legacyAlias();
-		return ['Alias', matchFn(args[0] as any as AbstractSqlQuery), args[1]];
-	}
 	const [type, ...rest] = args;
 	switch (type) {
 		case 'Alias':
@@ -714,7 +654,7 @@ const typeRules = {
 	},
 	From: (args): FromNode => {
 		checkArgs('From', args, 1);
-		return ['From', MaybeAlias(args[0] as AbstractSqlQuery, FromMatch)];
+		return ['From', MaybeAlias(getAbstractSqlQuery(args, 0), FromMatch)];
 	},
 	Join: JoinMatch('Join'),
 	LeftJoin: JoinMatch('LeftJoin'),
@@ -774,21 +714,7 @@ const typeRules = {
 	Null: matchArgs<NullNode>('Null'),
 	CurrentTimestamp: matchArgs<CurrentTimestampNode>('CurrentTimestamp'),
 	CurrentDate: matchArgs<CurrentDateNode>('CurrentDate'),
-	AggregateJSON: tryMatches(
-		Helper<OptimisationMatchFn<AggregateJSONNode>>((args) => {
-			checkArgs('AggregateJSON', args, 1);
-			const fieldArg = getAbstractSqlQuery(args, 0);
-			if (!isFieldValue(fieldArg[0])) {
-				deprecated.legacyAggregateJSON();
-				return [
-					'AggregateJSON',
-					['ReferencedField', ...fieldArg] as ReferencedFieldNode,
-				];
-			}
-			return false;
-		}),
-		matchArgs<AggregateJSONNode>('AggregateJSON', Field),
-	),
+	AggregateJSON: matchArgs<AggregateJSONNode>('AggregateJSON', Field),
 	Equals: tryMatches<NotExistsNode | EqualsNode>(
 		Helper<OptimisationMatchFn<NotExistsNode>>((args) => {
 			checkArgs('Equals', args, 2);
