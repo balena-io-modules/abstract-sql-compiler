@@ -573,8 +573,8 @@ const dataTypeValidate: EngineInstance['dataTypeValidate'] = async (
 	field,
 ) => {
 	// In case one of the validation types throws an error.
-	const { dataType, required } = field;
-	const validateFn = validateTypes[dataType];
+	const { dataType, required = false } = field;
+	const validateFn = validateTypes[dataType as keyof typeof sbvrTypes];
 	if (validateFn != null) {
 		return validateFn(value, required);
 	} else {
@@ -614,7 +614,8 @@ const dataTypeGen = (
 	} else if (index !== '') {
 		index = ' ' + index;
 	}
-	const dbType = sbvrTypes?.[dataType]?.types?.[engine];
+	const dbType =
+		sbvrTypes?.[dataType as keyof typeof sbvrTypes]?.types?.[engine];
 	if (dbType != null) {
 		if (typeof dbType === 'function') {
 			return dbType(requiredStr, index);
