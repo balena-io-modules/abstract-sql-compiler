@@ -154,4 +154,31 @@ describe('Comparison Operator Precedence', () => {
 			});
 		},
 	);
+
+	test(
+		[
+			'SelectQuery',
+			[
+				'Select',
+				[
+					[
+						'Between',
+						['Equals', ['Integer', 1], ['Integer', 0]],
+						['LessThan', ['Integer', 1], ['Integer', 0]],
+						['GreaterThan', ['Integer', 1], ['Integer', 0]],
+					],
+				],
+			],
+		],
+		(result, sqlEquals) => {
+			it('should produce a valid Between statement when the operands are comparison expressions', () => {
+				sqlEquals(
+					result.query,
+					stripIndent`
+						SELECT (1 = 0) BETWEEN (1 < 0) AND ((1 > 0))
+					`,
+				);
+			});
+		},
+	);
 });
