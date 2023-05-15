@@ -1,4 +1,16 @@
 - commits:
+    - subject: Fix TS errors for the latest sbvrTypes
+      hash: bb1f16713d084eaf6285138a2a587e9b36bc7759
+      body: ""
+      footer:
+        Change-type: patch
+        change-type: patch
+      author: Thodoris Greasidis
+      nested: []
+  version: 9.0.1
+  title: ""
+  date: 2023-05-15T12:54:08.040Z
+- commits:
     - subject: Drop `require-npm4-to-publish` as `engines` used
       hash: 374bc5bd42c3caac5c68608f802302674a511c23
       body: ""
