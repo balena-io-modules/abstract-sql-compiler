@@ -862,7 +862,7 @@ const typeRules: Dictionary<MatchFn> = {
 	Cast: (args, indent) => {
 		checkArgs('Cast', args, 2);
 		const value = AnyValue(getAbstractSqlQuery(args, 0), indent);
-		const typeName = args[1] as string;
+		const typeName = args[1] as keyof typeof sbvrTypes;
 		if (!sbvrTypes[typeName] || !sbvrTypes[typeName].types[engine]) {
 			throw new SyntaxError(`Invalid cast type: ${typeName}`);
 		}
@@ -1166,7 +1166,8 @@ const typeRules: Dictionary<MatchFn> = {
 			throw new SyntaxError('Any not supported on: ' + engine);
 		}
 		const value = AnyValue(getAbstractSqlQuery(args, 0), indent);
-		const innerType = sbvrTypes[args[1] as string].types[engine];
+		const innerType =
+			sbvrTypes[args[1] as keyof typeof sbvrTypes].types[engine];
 		return `ANY(CAST(${value} AS ${innerType}[]))`;
 	},
 	Coalesce: (args, indent) => {
