@@ -1,4 +1,50 @@
 - commits:
+    - subject: Update @balena/sbvr-types to 5.0.0
+      hash: 67e4fafb3f89a05646f9911354fc74d9012c3096
+      body: |
+        Update @balena/sbvr-types from 4.0.0 to 5.0.0
+      footer:
+        Change-type: patch
+        change-type: patch
+      author: Pagan Gazzard
+      nested:
+        - commits:
+            - subject: Switch from `export =` to `export default`
+              hash: 6cd01340e0fee46833942691fce5a9f6a42ac104
+              body: ""
+              footer:
+                Change-type: major
+                change-type: major
+              author: Pagan Gazzard
+          version: sbvr-types-5.0.0
+          title: ""
+          date: 2023-05-16T15:56:09.861Z
+        - commits:
+            - subject: Improve typings
+              hash: a5fd4a319cd0336afc5a765af9e1a1eec851f2c3
+              body: ""
+              footer:
+                Change-type: patch
+                change-type: patch
+              author: Pagan Gazzard
+          version: sbvr-types-4.0.2
+          title: ""
+          date: 2023-05-03T11:40:24.422Z
+        - commits:
+            - subject: "boolean: Avoid unnecessary array creation to reduce GCs"
+              hash: 5ba948cd5f42844974d43dc19f1c371e56376fc8
+              body: ""
+              footer:
+                Change-type: patch
+                change-type: patch
+              author: Thodoris Greasidis
+          version: sbvr-types-4.0.1
+          title: ""
+          date: 2023-05-02T13:39:37.722Z
+  version: 9.0.2
+  title: ""
+  date: 2023-05-16T16:05:11.077Z
+- commits:
     - subject: Fix TS errors for the latest sbvrTypes
       hash: bb1f16713d084eaf6285138a2a587e9b36bc7759
       body: ""
