@@ -1,5 +1,5 @@
 const _ = require('lodash');
-const sbvrTypes = require('@balena/sbvr-types');
+const sbvrTypes = require('@balena/sbvr-types').default;
 
 const { expect } = require('chai');
 const AbstractSQLCompiler = require('../..');
