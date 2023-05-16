@@ -9,7 +9,7 @@ const { expect } = require('chai');
 const _ = require('lodash');
 
 const generateClientModel = function (input) {
-	const sbvrTypes = require('@balena/sbvr-types');
+	const sbvrTypes = require('@balena/sbvr-types').default;
 	const typeVocab = fs.readFileSync(
 		require.resolve('@balena/sbvr-types/Type.sbvr'),
 		'utf8',
