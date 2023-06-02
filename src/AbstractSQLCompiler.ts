@@ -430,7 +430,7 @@ export interface AbstractSqlQuery extends Array<AbstractSqlType> {
 
 export interface AbstractSqlField {
 	fieldName: string;
-	dataType: string;
+	dataType: keyof typeof sbvrTypes;
 	required?: boolean;
 	index?: string;
 	references?: {
@@ -574,7 +574,7 @@ const dataTypeValidate: EngineInstance['dataTypeValidate'] = async (
 ) => {
 	// In case one of the validation types throws an error.
 	const { dataType, required = false } = field;
-	const validateFn = validateTypes[dataType as keyof typeof sbvrTypes];
+	const validateFn = validateTypes[dataType];
 	if (validateFn != null) {
 		return validateFn(value, required);
 	} else {
@@ -614,8 +614,7 @@ const dataTypeGen = (
 	} else if (index !== '') {
 		index = ' ' + index;
 	}
-	const dbType =
-		sbvrTypes?.[dataType as keyof typeof sbvrTypes]?.types?.[engine];
+	const dbType = sbvrTypes?.[dataType]?.types?.[engine];
 	if (dbType != null) {
 		if (typeof dbType === 'function') {
 			return dbType(requiredStr, index);
