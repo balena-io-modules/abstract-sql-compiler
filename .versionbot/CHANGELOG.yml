@@ -1,4 +1,52 @@
 - commits:
+    - subject: Update @balena/sbvr-types to 6.0.0
+      hash: 76aed21f8b79dea58914ef9d02775ba93c8226ec
+      body: |
+        Update @balena/sbvr-types from 5.0.0 to 6.0.0
+      footer:
+        Change-type: patch
+        change-type: patch
+      author: Otávio Jacobi
+      nested:
+        - commits:
+            - subject: Change contents to snake_case
+              hash: aaa12269901e364533cf2aa45a958948ce0339de
+              body: ""
+              footer:
+                Change-Type: major
+                change-type: major
+              author: Otávio Jacobi
+          version: sbvr-types-6.0.0
+          title: ""
+          date: 2023-08-09T00:10:50.917Z
+        - commits:
+            - subject: Expose WebResource as WebResourceType
+              hash: 9e42bfffb2145b5096539492b36b0f19b1f2e209
+              body: ""
+              footer:
+                Change-type: minor
+                change-type: minor
+              author: Otávio Jacobi
+          version: sbvr-types-5.2.0
+          title: ""
+          date: 2023-08-08T21:01:49.459Z
+        - commits:
+            - subject: Adds WebResource type
+              hash: db7ff44e95a040a0b250d8c7612b126b31a3f325
+              body: ""
+              footer:
+                Change-type: minor
+                change-type: minor
+                Co-authored-by: ramirogm
+                co-authored-by: ramirogm
+              author: Otávio Jacobi
+          version: sbvr-types-5.1.0
+          title: ""
+          date: 2023-08-03T09:36:41.490Z
+  version: 9.0.3
+  title: ""
+  date: 2023-08-09T00:41:33.356Z
+- commits:
     - subject: Update @balena/sbvr-types to 5.0.0
       hash: 67e4fafb3f89a05646f9911354fc74d9012c3096
       body: |
