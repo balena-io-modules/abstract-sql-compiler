@@ -453,6 +453,7 @@ export interface Index {
 	fields: string[];
 	name?: string;
 	description?: string;
+	nulls?: string;
 	predicate?: BooleanTypeNodes;
 }
 export interface Check {
@@ -874,10 +875,11 @@ $$;`);
 
 		createSqlElements.push(...foreignKeys);
 		for (const index of table.indexes) {
+			const nullsSql = index.nulls != null ? ` NULLS ${index.nulls}` : '';
 			// Non-partial indexes are added directly to the CREATE TABLE statement
 			if (index.predicate == null) {
 				createSqlElements.push(
-					index.type + '("' + index.fields.join('", "') + '")',
+					index.type + nullsSql + '("' + index.fields.join('", "') + '")',
 				);
 				continue;
 			}
@@ -895,7 +897,7 @@ $$;`);
 			createIndexes.push(`\
 ${comment}\
 CREATE ${index.type} INDEX IF NOT EXISTS "${index.name}"
-WHERE (${whereSql});
+ON "${table.name}" ("${index.fields.join('", "')}")${nullsSql}
 WHERE (${whereSql});`);
 		}
 
