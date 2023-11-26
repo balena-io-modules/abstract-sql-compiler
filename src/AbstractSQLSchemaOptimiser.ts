@@ -267,24 +267,6 @@ export const optimizeSchema = (
 					return;
 				}
 
-				const nestedRestChecksReferencedFields =
-					recursiveGetReferencedFields(nestedRestChecks);
-				console.info(
-					`*** nestedRestChecksReferencedFields`,
-					nestedRestChecksReferencedFields,
-				);
-				if (
-					nestedRestChecksReferencedFields.length === 0 ||
-					nestedRestChecksReferencedFields.some(
-						(rf) => rf[1] !== nestedFromInfo.alias,
-					)
-				) {
-					return;
-				}
-
-				const nestedRestChecksOnFields = _.cloneDeep(nestedRestChecks);
-				convertReferencedFieldsToFields(nestedRestChecksOnFields);
-
 				const [outerRefEqualityChecks, outerRestChecks] = _.partition(
 					outerWhereParts,
 					isRefEqualityCheck,
@@ -302,8 +284,9 @@ export const optimizeSchema = (
 					),
 				);
 
-				const topFroms = topNodesByType.From as FromNode[];
-				const topFromInfos = topFroms.map(extractTableAndAlias);
+				const topFromInfos = (topNodesByType.From as FromNode[]).map(
+					extractTableAndAlias,
+				);
 				if (topFromInfos.some((fi) => fi == null)) {
 					return;
 				}
@@ -311,21 +294,39 @@ export const optimizeSchema = (
 					topFromInfos as Array<NonNullable<(typeof topFromInfos)[number]>>,
 					(fi) => fi.tableName,
 				);
-				const topPOIFromInfo = topFromInfoByTableName[nestedFromInfo.tableName];
-				if (topPOIFromInfo == null) {
+				// Find on the outer FROM a table matching the one found in the inner FROM.
+				const topTOIFromInfo = topFromInfoByTableName[nestedFromInfo.tableName];
+				if (topTOIFromInfo == null) {
 					return;
 				}
 
-				// const outerRestChecksReferencedFields = recursiveGetReferencedFields(outerRestChecks);
-				// console.info(`*** outerRestChecksReferencedFields`, outerRestChecksReferencedFields);
-				// if (outerRestChecksReferencedFields.length === 0 ||
-				// 	outerRestChecksReferencedFields.some(rf => rf[1] !== topPOIFromInfo.alias)
-				// ) {
-				// 	return;
-				// }
+				const [nestedRestChecksOnFields, outerRestChecksOnFields] = (
+					[
+						[nestedRestChecks, nestedFromInfo],
+						[outerRestChecks, topTOIFromInfo],
+					] as const
+				).map(([restChecks, fromInfo]) => {
+					// Confirm that other than the "JOIN" clauses, the rest of the clauses
+					// of the WHERE are all using the table from the FROM:
+					// * the single FROM if it's the nested query
+					// * or for the outer query, the FROM w/ a table matching the nested FROM
+					const restChecksReferencedFields =
+						recursiveGetReferencedFields(restChecks);
+					if (
+						restChecksReferencedFields.length === 0 ||
+						restChecksReferencedFields.some((rf) => rf[1] !== fromInfo.alias)
+					) {
+						return;
+					}
 
-				const outerRestChecksOnFields = _.cloneDeep(outerRestChecks);
-				convertReferencedFieldsToFields(outerRestChecksOnFields);
+					const restChecksOnFields = _.cloneDeep(restChecks);
+					// Remove the table aliases so that we later confirm
+					// that the nested & outer field checks are equibalent
+					// using deep equality checking (other than the alias).
+					convertReferencedFieldsToFields(restChecksOnFields);
+					return restChecksOnFields;
+				});
+
 				console.info(
 					`***`,
 					JSON.stringify(
@@ -334,9 +335,28 @@ export const optimizeSchema = (
 						2,
 					),
 				);
-				if (!_.isEqual(nestedRestChecksOnFields, outerRestChecksOnFields)) {
+				// Confirm that other than the "JOIN" clauses, the rest of the clauses
+				// on the outer and nested queries do the exact same checks on the same table
+				// with only the alias being different.
+				if (
+					nestedRestChecksOnFields == null ||
+					outerRestChecksOnFields == null ||
+					!_.isEqual(nestedRestChecksOnFields, outerRestChecksOnFields)
+				) {
 					return;
 				}
+
+				console.info(
+					`***`,
+					JSON.stringify(
+						{
+							nestedRefEqualityChecks,
+							outerRefEqualityChecks,
+						},
+						null,
+						2,
+					),
+				);
 
 				return {
 					tableName: nestedFromInfo.tableName,
