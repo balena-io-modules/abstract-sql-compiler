@@ -1,4 +1,17 @@
 - commits:
+    - subject: Update dependency @types/node to v20
+      hash: 82a6edce01af738b184d223351bdfe79c63e7cce
+      body: |
+        Update @types/node from 18.19.4 to 20.10.6
+      footer:
+        Change-type: patch
+        change-type: patch
+      author: Self-hosted Renovate Bot
+      nested: []
+  version: 9.0.4
+  title: ""
+  date: 2024-01-02T18:48:39.478Z
+- commits:
     - subject: Update @balena/sbvr-types to 6.0.0
       hash: 76aed21f8b79dea58914ef9d02775ba93c8226ec
       body: |
