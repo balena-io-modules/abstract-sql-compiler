@@ -30,7 +30,7 @@
     "@types/lodash": "^4.14.192",
     "@types/mocha": "^10.0.1",
     "@types/node": "^20.0.0",
-    "chai": "^4.3.7",
+    "chai": "^5.0.0",
     "common-tags": "^1.8.2",
     "husky": "^8.0.3",
     "lint-staged": "^13.2.1",
