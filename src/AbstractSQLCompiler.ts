@@ -13,7 +13,10 @@ import {
 export { Binding, SqlResult } from './AbstractSQLRules2SQL';
 import sbvrTypes from '@balena/sbvr-types';
 import * as _ from 'lodash';
-import { optimizeSchema } from './AbstractSQLSchemaOptimiser';
+import {
+	optimizeSchema,
+	generateRuleHashAcronym,
+} from './AbstractSQLSchemaOptimiser';
 import {
 	getReferencedFields,
 	getRuleReferencedFields,
@@ -1075,6 +1078,7 @@ CREATE TABLE ${ifNotExistsStr}"${table.name}" (
 const generateExport = (engine: Engines, ifNotExists: boolean) => {
 	return {
 		optimizeSchema,
+		generateRuleHashAcronym,
 		compileSchema: (abstractSqlModel: AbstractSqlModel) =>
 			compileSchema(abstractSqlModel, engine, ifNotExists),
 		compileRule: (abstractSQL: AbstractSqlQuery) =>
