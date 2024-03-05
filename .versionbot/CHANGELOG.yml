@@ -1,4 +1,22 @@
 - commits:
+    - subject: Update `@balena/sbvr-types`
+      hash: 1822aa5e81736f18f2a4dd265e5754b589d4fd36
+      body: >
+        Updaet @balena/sbvr-types from 6.0.0 to 7.0.1
+
+
+        @balena/sbvr-types changes `fetchProcessing` and not validate. No change in abstract-sql-compiler interfaces. => Patch
+      footer:
+        Change-type: patch
+        change-type: patch
+        Signed-off-by: Harald Fischer <harald@balena.io>
+        signed-off-by: Harald Fischer <harald@balena.io>
+      author: Harald Fischer
+      nested: []
+  version: 9.0.5
+  title: ""
+  date: 2024-03-05T19:12:37.779Z
+- commits:
     - subject: Update dependency @types/node to v20
       hash: 82a6edce01af738b184d223351bdfe79c63e7cce
       body: |
