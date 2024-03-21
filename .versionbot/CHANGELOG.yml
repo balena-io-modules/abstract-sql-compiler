@@ -1,11 +1,24 @@
 - commits:
+    - subject: Update TypeScript to 5.4.3
+      hash: 29299180ecbcb5bcd26b47e52f86538fa9a1f0f8
+      body: ""
+      footer:
+        Change-type: patch
+        change-type: patch
+      author: Thodoris Greasidis
+      nested: []
+  version: 9.0.6
+  title: ""
+  date: 2024-03-21T16:34:21.387Z
+- commits:
     - subject: Update `@balena/sbvr-types`
       hash: 1822aa5e81736f18f2a4dd265e5754b589d4fd36
       body: >
         Updaet @balena/sbvr-types from 6.0.0 to 7.0.1
 
 
-        @balena/sbvr-types changes `fetchProcessing` and not validate. No change in abstract-sql-compiler interfaces. => Patch
+        @balena/sbvr-types changes `fetchProcessing` and not validate. No change
+        in abstract-sql-compiler interfaces. => Patch
       footer:
         Change-type: patch
         change-type: patch
@@ -247,7 +260,8 @@
                         Ensure that the input passed in for JSON types is either
                         an object or
 
-                        an array (typeof returns 'object' for arrays as well). This change is
+                        an array (typeof returns 'object' for arrays as well).
+                        This change is
 
                         mainly to prevent primitives from being stored as JSON.
                       footer:
@@ -792,7 +806,8 @@
                 Ensure that the input passed in for JSON types is either an
                 object or
 
-                an array (typeof returns 'object' for arrays as well). This change is
+                an array (typeof returns 'object' for arrays as well). This
+                change is
 
                 mainly to prevent primitives from being stored as JSON.
               footer:
@@ -1372,7 +1387,8 @@
         if operands in expression can be used as numericValues.
 
 
-        In SQL statements arithmetic expressions like add/sub are supported for date values.
+        In SQL statements arithmetic expressions like add/sub are supported for
+        date values.
 
         DateArithmetic nodes need input dependent typing.
       footer:
@@ -2438,7 +2454,8 @@
                 This allows specifying the correct type to cast to when
                 necessary
 
-                rather than relying on the fact the currently all type functions happen
+                rather than relying on the fact the currently all type functions
+                happen
 
                 to be integers
               footer:
@@ -3324,7 +3341,8 @@
                         We do this by using basic scope info to prune aliased
                         table references
 
-                        which also allows us to handle aliased select queries in the from
+                        which also allows us to handle aliased select queries in
+                        the from
                       footer:
                         Change-type: minor
                         change-type: minor
