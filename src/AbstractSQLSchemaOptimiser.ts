@@ -32,6 +32,17 @@ const countFroms = (n: AbstractSqlType[]) => {
 	return count;
 };
 
+export const generateRuleSlug = (
+	tableName: string,
+	ruleBody: AbstractSqlType,
+) => {
+	const sha = sbvrTypes.SHA.validateSync(
+		`${tableName}$${JSON.stringify(ruleBody)}`,
+	).replace(/^\$sha256\$/, '');
+	// Trim the trigger to a max of 63 characters, reserving at least 32 characters for the hash
+	return `${tableName.slice(0, 30)}$${sha}`.slice(0, 63);
+};
+
 export const optimizeSchema = (
 	abstractSqlModel: AbstractSqlModel,
 	createCheckConstraints: boolean = true,
@@ -110,10 +121,6 @@ export const optimizeSchema = (
 						convertReferencedFieldsToFields(whereNode);
 
 						const tableName = fromNode[1];
-						const sha = sbvrTypes.SHA.validateSync(
-							`${tableName}$${JSON.stringify(ruleBody)}`,
-						).replace(/^\$sha256\$/, '');
-
 						const table = _.find(
 							abstractSqlModel.tables,
 							(t) => t.name === tableName,
@@ -122,8 +129,7 @@ export const optimizeSchema = (
 							table.checks ??= [];
 							table.checks!.push({
 								description: ruleSE,
-								// Trim the trigger to a max of 63 characters, reserving at least 32 characters for the hash
-								name: `${tableName.slice(0, 30)}$${sha}`.slice(0, 63),
+								name: generateRuleSlug(tableName, ruleBody),
 								abstractSql: whereNode,
 							});
 							return;
