@@ -455,6 +455,7 @@ export interface Index {
 	name?: string;
 	/** For rules converted to partial unique indexes this holds the actual rule expression */
 	description?: string;
+	distinctNulls?: boolean;
 	predicate?: BooleanTypeNodes;
 }
 export interface Check {
@@ -879,10 +880,17 @@ $$;`);
 
 		createSqlElements.push(...foreignKeys);
 		for (const index of table.indexes) {
+			let nullsSql = '';
+			if (index.distinctNulls != null) {
+				nullsSql =
+					index.distinctNulls === false
+						? ` NULLS NOT DISTINCT`
+						: ` NULLS DISTINCT`;
+			}
 			// Non-partial indexes are added directly to the CREATE TABLE statement
 			if (index.predicate == null) {
 				createSqlElements.push(
-					index.type + '("' + index.fields.join('", "') + '")',
+					index.type + nullsSql + '("' + index.fields.join('", "') + '")',
 				);
 				continue;
 			}
@@ -890,7 +898,7 @@ $$;`);
 				throw new Error('No name provided for partial index');
 			}
 			const comment = index.description
-				? `-- ${index.description.split(/\r?\n/).join('\n-- ')}\n`
+				? `-- ${index.description.replaceAll(/\r?\n/g, '\n-- ')}\n`
 				: '';
 			const whereSql = compileRule(
 				index.predicate as AbstractSqlQuery,
@@ -900,7 +908,7 @@ $$;`);
 			createIndexes.push(`\
 ${comment}\
 CREATE ${index.type} INDEX IF NOT EXISTS "${index.name}"
-WHERE (${whereSql});
+ON "${table.name}" ("${index.fields.join('", "')}")${nullsSql}
 WHERE (${whereSql});`);
 		}
 
