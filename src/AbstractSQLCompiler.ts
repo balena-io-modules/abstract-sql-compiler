@@ -449,6 +449,14 @@ export interface Trigger {
 	level: 'ROW' | 'STATEMENT';
 	when: 'BEFORE' | 'AFTER' | 'INSTEAD OF';
 }
+export interface Index {
+	type: string;
+	fields: string[];
+	name?: string;
+	/** For rules converted to partial unique indexes this holds the actual rule expression */
+	description?: string;
+	predicate?: BooleanTypeNodes;
+}
 export interface Check {
 	description?: string;
 	name?: string;
@@ -466,10 +474,7 @@ export interface AbstractSqlTable {
 	resourceName: string;
 	idField: string;
 	fields: AbstractSqlField[];
-	indexes: Array<{
-		type: string;
-		fields: string[];
-	}>;
+	indexes: Index[];
 	primitive: false | string;
 	triggers?: Trigger[];
 	checks?: Check[];
@@ -815,6 +820,7 @@ ${compileRule(definitionAbstractSql as AbstractSqlQuery, engine, true).replace(
 		const foreignKeys: string[] = [];
 		const depends: string[] = [];
 		const createSqlElements: string[] = [];
+		const createIndexes: string[] = [];
 
 		for (const field of table.fields) {
 			const { fieldName, references, dataType, computed } = field;
@@ -873,9 +879,29 @@ $$;`);
 
 		createSqlElements.push(...foreignKeys);
 		for (const index of table.indexes) {
-			createSqlElements.push(
-				index.type + '("' + index.fields.join('", "') + '")',
+			// Non-partial indexes are added directly to the CREATE TABLE statement
+			if (index.predicate == null) {
+				createSqlElements.push(
+					index.type + '("' + index.fields.join('", "') + '")',
+				);
+				continue;
+			}
+			if (index.name == null) {
+				throw new Error('No name provided for partial index');
+			}
+			const comment = index.description
+				? `-- ${index.description.split(/\r?\n/).join('\n-- ')}\n`
+				: '';
+			const whereSql = compileRule(
+				index.predicate as AbstractSqlQuery,
+				engine,
+				true,
 			);
+			createIndexes.push(`\
+${comment}\
+CREATE ${index.type} INDEX IF NOT EXISTS "${index.name}"
+WHERE (${whereSql});
+WHERE (${whereSql});`);
 		}
 
 		if (table.checks) {
@@ -932,6 +958,7 @@ $$`);
 CREATE TABLE ${ifNotExistsStr}"${table.name}" (
 	${createSqlElements.join('\n,\t')}
 );`,
+				...createIndexes,
 				...createTriggers,
 			],
 			dropSQL: [...dropTriggers, `DROP TABLE "${table.name}";`],
