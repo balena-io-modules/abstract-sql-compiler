@@ -11,6 +11,7 @@ import {
 	SqlResult,
 } from './AbstractSQLRules2SQL';
 export { Binding, SqlResult } from './AbstractSQLRules2SQL';
+import type { SbvrType } from '@balena/sbvr-types';
 import sbvrTypes from '@balena/sbvr-types';
 import * as _ from 'lodash';
 import { optimizeSchema } from './AbstractSQLSchemaOptimiser';
@@ -574,7 +575,10 @@ const dataTypeValidate: EngineInstance['dataTypeValidate'] = async (
 ) => {
 	// In case one of the validation types throws an error.
 	const { dataType, required = false } = field;
-	const validateFn = validateTypes[dataType as keyof typeof sbvrTypes];
+	// Without the `: SbvrType['validate']` widening TS complains that
+	// "none of those signatures are compatible with each other".
+	const validateFn: SbvrType['validate'] =
+		validateTypes[dataType as keyof typeof sbvrTypes];
 	if (validateFn != null) {
 		return validateFn(value, required);
 	} else {
