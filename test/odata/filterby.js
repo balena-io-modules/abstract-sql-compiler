@@ -3,16 +3,11 @@
  * DS205: Consider reworking code to avoid use of IIFEs
  * Full docs: https://github.com/decaffeinate/decaffeinate/blob/master/docs/suggestions.md
  */
-const { expect } = require('chai');
-const test = require('./test');
-const { clientModel } = test;
-const _ = require('lodash');
-const { odataNameToSqlName } = require('@balena/odata-to-abstract-sql');
-const {
-	pilotFields,
-	teamFields,
-	aliasPilotCanFlyPlaneFields,
-} = require('./fields');
+import { expect } from 'chai';
+import test, { clientModel } from './test';
+import * as _ from 'lodash';
+import { odataNameToSqlName } from '@balena/odata-to-abstract-sql';
+import { pilotFields, teamFields, aliasPilotCanFlyPlaneFields } from './fields';
 
 const pilotFieldsStr = pilotFields.join(', ');
 const aliasPilotCanFlyPlaneFieldsStr = aliasPilotCanFlyPlaneFields.join(', ');
@@ -107,7 +102,7 @@ let parseOperandFactory = function (defaultResource) {
 			if (fieldParts.length > 1) {
 				let alias = resource;
 				let previousResource = resource;
-				for (let resourceName of fieldParts.slice(0, -1)) {
+				for (const resourceName of fieldParts.slice(0, -1)) {
 					const sqlName = odataNameToSqlName(resourceName);
 					const sqlNameParts = sqlName.split('-');
 					mapping = _.get(
@@ -334,8 +329,8 @@ const createMethodCall = function (method, ...args) {
 				bindings: args[0].bindings,
 				odata,
 			};
-		default:
-			if (methodMaps.hasOwnProperty(method)) {
+		default: {
+			if (Object.prototype.hasOwnProperty.call(methodMaps, method)) {
 				method = methodMaps[method];
 			}
 			switch (method) {
@@ -343,12 +338,13 @@ const createMethodCall = function (method, ...args) {
 					args[1].sql += ' + 1';
 					break;
 			}
-			var sql = method + '(' + args.map((arg) => arg.sql).join(', ') + ')';
+			const sql = method + '(' + args.map((arg) => arg.sql).join(', ') + ')';
 			return {
 				sql,
 				bindings: _.flatten(args.map((arg) => arg.bindings)),
 				odata,
 			};
+		}
 	}
 };
 

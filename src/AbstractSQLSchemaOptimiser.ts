@@ -8,15 +8,14 @@ import { AbstractSQLOptimiser } from './AbstractSQLOptimiser';
 export { Binding, SqlResult } from './AbstractSQLRules2SQL';
 import sbvrTypes from '@balena/sbvr-types';
 import * as _ from 'lodash';
-import {
+import type {
 	AbstractSqlModel,
 	AbstractSqlQuery,
 	AbstractSqlType,
 	BooleanTypeNodes,
 	WhereNode,
-	isFromNode,
-	isSelectQueryNode,
 } from './AbstractSQLCompiler';
+import { isFromNode, isSelectQueryNode } from './AbstractSQLCompiler';
 
 const countFroms = (n: AbstractSqlType[]) => {
 	let count = 0;

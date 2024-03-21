@@ -1,4 +1,4 @@
-const test = require('./test');
+import test from './test';
 
 const buildSelect = (withElse) => [
 	'SelectQuery',

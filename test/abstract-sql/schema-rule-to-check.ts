@@ -148,7 +148,7 @@ it('should convert a basic rule to a check using COUNT(*) = 0', () => {
 CREATE TABLE IF NOT EXISTS "test" (
 	"id" INTEGER NULL PRIMARY KEY
 ,	-- It is necessary that each test has an id that is greater than 0.
-CONSTRAINT "test$qEORqfvLM2D8/gu0ZEVfvrnt19+uBo55ipVGKTdmu0k=\" CHECK (0 < "id"
+CONSTRAINT "test$qEORqfvLM2D8/gu0ZEVfvrnt19+uBo55ipVGKTdmu0k=" CHECK (0 < "id"
 AND "id" IS NOT NULL)
 );`,
 		]);

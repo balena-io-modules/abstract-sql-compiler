@@ -1,7 +1,7 @@
 import * as _ from 'lodash';
 
-import { Dictionary } from 'lodash';
-import {
+import type { Dictionary } from 'lodash';
+import type {
 	AbstractSqlQuery,
 	AbstractSqlType,
 	AddDateDurationNode,
@@ -424,7 +424,7 @@ const Value = (arg: string | AbstractSqlQuery): ValuesNodeTypes => {
 	switch (arg) {
 		case 'Default':
 			return arg;
-		default:
+		default: {
 			const [type, ...rest] = arg;
 			switch (type) {
 				case 'Null':
@@ -445,6 +445,7 @@ const Value = (arg: string | AbstractSqlQuery): ValuesNodeTypes => {
 				default:
 					throw new SyntaxError(`Invalid type for Value ${type}`);
 			}
+		}
 	}
 };
 
@@ -501,6 +502,7 @@ const JoinMatch =
 					const ruleBody = BooleanValue(getAbstractSqlQuery(rest, 0));
 					return [joinType, from, ['On', ruleBody]] as unknown as T;
 				}
+			// eslint-disable-next-line no-fallthrough
 			default:
 				throw new SyntaxError(
 					`'${joinType}' clause does not support '${type}' clause`,
@@ -706,9 +708,11 @@ const typeRules = {
 		_.identity,
 	),
 	Cast: matchArgs<CastNode>('Cast', AnyValue, _.identity),
+	// eslint-disable-next-line id-denylist
 	Number: NumberMatch('Number'),
 	Real: NumberMatch('Real'),
 	Integer: NumberMatch('Integer'),
+	// eslint-disable-next-line id-denylist
 	Boolean: matchArgs<BooleanNode>('Boolean', _.identity),
 	EmbeddedText: matchArgs('EmbeddedText', _.identity),
 	Null: matchArgs<NullNode>('Null'),
@@ -916,11 +920,12 @@ const typeRules = {
 				}
 				const [type, ...rest] = arg;
 				switch (type) {
-					case 'When':
+					case 'When': {
 						checkArgs('When', rest, 2);
 						const matches = BooleanValue(getAbstractSqlQuery(rest, 0));
 						const resultValue = AnyValue(getAbstractSqlQuery(rest, 1));
 						return ['When', matches, resultValue];
+					}
 					case 'Else':
 						if (index !== args.length - 1) {
 							throw new SyntaxError('Else must be the last element of a Case');
@@ -1346,7 +1351,7 @@ const typeRules = {
 					checkMinArgs('Update fields', rest, 1);
 					fields = [arg as FieldsNode];
 					break;
-				case 'Values':
+				case 'Values': {
 					if (values.length !== 0) {
 						throw new SyntaxError(
 							`'InsertQuery' can only accept one '${type}'`,
@@ -1372,6 +1377,7 @@ const typeRules = {
 						}
 					}
 					break;
+				}
 				case 'From':
 					tables.push(typeRules[type](rest));
 					break;
@@ -1425,7 +1431,7 @@ const typeRules = {
 					checkMinArgs('Update fields', rest, 1);
 					fields = [arg as FieldsNode];
 					break;
-				case 'Values':
+				case 'Values': {
 					if (values.length !== 0) {
 						throw new SyntaxError(
 							`'UpdateQuery' can only accept one '${type}'`,
@@ -1436,6 +1442,7 @@ const typeRules = {
 					checkMinArgs('Update values array', valuesArray, 1);
 					values = [['Values', valuesArray.map(Value)]];
 					break;
+				}
 				case 'From':
 					tables.push(typeRules[type](rest));
 					break;
@@ -1596,7 +1603,7 @@ export const AbstractSQLOptimiser = (
 			case 'DeleteQuery':
 				abstractSQL = typeRules[type](rest);
 				break;
-			case 'UpsertQuery':
+			case 'UpsertQuery': {
 				checkArgs('UpsertQuery', rest, 2);
 				const insertQuery = getAbstractSqlQuery(rest, 0);
 				const updateQuery = getAbstractSqlQuery(rest, 1);
@@ -1614,6 +1621,7 @@ export const AbstractSQLOptimiser = (
 					typeRules.UpdateQuery(updateQuery.slice(1)),
 				];
 				break;
+			}
 			default:
 				abstractSQL = AnyValue(abstractSQL) as AbstractSqlQuery;
 		}

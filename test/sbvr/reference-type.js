@@ -1,6 +1,10 @@
-const typeVocab = require('fs').readFileSync(
+import * as fs from 'node:fs';
+import { getTestHelpers } from './test';
+
+const typeVocab = fs.readFileSync(
 	require.resolve('@balena/sbvr-types/Type.sbvr'),
 );
+
 const modifiedAtTrigger = (tableName) => `\
 DO
 $$
@@ -22,7 +26,7 @@ $$`;
 describe('reference type', function () {
 	let test;
 	beforeEach(() => {
-		test = require('./test')(typeVocab);
+		test = getTestHelpers(typeVocab);
 	});
 
 	it('informative - no foreignKey for reference field', async () => {

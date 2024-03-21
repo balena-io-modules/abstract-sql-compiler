@@ -1,6 +1,6 @@
-const test = require('./test');
-const _ = require('lodash');
-const { pilotFields } = require('./fields');
+import test from './test';
+import * as _ from 'lodash';
+import { pilotFields } from './fields';
 const pilotFieldsStr = pilotFields.join(', ');
 
 const filterIDs = _.range(1, 5000);

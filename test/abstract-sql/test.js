@@ -1,7 +1,7 @@
-const AbstractSQLCompiler = require('../..');
+import * as AbstractSQLCompiler from '../..';
 
-const { expect } = require('chai');
-const _ = require('lodash');
+import { expect } from 'chai';
+import * as _ from 'lodash';
 
 const bindingsTest = function (actualBindings, expectedBindings) {
 	if (expectedBindings == null) {
@@ -79,11 +79,14 @@ const runExpectation = function (
 const bindRunExpectation = function (engine) {
 	const bound = runExpectation.bind(null, describe, engine);
 	bound.skip = runExpectation.bind(null, describe.skip, engine);
+	// eslint-disable-next-line no-only-tests/no-only-tests -- this is a false positive
 	bound.only = runExpectation.bind(null, describe.only, engine);
 	return bound;
 };
 
-module.exports = bindRunExpectation('postgres');
-module.exports.postgres = bindRunExpectation('postgres');
-module.exports.mysql = bindRunExpectation('mysql');
-module.exports.websql = bindRunExpectation('websql');
+const testFn = bindRunExpectation('postgres');
+testFn.postgres = bindRunExpectation('postgres');
+testFn.mysql = bindRunExpectation('mysql');
+testFn.websql = bindRunExpectation('websql');
+
+export default testFn;

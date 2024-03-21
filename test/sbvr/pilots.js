@@ -1,7 +1,9 @@
-const typeVocab = require('fs').readFileSync(
+import * as fs from 'node:fs';
+const typeVocab = fs.readFileSync(
 	require.resolve('@balena/sbvr-types/Type.sbvr'),
 );
-const test = require('./test')(typeVocab);
+import { getTestHelpers } from './test';
+const test = getTestHelpers(typeVocab);
 
 const modifiedAtTrigger = (tableName) => `\
 DO

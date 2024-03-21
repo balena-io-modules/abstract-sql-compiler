@@ -1,5 +1,5 @@
 import * as _ from 'lodash';
-import {
+import type {
 	AbstractSqlQuery,
 	AbstractSqlType,
 	AddDateDurationNode,
@@ -26,14 +26,8 @@ import {
 	HavingNode,
 	InnerJoinNode,
 	InNode,
-	isAliasNode,
 	IsDistinctFromNode,
-	isFromNode,
 	IsNotDistinctFromNode,
-	isSelectNode,
-	isSelectQueryNode,
-	isTableNode,
-	isWhereNode,
 	LeftJoinNode,
 	LessThanNode,
 	LessThanOrEqualNode,
@@ -55,6 +49,14 @@ import {
 	ToJSONNode,
 	UnionQueryNode,
 	WhereNode,
+} from './AbstractSQLCompiler';
+import {
+	isAliasNode,
+	isFromNode,
+	isSelectNode,
+	isSelectQueryNode,
+	isTableNode,
+	isWhereNode,
 } from './AbstractSQLCompiler';
 import { AbstractSQLOptimiser } from './AbstractSQLOptimiser';
 import { isAbstractSqlQuery } from './AbstractSQLRules2SQL';
@@ -214,7 +216,7 @@ const $getRuleReferencedFields = (
 			} else if (isSafe === IsSafe.Delete) {
 				isSafe = IsSafe.Insert;
 			}
-		// Fallthrough
+		// eslint-disable-next-line no-fallthrough -- Fallthrough
 		case 'Where':
 		case 'And':
 		case 'Exists':
@@ -374,7 +376,7 @@ const countTableSelects = (
 		case 'NotExists':
 		case 'Sum':
 		case 'ToJSON':
-		case 'Where':
+		case 'Where': {
 			const unaryOperation = abstractSql as
 				| AliasNode<FromTypeNodes>
 				| AnyNode
@@ -393,16 +395,16 @@ const countTableSelects = (
 			assertAbstractSqlIsNotLegacy(unaryOperation[1]);
 
 			return countTableSelects(unaryOperation[1], table);
-
+		}
 		// `COUNT` is an unary function but we only support the `COUNT(*)` form
-		case 'Count':
+		case 'Count': {
 			const countNode = abstractSql as CountNode;
 			if (countNode[1] !== '*') {
 				throw new Error('Only COUNT(*) is supported');
 			}
 
 			return 0;
-
+		}
 		// Binary nodes
 		case 'AddDateDuration':
 		case 'AddDateNumber':
@@ -418,7 +420,7 @@ const countTableSelects = (
 		case 'NotEquals':
 		case 'SubtractDateDate':
 		case 'SubtractDateDuration':
-		case 'SubtractDateNumber':
+		case 'SubtractDateNumber': {
 			const binaryOperation = abstractSql as
 				| AddDateDurationNode
 				| AddDateNumberNode
@@ -444,12 +446,12 @@ const countTableSelects = (
 				countTableSelects(leftOperand, table) +
 				countTableSelects(rightOperand, table)
 			);
-
+		}
 		// Binary nodes with optional `ON` second argument
 		case 'FullJoin':
 		case 'Join':
 		case 'LeftJoin':
-		case 'RightJoin':
+		case 'RightJoin': {
 			const joinNode = abstractSql as
 				| FullJoinNode
 				| InnerJoinNode
@@ -462,13 +464,13 @@ const countTableSelects = (
 			}
 
 			return sum + countTableSelects(joinNode[1], table);
-
+		}
 		// n-ary nodes
 		case 'And':
 		case 'Or':
 		case 'SelectQuery':
 		case 'TextArray':
-		case 'UnionQuery':
+		case 'UnionQuery': {
 			const selectQueryNode = abstractSql as
 				| AndNode
 				| OrNode
@@ -481,10 +483,10 @@ const countTableSelects = (
 			}
 
 			return sum;
-
+		}
 		// n-ary nodes but the slice starts at the third argument
 		case 'In':
-		case 'NotIn':
+		case 'NotIn': {
 			const inNode = abstractSql as InNode | NotInNode;
 			for (const arg of inNode.slice(2)) {
 				assertAbstractSqlIsNotLegacy(arg);
@@ -492,9 +494,9 @@ const countTableSelects = (
 			}
 
 			return sum;
-
+		}
 		// n-ary-like node
-		case 'Select':
+		case 'Select': {
 			const selectNode = abstractSql as SelectNode;
 			for (const arg of selectNode[1]) {
 				assertAbstractSqlIsNotLegacy(arg);
@@ -502,7 +504,7 @@ const countTableSelects = (
 			}
 
 			return sum;
-
+		}
 		// Uninteresting atomic nodes
 		case 'Boolean':
 		case 'Date':
@@ -517,7 +519,7 @@ const countTableSelects = (
 			return 0;
 
 		// The atomic node we're looking for: a table selection
-		case 'Table':
+		case 'Table': {
 			const tableNode = abstractSql as TableNode;
 
 			if (tableNode[1] === table) {
@@ -525,7 +527,7 @@ const countTableSelects = (
 			} else {
 				return 0;
 			}
-
+		}
 		default:
 			throw new Error(`unknown abstract sql type: ${abstractSql[0]}`);
 	}
