@@ -1,4 +1,32 @@
 - commits:
+    - subject: Export the generateRuleHashAcronym helper
+      hash: 6d00b7dba58690019cfb443e4c876d30e8d7ad98
+      body: ""
+      footer:
+        Change-type: minor
+        change-type: minor
+      author: Thodoris Greasidis
+      nested: []
+    - subject: Add support for unique indexes with NOT DISTINCT NULLS
+      hash: cbd1177d14cd2266dd92f29755819a3139bf3bc1
+      body: ""
+      footer:
+        Change-type: minor
+        change-type: minor
+      author: Thodoris Greasidis
+      nested: []
+    - subject: Add support for partial unique indexes
+      hash: e2c92b8d5022ad29b95dd1e0837ec9dddec24fa4
+      body: ""
+      footer:
+        Change-type: minor
+        change-type: minor
+      author: Thodoris Greasidis
+      nested: []
+  version: 9.1.0
+  title: ""
+  date: 2024-03-26T09:29:57.519Z
+- commits:
     - subject: Update dependency @balena/odata-parser to v3
       hash: d23614a1f7346edb262897ca8ff62abc2eaffff6
       body: |
