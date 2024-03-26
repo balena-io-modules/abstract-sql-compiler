@@ -14,7 +14,7 @@ export { Binding, SqlResult } from './AbstractSQLRules2SQL';
 import type { SbvrType } from '@balena/sbvr-types';
 import sbvrTypes from '@balena/sbvr-types';
 import * as _ from 'lodash';
-import { optimizeSchema } from './AbstractSQLSchemaOptimiser';
+import { optimizeSchema, generateRuleSlug } from './AbstractSQLSchemaOptimiser';
 import {
 	getReferencedFields,
 	getRuleReferencedFields,
@@ -449,6 +449,15 @@ export interface Trigger {
 	level: 'ROW' | 'STATEMENT';
 	when: 'BEFORE' | 'AFTER' | 'INSTEAD OF';
 }
+export interface Index {
+	type: string;
+	fields: string[];
+	name?: string;
+	/** For rules converted to partial unique indexes this holds the actual rule expression */
+	description?: string;
+	distinctNulls?: boolean;
+	predicate?: BooleanTypeNodes;
+}
 export interface Check {
 	description?: string;
 	name?: string;
@@ -466,10 +475,7 @@ export interface AbstractSqlTable {
 	resourceName: string;
 	idField: string;
 	fields: AbstractSqlField[];
-	indexes: Array<{
-		type: string;
-		fields: string[];
-	}>;
+	indexes: Index[];
 	primitive: false | string;
 	triggers?: Trigger[];
 	checks?: Check[];
@@ -815,6 +821,7 @@ ${compileRule(definitionAbstractSql as AbstractSqlQuery, engine, true).replace(
 		const foreignKeys: string[] = [];
 		const depends: string[] = [];
 		const createSqlElements: string[] = [];
+		const createIndexes: string[] = [];
 
 		for (const field of table.fields) {
 			const { fieldName, references, dataType, computed } = field;
@@ -873,9 +880,36 @@ $$;`);
 
 		createSqlElements.push(...foreignKeys);
 		for (const index of table.indexes) {
-			createSqlElements.push(
-				index.type + '("' + index.fields.join('", "') + '")',
+			let nullsSql = '';
+			if (index.distinctNulls != null) {
+				nullsSql =
+					index.distinctNulls === false
+						? ` NULLS NOT DISTINCT`
+						: ` NULLS DISTINCT`;
+			}
+			// Non-partial indexes are added directly to the CREATE TABLE statement
+			if (index.predicate == null) {
+				createSqlElements.push(
+					index.type + nullsSql + '("' + index.fields.join('", "') + '")',
+				);
+				continue;
+			}
+			if (index.name == null) {
+				throw new Error('No name provided for partial index');
+			}
+			const comment = index.description
+				? `-- ${index.description.replaceAll(/\r?\n/g, '\n-- ')}\n`
+				: '';
+			const whereSql = compileRule(
+				index.predicate as AbstractSqlQuery,
+				engine,
+				true,
 			);
+			createIndexes.push(`\
+${comment}\
+CREATE ${index.type} INDEX IF NOT EXISTS "${index.name}"
+ON "${table.name}" ("${index.fields.join('", "')}")${nullsSql}
+WHERE (${whereSql});`);
 		}
 
 		if (table.checks) {
@@ -932,6 +966,7 @@ $$`);
 CREATE TABLE ${ifNotExistsStr}"${table.name}" (
 	${createSqlElements.join('\n,\t')}
 );`,
+				...createIndexes,
 				...createTriggers,
 			],
 			dropSQL: [...dropTriggers, `DROP TABLE "${table.name}";`],
@@ -1051,6 +1086,7 @@ CREATE TABLE ${ifNotExistsStr}"${table.name}" (
 const generateExport = (engine: Engines, ifNotExists: boolean) => {
 	return {
 		optimizeSchema,
+		generateRuleSlug,
 		compileSchema: (abstractSqlModel: AbstractSqlModel) =>
 			compileSchema(abstractSqlModel, engine, ifNotExists),
 		compileRule: (abstractSQL: AbstractSqlQuery) =>
