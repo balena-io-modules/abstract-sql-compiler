@@ -128,7 +128,7 @@ describe('Math Operator Precedence', () => {
 		],
 		(result, sqlEquals) => {
 			it('should produce a valid Add statement when the first operand is a Multiply', () => {
-				sqlEquals(result.query, 'SELECT (2 * 3) + 4');
+				sqlEquals(result.query, 'SELECT 2 * 3 + 4');
 			});
 		},
 	);
@@ -143,7 +143,7 @@ describe('Math Operator Precedence', () => {
 		],
 		(result, sqlEquals) => {
 			it('should produce a valid Add statement when the second operand is a Multiply', () => {
-				sqlEquals(result.query, 'SELECT 2 + (3 * 4)');
+				sqlEquals(result.query, 'SELECT 2 + 3 * 4');
 			});
 		},
 	);
@@ -164,7 +164,7 @@ describe('Math Operator Precedence', () => {
 		],
 		(result, sqlEquals) => {
 			it('should produce a valid Add statement of two Multiplications', () => {
-				sqlEquals(result.query, 'SELECT (2 * 3) + (4 * 5)');
+				sqlEquals(result.query, 'SELECT 2 * 3 + 4 * 5');
 			});
 		},
 	);
@@ -236,7 +236,7 @@ describe('Math Operator Precedence', () => {
 		],
 		(result, sqlEquals) => {
 			it('should produce a valid Subtract statement of two Multiplications', () => {
-				sqlEquals(result.query, 'SELECT (2 * 3) - (4 * 5)');
+				sqlEquals(result.query, 'SELECT 2 * 3 - 4 * 5');
 			});
 		},
 	);
@@ -257,7 +257,7 @@ describe('Math Operator Precedence', () => {
 		],
 		(result, sqlEquals) => {
 			it('should produce a valid Subtract statement of two Divisions', () => {
-				sqlEquals(result.query, 'SELECT (2 / 3) - (4 / 5)');
+				sqlEquals(result.query, 'SELECT 2 / 3 - 4 / 5');
 			});
 		},
 	);
