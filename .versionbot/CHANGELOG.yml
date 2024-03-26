@@ -1,4 +1,17 @@
 - commits:
+    - subject: Update dependency @balena/lint to v8
+      hash: 835365353b766b89d80c80b84f48583ba0322849
+      body: |
+        Update @balena/lint from 6.2.2 to 8.0.0
+      footer:
+        Change-type: patch
+        change-type: patch
+      author: Thodoris Greasidis
+      nested: []
+  version: 9.1.1
+  title: ""
+  date: 2024-03-26T10:27:12.964Z
+- commits:
     - subject: Export the generateRuleHashAcronym helper
       hash: 6d00b7dba58690019cfb443e4c876d30e8d7ad98
       body: ""
