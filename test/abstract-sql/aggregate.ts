@@ -1,12 +1,12 @@
 import { expect } from 'chai';
-import { AnyTypeNodes } from '../../src/AbstractSQLCompiler';
+import type { AnyTypeNodes } from '../../src/AbstractSQLCompiler';
 
 type TestCb = (
 	result: { query: string },
 	sqlEquals: (a: string, b: string) => void,
 ) => void;
-// tslint:disable-next-line no-var-requires
-const test = require('./test') as (
+import $test from './test';
+const test = $test as (
 	query: AnyTypeNodes,
 	binds: any[][] | TestCb,
 	cb?: TestCb,

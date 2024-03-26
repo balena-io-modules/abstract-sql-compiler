@@ -1,12 +1,12 @@
-const test = require('./test');
-const {
+import test from './test';
+import {
 	pilotFields,
 	aliasFields,
 	aliasLicenceFields,
 	aliasPlaneFields,
 	aliasPilotCanFlyPlaneFields,
-} = require('./fields');
-const _ = require('lodash');
+} from './fields';
+import * as _ from 'lodash';
 
 const postgresAgg = (field) => 'COALESCE(JSON_AGG(' + field + "), '[]')";
 const mysqlAgg = (field) => "'[' || group_concat(" + field + ", ',') || ']'";
@@ -73,7 +73,7 @@ FROM "pilot"`,
 		});
 	};
 
-	for (let url of [
+	for (const url of [
 		'/pilot?$expand=can_fly__plane/plane',
 		'/pilot?$expand=can_fly__plane($expand=plane)',
 	]) {
@@ -124,7 +124,7 @@ FROM "pilot"`,
 		});
 	};
 
-	for (let url of [
+	for (const url of [
 		'/pilot?$expand=can_fly__plane/plane,licence',
 		'/pilot?$expand=can_fly__plane($expand=plane),licence',
 	]) {
@@ -188,7 +188,7 @@ FROM "pilot"`,
 		});
 	};
 
-	for (let url of [
+	for (const url of [
 		'/pilot?$select=id&$expand=can_fly__plane/plane',
 		'/pilot?$select=id&$expand=can_fly__plane($expand=plane)',
 	]) {
@@ -235,7 +235,7 @@ FROM "pilot"`,
 		});
 	};
 
-	for (let url of [
+	for (const url of [
 		'/pilot?$select=id,licence&$expand=can_fly__plane/plane,licence',
 		'/pilot?$select=id,licence&$expand=can_fly__plane($expand=plane),licence',
 	]) {

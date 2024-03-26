@@ -1,5 +1,5 @@
-const test = require('./test');
-const { pilotFields } = require('./fields');
+import test from './test';
+import { pilotFields } from './fields';
 const pilotFieldsStr = pilotFields.join(', ');
 
 test('/pilot?$select=name', (result, sqlEquals) => {

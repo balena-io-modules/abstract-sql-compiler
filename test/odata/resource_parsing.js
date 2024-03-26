@@ -1,14 +1,14 @@
-const { expect } = require('chai');
-const test = require('./test');
-const ODataParser = require('@balena/odata-parser');
-let {
+import { expect } from 'chai';
+import test from './test';
+import * as ODataParser from '@balena/odata-parser';
+import {
 	pilotFields,
 	teamFields,
 	aliasFields,
 	aliasPlaneFields,
 	aliasPilotLicenceFields,
 	aliasLicenceFields,
-} = require('./fields');
+} from './fields';
 const aliasPilotFields = aliasFields(
 	'plane.pilot-can fly-plane.pilot',
 	pilotFields,

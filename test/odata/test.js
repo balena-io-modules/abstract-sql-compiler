@@ -1,26 +1,29 @@
-const fs = require('fs');
-const ODataParser = require('@balena/odata-parser');
-const { OData2AbstractSQL } = require('@balena/odata-to-abstract-sql');
+import * as fs from 'node:fs';
+import * as ODataParser from '@balena/odata-parser';
+import { OData2AbstractSQL } from '@balena/odata-to-abstract-sql';
 const sbvrModel = fs.readFileSync(require.resolve('../model.sbvr'), 'utf8');
 
-const AbstractSQLCompiler = require('../..');
+import * as AbstractSQLCompiler from '../..';
 
-const { expect } = require('chai');
-const _ = require('lodash');
+import { expect } from 'chai';
+import * as _ from 'lodash';
 
 const generateClientModel = function (input) {
+	// eslint-disable-next-line @typescript-eslint/no-var-requires
 	const sbvrTypes = require('@balena/sbvr-types').default;
 	const typeVocab = fs.readFileSync(
 		require.resolve('@balena/sbvr-types/Type.sbvr'),
 		'utf8',
 	);
 
+	// eslint-disable-next-line @typescript-eslint/no-var-requires
 	const SBVRParser = require('@balena/sbvr-parser').SBVRParser.createInstance();
 	SBVRParser.enableReusingMemoizations(SBVRParser._sideEffectingRules);
 	SBVRParser.AddCustomAttribute('Database ID Field:');
 	SBVRParser.AddCustomAttribute('Database Table Name:');
 	SBVRParser.AddBuiltInVocab(typeVocab);
 
+	// eslint-disable-next-line @typescript-eslint/no-var-requires
 	const LF2AbstractSQL = require('@balena/lf-to-abstract-sql');
 	const LF2AbstractSQLTranslator = LF2AbstractSQL.createTranslator(sbvrTypes);
 
@@ -29,7 +32,7 @@ const generateClientModel = function (input) {
 	return abstractSql;
 };
 
-const clientModel = generateClientModel(sbvrModel);
+export const clientModel = generateClientModel(sbvrModel);
 const odata2AbstractSQL = new OData2AbstractSQL(clientModel);
 
 const bindingsTest = function (actualBindings, expectedBindings) {
@@ -125,12 +128,14 @@ const runExpectation = function (
 const bindRunExpectation = function (engine) {
 	const bound = runExpectation.bind(null, describe, engine);
 	bound.skip = runExpectation.bind(null, describe.skip, engine);
+	// eslint-disable-next-line no-only-tests/no-only-tests -- this is a false positive
 	bound.only = runExpectation.bind(null, describe.only, engine);
 	return bound;
 };
 
-module.exports = bindRunExpectation('postgres');
-module.exports.clientModel = clientModel;
-module.exports.postgres = bindRunExpectation('postgres');
-module.exports.mysql = bindRunExpectation('mysql');
-module.exports.websql = bindRunExpectation('websql');
+const testFn = bindRunExpectation('postgres');
+testFn.postgres = bindRunExpectation('postgres');
+testFn.mysql = bindRunExpectation('mysql');
+testFn.websql = bindRunExpectation('websql');
+
+export default testFn;

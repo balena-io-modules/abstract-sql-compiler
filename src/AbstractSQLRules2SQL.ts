@@ -2,11 +2,10 @@ import * as _ from 'lodash';
 
 import sbvrTypes from '@balena/sbvr-types';
 
-import { Dictionary } from 'lodash';
-import {
+import type { Dictionary } from 'lodash';
+import type {
 	AbstractSqlQuery,
 	AbstractSqlType,
-	Engines,
 	InsertQueryNode,
 	SelectQueryNode,
 	UnionQueryNode,
@@ -23,6 +22,7 @@ import {
 	StrictTextArrayTypeNodes,
 	StrictJSONTypeNodes,
 } from './AbstractSQLCompiler';
+import { Engines } from './AbstractSQLCompiler';
 
 export type Binding =
 	| [string, any]
@@ -90,10 +90,11 @@ const UnknownValue: MetaMatchFn = (args, indent) => {
 		case 'TextArray':
 			return typeRules[type](rest, indent);
 		case 'SelectQuery':
-		case 'UnionQuery':
+		case 'UnionQuery': {
 			const nestedIndent = NestedIndent(indent);
 			const query = typeRules[type](rest, nestedIndent);
 			return '(' + nestedIndent + query + indent + ')';
+		}
 		default:
 			throw new Error(`Invalid "UnknownValue" type: ${type}`);
 	}
@@ -361,13 +362,14 @@ const JoinMatch = (joinType: string): MatchFn => {
 		}
 		const [type, ...rest] = getAbstractSqlQuery(args, 1);
 		switch (type) {
-			case 'On':
+			case 'On': {
 				checkArgs('On', rest, 1);
 				const ruleBody = BooleanValue(
 					getAbstractSqlQuery(rest, 0),
 					NestedIndent(indent),
 				);
 				return sqlJoinType + from + ' ON ' + ruleBody;
+			}
 			default:
 				throw new SyntaxError(
 					`'${joinType}' clause does not support '${type}' clause`,
@@ -553,7 +555,7 @@ const Value = (arg: any, indent: string): string => {
 	switch (arg) {
 		case 'Default':
 			return 'DEFAULT';
-		default:
+		default: {
 			const [type, ...rest] = arg;
 			switch (type) {
 				case 'Null':
@@ -568,6 +570,7 @@ const Value = (arg: any, indent: string): string => {
 				default:
 					throw new SyntaxError(`Invalid type for Value ${type}`);
 			}
+		}
 	}
 };
 
@@ -584,17 +587,19 @@ const FromMatch: MetaMatchFn = (args, indent) => {
 	const [type, ...rest] = args;
 	switch (type) {
 		case 'SelectQuery':
-		case 'UnionQuery':
+		case 'UnionQuery': {
 			const nestedindent = NestedIndent(indent);
 			const query = typeRules[type](rest, nestedindent);
 			return '(' + nestedindent + query + indent + ')';
-		case 'Table':
+		}
+		case 'Table': {
 			checkArgs('Table', rest, 1);
 			const [table] = rest;
 			if (typeof table !== 'string') {
 				throw new SyntaxError('`Table` table must be a string');
 			}
 			return escapeField(table);
+		}
 		default:
 			throw new SyntaxError(`From does not support ${type}`);
 	}
@@ -607,10 +612,11 @@ const MaybeAlias = (
 ): string => {
 	const [type, ...rest] = args;
 	switch (type) {
-		case 'Alias':
+		case 'Alias': {
 			checkArgs('Alias', rest, 2);
 			const field = matchFn(getAbstractSqlQuery(rest, 0), indent);
 			return `${field} AS "${rest[1]}"`;
+		}
 		default:
 			return matchFn(args, indent);
 	}
@@ -879,9 +885,11 @@ const typeRules: Dictionary<MatchFn> = {
 		}
 		return `CAST(${value} AS ${type})`;
 	},
+	// eslint-disable-next-line id-denylist
 	Number: NumberMatch('Number'),
 	Real: NumberMatch('Real'),
 	Integer: NumberMatch('Integer'),
+	// eslint-disable-next-line id-denylist
 	Boolean: (args) => {
 		checkArgs('Boolean', args, 1);
 		const b = args[0];
@@ -1194,7 +1202,7 @@ const typeRules: Dictionary<MatchFn> = {
 				}
 				const [type, ...rest] = arg;
 				switch (type) {
-					case 'When':
+					case 'When': {
 						checkArgs('When', rest, 2);
 						const matches = BooleanValue(
 							getAbstractSqlQuery(rest, 0),
@@ -1205,6 +1213,7 @@ const typeRules: Dictionary<MatchFn> = {
 							nestedIndent,
 						);
 						return 'WHEN ' + matches + ' THEN ' + resultValue;
+					}
 					case 'Else':
 						if (index !== args.length - 1) {
 							throw new SyntaxError('Else must be the last element of a Case');
@@ -1309,10 +1318,11 @@ const typeRules: Dictionary<MatchFn> = {
 		const [type, ...rest] = arg;
 		switch (type) {
 			case 'SelectQuery':
-			case 'UnionQuery':
+			case 'UnionQuery': {
 				const nestedIndent = NestedIndent(indent);
 				const query = typeRules[type](rest, nestedIndent);
 				return 'EXISTS (' + nestedIndent + query + indent + ')';
+			}
 			default:
 				return AnyValue(arg, indent) + ' IS NOT NULL';
 		}
@@ -1323,10 +1333,11 @@ const typeRules: Dictionary<MatchFn> = {
 		const [type, ...rest] = arg;
 		switch (type) {
 			case 'SelectQuery':
-			case 'UnionQuery':
+			case 'UnionQuery': {
 				const nestedIndent = NestedIndent(indent);
 				const query = typeRules[type](rest, nestedIndent);
 				return 'NOT EXISTS (' + nestedIndent + query + indent + ')';
+			}
 			default:
 				return AnyValue(arg, indent) + ' IS NULL';
 		}
@@ -1382,7 +1393,7 @@ const typeRules: Dictionary<MatchFn> = {
 					checkMinArgs('Update fields', rest, 1);
 					fields = getAbstractSqlQuery(rest, 0).map(escapeField);
 					break;
-				case 'Values':
+				case 'Values': {
 					if (values.length !== 0) {
 						throw new SyntaxError(
 							`'InsertQuery' can only accept one '${type}'`,
@@ -1401,6 +1412,7 @@ const typeRules: Dictionary<MatchFn> = {
 						}
 					}
 					break;
+				}
 				case 'From':
 					tables.push(typeRules[type](rest, indent));
 					break;
@@ -1451,7 +1463,7 @@ const typeRules: Dictionary<MatchFn> = {
 					checkMinArgs('Update fields', rest, 1);
 					fields = getAbstractSqlQuery(rest, 0).map(escapeField);
 					break;
-				case 'Values':
+				case 'Values': {
 					if (values.length !== 0) {
 						throw new SyntaxError(
 							`'UpdateQuery' can only accept one '${type}'`,
@@ -1462,6 +1474,7 @@ const typeRules: Dictionary<MatchFn> = {
 					checkMinArgs('Update values array', valuesArray, 1);
 					values = valuesArray.map((v) => Value(v, indent));
 					break;
+				}
 				case 'From':
 					tables.push(typeRules[type](rest, indent));
 					break;
@@ -1604,10 +1617,11 @@ export function AbstractSQLRules2SQL(
 		case 'UnionQuery':
 		case 'InsertQuery':
 		case 'UpdateQuery':
-		case 'DeleteQuery':
+		case 'DeleteQuery': {
 			const query = typeRules[type](rest, indent);
 			return toSqlResult(query);
-		case 'UpsertQuery':
+		}
+		case 'UpsertQuery': {
 			checkArgs('UpsertQuery', rest, 2);
 			const insertQuery = getAbstractSqlQuery(rest, 0);
 			const updateQuery = getAbstractSqlQuery(rest, 1);
@@ -1627,7 +1641,8 @@ export function AbstractSQLRules2SQL(
 			const updateSql = typeRules.UpdateQuery(updateQuery.slice(1), indent);
 			const update = toSqlResult(updateSql);
 			return [insert, update] as [string, string] | [SqlResult, SqlResult];
-		default:
+		}
+		default: {
 			const value = AnyValue(abstractSQL, indent);
 			if (noBinds) {
 				return value;
@@ -1636,5 +1651,6 @@ export function AbstractSQLRules2SQL(
 				query: `SELECT ${value} AS "result";`,
 				bindings: fieldOrderings,
 			};
+		}
 	}
 }

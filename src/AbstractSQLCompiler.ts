@@ -1,27 +1,28 @@
 export const enum Engines {
+	/* eslint-disable @typescript-eslint/no-shadow -- this is fine since we only assign plain string values to the enum items */
 	postgres = 'postgres',
 	mysql = 'mysql',
 	websql = 'websql',
+	/* eslint-enable @typescript-eslint/no-shadow */
 }
 
 import { AbstractSQLOptimiser } from './AbstractSQLOptimiser';
-import {
-	AbstractSQLRules2SQL,
-	Binding,
-	SqlResult,
-} from './AbstractSQLRules2SQL';
+import type { Binding, SqlResult } from './AbstractSQLRules2SQL';
+import { AbstractSQLRules2SQL } from './AbstractSQLRules2SQL';
 export { Binding, SqlResult } from './AbstractSQLRules2SQL';
 import type { SbvrType } from '@balena/sbvr-types';
 import sbvrTypes from '@balena/sbvr-types';
 import * as _ from 'lodash';
 import { optimizeSchema, generateRuleSlug } from './AbstractSQLSchemaOptimiser';
+import type {
+	ReferencedFields,
+	RuleReferencedFields,
+	ModifiedFields,
+} from './referenced-fields';
 import {
 	getReferencedFields,
 	getRuleReferencedFields,
 	getModifiedFields,
-	ReferencedFields,
-	RuleReferencedFields,
-	ModifiedFields,
 	insertAffectedIdsBinds,
 } from './referenced-fields';
 
@@ -328,7 +329,7 @@ export type SelectQueryStatementNode =
 export type SelectQueryNode = ['SelectQuery', ...SelectQueryStatementNode[]];
 export type UnionQueryNode = [
 	'UnionQuery',
-	// tslint:disable-next-line:array-type typescript fails on a circular reference when `Array<T>` form
+	// eslint-disable-next-line @typescript-eslint/array-type -- Typescript fails on a circular reference when prettier changes this to an `Array<T>` form
 	...(UnionQueryNode | SelectQueryNode)[],
 ];
 export type InsertQueryNode = [
@@ -987,7 +988,7 @@ CREATE TABLE ${ifNotExistsStr}"${table.name}" (
 				// Self-dependencies are ok.
 				if (
 					dependency !== resourceName &&
-					schemaDependencyMap.hasOwnProperty(dependency)
+					Object.prototype.hasOwnProperty.call(schemaDependencyMap, dependency)
 				) {
 					unsolvedDependency = true;
 					break;

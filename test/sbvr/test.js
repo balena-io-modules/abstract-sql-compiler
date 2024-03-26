@@ -1,16 +1,18 @@
-const _ = require('lodash');
-const sbvrTypes = require('@balena/sbvr-types').default;
+import * as _ from 'lodash';
+import sbvrTypes from '@balena/sbvr-types';
 
-const { expect } = require('chai');
-const AbstractSQLCompiler = require('../..');
+import { expect } from 'chai';
+import * as AbstractSQLCompiler from '../..';
 
-module.exports = function (builtInVocab) {
+export function getTestHelpers(builtInVocab) {
 	if (builtInVocab == null) {
 		builtInVocab = false;
 	}
+	// eslint-disable-next-line @typescript-eslint/no-var-requires
 	const SBVRParser = require('@balena/sbvr-parser').SBVRParser.createInstance();
 	SBVRParser.enableReusingMemoizations(SBVRParser._sideEffectingRules);
 
+	// eslint-disable-next-line @typescript-eslint/no-var-requires
 	const LF2AbstractSQL = require('@balena/lf-to-abstract-sql');
 	const LF2AbstractSQLTranslator = LF2AbstractSQL.createTranslator(sbvrTypes);
 
@@ -74,9 +76,11 @@ module.exports = function (builtInVocab) {
 
 	const ret = runSchema.bind(null, it);
 	ret.skip = runSchema.bind(null, it.skip);
+	// eslint-disable-next-line no-only-tests/no-only-tests -- this is a false positive
 	ret.only = runSchema.bind(null, it.only);
 	ret.rule = runRule.bind(null, it);
 	ret.rule.skip = runRule.bind(null, it.skip);
+	// eslint-disable-next-line no-only-tests/no-only-tests -- this is a false positive
 	ret.rule.only = runRule.bind(null, it.only);
 	return ret;
-};
+}
