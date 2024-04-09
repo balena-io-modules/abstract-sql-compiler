@@ -880,6 +880,10 @@ const typeRules: Dictionary<MatchFn> = {
 			// HACK: SERIAL type in postgres is really an INTEGER with automatic sequence,
 			// so it's not actually possible to cast to SERIAL, instead you have to cast to INTEGER.
 			type = 'INTEGER';
+		} else if (dbType.toUpperCase() === 'BIGSERIAL') {
+			// HACK: BIGSERIAL type in postgres is really a BIGINT with automatic sequence,
+			// so it's not actually possible to cast to BIGSERIAL, instead you have to cast to BIGINT.
+			type = 'BIGINT';
 		} else {
 			type = dbType;
 		}
