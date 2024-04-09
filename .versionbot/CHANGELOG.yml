@@ -1,4 +1,17 @@
 - commits:
+    - subject: Update dependency lint-staged to v15
+      hash: 6b5c28a3170006cd3f6f963f03ec2ee67273223e
+      body: |
+        Update lint-staged from 13.3.0 to 15.2.2
+      footer:
+        Change-type: patch
+        change-type: patch
+      author: Self-hosted Renovate Bot
+      nested: []
+  version: 9.1.2
+  title: ""
+  date: 2024-04-09T01:09:18.361Z
+- commits:
     - subject: Update dependency @balena/lint to v8
       hash: 835365353b766b89d80c80b84f48583ba0322849
       body: |
