@@ -1,4 +1,16 @@
 - commits:
+    - subject: Cast Big Serial to integer
+      hash: 9e4025dd57517f4ad6d06f4cb894062c6ce370cf
+      body: ""
+      footer:
+        Change-type: patch
+        change-type: patch
+      author: Josh Bowling
+      nested: []
+  version: 9.1.4
+  title: ""
+  date: 2024-04-09T10:04:33.059Z
+- commits:
     - subject: Update prepare script for husky v9
       hash: bae835665431a88f0fdd4804f1d70757a7e11dd0
       body: ""
