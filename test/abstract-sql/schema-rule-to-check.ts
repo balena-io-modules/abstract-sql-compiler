@@ -391,3 +391,157 @@ AND "id" IS NOT NULL)
 );`,
 		]);
 });
+
+it.only('should identify and convert a conditional uniqueness rule to a partial UNIQUE INDEX', () => {
+	expect(
+		generateSchema({
+			synonyms: {},
+			relationships: {},
+			tables: {
+				parent: {
+					name: 'parent',
+					resourceName: 'parent',
+					idField: 'id',
+					fields: [
+						{
+							fieldName: 'id',
+							dataType: 'Integer',
+							index: 'PRIMARY KEY',
+						},
+					],
+					indexes: [],
+					primitive: false,
+				},
+				child: {
+					name: "child",
+					resourceName: "delta",
+					primitive: false,
+					idField: "id",
+					fields: [
+						{
+							fieldName: "is of-parent",
+							dataType: "ForeignKey",
+							required: true,
+							references: {
+								resourceName: "parent",
+								fieldName: 'id',
+							}
+						},
+						{
+							dataType: "Short Text",
+							fieldName: "name",
+							required: true,
+						},
+						{
+							fieldName: "must be unique",
+							dataType: "Boolean",
+							required: true,
+						},
+					],
+					indexes: [],
+				},
+			},
+			rules: [
+				[
+					'Rule',
+					[
+						'Body',
+						[
+							'Equals',
+							[
+								'SelectQuery',
+								['Select', [['Count', '*']]],
+								['From', ['Alias', ['Table', 'parent'], 'parent.0']],
+								['From', ['Alias', ['Table', 'child'], 'child.1']],
+								[
+									'Where',
+									[
+										'And',
+										[
+											"Equals",
+											['ReferencedField', 'child.1', 'must be unique'],
+											["Boolean", true]
+										],
+										['Exists', ['ReferencedField', 'child.1', 'name']],
+										[
+											'Equals',
+											['ReferencedField', 'child.1', 'is of-parent'],
+											['ReferencedField', 'parent.0', 'id'],
+										],
+										[
+											'GreaterThanOrEqual',
+											[
+												'SelectQuery',
+												['Select', [['Count', '*']]],
+												['From', ['Alias', ['Table', 'child'], 'child.4']],
+												[
+													'Where',
+													[
+														'And',
+														[
+															"Equals",
+															['ReferencedField', 'child.4', 'must be unique'],
+															["Boolean", true]
+														],
+														['Exists', ['ReferencedField', 'child.4', 'name']],
+														[
+															'Equals',
+															['ReferencedField', 'child.4', 'name'],
+															['ReferencedField', 'child.1', 'name'],
+														],
+														[
+															'Equals',
+															[
+																'ReferencedField',
+																'child.4',
+																'is of-parent',
+															],
+															['ReferencedField', 'parent.0', 'id'],
+														],
+													],
+												],
+											],
+											['Number', 2],
+										],
+									],
+								],
+							],
+							['Number', 0],
+						],
+					] as AbstractSQLCompiler.AbstractSqlQuery,
+					[
+						'StructuredEnglish',
+						'It is necessary that each parent that has a child 1 that must be unique and has a name1, has at most one child2 that must be unique and has a name2 that is equal to the name1.',
+					],
+				],
+			],
+			lfInfo: { rules: {
+				"It is necessary that each parent that has a child 1 that must be unique and has a name1, has at most one child2 that must be unique and has a name2 that is equal to the name1.": {
+					"root": {
+						"table": "parent",
+						"alias": "parent.0"
+					}
+				},
+			} },
+		}),
+	)
+		.to.have.property('createSchema')
+		.that.deep.equals([
+			`\
+CREATE TABLE IF NOT EXISTS "parent" (
+	"id" INTEGER NULL PRIMARY KEY
+);`,
+`\
+CREATE TABLE IF NOT EXISTS "child" (
+,	"is of-parent" INTEGER NOT NULL
+,	"name" VARCHAR(255) NOT NULL
+,	"must be unique" BOOLEAN DEFAULT FALSE NOT NULL
+,	FOREIGN KEY ("is of-parent") REFERENCES "parent" ("id")
+);
+
+-- It is necessary that each parent that has a child 1 that must be unique and has a name1, has at most one child2 that must be unique and has a name2 that is equal to the name1.
+CREATE UNIQUE INDEX IF NOT EXISTS "child$OpcFZlIsBz9DIbPjG2jfqpTDCjjWiUd/X62IwpdS4FE="
+ON "delta" ("is of-parent", "name")
+WHERE ("must be unique" = TRUE);`,
+		]);
+});
