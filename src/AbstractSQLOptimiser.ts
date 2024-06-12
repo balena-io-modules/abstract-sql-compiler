@@ -531,6 +531,18 @@ const SubtractDateMatcher = tryMatches<
 	),
 );
 
+const EndsWithMatcher = rewriteMatch(
+	'Endswith',
+	[TextValue, TextValue],
+	Helper<MatchFn<LikeNode>>(
+		([haystack, needle]: [TextTypeNodes, TextTypeNodes]) => [
+			'Like',
+			haystack,
+			['Concatenate', ['EmbeddedText', '%'], ['EscapeForLike', needle]],
+		],
+	),
+);
+
 const typeRules = {
 	UnionQuery: (args): UnionQueryNode => {
 		checkMinArgs('UnionQuery', args, 2);
@@ -1552,17 +1564,8 @@ const typeRules = {
 			],
 		),
 	),
-	Endswith: rewriteMatch(
-		'Endswith',
-		[TextValue, TextValue],
-		Helper<MatchFn<LikeNode>>(
-			([haystack, needle]: [TextTypeNodes, TextTypeNodes]) => [
-				'Like',
-				haystack,
-				['Concatenate', ['EmbeddedText', '%'], ['EscapeForLike', needle]],
-			],
-		),
-	),
+	Endswith: EndsWithMatcher,
+	EndsWith: EndsWithMatcher,
 	IndexOf: rewriteMatch(
 		'IndexOf',
 		[TextValue, TextValue],
