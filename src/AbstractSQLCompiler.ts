@@ -84,6 +84,8 @@ export type NotNode = ['Not', BooleanTypeNodes];
 export type AndNode = ['And', ...BooleanTypeNodes[]];
 export type OrNode = ['Or', ...BooleanTypeNodes[]];
 export type StartsWithNode = ['StartsWith', TextTypeNodes, TextTypeNodes];
+export type EndsWithNode = ['EndsWith', TextTypeNodes, TextTypeNodes];
+export type ContainsNode = ['Contains', TextTypeNodes, TextTypeNodes];
 export type StrictBooleanTypeNodes =
 	| BooleanNode
 	| EqualsNode
@@ -103,7 +105,9 @@ export type StrictBooleanTypeNodes =
 	| NotNode
 	| AndNode
 	| OrNode
-	| StartsWithNode;
+	| StartsWithNode
+	| EndsWithNode
+	| ContainsNode;
 export type BooleanTypeNodes = StrictBooleanTypeNodes | UnknownTypeNodes;
 
 export type YearNode = ['Year', DateTypeNodes];
