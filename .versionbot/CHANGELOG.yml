@@ -1,4 +1,16 @@
 - commits:
+    - subject: Adds `EndsWithNode` and `ContainsNode` typings
+      hash: bb2233220c988afaece120ece38e035c8dd14b02
+      body: ""
+      footer:
+        Change-type: minor
+        change-type: minor
+      author: Pagan Gazzard
+      nested: []
+  version: 9.2.0
+  title: ""
+  date: 2024-06-12T13:14:07.807Z
+- commits:
     - subject: Cast Big Serial to integer
       hash: 9e4025dd57517f4ad6d06f4cb894062c6ce370cf
       body: ""
