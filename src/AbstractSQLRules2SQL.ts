@@ -417,6 +417,29 @@ const precedenceSafeOpValue = (
 	return valueExpr;
 };
 
+const precedenceSafeBooleanOpValue = (
+	parentNodeType: string,
+	arg: AbstractSqlType,
+	indent: string,
+) => {
+	if (!isAbstractSqlQuery(arg)) {
+		throw new SyntaxError(
+			`Expected AbstractSqlQuery array but got ${typeof arg}`,
+		);
+	}
+	const valueExpr = valueMatchFn(operandAbstractSql, indent);
+	const [childNodeType] = operandAbstractSql;
+	if (
+		(mathOperatorNodeTypes.has(parentNodeType) &&
+			mathOperatorNodeTypes.has(childNodeType)) ||
+		// We need parenthesis for chained boolean comparisons, otherwise PostgreSQL complains.
+		(parentNodeType in comparisons && childNodeType in comparisons)
+	) {
+		return `(${valueExpr})`;
+	}
+	return valueExpr;
+};
+
 const MathOp = (type: keyof typeof mathOps): MatchFn => {
 	return (args, indent) => {
 		checkArgs(type, args, 2);
@@ -1296,14 +1319,7 @@ const typeRules: Dictionary<MatchFn> = {
 	And: (args, indent) => {
 		checkMinArgs('And', args, 2);
 		return args
-			.map((arg) => {
-				if (!isAbstractSqlQuery(arg)) {
-					throw new SyntaxError(
-						`Expected AbstractSqlQuery array but got ${typeof arg}`,
-					);
-				}
-				return BooleanValue(arg, indent);
-			})
+			.map((arg) => precedenceSafeBooleanOpValue('And', arg, indent))
 			.join(indent + 'AND ');
 	},
 	Or: (args, indent) => {
@@ -1311,14 +1327,7 @@ const typeRules: Dictionary<MatchFn> = {
 		return (
 			'(' +
 			args
-				.map((arg) => {
-					if (!isAbstractSqlQuery(arg)) {
-						throw new SyntaxError(
-							`Expected AbstractSqlQuery array but got ${typeof arg}`,
-						);
-					}
-					return BooleanValue(arg, indent);
-				})
+				.map((arg) => precedenceSafeBooleanOpValue('Or', arg, indent))
 				.join(indent + 'OR ') +
 			')'
 		);
