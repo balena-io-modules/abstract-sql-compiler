@@ -44,7 +44,7 @@ export const generateRuleSlug = (
 
 export const optimizeSchema = (
 	abstractSqlModel: AbstractSqlModel,
-	createCheckConstraints: boolean = true,
+	createCheckConstraints = true,
 ): AbstractSqlModel => {
 	abstractSqlModel.rules = abstractSqlModel.rules
 		.map((rule): AbstractSqlQuery | undefined => {
@@ -126,7 +126,7 @@ export const optimizeSchema = (
 						);
 						if (table) {
 							table.checks ??= [];
-							table.checks!.push({
+							table.checks.push({
 								description: ruleSE,
 								name: generateRuleSlug(tableName, ruleBody),
 								abstractSql: whereNode,

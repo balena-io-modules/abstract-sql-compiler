@@ -270,7 +270,7 @@ export const getRuleReferencedFields: EngineInstance['getRuleReferencedFields'] 
 			_.isEqual(ruleBody[2], ['Number', 0]) &&
 			isSelectQueryNode(ruleBody[1])
 		) {
-			const select = ruleBody[1].find(isSelectNode) as SelectNode;
+			const select = ruleBody[1].find(isSelectNode)!;
 			select[1] = [];
 			$getRuleReferencedFields(referencedFields, ruleBody[1], IsSafe.Delete);
 		} else {

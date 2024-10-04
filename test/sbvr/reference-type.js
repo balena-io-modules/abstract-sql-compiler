@@ -29,7 +29,7 @@ describe('reference type', function () {
 		test = getTestHelpers(typeVocab);
 	});
 
-	it('informative - no foreignKey for reference field', async () => {
+	it('informative - no foreignKey for reference field', () => {
 		test(
 			`\
 
