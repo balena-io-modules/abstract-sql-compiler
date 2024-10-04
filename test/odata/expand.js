@@ -6,7 +6,7 @@ import {
 	aliasPlaneFields,
 	aliasPilotCanFlyPlaneFields,
 } from './fields';
-import * as _ from 'lodash';
+import _ from 'lodash';
 
 const postgresAgg = (field) => 'COALESCE(JSON_AGG(' + field + "), '[]')";
 const mysqlAgg = (field) => "'[' || group_concat(" + field + ", ',') || ']'";

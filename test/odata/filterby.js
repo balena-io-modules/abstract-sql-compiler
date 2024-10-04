@@ -5,7 +5,7 @@
  */
 import { expect } from 'chai';
 import test, { clientModel } from './test';
-import * as _ from 'lodash';
+import _ from 'lodash';
 import { odataNameToSqlName } from '@balena/odata-to-abstract-sql';
 import { pilotFields, teamFields, aliasPilotCanFlyPlaneFields } from './fields';
 

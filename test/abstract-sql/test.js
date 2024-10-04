@@ -1,7 +1,7 @@
 import * as AbstractSQLCompiler from '../..';
 
 import { expect } from 'chai';
-import * as _ from 'lodash';
+import _ from 'lodash';
 
 const bindingsTest = function (actualBindings, expectedBindings) {
 	if (expectedBindings == null) {
