@@ -13,7 +13,7 @@
 		"declaration": true,
 		"skipLibCheck": true,
 		"exactOptionalPropertyTypes": true,
-		"target": "es2021",
+		"target": "es2023",
 		"outDir": "out",
 		"allowJs": true
 	},
