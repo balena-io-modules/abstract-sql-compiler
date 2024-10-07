@@ -1,4 +1,18 @@
 - commits:
+    - subject: Wrap composite comparison operations with parenthesis when necessary
+      hash: b39c90a5a816b647bd1d4e4b1294bb377a798726
+      body: ""
+      footer:
+        Change-type: patch
+        change-type: patch
+        See: https://balena.zulipchat.com/#narrow/stream/346007-balena-io.2FbalenaCloud/topic/pinejs.2015/near/358435946
+        see: https://balena.zulipchat.com/#narrow/stream/346007-balena-io.2FbalenaCloud/topic/pinejs.2015/near/358435946
+      author: Thodoris Greasidis
+      nested: []
+  version: 10.0.1
+  title: ""
+  date: 2024-10-07T12:50:02.908Z
+- commits:
     - subject: "tsconfig: Switch the module compiler option to Node16"
       hash: 28c15f305c99bd1e581a93fddfc985b82d20bdf8
       body: ""
