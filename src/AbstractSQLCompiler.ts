@@ -12,7 +12,7 @@ import { AbstractSQLRules2SQL } from './AbstractSQLRules2SQL';
 export { Binding, SqlResult } from './AbstractSQLRules2SQL';
 import type { SbvrType } from '@balena/sbvr-types';
 import sbvrTypes from '@balena/sbvr-types';
-import * as _ from 'lodash';
+import _ from 'lodash';
 import { optimizeSchema, generateRuleSlug } from './AbstractSQLSchemaOptimiser';
 import type {
 	ReferencedFields,

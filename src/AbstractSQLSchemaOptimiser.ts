@@ -7,7 +7,7 @@ export const enum Engines {
 import { AbstractSQLOptimiser } from './AbstractSQLOptimiser';
 export { Binding, SqlResult } from './AbstractSQLRules2SQL';
 import sbvrTypes from '@balena/sbvr-types';
-import * as _ from 'lodash';
+import _ from 'lodash';
 import type {
 	AbstractSqlModel,
 	AbstractSqlQuery,
@@ -44,7 +44,7 @@ export const generateRuleSlug = (
 
 export const optimizeSchema = (
 	abstractSqlModel: AbstractSqlModel,
-	createCheckConstraints: boolean = true,
+	createCheckConstraints = true,
 ): AbstractSqlModel => {
 	abstractSqlModel.rules = abstractSqlModel.rules
 		.map((rule): AbstractSqlQuery | undefined => {
@@ -126,7 +126,7 @@ export const optimizeSchema = (
 						);
 						if (table) {
 							table.checks ??= [];
-							table.checks!.push({
+							table.checks.push({
 								description: ruleSE,
 								name: generateRuleSlug(tableName, ruleBody),
 								abstractSql: whereNode,

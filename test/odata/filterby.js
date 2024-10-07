@@ -5,7 +5,7 @@
  */
 import { expect } from 'chai';
 import test, { clientModel } from './test';
-import * as _ from 'lodash';
+import _ from 'lodash';
 import { odataNameToSqlName } from '@balena/odata-to-abstract-sql';
 import { pilotFields, teamFields, aliasPilotCanFlyPlaneFields } from './fields';
 
@@ -69,7 +69,7 @@ let parseOperandFactory = function (defaultResource) {
 			typeof operand === 'boolean' ||
 			typeof operand === 'number' ||
 			_.isDate(operand) ||
-			(typeof operand === 'string' && operand.charAt(0) === "'")
+			(typeof operand === 'string' && operand.startsWith("'"))
 		) {
 			return [['Bind', bindNo++]];
 		}
@@ -95,7 +95,7 @@ let parseOperandFactory = function (defaultResource) {
 			if (operand === 'null') {
 				return 'NULL';
 			}
-			if (operand.charAt(0) === "'") {
+			if (operand.startsWith("'")) {
 				return '?';
 			}
 			const fieldParts = operand.split('/');
@@ -636,7 +636,7 @@ WHERE EXISTS (
 	};
 	const updateWhere = `\
 WHERE "pilot"."id" IN ((
-	SELECT "pilot"."id"
+	SELECT "pilot"."id" AS "$modifyid"
 	FROM "pilot",
 		"pilot-can fly-plane" AS "pilot.pilot-can fly-plane",
 		"plane" AS "pilot.pilot-can fly-plane.plane"
@@ -731,7 +731,7 @@ ${updateWhere}`,
 				`\
 DELETE FROM "pilot"
 WHERE "pilot"."id" IN ((
-	SELECT "pilot"."id"
+	SELECT "pilot"."id" AS "$modifyid"
 	FROM "pilot",
 		"pilot-can fly-plane" AS "pilot.pilot-can fly-plane",
 		"plane" AS "pilot.pilot-can fly-plane.plane"
@@ -808,7 +808,7 @@ UPDATE "pilot"
 SET "name" = ?
 WHERE ("pilot"."id") IS NOT NULL AND ("pilot"."id") = (?)
 AND "pilot"."id" IN ((
-	SELECT "pilot"."id"
+	SELECT "pilot"."id" AS "$modifyid"
 	FROM "pilot"
 	WHERE ${sql}
 ))`,
@@ -865,7 +865,7 @@ SET "created at" = DEFAULT,
 	"was trained by-pilot" = DEFAULT
 WHERE ("pilot"."id") IS NOT NULL AND ("pilot"."id") = (?)
 AND "pilot"."id" IN ((
-	SELECT "pilot"."id"
+	SELECT "pilot"."id" AS "$modifyid"
 	FROM "pilot"
 	WHERE ${sql}
 ))`,

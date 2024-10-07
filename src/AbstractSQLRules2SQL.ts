@@ -1,4 +1,4 @@
-import * as _ from 'lodash';
+import _ from 'lodash';
 
 import sbvrTypes from '@balena/sbvr-types';
 
@@ -38,7 +38,7 @@ type MatchFn = (args: AbstractSqlType[], indent: string) => string;
 let fieldOrderings: Binding[] = [];
 let fieldOrderingsLookup: Dictionary<number> = {};
 let engine: Engines = Engines.postgres;
-let noBinds: boolean = false;
+let noBinds = false;
 
 export const comparisons = {
 	Equals: ' = ',
@@ -669,7 +669,7 @@ const typeRules: Dictionary<MatchFn> = {
 	SelectQuery: (args, indent) => {
 		const tables: string[] = [];
 		const joins: string[] = [];
-		let select: string = '';
+		let select = '';
 		const groups = {
 			Where: '',
 			GroupBy: '',
@@ -869,7 +869,7 @@ const typeRules: Dictionary<MatchFn> = {
 		checkArgs('Cast', args, 2);
 		const value = AnyValue(getAbstractSqlQuery(args, 0), indent);
 		const typeName = args[1] as keyof typeof sbvrTypes;
-		if (!sbvrTypes[typeName] || !sbvrTypes[typeName].types[engine]) {
+		if (!sbvrTypes[typeName]?.types[engine]) {
 			throw new SyntaxError(`Invalid cast type: ${typeName}`);
 		}
 		let type: string;
@@ -1451,7 +1451,7 @@ const typeRules: Dictionary<MatchFn> = {
 		const tables: string[] = [];
 		let fields: string[] = [];
 		let values: string[] = [];
-		let where: string = '';
+		let where = '';
 		for (const arg of args) {
 			if (!isAbstractSqlQuery(arg)) {
 				throw new SyntaxError('`UpdateQuery` args must all be arrays');
@@ -1510,7 +1510,7 @@ const typeRules: Dictionary<MatchFn> = {
 	},
 	DeleteQuery: (args, indent) => {
 		const tables: string[] = [];
-		let where: string = '';
+		let where = '';
 		for (const arg of args) {
 			if (!isAbstractSqlQuery(arg)) {
 				throw new SyntaxError('`DeleteQuery` args must all be arrays');

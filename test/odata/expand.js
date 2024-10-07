@@ -6,7 +6,7 @@ import {
 	aliasPlaneFields,
 	aliasPilotCanFlyPlaneFields,
 } from './fields';
-import * as _ from 'lodash';
+import _ from 'lodash';
 
 const postgresAgg = (field) => 'COALESCE(JSON_AGG(' + field + "), '[]')";
 const mysqlAgg = (field) => "'[' || group_concat(" + field + ", ',') || ']'";
@@ -436,7 +436,7 @@ SELECT (
 		SELECT ${aliasLicenceFields.join(', ')}
 		FROM "licence" AS "pilot.licence"
 		WHERE "pilot"."licence" = "pilot.licence"."id"
-		LIMIT 10
+		LIMIT ?
 	) AS "pilot.licence"
 ) AS "licence", ${remainingPilotFields}
 FROM "pilot"`,
@@ -444,9 +444,9 @@ FROM "pilot"`,
 		});
 	};
 	const url = '/pilot?$expand=licence($top=10)';
-	test.postgres(url, testFunc(postgresAgg));
-	test.mysql.skip(url, testFunc(mysqlAgg));
-	test.websql.skip(url, testFunc(websqlAgg));
+	test.postgres(url, 'GET', [['Bind', 0]], testFunc(postgresAgg));
+	test.mysql.skip(url, 'GET', [['Bind', 0]], testFunc(mysqlAgg));
+	test.websql.skip(url, 'GET', [['Bind', 0]], testFunc(websqlAgg));
 })();
 
 (function () {
@@ -493,7 +493,7 @@ SELECT (
 		SELECT ${aliasLicenceFields.join(', ')}
 		FROM "licence" AS "pilot.licence"
 		WHERE "pilot"."licence" = "pilot.licence"."id"
-		OFFSET 10
+		OFFSET ?
 	) AS "pilot.licence"
 ) AS "licence", ${remainingPilotFields}
 FROM "pilot"`,
@@ -501,9 +501,9 @@ FROM "pilot"`,
 		});
 	};
 	const url = '/pilot?$expand=licence($skip=10)';
-	test.postgres(url, testFunc(postgresAgg));
-	test.mysql.skip(url, testFunc(mysqlAgg));
-	test.websql.skip(url, testFunc(websqlAgg));
+	test.postgres(url, 'GET', [['Bind', 0]], testFunc(postgresAgg));
+	test.mysql.skip(url, 'GET', [['Bind', 0]], testFunc(mysqlAgg));
+	test.websql.skip(url, 'GET', [['Bind', 0]], testFunc(websqlAgg));
 })();
 
 (function () {

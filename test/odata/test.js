@@ -6,7 +6,7 @@ const sbvrModel = fs.readFileSync(require.resolve('../model.sbvr'), 'utf8');
 import * as AbstractSQLCompiler from '../..';
 
 import { expect } from 'chai';
-import * as _ from 'lodash';
+import _ from 'lodash';
 
 const generateClientModel = function (input) {
 	// eslint-disable-next-line @typescript-eslint/no-var-requires

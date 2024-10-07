@@ -1,5 +1,5 @@
 import test from './test';
-import * as _ from 'lodash';
+import _ from 'lodash';
 import { pilotFields } from './fields';
 const pilotFieldsStr = pilotFields.join(', ');
 

@@ -1,6 +1,6 @@
 {
 	"compilerOptions": {
-		"module": "commonjs",
+		"module": "Node16",
 		"strict": true,
 		"strictFunctionTypes": false,
 		"strictBindCallApply": false,
@@ -13,7 +13,7 @@
 		"declaration": true,
 		"skipLibCheck": true,
 		"exactOptionalPropertyTypes": true,
-		"target": "es2021",
+		"target": "es2023",
 		"outDir": "out",
 		"allowJs": true
 	},

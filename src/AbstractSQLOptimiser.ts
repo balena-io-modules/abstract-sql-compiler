@@ -1,4 +1,4 @@
-import * as _ from 'lodash';
+import _ from 'lodash';
 
 import type { Dictionary } from 'lodash';
 import type {
@@ -323,7 +323,7 @@ const Field: MetaMatchFn<FieldNode | ReferencedFieldNode> = (args) => {
 };
 
 const AnyNotNullValue = (args: any): boolean => {
-	return args != null && (args as any) !== 'Null' && args[0] !== 'Null';
+	return args != null && args !== 'Null' && args[0] !== 'Null';
 };
 
 const FieldOp =
@@ -603,15 +603,7 @@ const typeRules = {
 				case 'RightJoin':
 				case 'FullJoin':
 				case 'CrossJoin':
-					tables.push(
-						typeRules[type](rest) as
-							| FromNode
-							| InnerJoinNode
-							| LeftJoinNode
-							| RightJoinNode
-							| FullJoinNode
-							| CrossJoinNode,
-					);
+					tables.push(typeRules[type](rest));
 					break;
 				case 'Where':
 				case 'GroupBy':
@@ -1375,14 +1367,7 @@ const typeRules = {
 						switch (valuesType) {
 							case 'SelectQuery':
 							case 'UnionQuery':
-								values = [
-									[
-										'Values',
-										typeRules[valuesType](valuesRest) as
-											| SelectQueryNode
-											| UnionQueryNode,
-									],
-								];
+								values = [['Values', typeRules[valuesType](valuesRest)]];
 								break;
 							default:
 								values = [['Values', valuesArray.map(Value)] as ValuesNode];
