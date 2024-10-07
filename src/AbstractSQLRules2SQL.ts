@@ -316,8 +316,8 @@ export const getAbstractSqlQuery = (
 const Comparison = (comparison: keyof typeof comparisons): MatchFn => {
 	return (args, indent) => {
 		checkArgs(comparison, args, 2);
-		const a = AnyValue(getAbstractSqlQuery(args, 0), indent);
-		const b = AnyValue(getAbstractSqlQuery(args, 1), indent);
+		const a = precedenceSafeOpValue(comparison, AnyValue, args, 0, indent);
+		const b = precedenceSafeOpValue(comparison, AnyValue, args, 1, indent);
 		return a + comparisons[comparison] + b;
 	};
 };
@@ -396,26 +396,32 @@ const mathOperatorNodeTypes = new Set([
 	'SubtractDateNumber',
 ]);
 
-const mathOpValue = (
+const precedenceSafeOpValue = (
+	parentNodeType: string,
 	valueMatchFn: MetaMatchFn,
 	args: AbstractSqlType[],
 	index: number,
 	indent: string,
 ) => {
 	const operandAbstractSql = getAbstractSqlQuery(args, index);
-	const numericValue = valueMatchFn(operandAbstractSql, indent);
+	const valueExpr = valueMatchFn(operandAbstractSql, indent);
 	const [childNodeType] = operandAbstractSql;
-	if (mathOperatorNodeTypes.has(childNodeType)) {
-		return `(${numericValue})`;
+	if (
+		(mathOperatorNodeTypes.has(parentNodeType) &&
+			mathOperatorNodeTypes.has(childNodeType)) ||
+		// We need parenthesis for chained boolean comparisons, otherwise PostgreSQL complains.
+		(parentNodeType in comparisons && childNodeType in comparisons)
+	) {
+		return `(${valueExpr})`;
 	}
-	return numericValue;
+	return valueExpr;
 };
 
 const MathOp = (type: keyof typeof mathOps): MatchFn => {
 	return (args, indent) => {
 		checkArgs(type, args, 2);
-		const a = mathOpValue(NumericValue, args, 0, indent);
-		const b = mathOpValue(NumericValue, args, 1, indent);
+		const a = precedenceSafeOpValue(type, NumericValue, args, 0, indent);
+		const b = precedenceSafeOpValue(type, NumericValue, args, 1, indent);
 		return `${a} ${mathOps[type]} ${b}`;
 	};
 };
@@ -484,8 +490,14 @@ export const checkMinArgs = (matchName: string, args: any[], num: number) => {
 
 const AddDateNumber: MatchFn = (args, indent) => {
 	checkArgs('AddDateNumber', args, 2);
-	const a = mathOpValue(DateValue, args, 0, indent);
-	const b = mathOpValue(NumericValue, args, 1, indent);
+	const a = precedenceSafeOpValue('AddDateNumber', DateValue, args, 0, indent);
+	const b = precedenceSafeOpValue(
+		'AddDateNumber',
+		NumericValue,
+		args,
+		1,
+		indent,
+	);
 
 	if (engine === Engines.postgres) {
 		return `${a} + ${b}`;
@@ -498,8 +510,20 @@ const AddDateNumber: MatchFn = (args, indent) => {
 
 const AddDateDuration: MatchFn = (args, indent) => {
 	checkArgs('AddDateDuration', args, 2);
-	const a = mathOpValue(DateValue, args, 0, indent);
-	const b = mathOpValue(DurationValue, args, 1, indent);
+	const a = precedenceSafeOpValue(
+		'AddDateDuration',
+		DateValue,
+		args,
+		0,
+		indent,
+	);
+	const b = precedenceSafeOpValue(
+		'AddDateDuration',
+		DurationValue,
+		args,
+		1,
+		indent,
+	);
 
 	if (engine === Engines.postgres) {
 		return `${a} + ${b}`;
@@ -512,8 +536,20 @@ const AddDateDuration: MatchFn = (args, indent) => {
 
 const SubtractDateDuration: MatchFn = (args, indent) => {
 	checkArgs('SubtractDateDuration', args, 2);
-	const a = mathOpValue(DateValue, args, 0, indent);
-	const b = mathOpValue(DurationValue, args, 1, indent);
+	const a = precedenceSafeOpValue(
+		'SubtractDateDuration',
+		DateValue,
+		args,
+		0,
+		indent,
+	);
+	const b = precedenceSafeOpValue(
+		'SubtractDateDuration',
+		DurationValue,
+		args,
+		1,
+		indent,
+	);
 
 	if (engine === Engines.postgres) {
 		return `${a} - ${b}`;
@@ -526,8 +562,20 @@ const SubtractDateDuration: MatchFn = (args, indent) => {
 
 const SubtractDateNumber: MatchFn = (args, indent) => {
 	checkArgs('SubtractDateNumber', args, 2);
-	const a = mathOpValue(DateValue, args, 0, indent);
-	const b = mathOpValue(NumericValue, args, 1, indent);
+	const a = precedenceSafeOpValue(
+		'SubtractDateNumber',
+		DateValue,
+		args,
+		0,
+		indent,
+	);
+	const b = precedenceSafeOpValue(
+		'SubtractDateNumber',
+		NumericValue,
+		args,
+		1,
+		indent,
+	);
 
 	if (engine === Engines.postgres) {
 		return `${a} - ${b}`;
@@ -540,8 +588,20 @@ const SubtractDateNumber: MatchFn = (args, indent) => {
 
 const SubtractDateDate: MatchFn = (args, indent) => {
 	checkArgs('SubtractDateDate', args, 2);
-	const a = mathOpValue(DateValue, args, 0, indent);
-	const b = mathOpValue(DateValue, args, 1, indent);
+	const a = precedenceSafeOpValue(
+		'SubtractDateDate',
+		DateValue,
+		args,
+		0,
+		indent,
+	);
+	const b = precedenceSafeOpValue(
+		'SubtractDateDate',
+		DateValue,
+		args,
+		1,
+		indent,
+	);
 	if (engine === Engines.postgres) {
 		return `${a} - ${b}`;
 	} else if (engine === Engines.mysql) {
