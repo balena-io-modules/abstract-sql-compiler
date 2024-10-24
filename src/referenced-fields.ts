@@ -372,6 +372,7 @@ const countTableSelects = (
 		case 'Exists':
 		case 'From':
 		case 'Having':
+		case 'Lower':
 		case 'Not':
 		case 'NotExists':
 		case 'Sum':
