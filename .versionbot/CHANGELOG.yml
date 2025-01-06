@@ -1,4 +1,17 @@
 - commits:
+    - subject: Update dependency mocha to v11
+      hash: 08528d0b68fdfda0370ca8bac7d33bb670eba9f7
+      body: |
+        Update mocha from 10.8.2 to 11.0.1
+      footer:
+        Change-type: patch
+        change-type: patch
+      author: Self-hosted Renovate Bot
+      nested: []
+  version: 10.1.1
+  title: ""
+  date: 2025-01-06T22:00:14.311Z
+- commits:
     - subject: Add Lower unary node for countTableSelects optimization
       hash: e3ebcddbf6c725139535fa53de06492a64c9e2a9
       body: ""
