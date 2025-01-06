@@ -26,7 +26,7 @@
     "@balena/lf-to-abstract-sql": "^5.0.2",
     "@balena/lint": "^8.2.8",
     "@balena/odata-parser": "^3.1.0",
-    "@balena/odata-to-abstract-sql": "^6.4.0",
+    "@balena/odata-to-abstract-sql": "^7.0.0",
     "@balena/sbvr-parser": "^1.4.6",
     "@types/chai": "^4.3.4",
     "@types/common-tags": "^1.8.4",
