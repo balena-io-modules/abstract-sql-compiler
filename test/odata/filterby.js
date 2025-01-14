@@ -635,7 +635,7 @@ WHERE EXISTS (
 		);
 	};
 	const updateWhere = `\
-WHERE "pilot"."id" IN ((
+WHERE "pilot"."id" = ANY((
 	SELECT "pilot"."id" AS "$modifyid"
 	FROM "pilot",
 		"pilot-can fly-plane" AS "pilot.pilot-can fly-plane",
@@ -730,7 +730,7 @@ ${updateWhere}`,
 				result.query,
 				`\
 DELETE FROM "pilot"
-WHERE "pilot"."id" IN ((
+WHERE "pilot"."id" = ANY((
 	SELECT "pilot"."id" AS "$modifyid"
 	FROM "pilot",
 		"pilot-can fly-plane" AS "pilot.pilot-can fly-plane",
@@ -807,7 +807,7 @@ run(function () {
 UPDATE "pilot"
 SET "name" = ?
 WHERE ("pilot"."id") IS NOT NULL AND ("pilot"."id") = (?)
-AND "pilot"."id" IN ((
+AND "pilot"."id" = ANY((
 	SELECT "pilot"."id" AS "$modifyid"
 	FROM "pilot"
 	WHERE ${sql}
@@ -864,7 +864,7 @@ SET "created at" = DEFAULT,
 	"hire date" = DEFAULT,
 	"was trained by-pilot" = DEFAULT
 WHERE ("pilot"."id") IS NOT NULL AND ("pilot"."id") = (?)
-AND "pilot"."id" IN ((
+AND "pilot"."id" = ANY((
 	SELECT "pilot"."id" AS "$modifyid"
 	FROM "pilot"
 	WHERE ${sql}

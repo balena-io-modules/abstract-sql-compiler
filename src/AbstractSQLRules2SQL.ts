@@ -1423,6 +1423,9 @@ const typeRules: Dictionary<MatchFn> = {
 			}
 			return AnyValue(arg, indent);
 		});
+		if (vals.length === 1) {
+			return field + ' = ANY(' + vals.join(', ') + ')';
+		}
 		return field + ' IN (' + vals.join(', ') + ')';
 	},
 	NotIn: (args, indent) => {
