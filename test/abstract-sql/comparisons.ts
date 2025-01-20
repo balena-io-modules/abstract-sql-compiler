@@ -26,6 +26,18 @@ describe('Between', () => {
 	);
 });
 
+describe('Equals Any', () => {
+	test(
+		['SelectQuery', ['Select', [['EqualsAny', ['Number', 5], ['Bind', 0]]]]],
+		[['Bind', 0]],
+		(result, sqlEquals) => {
+			it('should produce a valid EqualsAny statement', () => {
+				sqlEquals(result.query, 'SELECT 5 = ANY($1)');
+			});
+		},
+	);
+});
+
 describe('Comparison Operator Precedence', () => {
 	// Different precedence
 	test(

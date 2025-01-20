@@ -82,6 +82,7 @@ const UnknownValue: MetaMatchFn = (args, indent) => {
 		case 'Null':
 		case 'Field':
 		case 'ReferencedField':
+		case 'EqualsAny':
 		case 'Bind':
 		case 'Cast':
 		case 'Coalesce':
@@ -246,6 +247,7 @@ export const isNotNullable = (node: AbstractSqlType): boolean => {
 		case 'Integer':
 		case 'IsDistinctFrom':
 		case 'IsNotDistinctFrom':
+		case 'EqualsAny':
 		case 'Exists':
 		case 'NotExists':
 			return true;
@@ -1000,6 +1002,10 @@ const typeRules: Dictionary<MatchFn> = {
 		return `COALESCE(JSON_AGG(${field}), '[]')`;
 	},
 	Equals: Comparison('Equals'),
+	EqualsAny: (args, indent) => {
+		checkArgs('EqualsAny', args, 2);
+		return `${AnyValue(getAbstractSqlQuery(args, 0), indent)} = ANY(${AnyValue(getAbstractSqlQuery(args, 1), indent)})`;
+	},
 	GreaterThan: Comparison('GreaterThan'),
 	GreaterThanOrEqual: Comparison('GreaterThanOrEqual'),
 	LessThan: Comparison('LessThan'),

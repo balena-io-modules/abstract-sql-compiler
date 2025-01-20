@@ -106,6 +106,7 @@ import type {
 	FromTypeNode,
 	StartsWithNode,
 	EscapeForLikeNode,
+	EqualsAnyNode,
 } from './AbstractSQLCompiler';
 import * as AbstractSQLRules2SQL from './AbstractSQLRules2SQL';
 
@@ -219,6 +220,7 @@ const UnknownValue: MetaMatchFn<UnknownTypeNodes> = (args) => {
 		case 'Null':
 		case 'Field':
 		case 'ReferencedField':
+		case 'EqualsAny':
 		case 'Bind':
 		case 'Cast':
 		case 'Coalesce':
@@ -739,6 +741,7 @@ const typeRules = {
 		}),
 		Comparison<EqualsNode>('Equals'),
 	),
+	EqualsAny: matchArgs<EqualsAnyNode>('EqualsAny', AnyValue, AnyValue),
 	NotEquals: tryMatches<NotEqualsNode | ExistsNode>(
 		Helper<OptimisationMatchFn<ExistsNode>>((args) => {
 			checkArgs('NotEquals', args, 2);
