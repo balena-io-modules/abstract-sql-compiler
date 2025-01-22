@@ -45,6 +45,7 @@ export type DurationTypeNodes = StrictDurationTypeNodes | UnknownTypeNodes;
 
 export type BooleanNode = ['Boolean', boolean];
 export type EqualsNode = ['Equals', AnyTypeNodes, AnyTypeNodes];
+export type EqualsAnyNode = ['EqualsAny', AnyTypeNodes, BindNode];
 export type NotEqualsNode = ['NotEquals', AnyTypeNodes, AnyTypeNodes];
 export type IsDistinctFromNode = ['IsDistinctFrom', AnyTypeNodes, AnyTypeNodes];
 export type IsNotDistinctFromNode = [
@@ -89,6 +90,7 @@ export type ContainsNode = ['Contains', TextTypeNodes, TextTypeNodes];
 export type StrictBooleanTypeNodes =
 	| BooleanNode
 	| EqualsNode
+	| EqualsAnyNode
 	| NotEqualsNode
 	| IsDistinctFromNode
 	| IsNotDistinctFromNode
@@ -246,6 +248,7 @@ export type UnknownTypeNodes =
 	| NullNode
 	| FieldNode
 	| ReferencedFieldNode
+	| EqualsAnyNode
 	| BindNode
 	| CastNode
 	| CaseNode
