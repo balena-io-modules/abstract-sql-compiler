@@ -1,4 +1,16 @@
 - commits:
+    - subject: Add EqualAny node
+      hash: 79d5bce0b61510653ca1c100b742ba1333493fe7
+      body: ""
+      footer:
+        Change-type: minor
+        change-type: minor
+      author: Otavio Jacobi
+      nested: []
+  version: 10.2.0
+  title: ""
+  date: 2025-01-22T22:03:53.181Z
+- commits:
     - subject: Update dependency @balena/odata-to-abstract-sql to v7
       hash: 5e6e2cfc7d6d531b28f9e7f36bcf352fff095a28
       body: |
