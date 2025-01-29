@@ -1,4 +1,16 @@
 - commits:
+    - subject: Fix @balena/sbvr-types peer dependency version specifier
+      hash: 228e9411aa5c502db92e2c5227e1c88b3b3ef288
+      body: ""
+      footer:
+        Change-type: patch
+        change-type: patch
+      author: Pagan Gazzard
+      nested: []
+  version: 10.2.1
+  title: ""
+  date: 2025-01-29T12:57:29.155Z
+- commits:
     - subject: Add EqualAny node
       hash: 79d5bce0b61510653ca1c100b742ba1333493fe7
       body: ""
