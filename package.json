@@ -20,7 +20,7 @@
     "lodash": "^4.17.21"
   },
   "peerDependencies": {
-    "@balena/sbvr-types": "^7.1.0, ^8.0.0, ^9.0.2"
+    "@balena/sbvr-types": "^7.1.0 || ^8.0.0 || ^9.0.2"
   },
   "devDependencies": {
     "@balena/lf-to-abstract-sql": "^5.0.2",
