@@ -1,15 +1,4 @@
-import type { AnyTypeNodes } from '../../src/AbstractSQLCompiler';
-
-type TestCb = (
-	result: { query: string },
-	sqlEquals: (a: string, b: string) => void,
-) => void;
-import $test from './test';
-const test = $test as (
-	query: AnyTypeNodes,
-	binds: any[][] | TestCb,
-	cb?: TestCb,
-) => void;
+import test from './test';
 
 describe('Concatenate', () => {
 	test(
@@ -22,7 +11,7 @@ describe('Concatenate', () => {
 		],
 		(result, sqlEquals) => {
 			it('should produce a valid Concatenate statement', () => {
-				sqlEquals(result.query, `SELECT ('foo' || 'bar')`);
+				sqlEquals(result, `SELECT ('foo' || 'bar')`);
 			});
 		},
 	);
@@ -46,7 +35,7 @@ describe('ConcatenateWithSeparator', () => {
 		],
 		(result, sqlEquals) => {
 			it('should produce a valid ConcatenateWithSeparator statement', () => {
-				sqlEquals(result.query, `SELECT CONCAT_WS('|', 'foo', 'bar')`);
+				sqlEquals(result, `SELECT CONCAT_WS('|', 'foo', 'bar')`);
 			});
 		},
 	);
@@ -70,7 +59,7 @@ describe('Replace', () => {
 		],
 		(result, sqlEquals) => {
 			it('should produce a valid Replace statement', () => {
-				sqlEquals(result.query, `SELECT REPLACE('foobar', 'bar', 'baz')`);
+				sqlEquals(result, `SELECT REPLACE('foobar', 'bar', 'baz')`);
 			});
 		},
 	);
@@ -84,7 +73,7 @@ describe('CharacterLength', () => {
 		],
 		(result, sqlEquals) => {
 			it('should produce a valid CharacterLength statement', () => {
-				sqlEquals(result.query, `SELECT LENGTH('foobar')`);
+				sqlEquals(result, `SELECT LENGTH('foobar')`);
 			});
 		},
 	);
@@ -101,7 +90,7 @@ describe('StrPos', () => {
 		],
 		(result, sqlEquals) => {
 			it('should produce a valid StrPos statement', () => {
-				sqlEquals(result.query, `SELECT STRPOS('foobar', 'b')`);
+				sqlEquals(result, `SELECT STRPOS('foobar', 'b')`);
 			});
 		},
 	);
@@ -125,7 +114,7 @@ describe('Substring', () => {
 		],
 		(result, sqlEquals) => {
 			it('should produce a valid Substring statement', () => {
-				sqlEquals(result.query, `SELECT SUBSTRING('foobar', 0, 5)`);
+				sqlEquals(result, `SELECT SUBSTRING('foobar', 0, 5)`);
 			});
 		},
 	);
@@ -139,7 +128,7 @@ describe('Right', () => {
 		],
 		(result, sqlEquals) => {
 			it('should produce a valid Right statement', () => {
-				sqlEquals(result.query, `SELECT RIGHT('foobar', 1)`);
+				sqlEquals(result, `SELECT RIGHT('foobar', 1)`);
 			});
 		},
 	);
@@ -150,7 +139,7 @@ describe('Lower', () => {
 		['SelectQuery', ['Select', [['Lower', ['EmbeddedText', 'FOOBAR']]]]],
 		(result, sqlEquals) => {
 			it('should produce a valid Lower statement', () => {
-				sqlEquals(result.query, `SELECT LOWER('FOOBAR')`);
+				sqlEquals(result, `SELECT LOWER('FOOBAR')`);
 			});
 		},
 	);
@@ -161,7 +150,7 @@ describe('Upper', () => {
 		['SelectQuery', ['Select', [['Upper', ['EmbeddedText', 'foobar']]]]],
 		(result, sqlEquals) => {
 			it('should produce a valid Upper statement', () => {
-				sqlEquals(result.query, `SELECT UPPER('foobar')`);
+				sqlEquals(result, `SELECT UPPER('foobar')`);
 			});
 		},
 	);
@@ -172,7 +161,7 @@ describe('Trim', () => {
 		['SelectQuery', ['Select', [['Trim', ['EmbeddedText', ' foobar ']]]]],
 		(result, sqlEquals) => {
 			it('should produce a valid Trim statement', () => {
-				sqlEquals(result.query, `SELECT TRIM(' foobar ')`);
+				sqlEquals(result, `SELECT TRIM(' foobar ')`);
 			});
 		},
 	);

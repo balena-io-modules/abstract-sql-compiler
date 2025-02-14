@@ -1,16 +1,5 @@
 import { stripIndent } from 'common-tags';
-import type { AnyTypeNodes } from '../../src/AbstractSQLCompiler';
-
-type TestCb = (
-	result: { query: string },
-	sqlEquals: (a: string, b: string) => void,
-) => void;
-import $test from './test';
-const test = $test as (
-	query: AnyTypeNodes,
-	binds: any[][] | TestCb,
-	cb?: TestCb,
-) => void;
+import test from './test';
 
 describe('Between', () => {
 	test(
@@ -20,7 +9,7 @@ describe('Between', () => {
 		],
 		(result, sqlEquals) => {
 			it('should produce a valid Between statement', () => {
-				sqlEquals(result.query, 'SELECT 5 BETWEEN 3 AND (8)');
+				sqlEquals(result, 'SELECT 5 BETWEEN 3 AND (8)');
 			});
 		},
 	);
@@ -32,7 +21,7 @@ describe('Equals Any', () => {
 		[['Bind', 0]],
 		(result, sqlEquals) => {
 			it('should produce a valid EqualsAny statement', () => {
-				sqlEquals(result.query, 'SELECT 5 = ANY($1)');
+				sqlEquals(result, 'SELECT 5 = ANY($1)');
 			});
 		},
 	);
@@ -56,7 +45,7 @@ describe('Comparison Operator Precedence', () => {
 		],
 		(result, sqlEquals) => {
 			it('should produce a valid Equals statement when the second operand is also an Equals', () => {
-				sqlEquals(result.query, 'SELECT TRUE = (TRUE = TRUE)');
+				sqlEquals(result, 'SELECT TRUE = (TRUE = TRUE)');
 			});
 		},
 	);
@@ -77,7 +66,7 @@ describe('Comparison Operator Precedence', () => {
 		],
 		(result, sqlEquals) => {
 			it('should produce a valid NotEquals statement when both operands are Equals comparisons', () => {
-				sqlEquals(result.query, 'SELECT (FALSE = FALSE) != (TRUE = TRUE)');
+				sqlEquals(result, 'SELECT (FALSE = FALSE) != (TRUE = TRUE)');
 			});
 		},
 	);
@@ -107,7 +96,7 @@ describe('Comparison Operator Precedence', () => {
 		(result, sqlEquals) => {
 			it('should produce a valid NotEquals statement when the operands are math expressions with nested parenthesis', () => {
 				sqlEquals(
-					result.query,
+					result,
 					stripIndent`
 						SELECT 1 + (2 + (3 * 4)) != 1 + 0
 					`,
@@ -138,7 +127,7 @@ describe('Comparison Operator Precedence', () => {
 			// Evaluating this would match the expression w/o parenthesis
 			it('should produce a valid NotEquals statement when the operands are math expressions with left sided parenthesis', () => {
 				sqlEquals(
-					result.query,
+					result,
 					stripIndent`
 						SELECT (1 + 2) * 5 >= 12 + 2
 					`,
@@ -169,7 +158,7 @@ describe('Comparison Operator Precedence', () => {
 			// Evaluating this would give a different result than if it was w/o parenthesis
 			it('should produce a valid NotEquals statement when the operands are math expressions with right sided parenthesis', () => {
 				sqlEquals(
-					result.query,
+					result,
 					stripIndent`
 						SELECT 1 + (2 * 5) >= 12 + 2
 					`,
@@ -199,7 +188,7 @@ describe('Comparison Operator Precedence', () => {
 		(result, sqlEquals) => {
 			it('should produce a valid And statement when the operands are composite boolean expressions', () => {
 				sqlEquals(
-					result.query,
+					result,
 					stripIndent`
 						SELECT (1 > 0
 						OR 1 < 0)
@@ -232,7 +221,7 @@ describe('Comparison Operator Precedence', () => {
 			// Even though the parenthesis are not added around the AND, the expression is correct b/c of precedence.
 			it('should produce a valid Or statement when the first operand is a composite boolean expression', () => {
 				sqlEquals(
-					result.query,
+					result,
 					stripIndent`
 						SELECT (0 > 1
 						AND 0 = 1
@@ -265,7 +254,7 @@ describe('Comparison Operator Precedence', () => {
 			// Even though the parenthesis are not added around the AND, the expression is correct b/c of precedence.
 			it('should produce a valid Or statement when the second operand is a composite boolean expression', () => {
 				sqlEquals(
-					result.query,
+					result,
 					stripIndent`
 						SELECT (1 > 0
 						OR 0 = 1
@@ -298,7 +287,7 @@ describe('Comparison Operator Precedence', () => {
 			// If it was w/o parenthesis, evaluating this would give a different result
 			it('should produce a valid And statement when the first operand is an Or boolean expressions', () => {
 				sqlEquals(
-					result.query,
+					result,
 					stripIndent`
 						SELECT (1 > 0
 						OR 0 = 1)
@@ -331,7 +320,7 @@ describe('Comparison Operator Precedence', () => {
 			// If it was w/o parenthesis, evaluating this would give a different result
 			it('should produce a valid And statement when the second operand is an Or boolean expressions', () => {
 				sqlEquals(
-					result.query,
+					result,
 					stripIndent`
 						SELECT 0 > 1
 						AND (0 = 1
@@ -360,7 +349,7 @@ describe('Comparison Operator Precedence', () => {
 		(result, sqlEquals) => {
 			it('should produce a valid Between statement when the operands are math expressions', () => {
 				sqlEquals(
-					result.query,
+					result,
 					stripIndent`
 						SELECT 1 + 0 BETWEEN 1 + 0 AND (1 + 0)
 					`,

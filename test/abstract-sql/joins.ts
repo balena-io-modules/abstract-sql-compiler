@@ -1,16 +1,5 @@
 import { stripIndent } from 'common-tags';
-import type { AnyTypeNodes } from '../../src/AbstractSQLCompiler';
-
-type TestCb = (
-	result: { query: string },
-	sqlEquals: (a: string, b: string) => void,
-) => void;
-import $test from './test';
-const test = $test as (
-	query: AnyTypeNodes,
-	binds: any[][] | TestCb,
-	cb?: TestCb,
-) => void;
+import test from './test';
 
 const joinTest = (
 	joinType: 'Join' | 'RightJoin' | 'LeftJoin' | 'FullJoin',
@@ -44,7 +33,7 @@ const joinTest = (
 			(result, sqlEquals) => {
 				it('should produce a valid join statement', () => {
 					sqlEquals(
-						result.query,
+						result,
 						stripIndent`
 							SELECT "table"."field1", "table2"."field2"
 							FROM "table"
@@ -82,7 +71,7 @@ describe('CrossJoin', () => {
 		(result, sqlEquals) => {
 			it('should produce a valid join statement', () => {
 				sqlEquals(
-					result.query,
+					result,
 					stripIndent`
 						SELECT "table"."field1", "table2"."field2"
 						FROM "table"

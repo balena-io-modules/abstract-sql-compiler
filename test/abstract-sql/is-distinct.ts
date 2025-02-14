@@ -1,15 +1,4 @@
-import type { AnyTypeNodes } from '../../src/AbstractSQLCompiler';
-
-type TestCb = (
-	result: { query: string },
-	sqlEquals: (a: string, b: string) => void,
-) => void;
-import $test from './test';
-const test = $test as (
-	query: AnyTypeNodes,
-	binds: any[][] | TestCb,
-	cb?: TestCb,
-) => void;
+import test from './test';
 
 describe('IsDistinctFrom', () => {
 	test(
@@ -20,7 +9,7 @@ describe('IsDistinctFrom', () => {
 		(result, sqlEquals) => {
 			it('should produce a valid is distinct from statement', () => {
 				sqlEquals(
-					result.query,
+					result,
 					'SELECT NOT(("a") IS NOT NULL AND ("b") IS NOT NULL AND ("a") = ("b") OR ("a") IS NULL AND ("b") IS NULL)',
 				);
 			});
@@ -33,7 +22,7 @@ describe('IsDistinctFrom', () => {
 		],
 		(result, sqlEquals) => {
 			it('should optimize down to a !=', () => {
-				sqlEquals(result.query, 'SELECT 1 != 2');
+				sqlEquals(result, 'SELECT 1 != 2');
 			});
 		},
 	);
@@ -45,10 +34,7 @@ describe('IsDistinctFrom', () => {
 		[['Text', '2']],
 		(result, sqlEquals) => {
 			it('should produce a valid is distinct from statement', () => {
-				sqlEquals(
-					result.query,
-					'SELECT NOT(("a") IS NOT NULL AND ("a") = ($1))',
-				);
+				sqlEquals(result, 'SELECT NOT(("a") IS NOT NULL AND ("a") = ($1))');
 			});
 		},
 	);
@@ -57,7 +43,7 @@ describe('IsDistinctFrom', () => {
 		['SelectQuery', ['Select', [['IsDistinctFrom', ['Field', 'a'], ['Null']]]]],
 		(result, sqlEquals) => {
 			it('should produce an is not null statement', () => {
-				sqlEquals(result.query, 'SELECT "a" IS NOT NULL');
+				sqlEquals(result, 'SELECT "a" IS NOT NULL');
 			});
 		},
 	);
@@ -72,7 +58,7 @@ describe('IsNotDistinctFrom', () => {
 		(result, sqlEquals) => {
 			it('should produce a valid is not distinct from statement', () => {
 				sqlEquals(
-					result.query,
+					result,
 					'SELECT ("a") IS NOT NULL AND ("b") IS NOT NULL AND ("a") = ("b") OR ("a") IS NULL AND ("b") IS NULL',
 				);
 			});
@@ -85,7 +71,7 @@ describe('IsNotDistinctFrom', () => {
 		],
 		(result, sqlEquals) => {
 			it('should optimize down to an =', () => {
-				sqlEquals(result.query, 'SELECT 1 = 2');
+				sqlEquals(result, 'SELECT 1 = 2');
 			});
 		},
 	);
@@ -97,7 +83,7 @@ describe('IsNotDistinctFrom', () => {
 		[['Text', '2']],
 		(result, sqlEquals) => {
 			it('should produce a valid is not distinct from statement', () => {
-				sqlEquals(result.query, 'SELECT ("a") IS NOT NULL AND ("a") = ($1)');
+				sqlEquals(result, 'SELECT ("a") IS NOT NULL AND ("a") = ($1)');
 			});
 		},
 	);
@@ -109,7 +95,7 @@ describe('IsNotDistinctFrom', () => {
 		],
 		(result, sqlEquals) => {
 			it('should produce a valid is not distinct from statement', () => {
-				sqlEquals(result.query, 'SELECT "a" IS NULL');
+				sqlEquals(result, 'SELECT "a" IS NULL');
 			});
 		},
 	);
