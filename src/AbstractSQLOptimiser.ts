@@ -1195,15 +1195,21 @@ const typeRules = {
 			];
 		},
 	),
-	Bind: (args) => {
-		if (noBinds) {
-			throw new SyntaxError('Cannot use a bind whilst they are disabled');
-		}
-		if (args.length !== 1 && args.length !== 2) {
-			throw new SyntaxError(`"Bind" requires 1/2 arg(s)`);
-		}
-		return ['Bind', ...args] as BindNode;
-	},
+	Bind: tryMatches<BindNode>(
+		Helper<OptimisationMatchFn<BindNode>>((args) => {
+			if (args.length !== 2) {
+				return false;
+			}
+			return ['Bind', args] as BindNode;
+		}),
+		(args) => {
+			if (noBinds) {
+				throw new SyntaxError('Cannot use a bind whilst they are disabled');
+			}
+			checkArgs('Bind', args, 1);
+			return ['Bind', ...args] as BindNode;
+		},
+	),
 	Text,
 	Value: Text,
 	Date: matchArgs('Date', _.identity),

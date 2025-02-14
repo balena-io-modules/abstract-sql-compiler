@@ -1330,14 +1330,8 @@ const typeRules: Dictionary<MatchFn> = {
 		);
 	},
 	Bind: (args) => {
-		let bind;
-		if (args.length === 2) {
-			bind = args;
-		} else if (args.length === 1) {
-			bind = args[0];
-		} else {
-			throw new SyntaxError(`"Bind" requires 1/2 arg(s)`);
-		}
+		checkArgs('Bind', args, 1);
+		const bind = args[0];
 		return AddBind(['Bind', bind]);
 	},
 	Text,
