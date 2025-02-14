@@ -1,22 +1,11 @@
-import type { AnyTypeNodes } from '../../src/AbstractSQLCompiler';
-
-type TestCb = (
-	result: { query: string },
-	sqlEquals: (a: string, b: string) => void,
-) => void;
-import $test from './test';
-const test = $test as (
-	query: AnyTypeNodes,
-	binds: any[][] | TestCb,
-	cb?: TestCb,
-) => void;
+import test from './test';
 
 describe('Add', () => {
 	test(
 		['SelectQuery', ['Select', [['Add', ['Number', 5], ['Number', 3]]]]],
 		(result, sqlEquals) => {
 			it('should produce a valid Add statement', () => {
-				sqlEquals(result.query, 'SELECT 5 + 3');
+				sqlEquals(result, 'SELECT 5 + 3');
 			});
 		},
 	);
@@ -27,7 +16,7 @@ describe('Subtract', () => {
 		['SelectQuery', ['Select', [['Subtract', ['Number', 5], ['Number', 3]]]]],
 		(result, sqlEquals) => {
 			it('should produce a valid Subtract statement', () => {
-				sqlEquals(result.query, 'SELECT 5 - 3');
+				sqlEquals(result, 'SELECT 5 - 3');
 			});
 		},
 	);
@@ -38,7 +27,7 @@ describe('Multiply', () => {
 		['SelectQuery', ['Select', [['Multiply', ['Number', 5], ['Number', 3]]]]],
 		(result, sqlEquals) => {
 			it('should produce a valid Multiply statement', () => {
-				sqlEquals(result.query, 'SELECT 5 * 3');
+				sqlEquals(result, 'SELECT 5 * 3');
 			});
 		},
 	);
@@ -49,7 +38,7 @@ describe('Divide', () => {
 		['SelectQuery', ['Select', [['Divide', ['Number', 10], ['Number', 5]]]]],
 		(result, sqlEquals) => {
 			it('should produce a valid Divide statement', () => {
-				sqlEquals(result.query, 'SELECT 10 / 5');
+				sqlEquals(result, 'SELECT 10 / 5');
 			});
 		},
 	);
@@ -63,7 +52,7 @@ describe('BitwiseAnd', () => {
 		],
 		(result, sqlEquals) => {
 			it('should produce a valid BitwiseAnd statement', () => {
-				sqlEquals(result.query, 'SELECT 10 & 5');
+				sqlEquals(result, 'SELECT 10 & 5');
 			});
 		},
 	);
@@ -77,7 +66,7 @@ describe('BitwiseShiftRight', () => {
 		],
 		(result, sqlEquals) => {
 			it('should produce a valid BitwiseShiftRight statement', () => {
-				sqlEquals(result.query, 'SELECT 10 >> 5');
+				sqlEquals(result, 'SELECT 10 >> 5');
 			});
 		},
 	);
@@ -88,7 +77,7 @@ describe('Round', () => {
 		['SelectQuery', ['Select', [['Round', ['Number', 10.4]]]]],
 		(result, sqlEquals) => {
 			it('should produce a valid Round statement', () => {
-				sqlEquals(result.query, `SELECT ROUND(10.4)`);
+				sqlEquals(result, `SELECT ROUND(10.4)`);
 			});
 		},
 	);
@@ -99,7 +88,7 @@ describe('Floor', () => {
 		['SelectQuery', ['Select', [['Floor', ['Number', 10.4]]]]],
 		(result, sqlEquals) => {
 			it('should produce a valid Floor statement', () => {
-				sqlEquals(result.query, `SELECT FLOOR(10.4)`);
+				sqlEquals(result, `SELECT FLOOR(10.4)`);
 			});
 		},
 	);
@@ -110,7 +99,7 @@ describe('Ceiling', () => {
 		['SelectQuery', ['Select', [['Ceiling', ['Number', 10.4]]]]],
 		(result, sqlEquals) => {
 			it('should produce a valid Ceiling statement', () => {
-				sqlEquals(result.query, `SELECT CEILING(10.4)`);
+				sqlEquals(result, `SELECT CEILING(10.4)`);
 			});
 		},
 	);
@@ -128,7 +117,7 @@ describe('Math Operator Precedence', () => {
 		],
 		(result, sqlEquals) => {
 			it('should produce a valid Add statement when the first operand is a Multiply', () => {
-				sqlEquals(result.query, 'SELECT (2 * 3) + 4');
+				sqlEquals(result, 'SELECT (2 * 3) + 4');
 			});
 		},
 	);
@@ -143,7 +132,7 @@ describe('Math Operator Precedence', () => {
 		],
 		(result, sqlEquals) => {
 			it('should produce a valid Add statement when the second operand is a Multiply', () => {
-				sqlEquals(result.query, 'SELECT 2 + (3 * 4)');
+				sqlEquals(result, 'SELECT 2 + (3 * 4)');
 			});
 		},
 	);
@@ -164,7 +153,7 @@ describe('Math Operator Precedence', () => {
 		],
 		(result, sqlEquals) => {
 			it('should produce a valid Add statement of two Multiplications', () => {
-				sqlEquals(result.query, 'SELECT (2 * 3) + (4 * 5)');
+				sqlEquals(result, 'SELECT (2 * 3) + (4 * 5)');
 			});
 		},
 	);
@@ -179,7 +168,7 @@ describe('Math Operator Precedence', () => {
 		],
 		(result, sqlEquals) => {
 			it('should produce a valid Multiply statement when the first operand is an Add', () => {
-				sqlEquals(result.query, 'SELECT (2 + 3) * 4');
+				sqlEquals(result, 'SELECT (2 + 3) * 4');
 			});
 		},
 	);
@@ -194,7 +183,7 @@ describe('Math Operator Precedence', () => {
 		],
 		(result, sqlEquals) => {
 			it('should produce a valid Multiply statement when the second operand is an Add', () => {
-				sqlEquals(result.query, 'SELECT 2 * (3 + 4)');
+				sqlEquals(result, 'SELECT 2 * (3 + 4)');
 			});
 		},
 	);
@@ -215,7 +204,7 @@ describe('Math Operator Precedence', () => {
 		],
 		(result, sqlEquals) => {
 			it('should produce a valid Multiply statement of two Additions', () => {
-				sqlEquals(result.query, 'SELECT (2 + 3) * (4 + 5)');
+				sqlEquals(result, 'SELECT (2 + 3) * (4 + 5)');
 			});
 		},
 	);
@@ -236,7 +225,7 @@ describe('Math Operator Precedence', () => {
 		],
 		(result, sqlEquals) => {
 			it('should produce a valid Subtract statement of two Multiplications', () => {
-				sqlEquals(result.query, 'SELECT (2 * 3) - (4 * 5)');
+				sqlEquals(result, 'SELECT (2 * 3) - (4 * 5)');
 			});
 		},
 	);
@@ -257,7 +246,7 @@ describe('Math Operator Precedence', () => {
 		],
 		(result, sqlEquals) => {
 			it('should produce a valid Subtract statement of two Divisions', () => {
-				sqlEquals(result.query, 'SELECT (2 / 3) - (4 / 5)');
+				sqlEquals(result, 'SELECT (2 / 3) - (4 / 5)');
 			});
 		},
 	);
@@ -278,7 +267,7 @@ describe('Math Operator Precedence', () => {
 		],
 		(result, sqlEquals) => {
 			it('should produce a valid Divide statement of two Additions', () => {
-				sqlEquals(result.query, 'SELECT (2 + 3) / (4 + 5)');
+				sqlEquals(result, 'SELECT (2 + 3) / (4 + 5)');
 			});
 		},
 	);
@@ -299,7 +288,7 @@ describe('Math Operator Precedence', () => {
 		],
 		(result, sqlEquals) => {
 			it('should produce a valid Divide statement of two Subtractions', () => {
-				sqlEquals(result.query, 'SELECT (2 - 3) / (4 - 5)');
+				sqlEquals(result, 'SELECT (2 - 3) / (4 - 5)');
 			});
 		},
 	);
@@ -322,7 +311,7 @@ describe('Math Operator Precedence', () => {
 		],
 		(result, sqlEquals) => {
 			it('should produce a valid Add statement when there are nested Additions', () => {
-				sqlEquals(result.query, 'SELECT (2 + 3) + (4 + 5)');
+				sqlEquals(result, 'SELECT (2 + 3) + (4 + 5)');
 			});
 		},
 	);
@@ -343,7 +332,7 @@ describe('Math Operator Precedence', () => {
 		],
 		(result, sqlEquals) => {
 			it('should produce a valid Add statement when there are nested Subtractions', () => {
-				sqlEquals(result.query, 'SELECT (2 - 3) + (4 - 5)');
+				sqlEquals(result, 'SELECT (2 - 3) + (4 - 5)');
 			});
 		},
 	);
@@ -364,7 +353,7 @@ describe('Math Operator Precedence', () => {
 		],
 		(result, sqlEquals) => {
 			it('should produce a valid Subtract statement when there are nested Additions', () => {
-				sqlEquals(result.query, 'SELECT (2 + 3) - (4 + 5)');
+				sqlEquals(result, 'SELECT (2 + 3) - (4 + 5)');
 			});
 		},
 	);
@@ -385,7 +374,7 @@ describe('Math Operator Precedence', () => {
 		],
 		(result, sqlEquals) => {
 			it('should produce a valid Add statement when there are nested Subtractions', () => {
-				sqlEquals(result.query, 'SELECT (2 - 3) - (4 - 5)');
+				sqlEquals(result, 'SELECT (2 - 3) - (4 - 5)');
 			});
 		},
 	);
@@ -408,7 +397,7 @@ describe('Math Operator Precedence', () => {
 		],
 		(result, sqlEquals) => {
 			it('should produce a valid Multiply statement when there are nested Multiplications', () => {
-				sqlEquals(result.query, 'SELECT (2 * 3) * (4 * 5)');
+				sqlEquals(result, 'SELECT (2 * 3) * (4 * 5)');
 			});
 		},
 	);
@@ -429,7 +418,7 @@ describe('Math Operator Precedence', () => {
 		],
 		(result, sqlEquals) => {
 			it('should produce a valid Multiply statement when there are nested Divisions', () => {
-				sqlEquals(result.query, 'SELECT (2 / 3) * (4 / 5)');
+				sqlEquals(result, 'SELECT (2 / 3) * (4 / 5)');
 			});
 		},
 	);
@@ -450,7 +439,7 @@ describe('Math Operator Precedence', () => {
 		],
 		(result, sqlEquals) => {
 			it('should produce a valid Divide statement when there are nested Multiplications', () => {
-				sqlEquals(result.query, 'SELECT (2 * 3) / (4 * 5)');
+				sqlEquals(result, 'SELECT (2 * 3) / (4 * 5)');
 			});
 		},
 	);
@@ -471,7 +460,7 @@ describe('Math Operator Precedence', () => {
 		],
 		(result, sqlEquals) => {
 			it('should produce a valid Multiply statement when there are nested Divisions', () => {
-				sqlEquals(result.query, 'SELECT (2 / 3) / (4 / 5)');
+				sqlEquals(result, 'SELECT (2 / 3) / (4 / 5)');
 			});
 		},
 	);

@@ -1,15 +1,4 @@
-import type { AnyTypeNodes } from '../../src/AbstractSQLCompiler';
-
-type TestCb = (
-	result: { query: string },
-	sqlEquals: (a: string, b: string) => void,
-) => void;
-import $test from './test';
-const test = $test as (
-	query: AnyTypeNodes,
-	binds: any[][] | TestCb,
-	cb?: TestCb,
-) => void;
+import test from './test';
 
 describe('Totalseconds', () => {
 	test(
@@ -32,10 +21,7 @@ describe('Totalseconds', () => {
 		],
 		(result, sqlEquals) => {
 			it('should produce a valid Totalseconds statement', () => {
-				sqlEquals(
-					result.query,
-					`SELECT EXTRACT(EPOCH FROM INTERVAL '1 0:0:0.0')`,
-				);
+				sqlEquals(result, `SELECT EXTRACT(EPOCH FROM INTERVAL '1 0:0:0.0')`);
 			});
 		},
 	);
@@ -63,7 +49,7 @@ describe('Duration', () => {
 		],
 		(result, sqlEquals) => {
 			it('should produce a valid Duration statement', () => {
-				sqlEquals(result.query, `SELECT INTERVAL '1 2:3:4.0'`);
+				sqlEquals(result, `SELECT INTERVAL '1 2:3:4.0'`);
 			});
 		},
 	);
