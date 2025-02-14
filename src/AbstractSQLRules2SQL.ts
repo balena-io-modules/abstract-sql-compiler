@@ -389,14 +389,41 @@ const mathOps = {
 };
 export type MathOps = keyof typeof mathOps;
 
-const mathOperatorNodeTypes = new Set([
-	...Object.keys(mathOps),
-	'AddDateDuration',
-	'AddDateNumber',
-	'SubtractDateDate',
-	'SubtractDateDuration',
-	'SubtractDateNumber',
-]);
+const opsPrecedence = (() => {
+	const operatorsByPrecedence = [
+		['Multiply', 'Divide'],
+		[
+			'Add',
+			'AddDateDuration',
+			'AddDateNumber',
+			'Subtract',
+			'SubtractDateDate',
+			'SubtractDateDuration',
+			'SubtractDateNumber',
+		],
+		['Between', 'Like'],
+		[
+			'Equals',
+			'NotEquals',
+			'GreaterThan',
+			'GreaterThanOrEqual',
+			'LessThan',
+			'LessThanOrEqual',
+		],
+		// In, Exists, NotExists, 'IsDistinctFrom', 'IsNotDistinctFrom', Not,
+		// And, Or are already adding parenthesis.
+	] as const;
+
+	const operatorPrecedence = {} as Record<string, number>;
+	let precedence = 0;
+	for (const samePrecedenceOps of operatorsByPrecedence) {
+		for (const op of samePrecedenceOps) {
+			operatorPrecedence[op] = precedence;
+		}
+		precedence++;
+	}
+	return operatorPrecedence;
+})();
 
 const precedenceSafeOpValue = (
 	parentNodeType: string,
@@ -408,11 +435,12 @@ const precedenceSafeOpValue = (
 	const operandAbstractSql = getAbstractSqlQuery(args, index);
 	const valueExpr = valueMatchFn(operandAbstractSql, indent);
 	const [childNodeType] = operandAbstractSql;
+	const parentOperatorPrecedence = opsPrecedence[parentNodeType];
+	const childOperatorPrecedence = opsPrecedence[childNodeType];
 	if (
-		(mathOperatorNodeTypes.has(parentNodeType) &&
-			mathOperatorNodeTypes.has(childNodeType)) ||
-		// We need parenthesis for chained boolean comparisons, otherwise PostgreSQL complains.
-		(parentNodeType in comparisons && childNodeType in comparisons)
+		childOperatorPrecedence != null &&
+		parentOperatorPrecedence != null &&
+		parentOperatorPrecedence <= childOperatorPrecedence
 	) {
 		return `(${valueExpr})`;
 	}
@@ -1022,9 +1050,9 @@ const typeRules: Dictionary<MatchFn> = {
 	},
 	Between: (args, indent) => {
 		checkArgs('Between', args, 3);
-		const v = AnyValue(getAbstractSqlQuery(args, 0), indent);
-		const a = AnyValue(getAbstractSqlQuery(args, 1), indent);
-		const b = AnyValue(getAbstractSqlQuery(args, 2), indent);
+		const v = precedenceSafeOpValue('Between', AnyValue, args, 0, indent);
+		const a = precedenceSafeOpValue('Between', AnyValue, args, 1, indent);
+		const b = precedenceSafeOpValue('Between', AnyValue, args, 2, indent);
 		return `${v} BETWEEN ${a} AND (${b})`;
 	},
 	Add: MathOp('Add'),

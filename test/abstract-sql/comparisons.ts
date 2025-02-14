@@ -108,8 +108,9 @@ describe('Comparison Operator Precedence', () => {
 			it('should produce a valid NotEquals statement when the operands are math expressions with nested parenthesis', () => {
 				sqlEquals(
 					result.query,
+					// ideally we shouldn't have any parenthesis here
 					stripIndent`
-						SELECT 1 + (2 + (3 * 4)) != 1 + 0
+						SELECT 1 + (2 + 3 * 4) != 1 + 0
 					`,
 				);
 			});
@@ -171,7 +172,7 @@ describe('Comparison Operator Precedence', () => {
 				sqlEquals(
 					result.query,
 					stripIndent`
-						SELECT 1 + (2 * 5) >= 12 + 2
+						SELECT 1 + 2 * 5 >= 12 + 2
 					`,
 				);
 			});
@@ -350,6 +351,33 @@ describe('Comparison Operator Precedence', () => {
 				[
 					[
 						'Between',
+						['Equals', ['Integer', 1], ['Integer', 0]],
+						['LessThan', ['Integer', 1], ['Integer', 0]],
+						['GreaterThan', ['Integer', 1], ['Integer', 0]],
+					],
+				],
+			],
+		],
+		(result, sqlEquals) => {
+			it('should produce a valid Between statement when the operands are comparison expressions', () => {
+				sqlEquals(
+					result.query,
+					stripIndent`
+						SELECT (1 = 0) BETWEEN (1 < 0) AND ((1 > 0))
+					`,
+				);
+			});
+		},
+	);
+
+	test(
+		[
+			'SelectQuery',
+			[
+				'Select',
+				[
+					[
+						'Between',
 						['Add', ['Integer', 1], ['Integer', 0]],
 						['Add', ['Integer', 1], ['Integer', 0]],
 						['Add', ['Integer', 1], ['Integer', 0]],
@@ -363,6 +391,33 @@ describe('Comparison Operator Precedence', () => {
 					result.query,
 					stripIndent`
 						SELECT 1 + 0 BETWEEN 1 + 0 AND (1 + 0)
+					`,
+				);
+			});
+		},
+	);
+
+	test(
+		[
+			'SelectQuery',
+			[
+				'Select',
+				[
+					[
+						'Between',
+						['Equals', ['Integer', 1], ['Integer', 0]],
+						['LessThan', ['Integer', 1], ['Integer', 0]],
+						['GreaterThan', ['Integer', 1], ['Integer', 0]],
+					],
+				],
+			],
+		],
+		(result, sqlEquals) => {
+			it('should produce a valid Between statement when the operands are comparison expressions', () => {
+				sqlEquals(
+					result.query,
+					stripIndent`
+						SELECT (1 = 0) BETWEEN (1 < 0) AND ((1 > 0))
 					`,
 				);
 			});
