@@ -1,16 +1,5 @@
 import { stripIndent } from 'common-tags';
-import type { AnyTypeNodes } from '../../src/AbstractSQLCompiler';
-
-type TestCb = (
-	result: { query: string },
-	sqlEquals: (a: string, b: string) => void,
-) => void;
-import $test from './test';
-const test = $test as (
-	query: AnyTypeNodes,
-	binds: any[][] | TestCb,
-	cb?: TestCb,
-) => void;
+import test from './test';
 
 describe('Unnecessary booleans should be removed', () => {
 	test(
@@ -31,7 +20,7 @@ describe('Unnecessary booleans should be removed', () => {
 		(result, sqlEquals) => {
 			it('should simplify `... AND true` to `...`', () => {
 				sqlEquals(
-					result.query,
+					result,
 					stripIndent`
 						SELECT 1
 						FROM "table"
@@ -59,7 +48,7 @@ describe('Unnecessary booleans should be removed', () => {
 		(result, sqlEquals) => {
 			it('should simplify `... OR false` to `...`', () => {
 				sqlEquals(
-					result.query,
+					result,
 					stripIndent`
 						SELECT 1
 						FROM "table"
@@ -86,7 +75,7 @@ describe('Unnecessary booleans should be removed', () => {
 		(result, sqlEquals) => {
 			it('should simplify `... AND false` to `false`', () => {
 				sqlEquals(
-					result.query,
+					result,
 					stripIndent`
 						SELECT 1
 						FROM "table"
@@ -113,7 +102,7 @@ describe('Unnecessary booleans should be removed', () => {
 		(result, sqlEquals) => {
 			it('should simplify `... AND true` to `true`', () => {
 				sqlEquals(
-					result.query,
+					result,
 					stripIndent`
 						SELECT 1
 						FROM "table"

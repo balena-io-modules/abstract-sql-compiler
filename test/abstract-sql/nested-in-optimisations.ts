@@ -1,16 +1,5 @@
 import { stripIndent } from 'common-tags';
-import type { AnyTypeNodes } from '../../src/AbstractSQLCompiler';
-
-type TestCb = (
-	result: { query: string },
-	sqlEquals: (a: string, b: string) => void,
-) => void;
-import $test from './test';
-const test = $test as (
-	query: AnyTypeNodes,
-	binds: any[][] | TestCb,
-	cb?: TestCb,
-) => void;
+import test from './test';
 
 describe('Nested OR EQUALs should create a single IN statement', () => {
 	test(
@@ -44,7 +33,7 @@ describe('Nested OR EQUALs should create a single IN statement', () => {
 		(result, sqlEquals) => {
 			it('should produce a single IN statement', () => {
 				sqlEquals(
-					result.query,
+					result,
 					stripIndent`
 						SELECT 1
 						FROM "table"
@@ -100,7 +89,7 @@ describe('Nested AND NOT EQUALs should create a single NOT IN statement', () => 
 		(result, sqlEquals) => {
 			it('should produce a single IN statement', () => {
 				sqlEquals(
-					result.query,
+					result,
 					stripIndent`
 						SELECT 1
 						FROM "table"
@@ -145,7 +134,7 @@ describe('OR IN/EQUALs should create a single IN statement', () => {
 		(result, sqlEquals) => {
 			it('should produce a single in statement', () => {
 				sqlEquals(
-					result.query,
+					result,
 					stripIndent`
 						SELECT 1
 						FROM "table"
@@ -198,7 +187,7 @@ describe('AND NOT IN/NOT EQUALs should create a single NOT IN statement', () => 
 		(result, sqlEquals) => {
 			it('should produce a single not in statement', () => {
 				sqlEquals(
-					result.query,
+					result,
 					stripIndent`
 						SELECT 1
 						FROM "table"

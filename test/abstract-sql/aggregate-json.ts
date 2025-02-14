@@ -1,15 +1,4 @@
-import type { AnyTypeNodes } from '../../src/AbstractSQLCompiler';
-
-type TestCb = (
-	result: { query: string },
-	sqlEquals: (a: string, b: string) => void,
-) => void;
-import $test from './test';
-const test = $test as (
-	query: AnyTypeNodes,
-	binds: any[][] | TestCb,
-	cb?: TestCb,
-) => void;
+import test from './test';
 
 describe('AggregateJSON', () => {
 	test(
@@ -46,7 +35,7 @@ describe('AggregateJSON', () => {
 		(result, sqlEquals) => {
 			it('should produce a valid aggregate JSON statement', () => {
 				sqlEquals(
-					result.query,
+					result,
 					`\
 SELECT (
 	SELECT COALESCE(JSON_AGG("pilot.licence".*), '[]') AS "licence"
