@@ -34,22 +34,16 @@ const sqlEquals = {
 	},
 };
 
-const runExpectation = function (
-	describe,
-	engine,
-	input,
-	expectedBindings,
-	body,
-	expectation,
-) {
-	if (expectation == null) {
-		if (body == null) {
-			expectation = expectedBindings;
-			expectedBindings = false;
-		} else {
-			expectation = body;
-		}
-		body = {};
+const runExpectation = function (describe, engine, input, ...args) {
+	let expectedBindings = false;
+	let expectation;
+	switch (args.length) {
+		case 1:
+			[expectation] = args;
+			break;
+		case 2:
+			[expectedBindings, expectation] = args;
+			break;
 	}
 
 	describe('Parsing ' + JSON.stringify(input), function () {
