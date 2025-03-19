@@ -66,28 +66,25 @@ const sqlEquals = {
 	},
 };
 
-const runExpectation = function (
-	describe,
-	engine,
-	input,
-	method,
-	expectedBindings,
-	body,
-	expectation,
-) {
-	if (expectation == null) {
-		if (body == null) {
-			if (expectedBindings == null) {
-				expectation = method;
-				method = 'GET';
-			} else {
-				expectation = expectedBindings;
-			}
-			expectedBindings = false;
-		} else {
-			expectation = body;
-		}
-		body = {};
+const runExpectation = function (describe, engine, input, ...args) {
+	/** @type {import('@balena/odata-parser').SupportedMethod} */
+	let method = 'GET';
+	let expectedBindings = false;
+	let body = {};
+	let expectation;
+	switch (args.length) {
+		case 1:
+			[expectation] = args;
+			break;
+		case 2:
+			[method, expectation] = args;
+			break;
+		case 3:
+			[method, expectedBindings, expectation] = args;
+			break;
+		case 4:
+			[method, expectedBindings, body, expectation] = args;
+			break;
 	}
 
 	describe(

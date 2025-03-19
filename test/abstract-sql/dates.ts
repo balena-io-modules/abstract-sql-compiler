@@ -1,15 +1,4 @@
-import type { AnyTypeNodes } from '../../src/AbstractSQLCompiler';
-
-type TestCb = (
-	result: { query: string },
-	sqlEquals: (a: string, b: string) => void,
-) => void;
-import $test from './test';
-const test = $test as (
-	query: AnyTypeNodes,
-	binds: any[][] | TestCb,
-	cb?: TestCb,
-) => void;
+import test from './test';
 
 describe('Year', () => {
 	test(
@@ -17,7 +6,7 @@ describe('Year', () => {
 		[['Date', '2022-10-10']],
 		(result, sqlEquals) => {
 			it('should produce a valid Year statement', () => {
-				sqlEquals(result.query, `SELECT EXTRACT('YEAR' FROM $1)`);
+				sqlEquals(result, `SELECT EXTRACT('YEAR' FROM $1)`);
 			});
 		},
 	);
@@ -29,7 +18,7 @@ describe('Month', () => {
 		[['Date', '2022-10-10']],
 		(result, sqlEquals) => {
 			it('should produce a valid Month statement', () => {
-				sqlEquals(result.query, `SELECT EXTRACT('MONTH' FROM $1)`);
+				sqlEquals(result, `SELECT EXTRACT('MONTH' FROM $1)`);
 			});
 		},
 	);
@@ -41,7 +30,7 @@ describe('Day', () => {
 		[['Date', '2022-10-10']],
 		(result, sqlEquals) => {
 			it('should produce a valid Day statement', () => {
-				sqlEquals(result.query, `SELECT EXTRACT('DAY' FROM $1)`);
+				sqlEquals(result, `SELECT EXTRACT('DAY' FROM $1)`);
 			});
 		},
 	);
@@ -56,7 +45,7 @@ describe('Hour', () => {
 		[['Date', '2022-10-10T10:10:10.000Z']],
 		(result, sqlEquals) => {
 			it('should produce a valid Hour statement', () => {
-				sqlEquals(result.query, `SELECT EXTRACT('HOUR' FROM $1)`);
+				sqlEquals(result, `SELECT EXTRACT('HOUR' FROM $1)`);
 			});
 		},
 	);
@@ -71,7 +60,7 @@ describe('Minute', () => {
 		[['Date', '2022-10-10T10:10:10.000Z']],
 		(result, sqlEquals) => {
 			it('should produce a valid Minute statement', () => {
-				sqlEquals(result.query, `SELECT EXTRACT('MINUTE' FROM $1)`);
+				sqlEquals(result, `SELECT EXTRACT('MINUTE' FROM $1)`);
 			});
 		},
 	);
@@ -86,7 +75,7 @@ describe('Second', () => {
 		[['Date', '2022-10-10T10:10:10.000Z']],
 		(result, sqlEquals) => {
 			it('should produce a valid extract second statement', () => {
-				sqlEquals(result.query, `SELECT FLOOR(EXTRACT('SECOND' FROM $1))`);
+				sqlEquals(result, `SELECT FLOOR(EXTRACT('SECOND' FROM $1))`);
 			});
 		},
 	);
@@ -102,7 +91,7 @@ describe('Fractionalseconds', () => {
 		(result, sqlEquals) => {
 			it('should produce a valid extract Fractionalseconds statement', () => {
 				sqlEquals(
-					result.query,
+					result,
 					`SELECT EXTRACT('SECOND' FROM $1) - FLOOR(EXTRACT('SECOND' FROM $1))`,
 				);
 			});
@@ -116,7 +105,7 @@ describe('ToDate', () => {
 		[['Date', '2022-10-10']],
 		(result, sqlEquals) => {
 			it('should produce a valid ToDate statement', () => {
-				sqlEquals(result.query, `SELECT DATE($1)`);
+				sqlEquals(result, `SELECT DATE($1)`);
 			});
 		},
 	);
@@ -134,7 +123,7 @@ describe('DateTrunc', () => {
 		[['Date', '2022-10-10']],
 		(result, sqlEquals) => {
 			it('should produce a valid DateTrunc statement', () => {
-				sqlEquals(result.query, `SELECT DATE_TRUNC('year', $1)`);
+				sqlEquals(result, `SELECT DATE_TRUNC('year', $1)`);
 			});
 		},
 	);
@@ -149,7 +138,7 @@ describe('ToTime', () => {
 		[['Date', '2022-10-10T10:10:10.000Z']],
 		(result, sqlEquals) => {
 			it('should produce a valid ToTime statement', () => {
-				sqlEquals(result.query, `SELECT CAST($1 AS TIME)`);
+				sqlEquals(result, `SELECT CAST($1 AS TIME)`);
 			});
 		},
 	);
@@ -178,7 +167,7 @@ describe('AddDateDuration', () => {
 		[['Date', '2022-10-10T10:10:10.000Z']],
 		(result, sqlEquals) => {
 			it('should produce a valid Date addition statement', () => {
-				sqlEquals(result.query, `SELECT $1 + INTERVAL '1 0:0:0.0'`);
+				sqlEquals(result, `SELECT $1 + INTERVAL '1 0:0:0.0'`);
 			});
 		},
 	);
@@ -215,7 +204,7 @@ describe('AddDateDuration', () => {
 		(result, sqlEquals) => {
 			it('should produce a valid Date addition statement when the first operand returns a Date node', () => {
 				sqlEquals(
-					result.query,
+					result,
 					`SELECT ($1 + INTERVAL '1 0:0:0.0') + INTERVAL '2 0:0:0.0'`,
 				);
 			});
@@ -241,7 +230,7 @@ describe('AddDateNumber', () => {
 		[['Date', '2022-10-10T10:10:10.000Z']],
 		(result, sqlEquals) => {
 			it('should produce a valid Date addition statement', () => {
-				sqlEquals(result.query, `SELECT $1 + 10`);
+				sqlEquals(result, `SELECT $1 + 10`);
 			});
 		},
 	);
@@ -263,7 +252,7 @@ describe('AddDateNumber', () => {
 		[['Date', '2022-10-10T10:10:10.000Z']],
 		(result, sqlEquals) => {
 			it('should produce a valid Date addition statement when the second operand is a math operation', () => {
-				sqlEquals(result.query, `SELECT $1 + (4 - 5)`);
+				sqlEquals(result, `SELECT $1 + (4 - 5)`);
 			});
 		},
 	);
@@ -287,7 +276,7 @@ describe('SubtractDateNumber', () => {
 		[['Date', '2022-10-10T10:10:10.000Z']],
 		(result, sqlEquals) => {
 			it('should produce a valid Date subtraction statement', () => {
-				sqlEquals(result.query, `SELECT $1 - 10`);
+				sqlEquals(result, `SELECT $1 - 10`);
 			});
 		},
 	);
@@ -309,7 +298,7 @@ describe('SubtractDateNumber', () => {
 		[['Date', '2022-10-10T10:10:10.000Z']],
 		(result, sqlEquals) => {
 			it('should produce a valid Date subtraction statement when the second operand is a math operation', () => {
-				sqlEquals(result.query, `SELECT $1 - (4 - 5)`);
+				sqlEquals(result, `SELECT $1 - (4 - 5)`);
 			});
 		},
 	);
@@ -335,7 +324,7 @@ describe('SubtractDateNumber', () => {
 		[['Date', '2022-10-10T10:10:10.000Z']],
 		(result, sqlEquals) => {
 			it('should produce a valid Date subtraction statement when first operand returns a Date and the second operand is a math operation', () => {
-				sqlEquals(result.query, `SELECT ($1 + 1) - (4 - 5)`);
+				sqlEquals(result, `SELECT ($1 + 1) - (4 - 5)`);
 			});
 		},
 	);
@@ -352,10 +341,7 @@ describe('SubtractDateDate', () => {
 		],
 		(result, sqlEquals) => {
 			it('should produce a valid multiplication statement when the first operand is a SubtractDateDate operation and the second a number', () => {
-				sqlEquals(
-					result.query,
-					`SELECT (CURRENT_TIMESTAMP - CURRENT_TIMESTAMP) * 4`,
-				);
+				sqlEquals(result, `SELECT (CURRENT_TIMESTAMP - CURRENT_TIMESTAMP) * 4`);
 			});
 		},
 	);
@@ -377,7 +363,7 @@ describe('SubtractDateDate', () => {
 		(result, sqlEquals) => {
 			it('should produce a valid multiplication statement when the first operand is a SubtractDateDate operation and the second a math subtraction', () => {
 				sqlEquals(
-					result.query,
+					result,
 					`SELECT (CURRENT_TIMESTAMP - CURRENT_TIMESTAMP) * (4 - 5)`,
 				);
 			});
@@ -420,7 +406,7 @@ describe('SubtractDateDate', () => {
 		(result, sqlEquals) => {
 			it('should produce a valid SubtractDateDate operation when the operands return a Date node', () => {
 				sqlEquals(
-					result.query,
+					result,
 					`SELECT (CURRENT_TIMESTAMP + INTERVAL '1 0:0:0.0') - ($1 + INTERVAL '2 0:0:0.0')`,
 				);
 			});
@@ -451,7 +437,7 @@ describe('SubtractDateDuration', () => {
 		[['Date', '2022-10-10T10:10:10.000Z']],
 		(result, sqlEquals) => {
 			it('should produce a valid Date subtraction statement', () => {
-				sqlEquals(result.query, `SELECT $1 - INTERVAL '1 0:0:0.0'`);
+				sqlEquals(result, `SELECT $1 - INTERVAL '1 0:0:0.0'`);
 			});
 		},
 	);
@@ -488,7 +474,7 @@ describe('SubtractDateDuration', () => {
 		(result, sqlEquals) => {
 			it('should produce a valid Date subtraction statement when the first operand returns a Date node', () => {
 				sqlEquals(
-					result.query,
+					result,
 					`SELECT ($1 + INTERVAL '1 0:0:0.0') - INTERVAL '2 0:0:0.0'`,
 				);
 			});

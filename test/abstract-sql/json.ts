@@ -1,15 +1,4 @@
-import type { AnyTypeNodes } from '../../src/AbstractSQLCompiler';
-
-type TestCb = (
-	result: { query: string },
-	sqlEquals: (a: string, b: string) => void,
-) => void;
-import $test from './test';
-const test = $test as (
-	query: AnyTypeNodes,
-	binds: any[][] | TestCb,
-	cb?: TestCb,
-) => void;
+import test from './test';
 
 describe('ExtractJSONPathAsText', () => {
 	test(
@@ -28,10 +17,7 @@ describe('ExtractJSONPathAsText', () => {
 		],
 		(result, sqlEquals) => {
 			it('should produce a valid select with given empty text array', () => {
-				sqlEquals(
-					result.query,
-					`SELECT "foo"."bar" #>> CAST(ARRAY[] as TEXT[])`,
-				);
+				sqlEquals(result, `SELECT "foo"."bar" #>> CAST(ARRAY[] as TEXT[])`);
 			});
 		},
 	);
@@ -51,7 +37,7 @@ describe('ExtractJSONPathAsText', () => {
 		],
 		(result, sqlEquals) => {
 			it('should produce a valid select with given populated text array', () => {
-				sqlEquals(result.query, `SELECT "foo"."bar" #>> ARRAY['buz', 'baz']`);
+				sqlEquals(result, `SELECT "foo"."bar" #>> ARRAY['buz', 'baz']`);
 			});
 		},
 	);
@@ -65,7 +51,7 @@ describe('ToJSON', () => {
 		],
 		(result, sqlEquals) => {
 			it('should produce a valid to_json select statement', () => {
-				sqlEquals(result.query, 'SELECT TO_JSON("foo"."bar")');
+				sqlEquals(result, 'SELECT TO_JSON("foo"."bar")');
 			});
 		},
 	);
