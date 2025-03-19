@@ -1,4 +1,32 @@
 - commits:
+    - subject: "Tests: convert test/abstract-sql/case-when-else.js to typescript"
+      hash: 0edb21cc4ee30ead2a6eeb290623f3a0adc7a0fe
+      body: ""
+      footer:
+        Change-type: patch
+        change-type: patch
+      author: Pagan Gazzard
+      nested: []
+    - subject: "Tests: convert test/abstract-sql/test.js to typescript"
+      hash: 43c24e87e4af08c8dd803a1cc4dfcb8bead301e9
+      body: ""
+      footer:
+        Change-type: patch
+        change-type: patch
+      author: Pagan Gazzard
+      nested: []
+    - subject: "Tests: simplify handling of variadic test helper functions"
+      hash: f07fa0857b22c99c019cb1d3ea04a9b6fa7449e7
+      body: ""
+      footer:
+        Change-type: patch
+        change-type: patch
+      author: Pagan Gazzard
+      nested: []
+  version: 10.2.3
+  title: ""
+  date: 2025-03-19T14:16:28.813Z
+- commits:
     - subject: Clarify the `['Bind', string, string]` form of `BindNode` is legacy
       hash: aa72d3c77c2b6dae37d517ca149a27ea7e5a9bc1
       body: ""
