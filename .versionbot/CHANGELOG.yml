@@ -1,4 +1,16 @@
 - commits:
+    - subject: Update dev dependencies
+      hash: 703263fa73aff2253d1a931a5946a027d20c9ff6
+      body: ""
+      footer:
+        Change-type: patch
+        change-type: patch
+      author: Pagan Gazzard
+      nested: []
+  version: 10.2.4
+  title: ""
+  date: 2025-04-04T14:00:21.240Z
+- commits:
     - subject: "Tests: convert test/abstract-sql/case-when-else.js to typescript"
       hash: 0edb21cc4ee30ead2a6eeb290623f3a0adc7a0fe
       body: ""
