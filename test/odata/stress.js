@@ -14,7 +14,8 @@ const filterBindsNandString = _.map(
 	() => 'NOT(("pilot"."id") IS NOT NULL AND ("pilot"."id") = (?))',
 ).join('\nAND ');
 
-const filterBinds = _.map(filterIDs, (_n, i) => ['Bind', i]);
+// prettier-ignore
+const filterBinds = filterIDs.map((_n, i) => /** @type {const} */ (['Bind', i]));
 
 let filterString = `id in (${filterIDs.join(', ')})`;
 test(
@@ -24,7 +25,7 @@ test(
 	(result, sqlEquals) => {
 		it('should select from pilot with a long IN clause', () => {
 			sqlEquals(
-				result.query,
+				result,
 				`\
 SELECT ${pilotFieldsStr}
 FROM "pilot"
@@ -44,7 +45,7 @@ test(
 	(result, sqlEquals) => {
 		it('should select from pilot with a long NOT IN clause', () => {
 			sqlEquals(
-				result.query,
+				result,
 				`\
 SELECT ${pilotFieldsStr}
 FROM "pilot"
@@ -64,7 +65,7 @@ test(
 	(result, sqlEquals) => {
 		it('should select from pilot with a long IN clause', () => {
 			sqlEquals(
-				result.query,
+				result,
 				`\
 SELECT ${pilotFieldsStr}
 FROM "pilot"
@@ -82,7 +83,7 @@ test(
 	(result, sqlEquals) => {
 		it('should select from pilot with a long NOT IN clause', () => {
 			sqlEquals(
-				result.query,
+				result,
 				`\
 SELECT ${pilotFieldsStr}
 FROM "pilot"
