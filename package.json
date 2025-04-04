@@ -23,23 +23,23 @@
     "@balena/sbvr-types": "^7.1.0 || ^8.0.0 || ^9.0.2"
   },
   "devDependencies": {
-    "@balena/lf-to-abstract-sql": "^5.0.2",
+    "@balena/lf-to-abstract-sql": "^5.0.4",
     "@balena/lint": "^8.2.8",
-    "@balena/odata-parser": "^3.1.0",
-    "@balena/odata-to-abstract-sql": "^7.0.0",
-    "@balena/sbvr-parser": "^1.4.6",
-    "@types/chai": "^4.3.4",
+    "@balena/odata-parser": "^3.1.2",
+    "@balena/odata-to-abstract-sql": "^7.2.0",
+    "@balena/sbvr-parser": "^1.4.9",
+    "@types/chai": "^4.3.20",
     "@types/common-tags": "^1.8.4",
-    "@types/lodash": "^4.17.10",
-    "@types/mocha": "^10.0.8",
-    "@types/node": "^20.16.10",
-    "chai": "^4.3.7",
+    "@types/lodash": "^4.17.16",
+    "@types/mocha": "^10.0.10",
+    "@types/node": "^20.17.30",
+    "chai": "^4.5.0",
     "common-tags": "^1.8.2",
-    "husky": "^9.1.6",
-    "lint-staged": "^15.2.10",
-    "mocha": "^11.0.0",
+    "husky": "^9.1.7",
+    "lint-staged": "^15.5.0",
+    "mocha": "^11.2.0",
     "ts-node": "^10.9.2",
-    "typescript": "^5.6.2"
+    "typescript": "^5.8.2"
   },
   "lint-staged": {
     "*.js": [

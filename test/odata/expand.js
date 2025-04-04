@@ -346,10 +346,9 @@ SELECT (
 	SELECT ${aggFunc('"pilot.licence".*')} AS "licence"
 	FROM (
 		SELECT ${aliasLicenceFields.join(', ')}
-		FROM "licence" AS "pilot.licence",
-			"pilot" AS "pilot.licence.is of-pilot"
-		WHERE "pilot.licence"."id" = "pilot.licence.is of-pilot"."licence"
-		AND ("pilot.licence.is of-pilot"."id") IS NOT NULL AND ("pilot.licence.is of-pilot"."id") = (?)
+		FROM "licence" AS "pilot.licence"
+		LEFT JOIN "pilot" AS "pilot.licence.is of-pilot" ON "pilot.licence"."id" = "pilot.licence.is of-pilot"."licence"
+		WHERE ("pilot.licence.is of-pilot"."id") IS NOT NULL AND ("pilot.licence.is of-pilot"."id") = (?)
 		AND "pilot"."licence" = "pilot.licence"."id"
 	) AS "pilot.licence"
 ) AS "licence", ${remainingPilotFields}
