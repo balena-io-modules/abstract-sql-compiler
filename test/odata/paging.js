@@ -5,7 +5,7 @@ const pilotFieldsStr = pilotFields.join(', ');
 test('/pilot?$top=5', 'GET', [['Bind', 0]], (result, sqlEquals) => {
 	it('should select from pilot limited by 5', () => {
 		sqlEquals(
-			result.query,
+			result,
 			`\
 SELECT ${pilotFieldsStr}
 FROM "pilot"
@@ -17,7 +17,7 @@ LIMIT ?`,
 test('/pilot?$skip=100', 'GET', [['Bind', 0]], (result, sqlEquals) => {
 	it('should select from pilot offset by 100', () => {
 		sqlEquals(
-			result.query,
+			result,
 			`\
 SELECT ${pilotFieldsStr}
 FROM "pilot"
@@ -36,7 +36,7 @@ test(
 	(result, sqlEquals) => {
 		it('should select from pilot limited by 5 and offset by 100', () => {
 			sqlEquals(
-				result.query,
+				result,
 				`\
 SELECT ${pilotFieldsStr}
 FROM "pilot"
