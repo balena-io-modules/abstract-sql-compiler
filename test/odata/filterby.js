@@ -365,7 +365,7 @@ LEFT JOIN "pilot" AS "pilot.trained-pilot" ON "pilot"."id" = "pilot.trained-pilo
 		test(`/pilot?$filter=${odata}`, 'GET', bindings, (result, sqlEquals) => {
 			it('should select from pilot where "' + odata + '"', () => {
 				sqlEquals(
-					result.query,
+					result,
 					`\
 SELECT ${pilotFieldsStr}
 FROM ${from}
@@ -380,7 +380,7 @@ WHERE ${sql}`,
 			(result, sqlEquals) => {
 				it('should select count(*) from pilot where "' + odata + '"', () => {
 					sqlEquals(
-						result.query,
+						result,
 						`\
 SELECT COUNT(*) AS "$count"
 FROM ${from}
@@ -398,7 +398,7 @@ const methodTest = (...args) => {
 		test(`/pilot?$filter=${odata}`, 'GET', bindings, (result, sqlEquals) => {
 			it('should select from pilot where "' + odata + '"', () => {
 				sqlEquals(
-					result.query,
+					result,
 					`\
 SELECT ${pilotFieldsStr}
 FROM "pilot"
@@ -413,7 +413,7 @@ WHERE ` + sql,
 			(result, sqlEquals) => {
 				it('should select count(*) from pilot where "' + odata + '"', () => {
 					sqlEquals(
-						result.query,
+						result,
 						`\
 SELECT COUNT(*) AS "$count"
 FROM "pilot"
@@ -513,7 +513,7 @@ run(function () {
 		(result, sqlEquals) => {
 			it('should select from pilot where "' + odata + '"', () => {
 				sqlEquals(
-					result.query,
+					result,
 					`\
 SELECT ${pilotFieldsStr}
 FROM "pilot"
@@ -533,7 +533,7 @@ run(function () {
 		(result, sqlEquals) => {
 			it('should select from pilot where "' + odata + '"', () => {
 				sqlEquals(
-					result.query,
+					result,
 					`\
 SELECT ${pilotFieldsStr}
 FROM "pilot"
@@ -554,7 +554,7 @@ run(function () {
 	test(`/pilot?$filter=${odata}`, 'GET', bindings, (result, sqlEquals) => {
 		it('should select from pilot where "' + odata + '"', () => {
 			sqlEquals(
-				result.query,
+				result,
 				`\
 SELECT ${pilotFieldsStr}
 FROM "pilot"
@@ -577,7 +577,7 @@ run(function () {
 				'should select from pilot__can_fly__plane where "' + odata + '"',
 				() => {
 					sqlEquals(
-						result.query,
+						result,
 						`\
 SELECT ${aliasPilotCanFlyPlaneFieldsStr}
 FROM "pilot",
@@ -600,10 +600,10 @@ run(function () {
 		10,
 	);
 	const name = 'Peter';
-	const bodyBindings = [['Bind', ['pilot', 'name']]].concat(bindings);
+	const bodyBindings = [['Bind', ['pilot', 'name']], ...bindings];
 	const insertTest = (result, sqlEquals) => {
 		sqlEquals(
-			result.query,
+			result,
 			`\
 INSERT INTO "pilot" ("name")
 SELECT "$insert"."name"
@@ -633,7 +633,7 @@ WHERE "pilot"."id" IN ((
 	test(`/pilot?$filter=${odata}`, 'GET', bindings, (result, sqlEquals) => {
 		it(`should select from pilot where '${odata}'`, () => {
 			sqlEquals(
-				result.query,
+				result,
 				`\
 SELECT ${pilotFieldsStr}
 FROM "pilot"
@@ -652,7 +652,7 @@ WHERE ${sql}`,
 		(result, sqlEquals) => {
 			it(`should update pilot where '${odata}'`, () => {
 				sqlEquals(
-					result.query,
+					result,
 					`\
 UPDATE "pilot"
 SET "name" = ?
@@ -714,7 +714,7 @@ ${updateWhere}`,
 	test(`/pilot?$filter=${odata}`, 'DELETE', bindings, (result, sqlEquals) => {
 		it('should delete from pilot where "' + odata + '"', () => {
 			sqlEquals(
-				result.query,
+				result,
 				`\
 DELETE FROM "pilot"
 WHERE "pilot"."id" IN ((
@@ -745,7 +745,7 @@ run(function () {
 		(result, sqlEquals) => {
 			it(`should insert into pilot where '${odata}'`, () => {
 				sqlEquals(
-					result.query,
+					result,
 					`\
 INSERT INTO "pilot" ("name")
 SELECT "$insert"."name"
@@ -789,7 +789,7 @@ run(function () {
 		(result, sqlEquals) => {
 			it('should update the pilot with id 1', () => {
 				sqlEquals(
-					result.query,
+					result,
 					`\
 UPDATE "pilot"
 SET "name" = ?
@@ -879,7 +879,7 @@ run(function () {
 				'should select from pilot__can_fly__plane where "' + odata + '"',
 				() => {
 					sqlEquals(
-						result.query,
+						result,
 						`\
 SELECT ${aliasPilotCanFlyPlaneFieldsStr}
 FROM "pilot",
@@ -1013,7 +1013,7 @@ test(
 	(result, sqlEquals) => {
 		it('should select from pilot where ...', () => {
 			sqlEquals(
-				result.query,
+				result,
 				`\
 SELECT ${pilotFieldsStr}
 FROM "pilot"
@@ -1036,7 +1036,7 @@ test(
 	(result, sqlEquals) => {
 		it('should select count(*) from pilot where ...', () => {
 			sqlEquals(
-				result.query,
+				result,
 				`\
 SELECT COUNT(*) AS "$count"
 FROM "pilot"
@@ -1065,7 +1065,7 @@ test(
 	(result, sqlEquals) => {
 		it('should select count(*) from pilot where id in (5,10)', () => {
 			sqlEquals(
-				result.query,
+				result,
 				`\
 SELECT ${pilotFieldsStr}
 FROM "pilot"
@@ -1098,7 +1098,7 @@ test(
 	(result, sqlEquals) => {
 		it('should select count(*) from pilot where id in (5,10)', () => {
 			sqlEquals(
-				result.query,
+				result,
 				`\
 SELECT ${pilotFieldsStr}
 FROM "pilot"
@@ -1127,7 +1127,7 @@ test(
 	(result, sqlEquals) => {
 		it('should select from pilot where ...', () => {
 			sqlEquals(
-				result.query,
+				result,
 				`\
 SELECT ${pilotFieldsStr}
 FROM "pilot"
@@ -1152,7 +1152,7 @@ test(
 	(result, sqlEquals) => {
 		it('should select count(*) from pilot where ...', () => {
 			sqlEquals(
-				result.query,
+				result,
 				`\
 SELECT COUNT(*) AS "$count"
 FROM "pilot"
@@ -1177,7 +1177,7 @@ test(
 	(result, sqlEquals) => {
 		it('should select from pilot where ...', () => {
 			sqlEquals(
-				result.query,
+				result,
 				`\
 SELECT ${pilotFieldsStr}
 FROM "pilot"
@@ -1200,7 +1200,7 @@ test(
 	(result, sqlEquals) => {
 		it('should select count(*) from pilot where ...', () => {
 			sqlEquals(
-				result.query,
+				result,
 				`\
 SELECT COUNT(*) AS "$count"
 FROM "pilot"
@@ -1223,7 +1223,7 @@ test(
 	(result, sqlEquals) => {
 		it('should select from pilot where ...', () => {
 			sqlEquals(
-				result.query,
+				result,
 				`\
 SELECT ${pilotFieldsStr}
 FROM "pilot"
@@ -1248,7 +1248,7 @@ test(
 	(result, sqlEquals) => {
 		it('should select count(*) from pilot where ...', () => {
 			sqlEquals(
-				result.query,
+				result,
 				`\
 SELECT COUNT(*) AS "$count"
 FROM "pilot"
@@ -1279,7 +1279,7 @@ test(
 	(result, sqlEquals) => {
 		it('should select count(*) from pilot where id in (5,10)', () => {
 			sqlEquals(
-				result.query,
+				result,
 				`\
 SELECT ${pilotFieldsStr}
 FROM "pilot"
@@ -1312,7 +1312,7 @@ test(
 	(result, sqlEquals) => {
 		it('should select count(*) from pilot where id in (5,10)', () => {
 			sqlEquals(
-				result.query,
+				result,
 				`\
 SELECT ${pilotFieldsStr}
 FROM "pilot"
@@ -1345,7 +1345,7 @@ test(
 	(result, sqlEquals) => {
 		it('should select count(*) from pilot where id in (5,10)', () => {
 			sqlEquals(
-				result.query,
+				result,
 				`\
 SELECT ${pilotFieldsStr}
 FROM "pilot"
@@ -1378,12 +1378,12 @@ run(function () {
 	test(
 		'/team?$filter=' + odata,
 		'POST',
-		[['Bind', ['team', 'favourite_colour']]].concat(bindings),
+		[['Bind', ['team', 'favourite_colour']], ...bindings],
 		{ favourite_colour: favouriteColour },
 		(result, sqlEquals) => {
 			it('should insert into team where "' + odata + '"', () => {
 				sqlEquals(
-					result.query,
+					result,
 					`\
 INSERT INTO "team" ("favourite colour")
 SELECT "$insert"."favourite colour"
@@ -1412,7 +1412,7 @@ run(function () {
 	test('/team?$filter=' + odata, 'GET', bindings, (result, sqlEquals) => {
 		it('should select from team where "' + odata + '"', () => {
 			sqlEquals(
-				result.query,
+				result,
 				`\
 SELECT ${teamFieldsStr}
 FROM "team"
@@ -1430,7 +1430,7 @@ run(function () {
 	test(`/pilot?$filter=${odata}`, 'GET', [], (result, sqlEquals) => {
 		it('should select from pilot where "' + odata + '"', () => {
 			sqlEquals(
-				result.query,
+				result,
 				`\
 SELECT ${pilotFieldsStr}
 FROM "pilot"
@@ -1442,7 +1442,7 @@ WHERE CURRENT_TIMESTAMP - DATE_TRUNC('milliseconds', "pilot"."created at") < INT
 
 run(function () {
 	const odata = 'now() add now()';
-	test(`/pilot?$filter=${odata}`, 'GET', [], (result, sqlEquals) => {
+	test.fail(`/pilot?$filter=${odata}`, 'GET', [], (result, sqlEquals) => {
 		it(
 			'should fail to add current_timestamp to current_timestamp where "' +
 				odata +
@@ -1460,7 +1460,7 @@ run(function () {
 	test(`/pilot?$filter=${odata}`, 'GET', [], (result, sqlEquals) => {
 		it('should select from pilot where "' + odata + '"', () => {
 			sqlEquals(
-				result.query,
+				result,
 				`\
 SELECT ${pilotFieldsStr}
 FROM "pilot"
@@ -1475,7 +1475,7 @@ run(function () {
 	test(`/pilot?$filter=${odata}`, 'GET', [['Bind', 0]], (result, sqlEquals) => {
 		it('should select from pilot where "' + odata + '"', () => {
 			sqlEquals(
-				result.query,
+				result,
 				`\
 SELECT ${pilotFieldsStr}
 FROM "pilot"

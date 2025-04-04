@@ -5,7 +5,7 @@ const pilotFieldsStr = pilotFields.join(', ');
 test('/pilot?$orderby=name', (result, sqlEquals) => {
 	it('should order by name desc', () => {
 		sqlEquals(
-			result.query,
+			result,
 			`\
 SELECT ${pilotFieldsStr}
 FROM "pilot"
@@ -17,7 +17,7 @@ ORDER BY "pilot"."name" DESC`,
 test('/pilot?$orderby=name,age', (result, sqlEquals) => {
 	it('should order by name desc, age desc', () => {
 		sqlEquals(
-			result.query,
+			result,
 			`\
 SELECT ${pilotFieldsStr}
 FROM "pilot"
@@ -30,7 +30,7 @@ ORDER BY "pilot"."name" DESC,
 test('/pilot?$orderby=name desc', (result, sqlEquals) => {
 	it('should order by name desc', () => {
 		sqlEquals(
-			result.query,
+			result,
 			`\
 SELECT ${pilotFieldsStr}
 FROM "pilot"
@@ -42,7 +42,7 @@ ORDER BY "pilot"."name" DESC`,
 test('/pilot?$orderby=name asc', (result, sqlEquals) => {
 	it('should order by name asc', () => {
 		sqlEquals(
-			result.query,
+			result,
 			`\
 SELECT ${pilotFieldsStr}
 FROM "pilot"
@@ -54,7 +54,7 @@ ORDER BY "pilot"."name" ASC`,
 test('/pilot?$orderby=name asc,age desc', (result, sqlEquals) => {
 	it('should order by name desc, age desc', () => {
 		sqlEquals(
-			result.query,
+			result,
 			`\
 SELECT ${pilotFieldsStr}
 FROM "pilot"
@@ -67,7 +67,7 @@ ORDER BY "pilot"."name" ASC,
 test('/pilot?$orderby=licence/id asc', (result, sqlEquals) => {
 	it('should order by licence/id asc', () => {
 		sqlEquals(
-			result.query,
+			result,
 			`\
 SELECT ${pilotFieldsStr}
 FROM "pilot"
@@ -80,7 +80,7 @@ ORDER BY "pilot.licence"."id" ASC`,
 test('/pilot?$orderby=can_fly__plane/plane/id asc', (result, sqlEquals) => {
 	it('should order by pilot__can_fly__plane/plane/id asc', () => {
 		sqlEquals(
-			result.query,
+			result,
 			`\
 SELECT ${pilotFieldsStr}
 FROM "pilot"
@@ -91,6 +91,6 @@ ORDER BY "pilot.pilot-can fly-plane.plane"."id" ASC`,
 	});
 });
 
-test.skip('/pilot?$orderby=favourite_colour/red', () => {
+test.fail('/pilot?$orderby=favourite_colour/red', () => {
 	it("should order by how red the pilot's favourite colour is");
 });
