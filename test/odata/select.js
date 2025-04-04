@@ -64,9 +64,8 @@ test('/pilot?$select=trained__pilot/name', (result, sqlEquals) => {
 			result.query,
 			`\
 SELECT "pilot.trained-pilot"."name"
-FROM "pilot",
-	"pilot" AS "pilot.trained-pilot"
-WHERE "pilot"."id" = "pilot.trained-pilot"."was trained by-pilot"`,
+FROM "pilot"
+LEFT JOIN "pilot" AS "pilot.trained-pilot" ON "pilot"."id" = "pilot.trained-pilot"."was trained by-pilot"`,
 		);
 	});
 });
@@ -77,9 +76,8 @@ test('/pilot?$select=trained__pilot/name,age', (result, sqlEquals) => {
 			result.query,
 			`\
 SELECT "pilot.trained-pilot"."name", "pilot"."age"
-FROM "pilot",
-	"pilot" AS "pilot.trained-pilot"
-WHERE "pilot"."id" = "pilot.trained-pilot"."was trained by-pilot"`,
+FROM "pilot"
+LEFT JOIN "pilot" AS "pilot.trained-pilot" ON "pilot"."id" = "pilot.trained-pilot"."was trained by-pilot"`,
 		);
 	});
 });
@@ -101,9 +99,8 @@ test('/pilot?$select=licence/id', (result, sqlEquals) => {
 			result.query,
 			`\
 SELECT "pilot.licence"."id"
-FROM "pilot",
-	"licence" AS "pilot.licence"
-WHERE "pilot"."licence" = "pilot.licence"."id"`,
+FROM "pilot"
+LEFT JOIN "licence" AS "pilot.licence" ON "pilot"."licence" = "pilot.licence"."id"`,
 		);
 	});
 });
@@ -114,11 +111,9 @@ test('/pilot?$select=can_fly__plane/plane/id', (result, sqlEquals) => {
 			result.query,
 			`\
 SELECT "pilot.pilot-can fly-plane.plane"."id"
-FROM "pilot",
-	"pilot-can fly-plane" AS "pilot.pilot-can fly-plane",
-	"plane" AS "pilot.pilot-can fly-plane.plane"
-WHERE "pilot"."id" = "pilot.pilot-can fly-plane"."pilot"
-AND "pilot.pilot-can fly-plane"."can fly-plane" = "pilot.pilot-can fly-plane.plane"."id"`,
+FROM "pilot"
+LEFT JOIN "pilot-can fly-plane" AS "pilot.pilot-can fly-plane" ON "pilot"."id" = "pilot.pilot-can fly-plane"."pilot"
+LEFT JOIN "plane" AS "pilot.pilot-can fly-plane.plane" ON "pilot.pilot-can fly-plane"."can fly-plane" = "pilot.pilot-can fly-plane.plane"."id"`,
 		);
 	});
 });

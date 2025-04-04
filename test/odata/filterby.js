@@ -351,21 +351,15 @@ const createMethodCall = function (method, ...args) {
 const operandTest = (lhs, op, rhs, override) => {
 	run(function () {
 		let from;
-		let where;
 		let { odata, sql, bindings } = createExpression(lhs, op, rhs);
 		bindings = override?.bindings ?? bindings;
 		sql = override?.sql ?? sql;
 		if (_.includes(odata, '/')) {
 			from = `\
-"pilot",
-	"pilot" AS "pilot.trained-pilot"`;
-			where =
-				`\
-"pilot"."id" = "pilot.trained-pilot"."was trained by-pilot"
-AND ` + sql;
+"pilot"
+LEFT JOIN "pilot" AS "pilot.trained-pilot" ON "pilot"."id" = "pilot.trained-pilot"."was trained by-pilot"`;
 		} else {
 			from = '"pilot"';
-			where = sql;
 		}
 
 		test(`/pilot?$filter=${odata}`, 'GET', bindings, (result, sqlEquals) => {
@@ -375,7 +369,7 @@ AND ` + sql;
 					`\
 SELECT ${pilotFieldsStr}
 FROM ${from}
-WHERE ${where}`,
+WHERE ${sql}`,
 				);
 			});
 		});
@@ -390,7 +384,7 @@ WHERE ${where}`,
 						`\
 SELECT COUNT(*) AS "$count"
 FROM ${from}
-WHERE ${where}`,
+WHERE ${sql}`,
 					);
 				});
 			},
@@ -563,10 +557,9 @@ run(function () {
 				result.query,
 				`\
 SELECT ${pilotFieldsStr}
-FROM "pilot",
-	"pilot-can fly-plane" AS "pilot.pilot-can fly-plane"
-WHERE "pilot"."id" = "pilot.pilot-can fly-plane"."pilot"
-AND ${sql}`,
+FROM "pilot"
+LEFT JOIN "pilot-can fly-plane" AS "pilot.pilot-can fly-plane" ON "pilot"."id" = "pilot.pilot-can fly-plane"."pilot"
+WHERE ${sql}`,
 			);
 		});
 	});
@@ -588,10 +581,9 @@ run(function () {
 						`\
 SELECT ${aliasPilotCanFlyPlaneFieldsStr}
 FROM "pilot",
-	"pilot-can fly-plane" AS "pilot.pilot-can fly-plane",
-	"plane" AS "pilot.pilot-can fly-plane.can fly-plane"
-WHERE "pilot.pilot-can fly-plane"."can fly-plane" = "pilot.pilot-can fly-plane.can fly-plane"."id"
-AND ("pilot.pilot-can fly-plane.can fly-plane"."id") IS NOT NULL AND ("pilot.pilot-can fly-plane.can fly-plane"."id") = (?)
+	"pilot-can fly-plane" AS "pilot.pilot-can fly-plane"
+LEFT JOIN "plane" AS "pilot.pilot-can fly-plane.can fly-plane" ON "pilot.pilot-can fly-plane"."can fly-plane" = "pilot.pilot-can fly-plane.can fly-plane"."id"
+WHERE ("pilot.pilot-can fly-plane.can fly-plane"."id") IS NOT NULL AND ("pilot.pilot-can fly-plane.can fly-plane"."id") = (?)
 AND "pilot"."id" = "pilot.pilot-can fly-plane"."pilot"
 AND ("pilot"."id") IS NOT NULL AND ("pilot"."id") = (?)`,
 					);
@@ -609,11 +601,6 @@ run(function () {
 	);
 	const name = 'Peter';
 	const bodyBindings = [['Bind', ['pilot', 'name']]].concat(bindings);
-	const filterWhere = [
-		'WHERE "pilot"."id" = "pilot.pilot-can fly-plane"."pilot"',
-		'AND "pilot.pilot-can fly-plane"."can fly-plane" = "pilot.pilot-can fly-plane.plane"."id"',
-		`AND ${sql}`,
-	];
 	const insertTest = (result, sqlEquals) => {
 		sqlEquals(
 			result.query,
@@ -625,22 +612,22 @@ FROM (
 ) AS "$insert"
 WHERE EXISTS (
 	SELECT 1
-	FROM "pilot-can fly-plane" AS "pilot.pilot-can fly-plane",
-		"plane" AS "pilot.pilot-can fly-plane.plane",
-		(
+	FROM (
 		SELECT "$insert".*
 	) AS "pilot"
-	${filterWhere.join('\n\t')}
+	LEFT JOIN "pilot-can fly-plane" AS "pilot.pilot-can fly-plane" ON "pilot"."id" = "pilot.pilot-can fly-plane"."pilot"
+	LEFT JOIN "plane" AS "pilot.pilot-can fly-plane.plane" ON "pilot.pilot-can fly-plane"."can fly-plane" = "pilot.pilot-can fly-plane.plane"."id"
+	WHERE ${sql}
 )`,
 		);
 	};
 	const updateWhere = `\
 WHERE "pilot"."id" IN ((
 	SELECT "pilot"."id" AS "$modifyid"
-	FROM "pilot",
-		"pilot-can fly-plane" AS "pilot.pilot-can fly-plane",
-		"plane" AS "pilot.pilot-can fly-plane.plane"
-	${filterWhere.join('\n\t')}
+	FROM "pilot"
+	LEFT JOIN "pilot-can fly-plane" AS "pilot.pilot-can fly-plane" ON "pilot"."id" = "pilot.pilot-can fly-plane"."pilot"
+	LEFT JOIN "plane" AS "pilot.pilot-can fly-plane.plane" ON "pilot.pilot-can fly-plane"."can fly-plane" = "pilot.pilot-can fly-plane.plane"."id"
+	WHERE ${sql}
 ))`;
 
 	test(`/pilot?$filter=${odata}`, 'GET', bindings, (result, sqlEquals) => {
@@ -649,10 +636,10 @@ WHERE "pilot"."id" IN ((
 				result.query,
 				`\
 SELECT ${pilotFieldsStr}
-FROM "pilot",
-	"pilot-can fly-plane" AS "pilot.pilot-can fly-plane",
-	"plane" AS "pilot.pilot-can fly-plane.plane"
-${filterWhere.join('\n')}`,
+FROM "pilot"
+LEFT JOIN "pilot-can fly-plane" AS "pilot.pilot-can fly-plane" ON "pilot"."id" = "pilot.pilot-can fly-plane"."pilot"
+LEFT JOIN "plane" AS "pilot.pilot-can fly-plane.plane" ON "pilot.pilot-can fly-plane"."can fly-plane" = "pilot.pilot-can fly-plane.plane"."id"
+WHERE ${sql}`,
 			);
 		});
 	});
@@ -732,10 +719,10 @@ ${updateWhere}`,
 DELETE FROM "pilot"
 WHERE "pilot"."id" IN ((
 	SELECT "pilot"."id" AS "$modifyid"
-	FROM "pilot",
-		"pilot-can fly-plane" AS "pilot.pilot-can fly-plane",
-		"plane" AS "pilot.pilot-can fly-plane.plane"
-	${filterWhere.join('\n\t')}
+	FROM "pilot"
+	LEFT JOIN "pilot-can fly-plane" AS "pilot.pilot-can fly-plane" ON "pilot"."id" = "pilot.pilot-can fly-plane"."pilot"
+	LEFT JOIN "plane" AS "pilot.pilot-can fly-plane.plane" ON "pilot.pilot-can fly-plane"."can fly-plane" = "pilot.pilot-can fly-plane.plane"."id"
+	WHERE ${sql}
 ))`,
 			);
 		});
@@ -1032,10 +1019,9 @@ SELECT ${pilotFieldsStr}
 FROM "pilot"
 WHERE EXISTS (
 	SELECT 1
-	FROM "pilot-can fly-plane" AS "pilot.pilot-can fly-plane",
-		"plane" AS "pilot.pilot-can fly-plane.plane"
+	FROM "pilot-can fly-plane" AS "pilot.pilot-can fly-plane"
+	LEFT JOIN "plane" AS "pilot.pilot-can fly-plane.plane" ON "pilot.pilot-can fly-plane"."can fly-plane" = "pilot.pilot-can fly-plane.plane"."id"
 	WHERE "pilot"."id" = "pilot.pilot-can fly-plane"."pilot"
-	AND "pilot.pilot-can fly-plane"."can fly-plane" = "pilot.pilot-can fly-plane.plane"."id"
 	AND ("pilot.pilot-can fly-plane.plane"."name") IS NOT NULL AND ("pilot.pilot-can fly-plane.plane"."name") = (?)
 )`,
 			);
@@ -1056,10 +1042,9 @@ SELECT COUNT(*) AS "$count"
 FROM "pilot"
 WHERE EXISTS (
 	SELECT 1
-	FROM "pilot-can fly-plane" AS "pilot.pilot-can fly-plane",
-		"plane" AS "pilot.pilot-can fly-plane.plane"
+	FROM "pilot-can fly-plane" AS "pilot.pilot-can fly-plane"
+	LEFT JOIN "plane" AS "pilot.pilot-can fly-plane.plane" ON "pilot.pilot-can fly-plane"."can fly-plane" = "pilot.pilot-can fly-plane.plane"."id"
 	WHERE "pilot"."id" = "pilot.pilot-can fly-plane"."pilot"
-	AND "pilot.pilot-can fly-plane"."can fly-plane" = "pilot.pilot-can fly-plane.plane"."id"
 	AND ("pilot.pilot-can fly-plane.plane"."name") IS NOT NULL AND ("pilot.pilot-can fly-plane.plane"."name") = (?)
 )`,
 			);
@@ -1086,10 +1071,9 @@ SELECT ${pilotFieldsStr}
 FROM "pilot"
 WHERE (EXISTS (
 	SELECT 1
-	FROM "pilot-can fly-plane" AS "pilot.pilot-can fly-plane",
-		"plane" AS "pilot.pilot-can fly-plane.plane"
+	FROM "pilot-can fly-plane" AS "pilot.pilot-can fly-plane"
+	LEFT JOIN "plane" AS "pilot.pilot-can fly-plane.plane" ON "pilot.pilot-can fly-plane"."can fly-plane" = "pilot.pilot-can fly-plane.plane"."id"
 	WHERE "pilot"."id" = "pilot.pilot-can fly-plane"."pilot"
-	AND "pilot.pilot-can fly-plane"."can fly-plane" = "pilot.pilot-can fly-plane.plane"."id"
 	AND ("pilot.pilot-can fly-plane.plane"."name") IS NOT NULL AND ("pilot.pilot-can fly-plane.plane"."name") = (?)
 )
 OR ("pilot"."id") IS NOT NULL AND ("pilot"."id") = (?)
@@ -1121,10 +1105,9 @@ FROM "pilot"
 WHERE NOT (
 	(EXISTS (
 		SELECT 1
-		FROM "pilot-can fly-plane" AS "pilot.pilot-can fly-plane",
-			"plane" AS "pilot.pilot-can fly-plane.plane"
+		FROM "pilot-can fly-plane" AS "pilot.pilot-can fly-plane"
+		LEFT JOIN "plane" AS "pilot.pilot-can fly-plane.plane" ON "pilot.pilot-can fly-plane"."can fly-plane" = "pilot.pilot-can fly-plane.plane"."id"
 		WHERE "pilot"."id" = "pilot.pilot-can fly-plane"."pilot"
-		AND "pilot.pilot-can fly-plane"."can fly-plane" = "pilot.pilot-can fly-plane.plane"."id"
 		AND ("pilot.pilot-can fly-plane.plane"."name") IS NOT NULL AND ("pilot.pilot-can fly-plane.plane"."name") = (?)
 	)
 	OR ("pilot"."id") IS NOT NULL AND ("pilot"."id") = (?)
@@ -1150,10 +1133,9 @@ SELECT ${pilotFieldsStr}
 FROM "pilot"
 WHERE NOT EXISTS (
 	SELECT 1
-	FROM "pilot-can fly-plane" AS "pilot.pilot-can fly-plane",
-		"plane" AS "pilot.pilot-can fly-plane.plane"
+	FROM "pilot-can fly-plane" AS "pilot.pilot-can fly-plane"
+	LEFT JOIN "plane" AS "pilot.pilot-can fly-plane.plane" ON "pilot.pilot-can fly-plane"."can fly-plane" = "pilot.pilot-can fly-plane.plane"."id"
 	WHERE "pilot"."id" = "pilot.pilot-can fly-plane"."pilot"
-	AND "pilot.pilot-can fly-plane"."can fly-plane" = "pilot.pilot-can fly-plane.plane"."id"
 	AND NOT (
 		("pilot.pilot-can fly-plane.plane"."name") IS NOT NULL AND ("pilot.pilot-can fly-plane.plane"."name") = (?)
 	)
@@ -1176,10 +1158,9 @@ SELECT COUNT(*) AS "$count"
 FROM "pilot"
 WHERE NOT EXISTS (
 	SELECT 1
-	FROM "pilot-can fly-plane" AS "pilot.pilot-can fly-plane",
-		"plane" AS "pilot.pilot-can fly-plane.plane"
+	FROM "pilot-can fly-plane" AS "pilot.pilot-can fly-plane"
+	LEFT JOIN "plane" AS "pilot.pilot-can fly-plane.plane" ON "pilot.pilot-can fly-plane"."can fly-plane" = "pilot.pilot-can fly-plane.plane"."id"
 	WHERE "pilot"."id" = "pilot.pilot-can fly-plane"."pilot"
-	AND "pilot.pilot-can fly-plane"."can fly-plane" = "pilot.pilot-can fly-plane.plane"."id"
 	AND NOT (
 		("pilot.pilot-can fly-plane.plane"."name") IS NOT NULL AND ("pilot.pilot-can fly-plane.plane"."name") = (?)
 	)
@@ -1199,10 +1180,9 @@ test(
 				result.query,
 				`\
 SELECT ${pilotFieldsStr}
-FROM "pilot",
-	"pilot-can fly-plane" AS "pilot.pilot-can fly-plane"
-WHERE "pilot"."id" = "pilot.pilot-can fly-plane"."pilot"
-AND EXISTS (
+FROM "pilot"
+LEFT JOIN "pilot-can fly-plane" AS "pilot.pilot-can fly-plane" ON "pilot"."id" = "pilot.pilot-can fly-plane"."pilot"
+WHERE EXISTS (
 	SELECT 1
 	FROM "plane" AS "pilot.pilot-can fly-plane.plane"
 	WHERE "pilot.pilot-can fly-plane"."can fly-plane" = "pilot.pilot-can fly-plane.plane"."id"
@@ -1223,10 +1203,9 @@ test(
 				result.query,
 				`\
 SELECT COUNT(*) AS "$count"
-FROM "pilot",
-	"pilot-can fly-plane" AS "pilot.pilot-can fly-plane"
-WHERE "pilot"."id" = "pilot.pilot-can fly-plane"."pilot"
-AND EXISTS (
+FROM "pilot"
+LEFT JOIN "pilot-can fly-plane" AS "pilot.pilot-can fly-plane" ON "pilot"."id" = "pilot.pilot-can fly-plane"."pilot"
+WHERE EXISTS (
 	SELECT 1
 	FROM "plane" AS "pilot.pilot-can fly-plane.plane"
 	WHERE "pilot.pilot-can fly-plane"."can fly-plane" = "pilot.pilot-can fly-plane.plane"."id"
@@ -1247,10 +1226,9 @@ test(
 				result.query,
 				`\
 SELECT ${pilotFieldsStr}
-FROM "pilot",
-	"pilot-can fly-plane" AS "pilot.pilot-can fly-plane"
-WHERE "pilot"."id" = "pilot.pilot-can fly-plane"."pilot"
-AND NOT EXISTS (
+FROM "pilot"
+LEFT JOIN "pilot-can fly-plane" AS "pilot.pilot-can fly-plane" ON "pilot"."id" = "pilot.pilot-can fly-plane"."pilot"
+WHERE NOT EXISTS (
 	SELECT 1
 	FROM "plane" AS "pilot.pilot-can fly-plane.plane"
 	WHERE "pilot.pilot-can fly-plane"."can fly-plane" = "pilot.pilot-can fly-plane.plane"."id"
@@ -1273,10 +1251,9 @@ test(
 				result.query,
 				`\
 SELECT COUNT(*) AS "$count"
-FROM "pilot",
-	"pilot-can fly-plane" AS "pilot.pilot-can fly-plane"
-WHERE "pilot"."id" = "pilot.pilot-can fly-plane"."pilot"
-AND NOT EXISTS (
+FROM "pilot"
+LEFT JOIN "pilot-can fly-plane" AS "pilot.pilot-can fly-plane" ON "pilot"."id" = "pilot.pilot-can fly-plane"."pilot"
+WHERE NOT EXISTS (
 	SELECT 1
 	FROM "plane" AS "pilot.pilot-can fly-plane.plane"
 	WHERE "pilot.pilot-can fly-plane"."can fly-plane" = "pilot.pilot-can fly-plane.plane"."id"
@@ -1308,10 +1285,9 @@ SELECT ${pilotFieldsStr}
 FROM "pilot"
 WHERE (EXISTS (
 	SELECT 1
-	FROM "pilot-can fly-plane" AS "pilot.pilot-can fly-plane",
-		"plane" AS "pilot.pilot-can fly-plane.plane"
+	FROM "pilot-can fly-plane" AS "pilot.pilot-can fly-plane"
+	LEFT JOIN "plane" AS "pilot.pilot-can fly-plane.plane" ON "pilot.pilot-can fly-plane"."can fly-plane" = "pilot.pilot-can fly-plane.plane"."id"
 	WHERE "pilot"."id" = "pilot.pilot-can fly-plane"."pilot"
-	AND "pilot.pilot-can fly-plane"."can fly-plane" = "pilot.pilot-can fly-plane.plane"."id"
 	AND ("pilot.pilot-can fly-plane.plane"."name") IS NOT NULL AND ("pilot.pilot-can fly-plane.plane"."name") = (?)
 )
 OR ("pilot"."id") IS NOT NULL AND ("pilot"."id") = (?)
@@ -1342,10 +1318,9 @@ SELECT ${pilotFieldsStr}
 FROM "pilot"
 WHERE EXISTS (
 	SELECT 1
-	FROM "pilot-can fly-plane" AS "pilot.pilot-can fly-plane",
-		"plane" AS "pilot.pilot-can fly-plane.plane"
+	FROM "pilot-can fly-plane" AS "pilot.pilot-can fly-plane"
+	LEFT JOIN "plane" AS "pilot.pilot-can fly-plane.plane" ON "pilot.pilot-can fly-plane"."can fly-plane" = "pilot.pilot-can fly-plane.plane"."id"
 	WHERE "pilot"."id" = "pilot.pilot-can fly-plane"."pilot"
-	AND "pilot.pilot-can fly-plane"."can fly-plane" = "pilot.pilot-can fly-plane.plane"."id"
 	AND ("pilot.pilot-can fly-plane.plane"."name") IS NOT NULL AND ("pilot.pilot-can fly-plane.plane"."name") = (?)
 )
 AND NOT(("pilot"."id") IS NOT NULL AND ("pilot"."id") = (?))
@@ -1376,10 +1351,9 @@ SELECT ${pilotFieldsStr}
 FROM "pilot"
 WHERE EXISTS (
 	SELECT 1
-	FROM "pilot-can fly-plane" AS "pilot.pilot-can fly-plane",
-		"plane" AS "pilot.pilot-can fly-plane.plane"
+	FROM "pilot-can fly-plane" AS "pilot.pilot-can fly-plane"
+	LEFT JOIN "plane" AS "pilot.pilot-can fly-plane.plane" ON "pilot.pilot-can fly-plane"."can fly-plane" = "pilot.pilot-can fly-plane.plane"."id"
 	WHERE "pilot"."id" = "pilot.pilot-can fly-plane"."pilot"
-	AND "pilot.pilot-can fly-plane"."can fly-plane" = "pilot.pilot-can fly-plane.plane"."id"
 	AND ("pilot.pilot-can fly-plane.plane"."name") IS NOT NULL AND ("pilot.pilot-can fly-plane.plane"."name") = (?)
 )
 AND NOT(("pilot"."id") IS NOT NULL AND ("pilot"."id") = (?))
@@ -1441,14 +1415,11 @@ run(function () {
 				result.query,
 				`\
 SELECT ${teamFieldsStr}
-FROM "team",
-	"pilot" AS "team.includes-pilot",
-	"pilot-can fly-plane" AS "team.includes-pilot.pilot-can fly-plane",
-	"plane" AS "team.includes-pilot.pilot-can fly-plane.plane"
-WHERE "team"."favourite colour" = "team.includes-pilot"."is on-team"
-AND "team.includes-pilot"."id" = "team.includes-pilot.pilot-can fly-plane"."pilot"
-AND "team.includes-pilot.pilot-can fly-plane"."can fly-plane" = "team.includes-pilot.pilot-can fly-plane.plane"."id"
-AND ${sql}`,
+FROM "team"
+LEFT JOIN "pilot" AS "team.includes-pilot" ON "team"."favourite colour" = "team.includes-pilot"."is on-team"
+LEFT JOIN "pilot-can fly-plane" AS "team.includes-pilot.pilot-can fly-plane" ON "team.includes-pilot"."id" = "team.includes-pilot.pilot-can fly-plane"."pilot"
+LEFT JOIN "plane" AS "team.includes-pilot.pilot-can fly-plane.plane" ON "team.includes-pilot.pilot-can fly-plane"."can fly-plane" = "team.includes-pilot.pilot-can fly-plane.plane"."id"
+WHERE ${sql}`,
 			);
 		});
 	});
