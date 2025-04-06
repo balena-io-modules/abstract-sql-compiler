@@ -1,4 +1,16 @@
 - commits:
+    - subject: "Tests: convert test/odata/test to typescript"
+      hash: c00e9270589111b882d4894fc437dd8b0343ecce
+      body: ""
+      footer:
+        Change-type: patch
+        change-type: patch
+      author: Pagan Gazzard
+      nested: []
+  version: 10.2.5
+  title: ""
+  date: 2025-04-06T22:40:57.152Z
+- commits:
     - subject: Update dev dependencies
       hash: 703263fa73aff2253d1a931a5946a027d20c9ff6
       body: ""
