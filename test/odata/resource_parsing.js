@@ -22,7 +22,7 @@ const teamFieldsStr = teamFields.join(', ');
 test('/pilot', (result, sqlEquals) => {
 	it('should select from pilot', () => {
 		sqlEquals(
-			result.query,
+			result,
 			`\
 SELECT ${pilotFieldsStr}
 FROM "pilot"`,
@@ -33,7 +33,7 @@ FROM "pilot"`,
 test('/pilot(1)', 'GET', [['Bind', 0]], (result, sqlEquals) => {
 	it('should select from pilot with id', () => {
 		sqlEquals(
-			result.query,
+			result,
 			`\
 SELECT ${pilotFieldsStr}
 FROM "pilot"
@@ -45,7 +45,7 @@ WHERE ("pilot"."id") IS NOT NULL AND ("pilot"."id") = (?)`,
 test("/pilot('TextKey')", 'GET', [['Bind', 0]], (result, sqlEquals) => {
 	it('should select from pilot with id', () => {
 		sqlEquals(
-			result.query,
+			result,
 			`\
 SELECT ${pilotFieldsStr}
 FROM "pilot"
@@ -57,7 +57,7 @@ WHERE ("pilot"."id") IS NOT NULL AND ("pilot"."id") = (?)`,
 test('/pilot(1)/licence', 'GET', [['Bind', 0]], (result, sqlEquals) => {
 	it('should select from the licence of pilot with id', () => {
 		sqlEquals(
-			result.query,
+			result,
 			`\
 SELECT ${aliasLicenceFieldsStr}
 FROM "pilot",
@@ -71,7 +71,7 @@ AND ("pilot"."id") IS NOT NULL AND ("pilot"."id") = (?)`,
 test('/licence(1)/is_of__pilot', 'GET', [['Bind', 0]], (result, sqlEquals) => {
 	it('should select from the pilots of licence with id', () => {
 		sqlEquals(
-			result.query,
+			result,
 			`\
 SELECT ${aliasPilotLicenceFieldsStr}
 FROM "licence",
@@ -89,7 +89,7 @@ test(
 	(result, sqlEquals) => {
 		it('should select from the plane of pilot with id', () => {
 			sqlEquals(
-				result.query,
+				result,
 				`\
 SELECT ${aliasPlaneFieldsStr}
 FROM "pilot",
@@ -110,7 +110,7 @@ test(
 	(result, sqlEquals) => {
 		it('should select from the pilots of plane with id', () => {
 			sqlEquals(
-				result.query,
+				result,
 				`\
 SELECT ${aliasPilotFields}
 FROM "plane",
@@ -127,7 +127,7 @@ AND ("plane"."id") IS NOT NULL AND ("plane"."id") = (?)`,
 test('/pilot(1)', 'DELETE', [['Bind', 0]], (result, sqlEquals) => {
 	it('should delete the pilot with id 1', () => {
 		sqlEquals(
-			result.query,
+			result,
 			`\
 DELETE FROM "pilot"
 WHERE ("pilot"."id") IS NOT NULL AND ("pilot"."id") = (?)`,
@@ -195,7 +195,7 @@ test(
 	(result, sqlEquals) => {
 		it('should insert/update the pilot with id 1', () => {
 			sqlEquals(
-				result.query,
+				result,
 				`\
 INSERT INTO "pilot" ("name")
 VALUES (?)`,
@@ -206,7 +206,7 @@ VALUES (?)`,
 test('/pilot', 'POST', (result, sqlEquals) => {
 	it('should insert a pilot with default values', () => {
 		sqlEquals(
-			result.query,
+			result,
 			`\
 INSERT INTO "pilot" DEFAULT VALUES`,
 		);
@@ -214,14 +214,15 @@ INSERT INTO "pilot" DEFAULT VALUES`,
 });
 
 (function () {
-	const bindings = [
+	// prettier-ignore
+	const bindings = /** @type {const} */ ([
 		['Bind', ['pilot', 'is_experienced']],
 		['Bind', 0],
-	];
+	]);
 	const testFunc = (result, sqlEquals) => {
 		it('should update the pilot with id 1', () => {
 			sqlEquals(
-				result.query,
+				result,
 				`\
 UPDATE "pilot"
 SET "is experienced" = ?
@@ -240,7 +241,7 @@ test(
 	(result, sqlEquals) => {
 		it('should delete the pilot with id 1', () => {
 			sqlEquals(
-				result.query,
+				result,
 				`\
 DELETE FROM "pilot-can fly-plane"
 WHERE ("pilot-can fly-plane"."id") IS NOT NULL AND ("pilot-can fly-plane"."id") = (?)`,
@@ -305,7 +306,7 @@ test(
 	(result, sqlEquals) => {
 		it('should insert/update the pilot-can fly-plane with id 1', () => {
 			sqlEquals(
-				result.query,
+				result,
 				`\
 INSERT INTO "pilot-can fly-plane" ("pilot", "can fly-plane")
 VALUES (?, ?)`,
@@ -316,7 +317,7 @@ VALUES (?, ?)`,
 test('/pilot__can_fly__plane', 'POST', (result, sqlEquals) => {
 	it('should insert a "pilot-can fly-plane" with default values', () => {
 		sqlEquals(
-			result.query,
+			result,
 			`\
 INSERT INTO "pilot-can fly-plane" DEFAULT VALUES`,
 		);
@@ -324,14 +325,15 @@ INSERT INTO "pilot-can fly-plane" DEFAULT VALUES`,
 });
 
 (function () {
-	const bindings = [
+	// prettier-ignore
+	const bindings = /** @type {const} */ ([
 		['Bind', ['pilot-can fly-plane', 'pilot']],
 		['Bind', 0],
-	];
+	]);
 	const testFunc = (result, sqlEquals) => {
 		it('should update the pilot with id 1', () => {
 			sqlEquals(
-				result.query,
+				result,
 				`\
 UPDATE "pilot-can fly-plane"
 SET "pilot" = ?
@@ -346,7 +348,7 @@ WHERE ("pilot-can fly-plane"."id") IS NOT NULL AND ("pilot-can fly-plane"."id") 
 test('/pilot(1)/$links/licence', 'GET', [['Bind', 0]], (result, sqlEquals) => {
 	it('should select the list of licence ids, for generating the links', () => {
 		sqlEquals(
-			result.query,
+			result,
 			`\
 SELECT "pilot"."licence" AS "licence"
 FROM "pilot"
@@ -362,7 +364,7 @@ test(
 	(result, sqlEquals) => {
 		it('should select the list of plane ids, for generating the links', () => {
 			sqlEquals(
-				result.query,
+				result,
 				`\
 SELECT "pilot.pilot-can fly-plane"."can fly-plane" AS "plane"
 FROM "pilot",
@@ -374,18 +376,18 @@ AND ("pilot"."id") IS NOT NULL AND ("pilot"."id") = (?)`,
 	},
 );
 
-test.skip('/pilot(1)/favourite_colour/red', () => {
+test.fail('/pilot(1)/favourite_colour/red', () => {
 	it("should select the red component of the pilot's favourite colour");
 });
 
-test.skip('/method(1)/child?foo=bar', () => {
+test.fail('/method(1)/child?foo=bar', () => {
 	it('should do something..');
 });
 
 test("/team('purple')", 'GET', [['Bind', 0]], (result, sqlEquals) => {
 	it('should select the team with the "favourite colour" id of "purple"', () => {
 		sqlEquals(
-			result.query,
+			result,
 			`\
 SELECT ${teamFieldsStr}
 FROM "team"
@@ -402,7 +404,7 @@ test(
 	(result, sqlEquals) => {
 		it('should insert a team', () => {
 			sqlEquals(
-				result.query,
+				result,
 				`\
 INSERT INTO "team" ("favourite colour")
 VALUES (?)`,
@@ -411,7 +413,7 @@ VALUES (?)`,
 	},
 );
 
-test('/pilot/$count/$count', (result) => {
+test.fail('/pilot/$count/$count', (result) => {
 	it('should fail because it is invalid', () => {
 		expect(result).to.be.instanceOf(ODataParser.SyntaxError);
 	});
@@ -420,7 +422,7 @@ test('/pilot/$count/$count', (result) => {
 test('/pilot/$count', (result, sqlEquals) => {
 	it('should select count(*) from pilot', () => {
 		sqlEquals(
-			result.query,
+			result,
 			`\
 SELECT COUNT(*) AS "$count"
 FROM "pilot"`,
@@ -428,13 +430,13 @@ FROM "pilot"`,
 	});
 });
 
-test('/pilot(5)/$count', (result) => {
+test.fail('/pilot(5)/$count', (result) => {
 	it('should fail because it is invalid', () => {
 		expect(result).to.be.instanceOf(ODataParser.SyntaxError);
 	});
 });
 
-test('/pilot?$filter=id eq 5/$count', (result) => {
+test.fail('/pilot?$filter=id eq 5/$count', (result) => {
 	it('should fail because it is invalid', () => {
 		expect(result).to.be.instanceOf(ODataParser.SyntaxError);
 	});
@@ -447,7 +449,7 @@ test(
 	(result, sqlEquals) => {
 		it('should select count(*) from pilot where pilot/id > 5 ', () => {
 			sqlEquals(
-				result.query,
+				result,
 				`\
 SELECT COUNT(*) AS "$count"
 FROM "pilot"
@@ -467,7 +469,7 @@ test(
 	(result, sqlEquals) => {
 		it('should select count(*) from pilot where id in (5,10)', () => {
 			sqlEquals(
-				result.query,
+				result,
 				`\
 SELECT COUNT(*) AS "$count"
 FROM "pilot"
@@ -485,7 +487,7 @@ test(
 	(result, sqlEquals) => {
 		it('should select count(*) from pilot where id in (5,10)', () => {
 			sqlEquals(
-				result.query,
+				result,
 				`\
 SELECT COUNT(*) AS "$count"
 FROM "pilot"
@@ -499,7 +501,7 @@ OR "pilot"."id" IS NULL)`,
 test('/pilot(5)/licence/$count', 'GET', [['Bind', 0]], (result, sqlEquals) => {
 	it('should select count(*) the licence from pilot where pilot/id', () => {
 		sqlEquals(
-			result.query,
+			result,
 			`\
 SELECT COUNT(*) AS "$count"
 FROM "pilot",
@@ -513,7 +515,7 @@ AND ("pilot"."id") IS NOT NULL AND ("pilot"."id") = (?)`,
 test('/pilot/$count?$orderby=id asc', (result, sqlEquals) => {
 	it('should select count(*) from pilot and ignore orderby', () => {
 		sqlEquals(
-			result.query,
+			result,
 			`\
 SELECT COUNT(*) AS "$count"
 FROM "pilot"`,
@@ -524,7 +526,7 @@ FROM "pilot"`,
 test('/pilot/$count?$skip=5', (result, sqlEquals) => {
 	it('should select count(*) from pilot and ignore skip', () => {
 		sqlEquals(
-			result.query,
+			result,
 			`\
 SELECT COUNT(*) AS "$count"
 FROM "pilot"`,
@@ -535,7 +537,7 @@ FROM "pilot"`,
 test('/pilot/$count?$top=5', (result, sqlEquals) => {
 	it('should select count(*) from pilot and ignore top', () => {
 		sqlEquals(
-			result.query,
+			result,
 			`\
 SELECT COUNT(*) AS "$count"
 FROM "pilot"`,
@@ -546,7 +548,7 @@ FROM "pilot"`,
 test('/pilot/$count?$top=5&$skip=5', (result, sqlEquals) => {
 	it('should select count(*) from pilot and ignore top and skip', () => {
 		sqlEquals(
-			result.query,
+			result,
 			`\
 SELECT COUNT(*) AS "$count"
 FROM "pilot"`,
@@ -557,7 +559,7 @@ FROM "pilot"`,
 test('/pilot/$count?$select=id', (result, sqlEquals) => {
 	it('should select count(*) from pilot and ignore select', () => {
 		sqlEquals(
-			result.query,
+			result,
 			`\
 SELECT COUNT(*) AS "$count"
 FROM "pilot"`,
