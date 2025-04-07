@@ -7,7 +7,6 @@ export const enum Engines {
 import { AbstractSQLOptimiser } from './AbstractSQLOptimiser';
 export { Binding, SqlResult } from './AbstractSQLRules2SQL';
 import sbvrTypes from '@balena/sbvr-types';
-import _ from 'lodash';
 import type {
 	AbstractSqlModel,
 	AbstractSqlQuery,
@@ -80,7 +79,8 @@ export const optimizeSchema = (
 				count === 1 &&
 				(ruleBody[0] === 'NotExists' ||
 					(ruleBody[0] === 'Equals' &&
-						_.isEqual(ruleBody[2], ['Number', 0]))) &&
+						ruleBody[2][0] === 'Number' &&
+						ruleBody[2][1] === 0)) &&
 				isSelectQueryNode(ruleBody[1])
 			) {
 				const selectQueryNodes = ruleBody[1].slice(1);
@@ -120,8 +120,7 @@ export const optimizeSchema = (
 						convertReferencedFieldsToFields(whereNode);
 
 						const tableName = fromNode[1];
-						const table = _.find(
-							abstractSqlModel.tables,
+						const table = Object.values(abstractSqlModel.tables).find(
 							(t) => t.name === tableName,
 						);
 						if (table) {

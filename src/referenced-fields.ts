@@ -1,4 +1,3 @@
-import _ from 'lodash';
 import type {
 	AbstractSqlQuery,
 	AbstractSqlType,
@@ -76,7 +75,11 @@ export const getReferencedFields: EngineInstance['getReferencedFields'] = (
 ) => {
 	const referencedFields = getRuleReferencedFields(ruleBody);
 
-	return _.mapValues(referencedFields, ({ update }) => _.uniq(update));
+	const result: { [key: string]: string[] } = {};
+	for (const key of Object.keys(referencedFields)) {
+		result[key] = [...new Set(referencedFields[key].update)];
+	}
+	return result;
 };
 
 export interface RuleReferencedFields {
@@ -267,7 +270,8 @@ export const getRuleReferencedFields: EngineInstance['getRuleReferencedFields'] 
 		const referencedFields: RuleReferencedFields = {};
 		if (
 			ruleBody[0] === 'Equals' &&
-			_.isEqual(ruleBody[2], ['Number', 0]) &&
+			ruleBody[2][0] === 'Number' &&
+			ruleBody[2][1] === 0 &&
 			isSelectQueryNode(ruleBody[1])
 		) {
 			const select = ruleBody[1].find(isSelectNode)!;
@@ -281,7 +285,7 @@ export const getRuleReferencedFields: EngineInstance['getRuleReferencedFields'] 
 			for (const method of Object.keys(tableRefs) as Array<
 				keyof typeof tableRefs
 			>) {
-				tableRefs[method] = _.uniq(tableRefs[method]);
+				tableRefs[method] = [...new Set(tableRefs[method])];
 			}
 		}
 
@@ -321,10 +325,9 @@ const checkQuery = (query: AbstractSqlQuery): ModifiedFields | undefined => {
 		return { table: tableName, action: 'delete' };
 	}
 
-	const fields = _<FieldsNode | AbstractSqlType>(query)
+	const fields = query
 		.filter((v): v is FieldsNode => v != null && v[0] === 'Fields')
-		.flatMap((v) => v[1])
-		.value();
+		.flatMap((v) => v[1]);
 	return { table: tableName, action: 'update', fields };
 };
 export const getModifiedFields: EngineInstance['getModifiedFields'] = (

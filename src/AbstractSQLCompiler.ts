@@ -12,7 +12,6 @@ import { AbstractSQLRules2SQL } from './AbstractSQLRules2SQL';
 export { Binding, SqlResult } from './AbstractSQLRules2SQL';
 import type { SbvrType } from '@balena/sbvr-types';
 import sbvrTypes from '@balena/sbvr-types';
-import _ from 'lodash';
 import { optimizeSchema, generateRuleSlug } from './AbstractSQLSchemaOptimiser';
 import type {
 	ReferencedFields,
@@ -33,11 +32,11 @@ export type DateNode = ['Date', Date | number | string];
 export type DurationNode = [
 	'Duration',
 	{
-		negative?: boolean;
-		day?: number;
-		hour?: number;
-		minute?: number;
-		second?: number;
+		negative?: boolean | undefined;
+		day?: number | undefined;
+		hour?: number | undefined;
+		minute?: number | undefined;
+		second?: number | undefined;
 	},
 ];
 export type StrictDurationTypeNodes = DurationNode;
@@ -537,11 +536,14 @@ export interface AbstractSqlModel {
 		[resourceName: string]: AbstractSqlTable;
 	};
 	rules: AbstractSqlQuery[];
-	functions?: _.Dictionary<{
-		type: 'trigger';
-		body: string;
-		language: 'plpgsql';
-	}>;
+	functions?: Record<
+		string,
+		{
+			type: 'trigger';
+			body: string;
+			language: 'plpgsql';
+		}
+	>;
 	lfInfo: {
 		rules: {
 			[key: string]: LfRuleInfo;
@@ -588,8 +590,16 @@ export interface EngineInstance {
 	) => undefined | ModifiedFields | Array<undefined | ModifiedFields>;
 }
 
-const validateTypes = _.mapValues(sbvrTypes, ({ validate }) => validate);
-
+type ValidateTypes = {
+	[key in keyof typeof sbvrTypes]: (typeof sbvrTypes)[key]['validate'];
+};
+const validateTypes: ValidateTypes = (() => {
+	const result: Partial<ValidateTypes> = {};
+	for (const key of Object.keys(sbvrTypes) as Array<keyof typeof sbvrTypes>) {
+		result[key] = sbvrTypes[key].validate as any;
+	}
+	return result as ValidateTypes;
+})();
 const dataTypeValidate: EngineInstance['dataTypeValidate'] = async (
 	value,
 	field,
@@ -753,7 +763,7 @@ const compileSchema = (
 	const alterSchemaStatements: string[] = [];
 	let dropSchemaStatements: string[] = [];
 
-	const fns: _.Dictionary<true> = {};
+	const fns: Record<string, true> = {};
 	if (abstractSqlModel.functions) {
 		for (const fnName of Object.keys(abstractSqlModel.functions)) {
 			const fnDefinition = abstractSqlModel.functions[fnName];

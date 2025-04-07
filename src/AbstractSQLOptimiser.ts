@@ -1,6 +1,3 @@
-import _ from 'lodash';
-
-import type { Dictionary } from 'lodash';
 import type {
 	AbstractSqlQuery,
 	AbstractSqlType,
@@ -125,6 +122,8 @@ type OptimisationMatchFn<T extends AnyTypeNodes> =
 	| ((args: AbstractSqlType[]) => T);
 type MetaMatchFn<T extends AnyTypeNodes> = (args: AbstractSqlQuery) => T;
 type MatchFn<T extends AnyTypeNodes> = (args: AbstractSqlType[]) => T;
+
+const identity = <T>(x: T): T => x;
 
 let helped = false;
 let noBinds = false;
@@ -420,7 +419,7 @@ const ConcatenateWithSeparator: MatchFn<ConcatenateWithSeparatorNode> = (
 	];
 };
 
-const Text = matchArgs<TextNode>('Text', _.identity);
+const Text = matchArgs<TextNode>('Text', identity);
 
 const Value = (arg: string | AbstractSqlQuery): ValuesNodeTypes => {
 	switch (arg) {
@@ -707,20 +706,20 @@ const typeRules = {
 	},
 	Average: matchArgs('Average', NumericValue),
 	Sum: matchArgs('Sum', NumericValue),
-	Field: matchArgs<FieldNode>('Field', _.identity),
+	Field: matchArgs<FieldNode>('Field', identity),
 	ReferencedField: matchArgs<ReferencedFieldNode>(
 		'ReferencedField',
-		_.identity,
-		_.identity,
+		identity,
+		identity,
 	),
-	Cast: matchArgs<CastNode>('Cast', AnyValue, _.identity),
+	Cast: matchArgs<CastNode>('Cast', AnyValue, identity),
 	// eslint-disable-next-line id-denylist
 	Number: NumberMatch('Number'),
 	Real: NumberMatch('Real'),
 	Integer: NumberMatch('Integer'),
 	// eslint-disable-next-line id-denylist
-	Boolean: matchArgs<BooleanNode>('Boolean', _.identity),
-	EmbeddedText: matchArgs('EmbeddedText', _.identity),
+	Boolean: matchArgs<BooleanNode>('Boolean', identity),
+	EmbeddedText: matchArgs('EmbeddedText', identity),
 	Null: matchArgs<NullNode>('Null'),
 	CurrentTimestamp: matchArgs<CurrentTimestampNode>('CurrentTimestamp'),
 	CurrentDate: matchArgs<CurrentDateNode>('CurrentDate'),
@@ -903,7 +902,7 @@ const typeRules = {
 		return ['TextArray', ...args.map(TextValue)];
 	},
 	ToJSON: matchArgs<ToJSONNode>('ToJSON', AnyValue),
-	Any: matchArgs<AnyNode>('Any', AnyValue, _.identity),
+	Any: matchArgs<AnyNode>('Any', AnyValue, identity),
 	Coalesce: (args): CoalesceNode => {
 		checkMinArgs('Coalesce', args, 2);
 		return [
@@ -956,7 +955,7 @@ const typeRules = {
 			checkMinArgs('And', args, 2);
 			// Collapse nested ANDs.
 			let maybeHelped = false;
-			const conditions = _.flatMap(args, (arg) => {
+			const conditions = args.flatMap((arg) => {
 				if (!isAbstractSqlQuery(arg)) {
 					throw new SyntaxError(
 						`Expected AbstractSqlQuery array but got ${typeof arg}`,
@@ -1059,7 +1058,7 @@ const typeRules = {
 					return [
 						'NotIn',
 						fieldBucket[0][1],
-						..._.flatMap(fieldBucket, (field) => field.slice(2)),
+						...fieldBucket.flatMap((field) => field.slice(2)),
 					];
 				}
 			});
@@ -1091,7 +1090,7 @@ const typeRules = {
 			checkMinArgs('Or', args, 2);
 			// Collapse nested ORs.
 			let maybeHelped = false;
-			const conditions = _.flatMap(args, (arg) => {
+			const conditions = args.flatMap((arg) => {
 				if (!isAbstractSqlQuery(arg)) {
 					throw new SyntaxError(
 						`Expected AbstractSqlQuery array but got ${typeof arg}`,
@@ -1194,7 +1193,7 @@ const typeRules = {
 					return [
 						'In',
 						fieldBucket[0][1],
-						..._.flatMap(fieldBucket, (field) => field.slice(2)),
+						...fieldBucket.flatMap((field) => field.slice(2)),
 					];
 				}
 			});
@@ -1232,24 +1231,21 @@ const typeRules = {
 	),
 	Text,
 	Value: Text,
-	Date: matchArgs('Date', _.identity),
+	Date: matchArgs('Date', identity),
 	Duration: (args): DurationNode => {
 		checkArgs('Duration', args, 1);
 
-		let duration = args[0] as DurationNode[1];
+		const duration = args[0] as DurationNode[1];
 		if (duration == null || typeof duration !== 'object') {
 			throw new SyntaxError(
 				`Duration must be an object, got ${typeof duration}`,
 			);
 		}
-		duration = _(duration)
-			.pick('negative', 'day', 'hour', 'minute', 'second')
-			.omitBy(_.isNil)
-			.value();
-		if (_(duration).omit('negative').isEmpty()) {
+		const { negative, day, hour, minute, second } = duration;
+		if (day == null && hour == null && minute == null && second == null) {
 			throw new SyntaxError('Invalid duration');
 		}
-		return ['Duration', duration];
+		return ['Duration', { negative, day, hour, minute, second }];
 	},
 	Exists: tryMatches<ExistsNode | BooleanNode>(
 		Helper<OptimisationMatchFn<BooleanNode>>((args) => {
@@ -1602,7 +1598,7 @@ const typeRules = {
 			],
 		),
 	),
-} satisfies Dictionary<MatchFn<AnyTypeNodes>>;
+} satisfies Record<string, MatchFn<AnyTypeNodes>>;
 
 export const AbstractSQLOptimiser = (
 	abstractSQL: AbstractSqlQuery,
