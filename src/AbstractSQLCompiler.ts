@@ -666,6 +666,10 @@ export const isSelectNode = (n: AbstractSqlType): n is SelectNode =>
 	n[0] === 'Select';
 export const isWhereNode = (n: AbstractSqlType): n is WhereNode =>
 	n[0] === 'Where';
+export const isFieldTypeNode = (
+	n: AbstractSqlType,
+): n is FieldNode | ReferencedFieldNode =>
+	n[0] === 'ReferencedField' || n[0] === 'Field';
 
 /**
  *
