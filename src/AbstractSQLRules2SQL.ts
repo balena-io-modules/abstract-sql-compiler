@@ -1,6 +1,4 @@
 import sbvrTypes from '@balena/sbvr-types';
-
-import type { Dictionary } from 'lodash';
 import type {
 	AbstractSqlQuery,
 	AbstractSqlType,
@@ -34,7 +32,7 @@ type MetaMatchFn = (args: AbstractSqlQuery, indent: string) => string;
 type MatchFn = (args: AbstractSqlType[], indent: string) => string;
 
 let fieldOrderings: Binding[] = [];
-let fieldOrderingsLookup: Dictionary<number> = {};
+let fieldOrderingsLookup: Record<string, number> = {};
 let engine: Engines = Engines.postgres;
 let noBinds = false;
 
@@ -700,7 +698,7 @@ const AddBind = (bind: Binding): string => {
 	}
 };
 
-const typeRules: Dictionary<MatchFn> = {
+const typeRules: Record<string, MatchFn> = {
 	UnionQuery: (args, indent) => {
 		checkMinArgs('UnionQuery', args, 2);
 		return args

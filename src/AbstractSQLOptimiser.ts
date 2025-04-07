@@ -1,6 +1,4 @@
 import _ from 'lodash';
-
-import type { Dictionary } from 'lodash';
 import type {
 	AbstractSqlQuery,
 	AbstractSqlType,
@@ -1599,7 +1597,7 @@ const typeRules = {
 			],
 		),
 	),
-} satisfies Dictionary<MatchFn<AnyTypeNodes>>;
+} satisfies Record<string, MatchFn<AnyTypeNodes>>;
 
 export const AbstractSQLOptimiser = (
 	abstractSQL: AbstractSqlQuery,

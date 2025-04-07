@@ -537,11 +537,14 @@ export interface AbstractSqlModel {
 		[resourceName: string]: AbstractSqlTable;
 	};
 	rules: AbstractSqlQuery[];
-	functions?: _.Dictionary<{
-		type: 'trigger';
-		body: string;
-		language: 'plpgsql';
-	}>;
+	functions?: Record<
+		string,
+		{
+			type: 'trigger';
+			body: string;
+			language: 'plpgsql';
+		}
+	>;
 	lfInfo: {
 		rules: {
 			[key: string]: LfRuleInfo;
@@ -753,7 +756,7 @@ const compileSchema = (
 	const alterSchemaStatements: string[] = [];
 	let dropSchemaStatements: string[] = [];
 
-	const fns: _.Dictionary<true> = {};
+	const fns: Record<string, true> = {};
 	if (abstractSqlModel.functions) {
 		for (const fnName of Object.keys(abstractSqlModel.functions)) {
 			const fnDefinition = abstractSqlModel.functions[fnName];
