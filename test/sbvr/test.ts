@@ -4,10 +4,7 @@ import sbvrTypes from '@balena/sbvr-types';
 import { expect } from 'chai';
 import * as AbstractSQLCompiler from '../..';
 
-export function getTestHelpers(builtInVocab) {
-	if (builtInVocab == null) {
-		builtInVocab = false;
-	}
+export function getTestHelpers(builtInVocab: string | boolean = false) {
 	// eslint-disable-next-line @typescript-eslint/no-var-requires
 	const SBVRParser = require('@balena/sbvr-parser').SBVRParser.createInstance();
 	SBVRParser.enableReusingMemoizations(SBVRParser._sideEffectingRules);
@@ -22,7 +19,11 @@ export function getTestHelpers(builtInVocab) {
 
 	let seSoFar = '';
 
-	const runExpectation = (it, input, expectation) => {
+	const runExpectation = (
+		it: Mocha.TestFunction,
+		input: string,
+		expectation: (result: AbstractSQLCompiler.SqlModel | Error) => void,
+	) => {
 		it(input, function () {
 			let result;
 			try {
@@ -30,7 +31,7 @@ export function getTestHelpers(builtInVocab) {
 				const lf = SBVRParser.matchAll(seSoFar + input, 'Process');
 				const schema = LF2AbstractSQLTranslator(lf, 'Process');
 				result = AbstractSQLCompiler.postgres.compileSchema(schema);
-			} catch (e) {
+			} catch (e: any) {
 				expectation(e);
 				return;
 			}
@@ -38,7 +39,13 @@ export function getTestHelpers(builtInVocab) {
 		});
 	};
 
-	const runSchema = (it, input, expectation) => {
+	const runSchema = (
+		it: Mocha.TestFunction,
+		input: string,
+		expectation:
+			| ((result: AbstractSQLCompiler.SqlModel | Error) => void)
+			| string[],
+	) => {
 		runExpectation(it, input, function (result) {
 			seSoFar += input + '\n';
 			if (_.isFunction(expectation)) {
@@ -57,7 +64,13 @@ export function getTestHelpers(builtInVocab) {
 		});
 	};
 
-	const runRule = (it, input, expectation) => {
+	const runRule = (
+		it: Mocha.TestFunction,
+		input: string,
+		expectation:
+			| ((result: AbstractSQLCompiler.SqlModel | Error) => void)
+			| string,
+	) => {
 		runExpectation(it, 'Rule: ' + input, function (result) {
 			if (_.isFunction(expectation)) {
 				expectation(result);
