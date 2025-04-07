@@ -78,7 +78,7 @@ export const getReferencedFields: EngineInstance['getReferencedFields'] = (
 
 	const result: { [key: string]: string[] } = {};
 	for (const key of Object.keys(referencedFields)) {
-		result[key] = _.uniq(referencedFields[key].update);
+		result[key] = [...new Set(referencedFields[key].update)];
 	}
 	return result;
 };
@@ -286,7 +286,7 @@ export const getRuleReferencedFields: EngineInstance['getRuleReferencedFields'] 
 			for (const method of Object.keys(tableRefs) as Array<
 				keyof typeof tableRefs
 			>) {
-				tableRefs[method] = _.uniq(tableRefs[method]);
+				tableRefs[method] = [...new Set(tableRefs[method])];
 			}
 		}
 
