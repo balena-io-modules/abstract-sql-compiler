@@ -33,11 +33,11 @@ export type DateNode = ['Date', Date | number | string];
 export type DurationNode = [
 	'Duration',
 	{
-		negative?: boolean;
-		day?: number;
-		hour?: number;
-		minute?: number;
-		second?: number;
+		negative?: boolean | undefined;
+		day?: number | undefined;
+		hour?: number | undefined;
+		minute?: number | undefined;
+		second?: number | undefined;
 	},
 ];
 export type StrictDurationTypeNodes = DurationNode;

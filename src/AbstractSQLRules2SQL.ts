@@ -1,5 +1,3 @@
-import _ from 'lodash';
-
 import sbvrTypes from '@balena/sbvr-types';
 
 import type { Dictionary } from 'lodash';
@@ -1340,31 +1338,28 @@ const typeRules: Dictionary<MatchFn> = {
 			throw new SyntaxError('Durations not supported on: ' + engine);
 		}
 		// TODO: The abstract sql type should accommodate this
-		let duration = args[0] as DurationNode[1];
+		const duration = args[0] as DurationNode[1];
 		if (duration == null || typeof duration !== 'object') {
 			throw new SyntaxError(
 				`Duration must be an object, got ${typeof duration}`,
 			);
 		}
-		duration = _(duration)
-			.pick('negative', 'day', 'hour', 'minute', 'second')
-			.omitBy(_.isNil)
-			.value() as Dictionary<string>;
-		if (_(duration).omit('negative').isEmpty()) {
+		const { negative, day, hour, minute, second } = duration;
+		if (day == null && hour == null && minute == null && second == null) {
 			throw new SyntaxError('Invalid duration');
 		}
 		return (
 			"INTERVAL '" +
-			(duration.negative ? '-' : '') +
-			(duration.day ?? '0') +
+			(negative ? '-' : '') +
+			(day ?? '0') +
 			' ' +
-			(duration.negative ? '-' : '') +
-			(duration.hour ?? '0') +
+			(negative ? '-' : '') +
+			(hour ?? '0') +
 			':' +
-			(duration.minute ?? '0') +
+			(minute ?? '0') +
 			':' +
 			// Force seconds to be at least 0.0 - required for mysql
-			Number(duration.second ?? 0).toLocaleString('en', {
+			Number(second ?? 0).toLocaleString('en', {
 				minimumFractionDigits: 1,
 			}) +
 			"'" +

@@ -1236,20 +1236,17 @@ const typeRules = {
 	Duration: (args): DurationNode => {
 		checkArgs('Duration', args, 1);
 
-		let duration = args[0] as DurationNode[1];
+		const duration = args[0] as DurationNode[1];
 		if (duration == null || typeof duration !== 'object') {
 			throw new SyntaxError(
 				`Duration must be an object, got ${typeof duration}`,
 			);
 		}
-		duration = _(duration)
-			.pick('negative', 'day', 'hour', 'minute', 'second')
-			.omitBy(_.isNil)
-			.value();
-		if (_(duration).omit('negative').isEmpty()) {
+		const { negative, day, hour, minute, second } = duration;
+		if (day == null && hour == null && minute == null && second == null) {
 			throw new SyntaxError('Invalid duration');
 		}
-		return ['Duration', duration];
+		return ['Duration', { negative, day, hour, minute, second }];
 	},
 	Exists: tryMatches<ExistsNode | BooleanNode>(
 		Helper<OptimisationMatchFn<BooleanNode>>((args) => {
