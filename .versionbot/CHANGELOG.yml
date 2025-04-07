@@ -1,4 +1,72 @@
 - commits:
+    - subject: Avoid lodash chaining / move lodash to a dev dependency
+      hash: 14d0033542647d08a183e911c2f56185563bf80b
+      body: ""
+      footer:
+        Change-type: patch
+        change-type: patch
+      author: Pagan Gazzard
+      nested: []
+    - subject: Use native version of `uniq`
+      hash: 091d220b2f1d305b223a1c3ac56be7592ccfbe02
+      body: ""
+      footer:
+        Change-type: patch
+        change-type: patch
+      author: Pagan Gazzard
+      nested: []
+    - subject: Use native version of `mapValues`
+      hash: c54e44a96112b753212b143e7817fa833e522a70
+      body: ""
+      footer:
+        Change-type: patch
+        change-type: patch
+      author: Pagan Gazzard
+      nested: []
+    - subject: Use native version of `isEqual`
+      hash: 35f8c302e97c2bbaa1a38b5b0c70a2f3398ca28d
+      body: ""
+      footer:
+        Change-type: patch
+        change-type: patch
+      author: Pagan Gazzard
+      nested: []
+    - subject: Use native version of `flatMap`
+      hash: 6c47e516d93cbdd109b08b5f4ec22f5bda0a09f7
+      body: ""
+      footer:
+        Change-type: patch
+        change-type: patch
+      author: Pagan Gazzard
+      nested: []
+    - subject: Use native version of `find`
+      hash: 650919951b46df475dd2d14acc74f27adf78e62e
+      body: ""
+      footer:
+        Change-type: patch
+        change-type: patch
+      author: Pagan Gazzard
+      nested: []
+    - subject: Avoid using lodash `identity` method
+      hash: a4110882ef60db6df45ad376624d2732a9243317
+      body: ""
+      footer:
+        Change-type: patch
+        change-type: patch
+      author: Pagan Gazzard
+      nested: []
+    - subject: Avoid using lodash for duration node validation
+      hash: 1892c9bde28d5cc98e4869e18b0c561a2f56ed19
+      body: ""
+      footer:
+        Change-type: patch
+        change-type: patch
+      author: Pagan Gazzard
+      nested: []
+  version: 10.2.9
+  title: ""
+  date: 2025-04-07T16:16:44.644Z
+- commits:
     - subject: Improve typings for the `In`/`NotIn` optimization helpers
       hash: fc2f84b46e1559beae90e99d8e1b9abbd28d195d
       body: ""
