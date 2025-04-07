@@ -267,7 +267,8 @@ export const getRuleReferencedFields: EngineInstance['getRuleReferencedFields'] 
 		const referencedFields: RuleReferencedFields = {};
 		if (
 			ruleBody[0] === 'Equals' &&
-			_.isEqual(ruleBody[2], ['Number', 0]) &&
+			ruleBody[2][0] === 'Number' &&
+			ruleBody[2][1] === 0 &&
 			isSelectQueryNode(ruleBody[1])
 		) {
 			const select = ruleBody[1].find(isSelectNode)!;
