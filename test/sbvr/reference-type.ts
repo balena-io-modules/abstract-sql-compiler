@@ -6,7 +6,7 @@ const typeVocab = fs.readFileSync(
 	'utf8',
 );
 
-const modifiedAtTrigger = (tableName) => `\
+const modifiedAtTrigger = (tableName: string) => `\
 DO
 $$
 BEGIN
@@ -25,7 +25,7 @@ END;
 $$`;
 
 describe('reference type', function () {
-	let test;
+	let test: ReturnType<typeof getTestHelpers>;
 	beforeEach(() => {
 		test = getTestHelpers(typeVocab);
 	});
