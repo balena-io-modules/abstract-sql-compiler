@@ -1,4 +1,3 @@
-import _ from 'lodash';
 import type {
 	AbstractSqlQuery,
 	AbstractSqlType,
@@ -326,10 +325,9 @@ const checkQuery = (query: AbstractSqlQuery): ModifiedFields | undefined => {
 		return { table: tableName, action: 'delete' };
 	}
 
-	const fields = _<FieldsNode | AbstractSqlType>(query)
+	const fields = query
 		.filter((v): v is FieldsNode => v != null && v[0] === 'Fields')
-		.flatMap((v) => v[1])
-		.value();
+		.flatMap((v) => v[1]);
 	return { table: tableName, action: 'update', fields };
 };
 export const getModifiedFields: EngineInstance['getModifiedFields'] = (
