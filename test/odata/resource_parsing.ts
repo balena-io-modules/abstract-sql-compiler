@@ -1,4 +1,5 @@
 import { expect } from 'chai';
+import type { ExpectationSuccessFn } from './test';
 import test from './test';
 import * as ODataParser from '@balena/odata-parser';
 import {
@@ -9,6 +10,7 @@ import {
 	aliasPilotLicenceFields,
 	aliasLicenceFields,
 } from './fields';
+import type { SqlResult } from '../../src/AbstractSQLRules2SQL';
 const aliasPilotFields = aliasFields(
 	'plane.pilot-can fly-plane.pilot',
 	pilotFields,
@@ -151,7 +153,7 @@ test(
 	(result, sqlEquals) => {
 		it('should insert/update the pilot with id 1', () => {
 			sqlEquals(
-				result[0].query,
+				(result as SqlResult[])[0],
 				`\
 INSERT INTO "pilot" ("id")
 SELECT "$insert"."id"
@@ -167,7 +169,7 @@ WHERE EXISTS (
 )`,
 			);
 			sqlEquals(
-				result[1].query,
+				(result as SqlResult[])[1],
 				`\
 UPDATE "pilot"
 SET "created at" = DEFAULT,
@@ -214,12 +216,11 @@ INSERT INTO "pilot" DEFAULT VALUES`,
 });
 
 (function () {
-	// prettier-ignore
-	const bindings = /** @type {const} */ ([
+	const bindings = [
 		['Bind', ['pilot', 'is_experienced']],
 		['Bind', 0],
-	]);
-	const testFunc = (result, sqlEquals) => {
+	] as const;
+	const testFunc: ExpectationSuccessFn = (result, sqlEquals) => {
 		it('should update the pilot with id 1', () => {
 			sqlEquals(
 				result,
@@ -266,7 +267,7 @@ test(
 	(result, sqlEquals) => {
 		it('should insert/update the pilot-can fly-plane with id 1', () => {
 			sqlEquals(
-				result[0].query,
+				(result as SqlResult[])[0],
 				`\
 INSERT INTO "pilot-can fly-plane" ("id")
 SELECT "$insert"."id"
@@ -282,7 +283,7 @@ WHERE EXISTS (
 )`,
 			);
 			sqlEquals(
-				result[1].query,
+				(result as SqlResult[])[1],
 				`\
 UPDATE "pilot-can fly-plane"
 SET "created at" = DEFAULT,
@@ -325,12 +326,11 @@ INSERT INTO "pilot-can fly-plane" DEFAULT VALUES`,
 });
 
 (function () {
-	// prettier-ignore
-	const bindings = /** @type {const} */ ([
+	const bindings = [
 		['Bind', ['pilot-can fly-plane', 'pilot']],
 		['Bind', 0],
-	]);
-	const testFunc = (result, sqlEquals) => {
+	] as const;
+	const testFunc: ExpectationSuccessFn = (result, sqlEquals) => {
 		it('should update the pilot with id 1', () => {
 			sqlEquals(
 				result,

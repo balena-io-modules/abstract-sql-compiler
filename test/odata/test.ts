@@ -83,7 +83,7 @@ type ExpectedBindings = ReadonlyArray<
 	Readonly<AbstractSQLCompiler.Binding | AbstractSQLCompiler.Binding[]>
 >;
 
-type ExpectationSuccessFn = (
+export type ExpectationSuccessFn = (
 	result:
 		| AbstractSQLCompiler.SqlResult
 		| [AbstractSQLCompiler.SqlResult, AbstractSQLCompiler.SqlResult],
