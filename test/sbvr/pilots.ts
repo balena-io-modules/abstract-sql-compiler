@@ -6,7 +6,7 @@ const typeVocab = fs.readFileSync(
 import { getTestHelpers } from './test';
 const test = getTestHelpers(typeVocab);
 
-const modifiedAtTrigger = (tableName) => `\
+const modifiedAtTrigger = (tableName: string) => `\
 DO
 $$
 BEGIN
