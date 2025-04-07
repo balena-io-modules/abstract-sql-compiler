@@ -120,8 +120,7 @@ export const optimizeSchema = (
 						convertReferencedFieldsToFields(whereNode);
 
 						const tableName = fromNode[1];
-						const table = _.find(
-							abstractSqlModel.tables,
+						const table = Object.values(abstractSqlModel.tables).find(
 							(t) => t.name === tableName,
 						);
 						if (table) {
