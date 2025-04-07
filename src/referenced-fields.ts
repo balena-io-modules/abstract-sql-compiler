@@ -76,7 +76,11 @@ export const getReferencedFields: EngineInstance['getReferencedFields'] = (
 ) => {
 	const referencedFields = getRuleReferencedFields(ruleBody);
 
-	return _.mapValues(referencedFields, ({ update }) => _.uniq(update));
+	const result: { [key: string]: string[] } = {};
+	for (const key of Object.keys(referencedFields)) {
+		result[key] = _.uniq(referencedFields[key].update);
+	}
+	return result;
 };
 
 export interface RuleReferencedFields {

@@ -12,7 +12,6 @@ import { AbstractSQLRules2SQL } from './AbstractSQLRules2SQL';
 export { Binding, SqlResult } from './AbstractSQLRules2SQL';
 import type { SbvrType } from '@balena/sbvr-types';
 import sbvrTypes from '@balena/sbvr-types';
-import _ from 'lodash';
 import { optimizeSchema, generateRuleSlug } from './AbstractSQLSchemaOptimiser';
 import type {
 	ReferencedFields,
@@ -591,8 +590,16 @@ export interface EngineInstance {
 	) => undefined | ModifiedFields | Array<undefined | ModifiedFields>;
 }
 
-const validateTypes = _.mapValues(sbvrTypes, ({ validate }) => validate);
-
+type ValidateTypes = {
+	[key in keyof typeof sbvrTypes]: (typeof sbvrTypes)[key]['validate'];
+};
+const validateTypes: ValidateTypes = (() => {
+	const result: Partial<ValidateTypes> = {};
+	for (const key of Object.keys(sbvrTypes) as Array<keyof typeof sbvrTypes>) {
+		result[key] = sbvrTypes[key].validate as any;
+	}
+	return result as ValidateTypes;
+})();
 const dataTypeValidate: EngineInstance['dataTypeValidate'] = async (
 	value,
 	field,
