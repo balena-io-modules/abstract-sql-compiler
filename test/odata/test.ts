@@ -90,7 +90,7 @@ export type ExpectationSuccessFn = (
 		| [AbstractSQLCompiler.SqlResult, AbstractSQLCompiler.SqlResult],
 	sqlEquals: SqlEquals,
 ) => void;
-type ExpectationFailFn = (result: Error) => void;
+export type ExpectationFailFn = (result: Error) => void;
 type ExpectationFn<ExpectFail extends boolean> = ExpectFail extends true
 	? ExpectationFailFn
 	: ExpectationSuccessFn;
