@@ -124,6 +124,8 @@ type OptimisationMatchFn<T extends AnyTypeNodes> =
 type MetaMatchFn<T extends AnyTypeNodes> = (args: AbstractSqlQuery) => T;
 type MatchFn<T extends AnyTypeNodes> = (args: AbstractSqlType[]) => T;
 
+const identity = <T>(x: T): T => x;
+
 let helped = false;
 let noBinds = false;
 const Helper = <F extends (...args: any[]) => any>(fn: F) => {
@@ -418,7 +420,7 @@ const ConcatenateWithSeparator: MatchFn<ConcatenateWithSeparatorNode> = (
 	];
 };
 
-const Text = matchArgs<TextNode>('Text', _.identity);
+const Text = matchArgs<TextNode>('Text', identity);
 
 const Value = (arg: string | AbstractSqlQuery): ValuesNodeTypes => {
 	switch (arg) {
@@ -705,20 +707,20 @@ const typeRules = {
 	},
 	Average: matchArgs('Average', NumericValue),
 	Sum: matchArgs('Sum', NumericValue),
-	Field: matchArgs<FieldNode>('Field', _.identity),
+	Field: matchArgs<FieldNode>('Field', identity),
 	ReferencedField: matchArgs<ReferencedFieldNode>(
 		'ReferencedField',
-		_.identity,
-		_.identity,
+		identity,
+		identity,
 	),
-	Cast: matchArgs<CastNode>('Cast', AnyValue, _.identity),
+	Cast: matchArgs<CastNode>('Cast', AnyValue, identity),
 	// eslint-disable-next-line id-denylist
 	Number: NumberMatch('Number'),
 	Real: NumberMatch('Real'),
 	Integer: NumberMatch('Integer'),
 	// eslint-disable-next-line id-denylist
-	Boolean: matchArgs<BooleanNode>('Boolean', _.identity),
-	EmbeddedText: matchArgs('EmbeddedText', _.identity),
+	Boolean: matchArgs<BooleanNode>('Boolean', identity),
+	EmbeddedText: matchArgs('EmbeddedText', identity),
 	Null: matchArgs<NullNode>('Null'),
 	CurrentTimestamp: matchArgs<CurrentTimestampNode>('CurrentTimestamp'),
 	CurrentDate: matchArgs<CurrentDateNode>('CurrentDate'),
@@ -901,7 +903,7 @@ const typeRules = {
 		return ['TextArray', ...args.map(TextValue)];
 	},
 	ToJSON: matchArgs<ToJSONNode>('ToJSON', AnyValue),
-	Any: matchArgs<AnyNode>('Any', AnyValue, _.identity),
+	Any: matchArgs<AnyNode>('Any', AnyValue, identity),
 	Coalesce: (args): CoalesceNode => {
 		checkMinArgs('Coalesce', args, 2);
 		return [
@@ -1230,7 +1232,7 @@ const typeRules = {
 	),
 	Text,
 	Value: Text,
-	Date: matchArgs('Date', _.identity),
+	Date: matchArgs('Date', identity),
 	Duration: (args): DurationNode => {
 		checkArgs('Duration', args, 1);
 
