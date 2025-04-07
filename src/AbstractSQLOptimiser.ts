@@ -1,4 +1,3 @@
-import _ from 'lodash';
 import type {
 	AbstractSqlQuery,
 	AbstractSqlType,
@@ -956,7 +955,7 @@ const typeRules = {
 			checkMinArgs('And', args, 2);
 			// Collapse nested ANDs.
 			let maybeHelped = false;
-			const conditions = _.flatMap(args, (arg) => {
+			const conditions = args.flatMap((arg) => {
 				if (!isAbstractSqlQuery(arg)) {
 					throw new SyntaxError(
 						`Expected AbstractSqlQuery array but got ${typeof arg}`,
@@ -1059,7 +1058,7 @@ const typeRules = {
 					return [
 						'NotIn',
 						fieldBucket[0][1],
-						..._.flatMap(fieldBucket, (field) => field.slice(2)),
+						...fieldBucket.flatMap((field) => field.slice(2)),
 					];
 				}
 			});
@@ -1091,7 +1090,7 @@ const typeRules = {
 			checkMinArgs('Or', args, 2);
 			// Collapse nested ORs.
 			let maybeHelped = false;
-			const conditions = _.flatMap(args, (arg) => {
+			const conditions = args.flatMap((arg) => {
 				if (!isAbstractSqlQuery(arg)) {
 					throw new SyntaxError(
 						`Expected AbstractSqlQuery array but got ${typeof arg}`,
@@ -1194,7 +1193,7 @@ const typeRules = {
 					return [
 						'In',
 						fieldBucket[0][1],
-						..._.flatMap(fieldBucket, (field) => field.slice(2)),
+						...fieldBucket.flatMap((field) => field.slice(2)),
 					];
 				}
 			});
