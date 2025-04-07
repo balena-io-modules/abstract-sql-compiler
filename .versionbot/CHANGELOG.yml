@@ -1,4 +1,16 @@
 - commits:
+    - subject: Improve typings for the `In`/`NotIn` optimization helpers
+      hash: fc2f84b46e1559beae90e99d8e1b9abbd28d195d
+      body: ""
+      footer:
+        Change-type: patch
+        change-type: patch
+      author: Pagan Gazzard
+      nested: []
+  version: 10.2.8
+  title: ""
+  date: 2025-04-07T14:47:06.493Z
+- commits:
     - subject: Switch to a more standard `isFieldTypeNode` helper
       hash: 62657e2886cbcc8174b36bd2cd9589712a3845d2
       body: ""
