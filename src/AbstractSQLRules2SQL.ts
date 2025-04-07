@@ -22,7 +22,7 @@ import type {
 	StrictTextArrayTypeNodes,
 	StrictJSONTypeNodes,
 } from './AbstractSQLCompiler';
-import { Engines } from './AbstractSQLCompiler';
+import { Engines, isFieldTypeNode } from './AbstractSQLCompiler';
 
 export type Binding =
 	| [string, any]
@@ -218,17 +218,12 @@ export const isDurationValue = (
 };
 const DurationValue = MatchValue(isDurationValue);
 
-export const isFieldValue = (
-	type: unknown,
-): type is 'Field' | 'ReferencedField' => {
-	return type === 'Field' || type === 'ReferencedField';
-};
 const Field: MetaMatchFn = (args, indent) => {
-	const [type, ...rest] = args;
-	if (isFieldValue(type)) {
+	if (isFieldTypeNode(args)) {
+		const [type, ...rest] = args;
 		return typeRules[type](rest, indent);
 	} else {
-		throw new SyntaxError(`Invalid field type: ${type}`);
+		throw new SyntaxError(`Invalid field type: ${args[0]}`);
 	}
 };
 

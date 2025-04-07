@@ -108,6 +108,7 @@ import type {
 	EscapeForLikeNode,
 	EqualsAnyNode,
 } from './AbstractSQLCompiler';
+import { isFieldTypeNode } from './AbstractSQLCompiler';
 import * as AbstractSQLRules2SQL from './AbstractSQLRules2SQL';
 
 const {
@@ -314,13 +315,12 @@ const DurationValue = MatchValue(isDurationValue);
 const { isArrayValue } = AbstractSQLRules2SQL;
 const ArrayValue = MatchValue<TextArrayTypeNodes>(isArrayValue);
 
-const { isFieldValue } = AbstractSQLRules2SQL;
 const Field: MetaMatchFn<FieldNode | ReferencedFieldNode> = (args) => {
-	const [type, ...rest] = args;
-	if (isFieldValue(type)) {
+	if (isFieldTypeNode(args)) {
+		const [type, ...rest] = args;
 		return typeRules[type](rest);
 	} else {
-		throw new SyntaxError(`Invalid field type: ${type}`);
+		throw new SyntaxError(`Invalid field type: ${args[0]}`);
 	}
 };
 
@@ -337,9 +337,9 @@ const FieldOp =
 		) {
 			return false;
 		}
-		if (isFieldValue(args[0][0])) {
+		if (isFieldTypeNode(args[0])) {
 			return [type, args[0], args[1]];
-		} else if (isFieldValue(args[1][0])) {
+		} else if (isFieldTypeNode(args[1])) {
 			return [type, args[1], args[0]];
 		} else {
 			return false;
