@@ -107,6 +107,7 @@ import type {
 	StartsWithNode,
 	EscapeForLikeNode,
 	EqualsAnyNode,
+	NotInNode,
 } from './AbstractSQLCompiler';
 import { isFieldTypeNode } from './AbstractSQLCompiler';
 import * as AbstractSQLRules2SQL from './AbstractSQLRules2SQL';
@@ -328,9 +329,8 @@ const AnyNotNullValue = (args: any): boolean => {
 	return args != null && args !== 'Null' && args[0] !== 'Null';
 };
 
-const FieldOp =
-	(type: string): OptimisationMatchFn<AnyTypeNodes> =>
-	(args) => {
+const FieldOp = <T extends string>(type: T) =>
+	((args) => {
 		if (
 			AnyNotNullValue(args[0]) === false ||
 			AnyNotNullValue(args[1]) === false
@@ -344,7 +344,7 @@ const FieldOp =
 		} else {
 			return false;
 		}
-	};
+	}) satisfies OptimisationMatchFn<AnyTypeNodes>;
 const FieldEquals = FieldOp('Equals');
 const FieldNotEquals = FieldOp('NotEquals');
 
@@ -1002,7 +1002,17 @@ const typeRules = {
 		Helper<OptimisationMatchFn<AndNode>>((args) => {
 			checkMinArgs('And', args, 2);
 			// Optimise id != 1 AND id != 2 AND id != 3 -> id NOT IN [1, 2, 3]
-			const fieldBuckets: Dictionary<AnyTypeNodes[]> = {};
+			const fieldBuckets: Record<
+				string,
+				Array<
+					[
+						'NotEquals' | 'NotIn',
+						FieldNode | ReferencedFieldNode,
+						AbstractSqlType,
+						...AbstractSqlType[],
+					]
+				>
+			> = {};
 			const others: AnyTypeNodes[] = [];
 			let maybeHelped = false;
 			args.map((arg) => {
@@ -1014,7 +1024,7 @@ const typeRules = {
 				if (arg[0] === 'NotEquals') {
 					const fieldBool = FieldNotEquals(arg.slice(1));
 					if (fieldBool !== false) {
-						const fieldRef = fieldBool[1] as string;
+						const fieldRef = `${fieldBool[1]}`;
 						if (fieldBuckets[fieldRef] == null) {
 							fieldBuckets[fieldRef] = [fieldBool];
 						} else {
@@ -1025,13 +1035,13 @@ const typeRules = {
 						return;
 					}
 				} else if (arg[0] === 'NotIn') {
-					const fieldRef = arg[1] as string;
+					const fieldRef = `${arg[1]}`;
 					if (fieldBuckets[fieldRef] == null) {
-						fieldBuckets[fieldRef] = [arg];
+						fieldBuckets[fieldRef] = [arg as NotInNode];
 					} else {
 						// We're adding a second match, so that means we can optimise
 						maybeHelped = true;
-						fieldBuckets[fieldRef].push(arg);
+						fieldBuckets[fieldRef].push(arg as NotInNode);
 					}
 					return;
 				}
@@ -1127,7 +1137,17 @@ const typeRules = {
 		Helper<OptimisationMatchFn<InNode | OrNode>>((args) => {
 			checkMinArgs('Or', args, 2);
 			// Optimise id = 1 OR id = 2 OR id = 3 -> id IN [1, 2, 3]
-			const fieldBuckets: Dictionary<AnyTypeNodes[]> = {};
+			const fieldBuckets: Record<
+				string,
+				Array<
+					[
+						'Equals' | 'In',
+						FieldNode | ReferencedFieldNode,
+						AbstractSqlType,
+						...AbstractSqlType[],
+					]
+				>
+			> = {};
 			const others: AnyTypeNodes[] = [];
 			let maybeHelped = false;
 			args.map((arg) => {
@@ -1139,7 +1159,7 @@ const typeRules = {
 				if (arg[0] === 'Equals') {
 					const fieldBool = FieldEquals(arg.slice(1));
 					if (fieldBool !== false) {
-						const fieldRef = fieldBool[1] as string;
+						const fieldRef = `${fieldBool[1]}`;
 						if (fieldBuckets[fieldRef] == null) {
 							fieldBuckets[fieldRef] = [fieldBool];
 						} else {
@@ -1150,13 +1170,13 @@ const typeRules = {
 						return;
 					}
 				} else if (arg[0] === 'In') {
-					const fieldRef = arg[1] as string;
+					const fieldRef = `${arg[1]}`;
 					if (fieldBuckets[fieldRef] == null) {
-						fieldBuckets[fieldRef] = [arg];
+						fieldBuckets[fieldRef] = [arg as InNode];
 					} else {
 						// We're adding a second match, so that means we can optimise
 						maybeHelped = true;
-						fieldBuckets[fieldRef].push(arg);
+						fieldBuckets[fieldRef].push(arg as InNode);
 					}
 					return;
 				}
