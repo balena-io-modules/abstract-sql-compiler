@@ -14,8 +14,7 @@ const filterBindsNandString = _.map(
 	() => 'NOT(("pilot"."id") IS NOT NULL AND ("pilot"."id") = (?))',
 ).join('\nAND ');
 
-// prettier-ignore
-const filterBinds = filterIDs.map((_n, i) => /** @type {const} */ (['Bind', i]));
+const filterBinds = filterIDs.map((_n, i) => ['Bind', i] as const);
 
 let filterString = `id in (${filterIDs.join(', ')})`;
 test(
