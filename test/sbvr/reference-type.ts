@@ -3,9 +3,10 @@ import { getTestHelpers } from './test';
 
 const typeVocab = fs.readFileSync(
 	require.resolve('@balena/sbvr-types/Type.sbvr'),
+	'utf8',
 );
 
-const modifiedAtTrigger = (tableName) => `\
+const modifiedAtTrigger = (tableName: string) => `\
 DO
 $$
 BEGIN
@@ -24,7 +25,7 @@ END;
 $$`;
 
 describe('reference type', function () {
-	let test;
+	let test: ReturnType<typeof getTestHelpers>;
 	beforeEach(() => {
 		test = getTestHelpers(typeVocab);
 	});
@@ -37,7 +38,7 @@ Term:      term
 Term:      term history
 Fact Type: term history references term
 	Necessity: each term history references exactly one term
-	Reference Type: informative		
+	Reference Type: informative
 `,
 			[
 				`\
@@ -81,7 +82,7 @@ CREATE TABLE IF NOT EXISTS "term history" (
 Term:      term
 Term:      term history
 Fact Type: term history references term
-	Reference Type: informative		
+	Reference Type: informative
 	Necessity: each term history references exactly one term
 `,
 			[

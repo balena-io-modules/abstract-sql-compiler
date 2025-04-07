@@ -4,29 +4,46 @@
  * Full docs: https://github.com/decaffeinate/decaffeinate/blob/master/docs/suggestions.md
  */
 import { expect } from 'chai';
+import type { ExpectationSuccessFn } from './test';
 import test, { clientModel } from './test';
 import _ from 'lodash';
 import { odataNameToSqlName } from '@balena/odata-to-abstract-sql';
 import { pilotFields, teamFields, aliasPilotCanFlyPlaneFields } from './fields';
+import type {
+	Binding,
+	DurationNode,
+	SqlResult,
+} from '../../src/AbstractSQLCompiler';
 
 const pilotFieldsStr = pilotFields.join(', ');
 const aliasPilotCanFlyPlaneFieldsStr = aliasPilotCanFlyPlaneFields.join(', ');
 const teamFieldsStr = teamFields.join(', ');
 
-let parseOperandFactory = function (defaultResource) {
-	if (defaultResource == null) {
-		defaultResource = 'pilot';
-	}
+type ParsedOperand = {
+	odata: string | number | boolean;
+	bindings: Binding[];
+	sql: string;
+};
+type Operand =
+	| string
+	| number
+	| boolean
+	| Date
+	| DurationNode[1]
+	| ParsedOperand;
+
+let parseOperandFactory = function (defaultResource = 'pilot') {
 	let bindNo = 0;
-	const operandToOData = function (operand) {
-		if (operand.odata != null) {
-			return operand.odata;
-		}
-		if (_.isDate(operand)) {
-			return "datetime'" + encodeURIComponent(operand.toISOString()) + "'";
-		}
+	const operandToOData = function (operand: Operand) {
 		if (operand != null && typeof operand === 'object') {
-			const duration = [];
+			if ('odata' in operand) {
+				return operand.odata;
+			}
+			if (_.isDate(operand)) {
+				return "datetime'" + encodeURIComponent(operand.toISOString()) + "'";
+			}
+
+			const duration: Array<string | number> = [];
 			let t = false;
 			if (operand.negative) {
 				duration.push('-');
@@ -61,8 +78,8 @@ let parseOperandFactory = function (defaultResource) {
 		return operand;
 	};
 
-	const operandToBindings = function (operand) {
-		if (operand.bindings != null) {
+	const operandToBindings = function (operand: Operand): Binding[] {
+		if (typeof operand === 'object' && 'bindings' in operand) {
 			return operand.bindings;
 		}
 		if (
@@ -76,11 +93,11 @@ let parseOperandFactory = function (defaultResource) {
 		return [];
 	};
 
-	const operandToSQL = function (operand, resource) {
-		if (resource == null) {
-			resource = defaultResource;
-		}
-		if (operand.sql != null) {
+	const operandToSQL = function (
+		operand: Operand,
+		resource = defaultResource,
+	): string {
+		if (typeof operand === 'object' && 'sql' in operand) {
 			return operand.sql;
 		}
 		if (
@@ -134,17 +151,17 @@ let parseOperandFactory = function (defaultResource) {
 		throw new Error('Unknown operand type: ' + operand);
 	};
 
-	return (operand) => ({
+	return (operand: Operand): ParsedOperand => ({
 		sql: operandToSQL(operand),
 		bindings: operandToBindings(operand),
 		odata: operandToOData(operand),
 	});
 };
 
-let parseOperand = null;
+let parseOperand: ReturnType<typeof parseOperandFactory> | null = null;
 const run = (function () {
 	let running = false;
-	return function (fn) {
+	return function (fn: () => void) {
 		if (!running) {
 			running = true;
 			parseOperand = parseOperandFactory();
@@ -178,10 +195,10 @@ const methodMaps = {
 	TOLOWER: 'LOWER',
 };
 
-const createExpression = function (lhs, op, rhs) {
+const createExpression = function (lhs: Operand, op?: Operand, rhs?: Operand) {
 	let sql;
 	if (lhs === 'not') {
-		op = parseOperand(op);
+		op = parseOperand!(op!);
 		return {
 			odata: 'not(' + op.odata + ')',
 			sql: 'NOT (\n\t' + op.sql + '\n)',
@@ -189,17 +206,17 @@ const createExpression = function (lhs, op, rhs) {
 		};
 	}
 	if (rhs == null) {
-		lhs = parseOperand(lhs);
+		lhs = parseOperand!(lhs);
 		return {
 			odata: '(' + lhs.odata + ')',
 			sql: lhs.sql,
 			bindings: lhs.bindings,
 		};
 	}
-	lhs = parseOperand(lhs);
-	rhs = parseOperand(rhs);
+	lhs = parseOperand!(lhs);
+	rhs = parseOperand!(rhs);
 	const bindings = lhs.bindings.concat(rhs.bindings);
-	if (['eq', 'ne'].includes(op)) {
+	if (op === 'eq' || op === 'ne') {
 		if ([lhs.sql, rhs.sql].includes('NULL')) {
 			const nullCheck = op === 'eq' ? ' IS NULL' : ' IS NOT NULL';
 			if (lhs.sql === 'NULL') {
@@ -232,10 +249,10 @@ const createExpression = function (lhs, op, rhs) {
 			}
 		}
 	} else {
-		sql = `${lhs.sql}${sqlOps[op]} ${rhs.sql}`;
+		sql = `${lhs.sql}${sqlOps[op as keyof typeof sqlOps]} ${rhs.sql}`;
 	}
 
-	if (sqlOpBrackets[op]) {
+	if (sqlOpBrackets[op as keyof typeof sqlOpBrackets]) {
 		sql = '(' + sql + ')';
 	}
 	return {
@@ -244,43 +261,44 @@ const createExpression = function (lhs, op, rhs) {
 		bindings,
 	};
 };
-const createMethodCall = function (method, ...args) {
-	args = args.map((arg) => parseOperand(arg));
-	const odata = method + '(' + args.map((arg) => arg.odata).join(',') + ')';
+const createMethodCall = function (method: string, ...args: Operand[]) {
+	const parsedArgs = args.map((arg) => parseOperand!(arg));
+	const odata =
+		method + '(' + parsedArgs.map((arg) => arg.odata).join(',') + ')';
 	method = method.toUpperCase();
 	switch (method) {
 		case 'CONTAINS':
 		case 'SUBSTRINGOF':
 			if (method === 'SUBSTRINGOF') {
-				args.reverse();
+				parsedArgs.reverse();
 			}
 			return {
-				sql: `${args[0].sql} LIKE ('%' || REPLACE(REPLACE(REPLACE(${args[1].sql}, '\\', '\\\\'), '_', '\\_'), '%', '\\%') || '%')`,
-				bindings: [...args[0].bindings, ...args[1].bindings],
+				sql: `${parsedArgs[0].sql} LIKE ('%' || REPLACE(REPLACE(REPLACE(${parsedArgs[1].sql}, '\\', '\\\\'), '_', '\\_'), '%', '\\%') || '%')`,
+				bindings: [...parsedArgs[0].bindings, ...parsedArgs[1].bindings],
 				odata,
 			};
 		case 'STARTSWITH':
 			return {
-				sql: `STARTS_WITH(${args[0].sql}, ${args[1].sql})`,
-				bindings: [...args[0].bindings, ...args[1].bindings],
+				sql: `STARTS_WITH(${parsedArgs[0].sql}, ${parsedArgs[1].sql})`,
+				bindings: [...parsedArgs[0].bindings, ...parsedArgs[1].bindings],
 				odata,
 			};
 		case 'ENDSWITH':
 			return {
-				sql: `${args[0].sql} LIKE ('%' || REPLACE(REPLACE(REPLACE(${args[1].sql}, '\\', '\\\\'), '_', '\\_'), '%', '\\%'))`,
-				bindings: [...args[0].bindings, ...args[1].bindings],
+				sql: `${parsedArgs[0].sql} LIKE ('%' || REPLACE(REPLACE(REPLACE(${parsedArgs[1].sql}, '\\', '\\\\'), '_', '\\_'), '%', '\\%'))`,
+				bindings: [...parsedArgs[0].bindings, ...parsedArgs[1].bindings],
 				odata,
 			};
 		case 'CONCAT':
 			return {
-				sql: '(' + args.map((arg) => arg.sql).join(' || ') + ')',
-				bindings: _.flatten(args.map((arg) => arg.bindings)),
+				sql: '(' + parsedArgs.map((arg) => arg.sql).join(' || ') + ')',
+				bindings: _.flatten(parsedArgs.map((arg) => arg.bindings)),
 				odata,
 			};
 		case 'INDEXOF':
 			return {
-				sql: 'STRPOS(' + args.map((arg) => arg.sql).join(', ') + ') - 1',
-				bindings: _.flatten(args.map((arg) => arg.bindings)),
+				sql: 'STRPOS(' + parsedArgs.map((arg) => arg.sql).join(', ') + ') - 1',
+				bindings: _.flatten(parsedArgs.map((arg) => arg.bindings)),
 				odata,
 			};
 		case 'NOW':
@@ -295,60 +313,66 @@ const createMethodCall = function (method, ...args) {
 		case 'HOUR':
 		case 'MINUTE':
 			return {
-				sql: `EXTRACT('${method}' FROM DATE_TRUNC('milliseconds', ${args[0].sql}))`,
-				bindings: args[0].bindings,
+				sql: `EXTRACT('${method}' FROM DATE_TRUNC('milliseconds', ${parsedArgs[0].sql}))`,
+				bindings: parsedArgs[0].bindings,
 				odata,
 			};
 		case 'SECOND':
 			return {
-				sql: `FLOOR(EXTRACT('${method}' FROM DATE_TRUNC('milliseconds', ${args[0].sql})))`,
-				bindings: args[0].bindings,
+				sql: `FLOOR(EXTRACT('${method}' FROM DATE_TRUNC('milliseconds', ${parsedArgs[0].sql})))`,
+				bindings: parsedArgs[0].bindings,
 				odata,
 			};
 		case 'FRACTIONALSECONDS':
 			return {
-				sql: `EXTRACT('SECOND' FROM DATE_TRUNC('milliseconds', ${args[0].sql})) - FLOOR(EXTRACT('SECOND' FROM DATE_TRUNC('milliseconds', ${args[0].sql})))`,
-				bindings: args[0].bindings,
+				sql: `EXTRACT('SECOND' FROM DATE_TRUNC('milliseconds', ${parsedArgs[0].sql})) - FLOOR(EXTRACT('SECOND' FROM DATE_TRUNC('milliseconds', ${parsedArgs[0].sql})))`,
+				bindings: parsedArgs[0].bindings,
 				odata,
 			};
 		case 'TIME':
 			return {
-				sql: `CAST(DATE_TRUNC('milliseconds', ${args[0].sql}) AS ${method})`,
-				bindings: args[0].bindings,
+				sql: `CAST(DATE_TRUNC('milliseconds', ${parsedArgs[0].sql}) AS ${method})`,
+				bindings: parsedArgs[0].bindings,
 				odata,
 			};
 		case 'TOTALSECONDS':
 			return {
-				sql: `EXTRACT(EPOCH FROM ${args[0].sql})`,
-				bindings: args[0].bindings,
+				sql: `EXTRACT(EPOCH FROM ${parsedArgs[0].sql})`,
+				bindings: parsedArgs[0].bindings,
 				odata,
 			};
 		case 'DATE':
 			return {
-				sql: `DATE(DATE_TRUNC('milliseconds', ${args[0].sql}))`,
-				bindings: args[0].bindings,
+				sql: `DATE(DATE_TRUNC('milliseconds', ${parsedArgs[0].sql}))`,
+				bindings: parsedArgs[0].bindings,
 				odata,
 			};
 		default: {
 			if (Object.prototype.hasOwnProperty.call(methodMaps, method)) {
-				method = methodMaps[method];
+				method = methodMaps[method as keyof typeof methodMaps];
 			}
 			switch (method) {
 				case 'SUBSTRING':
-					args[1].sql += ' + 1';
+					parsedArgs[1].sql += ' + 1';
 					break;
 			}
-			const sql = method + '(' + args.map((arg) => arg.sql).join(', ') + ')';
+			const sql =
+				method + '(' + parsedArgs.map((arg) => arg.sql).join(', ') + ')';
 			return {
 				sql,
-				bindings: _.flatten(args.map((arg) => arg.bindings)),
+				bindings: _.flatten(parsedArgs.map((arg) => arg.bindings)),
 				odata,
 			};
 		}
 	}
 };
 
-const operandTest = (lhs, op, rhs, override) => {
+const operandTest = (
+	lhs: Operand,
+	op?: Operand,
+	rhs?: Operand,
+	override?: Partial<ParsedOperand>,
+) => {
 	run(function () {
 		let from;
 		let { odata, sql, bindings } = createExpression(lhs, op, rhs);
@@ -392,7 +416,7 @@ WHERE ${sql}`,
 	});
 };
 
-const methodTest = (...args) => {
+const methodTest = (...args: [method: string, ...Operand[]]) => {
 	run(function () {
 		const { odata, sql, bindings } = createMethodCall(...args);
 		test(`/pilot?$filter=${odata}`, 'GET', bindings, (result, sqlEquals) => {
@@ -566,7 +590,7 @@ WHERE ${sql}`,
 });
 
 run(function () {
-	const { odata: keyOdata, bindings: keyBindings } = parseOperand(1);
+	const { odata: keyOdata, bindings: keyBindings } = parseOperand!(1);
 	const { odata, bindings } = createExpression('can_fly__plane/id', 'eq', 10);
 	test(
 		'/pilot(' + keyOdata + ')/can_fly__plane?$filter=' + odata,
@@ -600,8 +624,8 @@ run(function () {
 		10,
 	);
 	const name = 'Peter';
-	const bodyBindings = [['Bind', ['pilot', 'name']], ...bindings];
-	const insertTest = (result, sqlEquals) => {
+	const bodyBindings = [['Bind', ['pilot', 'name']], ...bindings] as const;
+	const insertTest: ExpectationSuccessFn = (result, sqlEquals) => {
 		sqlEquals(
 			result,
 			`\
@@ -685,11 +709,11 @@ ${updateWhere}`,
 					expect(result).to.be.an('array');
 				});
 				it('that inserts', () => {
-					insertTest(result[0], sqlEquals);
+					insertTest((result as SqlResult[])[0], sqlEquals);
 				});
 				it('and updates', () => {
 					sqlEquals(
-						result[1].query,
+						(result as SqlResult[])[1],
 						`\
 UPDATE "pilot"
 SET "created at" = DEFAULT,
@@ -736,11 +760,10 @@ run(function () {
 		sql,
 		bindings: exprBindings,
 	} = createExpression('name', 'eq', `'${name}'`);
-	const bindings = [['Bind', ['pilot', 'name']], ...exprBindings];
 	test(
 		`/pilot?$filter=${odata}`,
 		'POST',
-		bindings,
+		[['Bind', ['pilot', 'name']], ...exprBindings],
 		{ name },
 		(result, sqlEquals) => {
 			it(`should insert into pilot where '${odata}'`, () => {
@@ -767,20 +790,24 @@ WHERE EXISTS (
 
 run(function () {
 	const name = 'Peter';
-	const { odata: keyOdata, bindings: keyBindings } = parseOperand(1);
+	const { odata: keyOdata, bindings: keyBindings } = parseOperand!(1);
 	const {
 		odata,
 		sql,
 		bindings: exprBindings,
 	} = createExpression('name', 'eq', `'${name}'`);
-	const bodyBindings = [['Bind', ['pilot', 'name']]];
+	const bodyBindings = [['Bind', ['pilot', 'name']]] as const;
 	const insertBindings = [
 		['Bind', ['pilot', 'id']],
 		...bodyBindings,
 		...exprBindings,
 		...keyBindings,
-	];
-	const updateBindings = [...bodyBindings, ...keyBindings, ...exprBindings];
+	] as const;
+	const updateBindings = [
+		...bodyBindings,
+		...keyBindings,
+		...exprBindings,
+	] as const;
 	test(
 		'/pilot(' + keyOdata + ')?$filter=' + odata,
 		'PATCH',
@@ -816,7 +843,7 @@ AND "pilot"."id" IN ((
 				});
 				it('that inserts', () => {
 					sqlEquals(
-						result[0].query,
+						(result as SqlResult[])[0],
 						`\
 INSERT INTO "pilot" ("id", "name")
 SELECT "$insert"."id", "$insert"."name"
@@ -835,7 +862,7 @@ WHERE EXISTS (
 				});
 				it('and updates', () => {
 					sqlEquals(
-						result[1].query,
+						(result as SqlResult[])[1],
 						`\
 UPDATE "pilot"
 SET "created at" = DEFAULT,
@@ -864,7 +891,7 @@ AND "pilot"."id" IN ((
 });
 
 run(function () {
-	const { odata: keyOdata, bindings: keyBindings } = parseOperand(1);
+	const { odata: keyOdata, bindings: keyBindings } = parseOperand!(1);
 	const { odata, bindings, sql } = createExpression(
 		createExpression(1, 'eq', 1),
 		'or',
@@ -1442,14 +1469,13 @@ WHERE CURRENT_TIMESTAMP - DATE_TRUNC('milliseconds', "pilot"."created at") < INT
 
 run(function () {
 	const odata = 'now() add now()';
-	test.fail(`/pilot?$filter=${odata}`, 'GET', [], (result, sqlEquals) => {
+	test.fail(`/pilot?$filter=${odata}`, 'GET', [], (err) => {
 		it(
 			'should fail to add current_timestamp to current_timestamp where "' +
 				odata +
 				'"',
 			() => {
-				expect(result).to.be.empty;
-				expect(sqlEquals).to.be.undefined;
+				expect(err).to.be.instanceOf(Error);
 			},
 		);
 	});

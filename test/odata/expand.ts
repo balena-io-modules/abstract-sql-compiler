@@ -1,3 +1,4 @@
+import type { ExpectationFailFn, ExpectationSuccessFn } from './test';
 import test from './test';
 import {
 	pilotFields,
@@ -8,8 +9,15 @@ import {
 } from './fields';
 import _ from 'lodash';
 
-const postgresAgg = (field) => 'COALESCE(JSON_AGG(' + field + "), '[]')";
-const mysqlAgg = (field) => "'[' || group_concat(" + field + ", ',') || ']'";
+type TestFn = (
+	aggFunc: (field: string) => string,
+	fields?: string,
+) => ExpectationSuccessFn;
+
+const postgresAgg = (field: string) =>
+	'COALESCE(JSON_AGG(' + field + "), '[]')";
+const mysqlAgg = (field: string) =>
+	"'[' || group_concat(" + field + ", ',') || ']'";
 const websqlAgg = mysqlAgg;
 
 (function () {
@@ -17,7 +25,7 @@ const websqlAgg = mysqlAgg;
 		pilotFields,
 		(field) => field === '"pilot"."licence"',
 	).join(', ');
-	const testFunc = (aggFunc, fields) => (result, sqlEquals) => {
+	const testFunc: TestFn = (aggFunc, fields) => (result, sqlEquals) => {
 		it('should select from pilot.*, aggregated licence', () => {
 			sqlEquals?.(
 				result,
@@ -38,10 +46,28 @@ FROM "pilot"`,
 	const urlCount = '/pilot?$expand=licence/$count';
 	test.postgres(url, testFunc(postgresAgg, aliasLicenceFields.join(', ')));
 	test.postgres(urlCount, testFunc(postgresAgg, 'COUNT(*) AS "$count"'));
-	test.mysql.fail(url, testFunc(mysqlAgg, aliasLicenceFields.join(', ')));
-	test.mysql.fail(urlCount, testFunc(mysqlAgg, 'COUNT(*) AS "$count"'));
-	test.websql.fail(url, testFunc(websqlAgg, aliasLicenceFields.join(', ')));
-	test.websql.fail(urlCount, testFunc(websqlAgg, 'COUNT(*) AS "$count"'));
+	test.mysql.fail(
+		url,
+		testFunc(
+			mysqlAgg,
+			aliasLicenceFields.join(', '),
+		) as any as ExpectationFailFn,
+	);
+	test.mysql.fail(
+		urlCount,
+		testFunc(mysqlAgg, 'COUNT(*) AS "$count"') as any as ExpectationFailFn,
+	);
+	test.websql.fail(
+		url,
+		testFunc(
+			websqlAgg,
+			aliasLicenceFields.join(', '),
+		) as any as ExpectationFailFn,
+	);
+	test.websql.fail(
+		urlCount,
+		testFunc(websqlAgg, 'COUNT(*) AS "$count"') as any as ExpectationFailFn,
+	);
 })();
 
 (function () {
@@ -49,7 +75,7 @@ FROM "pilot"`,
 		aliasPilotCanFlyPlaneFields,
 		(field) => field === '"pilot.pilot-can fly-plane"."can fly-plane"',
 	).join(', ');
-	const testFunc = (aggFunc) => (result, sqlEquals) => {
+	const testFunc: TestFn = (aggFunc) => (result, sqlEquals) => {
 		it('should select from pilot.*, aggregated(pilot-can fly-plane, aggregated plane)', () => {
 			sqlEquals?.(
 				result,
@@ -79,8 +105,8 @@ FROM "pilot"`,
 		'/pilot?$expand=can_fly__plane($expand=plane)',
 	]) {
 		test.postgres(url, testFunc(postgresAgg));
-		test.mysql.fail(url, testFunc(mysqlAgg));
-		test.websql.fail(url, testFunc(websqlAgg));
+		test.mysql.fail(url, testFunc(mysqlAgg) as any as ExpectationFailFn);
+		test.websql.fail(url, testFunc(websqlAgg) as any as ExpectationFailFn);
 	}
 })();
 
@@ -93,7 +119,7 @@ FROM "pilot"`,
 		pilotFields,
 		(field) => field === '"pilot"."licence"',
 	).join(', ');
-	const testFunc = (aggFunc) => (result, sqlEquals) => {
+	const testFunc: TestFn = (aggFunc) => (result, sqlEquals) => {
 		it('should select from pilot.*, aggregated(pilot-can fly-plane, aggregated plane), aggregated licence', () => {
 			sqlEquals?.(
 				result,
@@ -130,13 +156,13 @@ FROM "pilot"`,
 		'/pilot?$expand=can_fly__plane($expand=plane),licence',
 	]) {
 		test.postgres(url, testFunc(postgresAgg));
-		test.mysql.fail(url, testFunc(mysqlAgg));
-		test.websql.fail(url, testFunc(websqlAgg));
+		test.mysql.fail(url, testFunc(mysqlAgg) as any as ExpectationFailFn);
+		test.websql.fail(url, testFunc(websqlAgg) as any as ExpectationFailFn);
 	}
 })();
 
 (function () {
-	const testFunc = (aggFunc) => (result, sqlEquals) => {
+	const testFunc: TestFn = (aggFunc) => (result, sqlEquals) => {
 		it('should select from pilot.*, aggregated(pilot-can fly-plane, aggregated plane), aggregated licence', () => {
 			sqlEquals?.(
 				result,
@@ -155,8 +181,8 @@ FROM "pilot"`,
 	};
 	const url = '/pilot?$select=licence&$expand=licence';
 	test.postgres(url, testFunc(postgresAgg));
-	test.mysql.fail(url, testFunc(mysqlAgg));
-	test.websql.fail(url, testFunc(websqlAgg));
+	test.mysql.fail(url, testFunc(mysqlAgg) as any as ExpectationFailFn);
+	test.websql.fail(url, testFunc(websqlAgg) as any as ExpectationFailFn);
 })();
 
 (function () {
@@ -164,7 +190,7 @@ FROM "pilot"`,
 		aliasPilotCanFlyPlaneFields,
 		(field) => field === '"pilot.pilot-can fly-plane"."can fly-plane"',
 	).join(', ');
-	const testFunc = (aggFunc) => (result, sqlEquals) => {
+	const testFunc: TestFn = (aggFunc) => (result, sqlEquals) => {
 		it('should select from pilot.*, aggregated(pilot-can fly-plane, aggregated plane)', () => {
 			sqlEquals?.(
 				result,
@@ -194,8 +220,8 @@ FROM "pilot"`,
 		'/pilot?$select=id&$expand=can_fly__plane($expand=plane)',
 	]) {
 		test.postgres(url, testFunc(postgresAgg));
-		test.mysql.fail(url, testFunc(mysqlAgg));
-		test.websql.fail(url, testFunc(websqlAgg));
+		test.mysql.fail(url, testFunc(mysqlAgg) as any as ExpectationFailFn);
+		test.websql.fail(url, testFunc(websqlAgg) as any as ExpectationFailFn);
 	}
 })();
 
@@ -204,7 +230,7 @@ FROM "pilot"`,
 		aliasPilotCanFlyPlaneFields,
 		(field) => field === '"pilot.pilot-can fly-plane"."can fly-plane"',
 	).join(', ');
-	const testFunc = (aggFunc) => (result, sqlEquals) => {
+	const testFunc: TestFn = (aggFunc) => (result, sqlEquals) => {
 		it('should select from pilot.*, aggregated(pilot-can fly-plane, aggregated plane), aggregated licence', () => {
 			sqlEquals?.(
 				result,
@@ -241,13 +267,13 @@ FROM "pilot"`,
 		'/pilot?$select=id,licence&$expand=can_fly__plane($expand=plane),licence',
 	]) {
 		test.postgres(url, testFunc(postgresAgg));
-		test.mysql.fail(url, testFunc(mysqlAgg));
-		test.websql.fail(url, testFunc(websqlAgg));
+		test.mysql.fail(url, testFunc(mysqlAgg) as any as ExpectationFailFn);
+		test.websql.fail(url, testFunc(websqlAgg) as any as ExpectationFailFn);
 	}
 })();
 
 (function () {
-	const testFunc = (aggFunc) => (result, sqlEquals) => {
+	const testFunc: TestFn = (aggFunc) => (result, sqlEquals) => {
 		it('should select from pilot.*, aggregated(pilot-can fly-plane, aggregated plane)', () => {
 			sqlEquals?.(
 				result,
@@ -266,8 +292,8 @@ FROM "pilot"`,
 	};
 	const url = '/pilot?$expand=can_fly__plane($select=id)';
 	test.postgres(url, testFunc(postgresAgg));
-	test.mysql.fail(url, testFunc(mysqlAgg));
-	test.websql.fail(url, testFunc(websqlAgg));
+	test.mysql.fail(url, testFunc(mysqlAgg) as any as ExpectationFailFn);
+	test.websql.fail(url, testFunc(websqlAgg) as any as ExpectationFailFn);
 })();
 
 (function () {
@@ -275,7 +301,7 @@ FROM "pilot"`,
 		pilotFields,
 		(field) => field === '"pilot"."licence"',
 	).join(', ');
-	const testFunc = (aggFunc, fields) => (result, sqlEquals) => {
+	const testFunc: TestFn = (aggFunc, fields) => (result, sqlEquals) => {
 		it('should select from pilot.*, aggregated licence', () => {
 			sqlEquals?.(
 				result,
@@ -311,25 +337,31 @@ FROM "pilot"`,
 		url,
 		'GET',
 		[['Bind', 0]],
-		testFunc(mysqlAgg, aliasLicenceFields.join(', ')),
+		testFunc(
+			mysqlAgg,
+			aliasLicenceFields.join(', '),
+		) as any as ExpectationFailFn,
 	);
 	test.mysql.fail(
 		urlCount,
 		'GET',
 		[['Bind', 0]],
-		testFunc(mysqlAgg, 'COUNT(*) AS "$count"'),
+		testFunc(mysqlAgg, 'COUNT(*) AS "$count"') as any as ExpectationFailFn,
 	);
 	test.websql.fail(
 		url,
 		'GET',
 		[['Bind', 0]],
-		testFunc(websqlAgg, aliasLicenceFields.join(', ')),
+		testFunc(
+			websqlAgg,
+			aliasLicenceFields.join(', '),
+		) as any as ExpectationFailFn,
 	);
 	test.websql.fail(
 		urlCount,
 		'GET',
 		[['Bind', 0]],
-		testFunc(websqlAgg, 'COUNT(*) AS "$count'),
+		testFunc(websqlAgg, 'COUNT(*) AS "$count') as any as ExpectationFailFn,
 	);
 })();
 
@@ -338,7 +370,7 @@ FROM "pilot"`,
 		pilotFields,
 		(field) => field === '"pilot"."licence"',
 	).join(', ');
-	const testFunc = (aggFunc) => (result, sqlEquals) => {
+	const testFunc: TestFn = (aggFunc) => (result, sqlEquals) => {
 		it('should select from pilot.*, aggregated licence', () => {
 			sqlEquals?.(
 				result,
@@ -359,8 +391,18 @@ FROM "pilot"`,
 	};
 	const url = '/pilot?$expand=licence($filter=is_of__pilot/id eq 1)';
 	test.postgres(url, 'GET', [['Bind', 0]], testFunc(postgresAgg));
-	test.mysql.fail(url, 'GET', [['Bind', 0]], testFunc(mysqlAgg));
-	test.websql.fail(url, 'GET', [['Bind', 0]], testFunc(websqlAgg));
+	test.mysql.fail(
+		url,
+		'GET',
+		[['Bind', 0]],
+		testFunc(mysqlAgg) as any as ExpectationFailFn,
+	);
+	test.websql.fail(
+		url,
+		'GET',
+		[['Bind', 0]],
+		testFunc(websqlAgg) as any as ExpectationFailFn,
+	);
 })();
 
 (function () {
@@ -368,7 +410,7 @@ FROM "pilot"`,
 		pilotFields,
 		(field) => field === '"pilot"."licence"',
 	).join(', ');
-	const testFunc = (aggFunc) => (result, sqlEquals) => {
+	const testFunc: TestFn = (aggFunc) => (result, sqlEquals) => {
 		it('should select from pilot.*, aggregated licence', () => {
 			sqlEquals?.(
 				result,
@@ -388,8 +430,8 @@ FROM "pilot"`,
 	};
 	const url = '/pilot?$expand=licence($orderby=id)';
 	test.postgres(url, testFunc(postgresAgg));
-	test.mysql.fail(url, testFunc(mysqlAgg));
-	test.websql.fail(url, testFunc(websqlAgg));
+	test.mysql.fail(url, testFunc(mysqlAgg) as any as ExpectationFailFn);
+	test.websql.fail(url, testFunc(websqlAgg) as any as ExpectationFailFn);
 })();
 
 (function () {
@@ -397,7 +439,7 @@ FROM "pilot"`,
 		pilotFields,
 		(field) => field === '"pilot"."licence"',
 	).join(', ');
-	const testFunc = (aggFunc) => (result, sqlEquals) => {
+	const testFunc: TestFn = (aggFunc) => (result, sqlEquals) => {
 		it('should select from pilot.*, aggregated count(*) licence and ignore orderby', () => {
 			sqlEquals?.(
 				result,
@@ -416,8 +458,8 @@ FROM "pilot"`,
 	};
 	const urlCount = '/pilot?$expand=licence/$count($orderby=id)';
 	test.postgres(urlCount, testFunc(postgresAgg));
-	test.mysql.fail(urlCount, testFunc(mysqlAgg));
-	test.websql.fail(urlCount, testFunc(websqlAgg));
+	test.mysql.fail(urlCount, testFunc(mysqlAgg) as any as ExpectationFailFn);
+	test.websql.fail(urlCount, testFunc(websqlAgg) as any as ExpectationFailFn);
 })();
 
 (function () {
@@ -425,7 +467,7 @@ FROM "pilot"`,
 		pilotFields,
 		(field) => field === '"pilot"."licence"',
 	).join(', ');
-	const testFunc = (aggFunc) => (result, sqlEquals) => {
+	const testFunc: TestFn = (aggFunc) => (result, sqlEquals) => {
 		it('should select from pilot.*, aggregated licence', () => {
 			sqlEquals?.(
 				result,
@@ -445,8 +487,18 @@ FROM "pilot"`,
 	};
 	const url = '/pilot?$expand=licence($top=10)';
 	test.postgres(url, 'GET', [['Bind', 0]], testFunc(postgresAgg));
-	test.mysql.fail(url, 'GET', [['Bind', 0]], testFunc(mysqlAgg));
-	test.websql.fail(url, 'GET', [['Bind', 0]], testFunc(websqlAgg));
+	test.mysql.fail(
+		url,
+		'GET',
+		[['Bind', 0]],
+		testFunc(mysqlAgg) as any as ExpectationFailFn,
+	);
+	test.websql.fail(
+		url,
+		'GET',
+		[['Bind', 0]],
+		testFunc(websqlAgg) as any as ExpectationFailFn,
+	);
 })();
 
 (function () {
@@ -454,7 +506,7 @@ FROM "pilot"`,
 		pilotFields,
 		(field) => field === '"pilot"."licence"',
 	).join(', ');
-	const testFunc = (aggFunc) => (result, sqlEquals) => {
+	const testFunc: TestFn = (aggFunc) => (result, sqlEquals) => {
 		it('should select from pilot.*, aggregated count(*) licence and ignore top', () => {
 			sqlEquals?.(
 				result,
@@ -473,8 +525,8 @@ FROM "pilot"`,
 	};
 	const urlCount = '/pilot?$expand=licence/$count($top=10)';
 	test.postgres(urlCount, testFunc(postgresAgg));
-	test.mysql.fail(urlCount, testFunc(mysqlAgg));
-	test.websql.fail(urlCount, testFunc(websqlAgg));
+	test.mysql.fail(urlCount, testFunc(mysqlAgg) as any as ExpectationFailFn);
+	test.websql.fail(urlCount, testFunc(websqlAgg) as any as ExpectationFailFn);
 })();
 
 (function () {
@@ -482,7 +534,7 @@ FROM "pilot"`,
 		pilotFields,
 		(field) => field === '"pilot"."licence"',
 	).join(', ');
-	const testFunc = (aggFunc) => (result, sqlEquals) => {
+	const testFunc: TestFn = (aggFunc) => (result, sqlEquals) => {
 		it('should select from pilot.*, aggregated licence', () => {
 			sqlEquals?.(
 				result,
@@ -502,8 +554,18 @@ FROM "pilot"`,
 	};
 	const url = '/pilot?$expand=licence($skip=10)';
 	test.postgres(url, 'GET', [['Bind', 0]], testFunc(postgresAgg));
-	test.mysql.fail(url, 'GET', [['Bind', 0]], testFunc(mysqlAgg));
-	test.websql.fail(url, 'GET', [['Bind', 0]], testFunc(websqlAgg));
+	test.mysql.fail(
+		url,
+		'GET',
+		[['Bind', 0]],
+		testFunc(mysqlAgg) as any as ExpectationFailFn,
+	);
+	test.websql.fail(
+		url,
+		'GET',
+		[['Bind', 0]],
+		testFunc(websqlAgg) as any as ExpectationFailFn,
+	);
 })();
 
 (function () {
@@ -511,7 +573,7 @@ FROM "pilot"`,
 		pilotFields,
 		(field) => field === '"pilot"."licence"',
 	).join(', ');
-	const testFunc = (aggFunc) => (result, sqlEquals) => {
+	const testFunc: TestFn = (aggFunc) => (result, sqlEquals) => {
 		it('should select from pilot.*, aggregated count(*) licence and ignore skip', () => {
 			sqlEquals?.(
 				result,
@@ -530,12 +592,12 @@ FROM "pilot"`,
 	};
 	const urlCount = '/pilot?$expand=licence/$count($skip=10)';
 	test.postgres(urlCount, testFunc(postgresAgg));
-	test.mysql.fail(urlCount, testFunc(mysqlAgg));
-	test.websql.fail(urlCount, testFunc(websqlAgg));
+	test.mysql.fail(urlCount, testFunc(mysqlAgg) as any as ExpectationFailFn);
+	test.websql.fail(urlCount, testFunc(websqlAgg) as any as ExpectationFailFn);
 })();
 
 (function () {
-	const testFunc = (aggFunc) => (result, sqlEquals) => {
+	const testFunc: TestFn = (aggFunc) => (result, sqlEquals) => {
 		it('should select from pilot.*, aggregated(pilot-can fly-plane, aggregated plane)', () => {
 			sqlEquals?.(
 				result,
@@ -554,12 +616,12 @@ FROM "pilot"`,
 	};
 	const url = '/pilot?$expand=can_fly__plane($select=plane)';
 	test.postgres(url, testFunc(postgresAgg));
-	test.mysql.fail(url, testFunc(mysqlAgg));
-	test.websql.fail(url, testFunc(websqlAgg));
+	test.mysql.fail(url, testFunc(mysqlAgg) as any as ExpectationFailFn);
+	test.websql.fail(url, testFunc(websqlAgg) as any as ExpectationFailFn);
 })();
 
 (function () {
-	const testFunc = (aggFunc) => (result, sqlEquals) => {
+	const testFunc: TestFn = (aggFunc) => (result, sqlEquals) => {
 		it('should select from pilot.*, aggregated count(*) pilot-can fly-plane and ignore select', () => {
 			sqlEquals?.(
 				result,
@@ -578,8 +640,8 @@ FROM "pilot"`,
 	};
 	const urlCount = '/pilot?$expand=can_fly__plane/$count($select=plane)';
 	test.postgres(urlCount, testFunc(postgresAgg));
-	test.mysql.fail(urlCount, testFunc(mysqlAgg));
-	test.websql.fail(urlCount, testFunc(websqlAgg));
+	test.mysql.fail(urlCount, testFunc(mysqlAgg) as any as ExpectationFailFn);
+	test.websql.fail(urlCount, testFunc(websqlAgg) as any as ExpectationFailFn);
 })();
 
 (function () {
@@ -588,7 +650,7 @@ FROM "pilot"`,
 		pilotFields,
 		(field) => field === '"pilot"."trained-pilot"',
 	).join(', ');
-	const testFunc = (aggFunc) => (result, sqlEquals) => {
+	const testFunc: TestFn = (aggFunc) => (result, sqlEquals) => {
 		it('should select from pilot.*, aggregated pilot', () => {
 			sqlEquals?.(
 				result,
@@ -607,6 +669,6 @@ FROM "pilot"`,
 	};
 	const url = '/pilot?$expand=trained__pilot';
 	test.postgres(url, testFunc(postgresAgg));
-	test.mysql.fail(url, testFunc(mysqlAgg));
-	test.websql.fail(url, testFunc(websqlAgg));
+	test.mysql.fail(url, testFunc(mysqlAgg) as any as ExpectationFailFn);
+	test.websql.fail(url, testFunc(websqlAgg) as any as ExpectationFailFn);
 })();

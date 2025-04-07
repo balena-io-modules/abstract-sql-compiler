@@ -79,17 +79,18 @@ const sqlEquals = {
 	},
 } satisfies Record<string, SqlEquals>;
 
+type ReadonlyBinding = Readonly<AbstractSQLCompiler.Binding>;
 type ExpectedBindings = ReadonlyArray<
-	Readonly<AbstractSQLCompiler.Binding | AbstractSQLCompiler.Binding[]>
+	ReadonlyBinding | readonly ReadonlyBinding[]
 >;
 
-type ExpectationSuccessFn = (
+export type ExpectationSuccessFn = (
 	result:
 		| AbstractSQLCompiler.SqlResult
 		| [AbstractSQLCompiler.SqlResult, AbstractSQLCompiler.SqlResult],
 	sqlEquals: SqlEquals,
 ) => void;
-type ExpectationFailFn = (result: Error) => void;
+export type ExpectationFailFn = (result: Error) => void;
 type ExpectationFn<ExpectFail extends boolean> = ExpectFail extends true
 	? ExpectationFailFn
 	: ExpectationSuccessFn;
