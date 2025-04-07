@@ -14,8 +14,7 @@
 		"skipLibCheck": true,
 		"exactOptionalPropertyTypes": true,
 		"target": "es2023",
-		"outDir": "out",
-		"allowJs": true
+		"outDir": "out"
 	},
 	"include": [
 		"src/**/*",

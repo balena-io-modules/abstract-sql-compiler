@@ -11,8 +11,8 @@
     "test": "mocha",
     "posttest": "npm run lint",
     "prepare": "node -e \"try { (await import('husky')).default() } catch (e) { if (e.code !== 'ERR_MODULE_NOT_FOUND') throw e }\" --input-type module && npm run build",
-    "lint-fix": "balena-lint --fix -e js -e ts src/ test/",
-    "lint": "balena-lint -e js -e ts src/ test/ && tsc --noEmit && tsc --noEmit --project tsconfig.js.json"
+    "lint-fix": "balena-lint --fix src/ test/",
+    "lint": "balena-lint src/ test/ && tsc --noEmit"
   },
   "repository": "https://github.com/balena-io-modules/abstract-sql-compiler.git",
   "author": "",
@@ -42,9 +42,6 @@
     "typescript": "^5.8.2"
   },
   "lint-staged": {
-    "*.js": [
-      "balena-lint --fix"
-    ],
     "*.ts": [
       "balena-lint --fix"
     ]
@@ -54,10 +51,7 @@
     "recursive": true,
     "require": "ts-node/register/transpile-only",
     "bail": true,
-    "_": [
-      "test/**/*.ts",
-      "test/**/*.js"
-    ]
+    "_": "test/**/*.ts"
   },
   "engines": {
     "node": ">=20.14.0",
