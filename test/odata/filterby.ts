@@ -142,13 +142,13 @@ let parseOperandFactory = function (defaultResource = 'pilot') {
 		}
 		if (operand != null && typeof operand === 'object') {
 			const sign = operand.negative ? '-' : '';
-			const day = operand.day || 0;
-			const hour = operand.hour || 0;
-			const minute = operand.minute || 0;
-			const second = operand.second || 0;
+			const day = operand.day ?? 0;
+			const hour = operand.hour ?? 0;
+			const minute = operand.minute ?? 0;
+			const second = operand.second ?? 0;
 			return `INTERVAL '${sign}${day} ${sign}${hour}:${minute}:${second}'`;
 		}
-		throw new Error('Unknown operand type: ' + operand);
+		throw new Error(`Unknown operand type: ${operand}`);
 	};
 
 	return (operand: Operand): ParsedOperand => ({
@@ -256,7 +256,7 @@ const createExpression = function (lhs: Operand, op?: Operand, rhs?: Operand) {
 		sql = '(' + sql + ')';
 	}
 	return {
-		odata: lhs.odata + ' ' + op + ' ' + rhs.odata,
+		odata: `${lhs.odata} ${op} ${rhs.odata}`,
 		sql,
 		bindings,
 	};

@@ -9,21 +9,21 @@ import { expect } from 'chai';
 import _ from 'lodash';
 
 const generateClientModel = function (input: string) {
-	// eslint-disable-next-line @typescript-eslint/no-var-requires
+	// eslint-disable-next-line @typescript-eslint/no-require-imports
 	const sbvrTypes = require('@balena/sbvr-types').default;
 	const typeVocab = fs.readFileSync(
 		require.resolve('@balena/sbvr-types/Type.sbvr'),
 		'utf8',
 	);
 
-	// eslint-disable-next-line @typescript-eslint/no-var-requires
+	// eslint-disable-next-line @typescript-eslint/no-require-imports
 	const SBVRParser = require('@balena/sbvr-parser').SBVRParser.createInstance();
 	SBVRParser.enableReusingMemoizations(SBVRParser._sideEffectingRules);
 	SBVRParser.AddCustomAttribute('Database ID Field:');
 	SBVRParser.AddCustomAttribute('Database Table Name:');
 	SBVRParser.AddBuiltInVocab(typeVocab);
 
-	// eslint-disable-next-line @typescript-eslint/no-var-requires
+	// eslint-disable-next-line @typescript-eslint/no-require-imports
 	const LF2AbstractSQL = require('@balena/lf-to-abstract-sql');
 	const LF2AbstractSQLTranslator = LF2AbstractSQL.createTranslator(sbvrTypes);
 
