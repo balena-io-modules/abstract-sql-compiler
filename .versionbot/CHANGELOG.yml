@@ -1,4 +1,16 @@
 - commits:
+    - subject: Update @balena/lint to 9.x
+      hash: b5768bbd59e7a402ddd93f031b8d74483f96fdb4
+      body: ""
+      footer:
+        Change-type: patch
+        change-type: patch
+      author: Pagan Gazzard
+      nested: []
+  version: 10.2.10
+  title: ""
+  date: 2025-04-08T16:22:33.105Z
+- commits:
     - subject: Avoid lodash chaining / move lodash to a dev dependency
       hash: 14d0033542647d08a183e911c2f56185563bf80b
       body: ""
