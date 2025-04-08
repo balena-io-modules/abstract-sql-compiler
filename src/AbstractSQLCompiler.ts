@@ -867,7 +867,7 @@ ${compileRule(definitionAbstractSql as AbstractSqlQuery, engine, true).replace(
 					const fkDefinition = `FOREIGN KEY ("${fieldName}") REFERENCES "${referencedTable.name}" ("${references.fieldName}")`;
 
 					const schemaInfo = schemaDependencyMap[references.resourceName];
-					if (schemaInfo && schemaInfo.depends.includes(table.resourceName)) {
+					if (schemaInfo?.depends.includes(table.resourceName)) {
 						if (engine !== Engines.postgres) {
 							throw new Error(
 								'Circular dependencies are only supported on postgres currently',

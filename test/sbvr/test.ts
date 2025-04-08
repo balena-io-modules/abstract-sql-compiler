@@ -5,11 +5,11 @@ import { expect } from 'chai';
 import * as AbstractSQLCompiler from '../..';
 
 export function getTestHelpers(builtInVocab: string | boolean = false) {
-	// eslint-disable-next-line @typescript-eslint/no-var-requires
+	// eslint-disable-next-line @typescript-eslint/no-require-imports
 	const SBVRParser = require('@balena/sbvr-parser').SBVRParser.createInstance();
 	SBVRParser.enableReusingMemoizations(SBVRParser._sideEffectingRules);
 
-	// eslint-disable-next-line @typescript-eslint/no-var-requires
+	// eslint-disable-next-line @typescript-eslint/no-require-imports
 	const LF2AbstractSQL = require('@balena/lf-to-abstract-sql');
 	const LF2AbstractSQLTranslator = LF2AbstractSQL.createTranslator(sbvrTypes);
 

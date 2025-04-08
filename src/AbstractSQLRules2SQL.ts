@@ -283,7 +283,7 @@ const isNotDistinctFrom: MatchFn = (args, indent) => {
 		return aSql + ' IS ' + bSql;
 	} else {
 		throw new SyntaxError(
-			'IsDistinctFrom/IsNotDistinctFrom not supported on: ' + engine,
+			`IsDistinctFrom/IsNotDistinctFrom not supported on: ${engine}`,
 		);
 	}
 };
