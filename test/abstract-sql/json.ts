@@ -56,3 +56,45 @@ describe('ToJSON', () => {
 		},
 	);
 });
+
+describe('JSON Length', () => {
+	test(
+		[
+			'SelectQuery',
+			[
+				'Select',
+				[
+					[
+						'CharacterLength',
+						['Cast', ['ReferencedField', 'foo', 'bar'], 'Text'],
+					],
+				],
+			],
+		],
+		(result, sqlEquals) => {
+			it('should produce a valid select getting the size of the json field', () => {
+				sqlEquals(result, `SELECT LENGTH(CAST("foo"."bar" AS TEXT))`);
+			});
+		},
+	);
+
+	test.mysql(
+		[
+			'SelectQuery',
+			[
+				'Select',
+				[
+					[
+						'CharacterLength',
+						['Cast', ['ReferencedField', 'foo', 'bar'], 'Text'],
+					],
+				],
+			],
+		],
+		(result, sqlEquals) => {
+			it('should produce a valid select getting the size of the json field', () => {
+				sqlEquals(result, `SELECT CHAR_LENGTH(CAST("foo"."bar" AS CHAR))`);
+			});
+		},
+	);
+});
