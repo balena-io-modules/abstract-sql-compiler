@@ -1,4 +1,16 @@
 - commits:
+    - subject: Add missing ; in trigger creation $$ section
+      hash: b8742b7b1f2f8727b70df5088d2b0aaacb0b9e94
+      body: ""
+      footer:
+        Change-type: patch
+        change-type: patch
+      author: Thodoris Greasidis
+      nested: []
+  version: 10.2.11
+  title: ""
+  date: 2025-06-04T12:41:18.924Z
+- commits:
     - subject: Update @balena/lint to 9.x
       hash: b5768bbd59e7a402ddd93f031b8d74483f96fdb4
       body: ""
