@@ -22,7 +22,7 @@ IF NOT EXISTS(
 	EXECUTE PROCEDURE "trigger_update_modified_at"();
 END IF;
 END;
-$$`;
+$$;`;
 
 describe('pilots', function () {
 	test(

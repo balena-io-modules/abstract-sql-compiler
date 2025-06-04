@@ -982,7 +982,7 @@ IF NOT EXISTS(
 	EXECUTE PROCEDURE "${trigger.fnName}"();
 END IF;
 END;
-$$`);
+$$;`);
 				dropTriggers.push(`DROP TRIGGER "${triggerName}";`);
 			}
 		}
