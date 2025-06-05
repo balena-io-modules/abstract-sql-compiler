@@ -1,4 +1,17 @@
 - commits:
+    - subject: Update dependency lint-staged to v16
+      hash: 65f51a7d4c10810989efb02c96ae2bf754f6b365
+      body: |
+        Update lint-staged from 15.5.2 to 16.1.0
+      footer:
+        Change-type: patch
+        change-type: patch
+      author: balena-renovate[bot]
+      nested: []
+  version: 10.2.12
+  title: ""
+  date: 2025-06-05T06:26:44.888Z
+- commits:
     - subject: Add missing ; in trigger creation $$ section
       hash: b8742b7b1f2f8727b70df5088d2b0aaacb0b9e94
       body: ""
