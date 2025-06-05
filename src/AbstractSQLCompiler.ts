@@ -174,7 +174,9 @@ export type NumberTypeNodes = StrictNumberTypeNodes | UnknownTypeNodes;
 
 export type FieldNode = ['Field', string];
 export type ReferencedFieldNode = ['ReferencedField', string, string];
-export type DateTruncNode = ['DateTrunc', TextTypeNodes, DateTypeNodes];
+export type DateTruncNode =
+	| ['DateTrunc', TextTypeNodes, DateTypeNodes]
+	| ['DateTrunc', TextTypeNodes, DateTypeNodes, TextTypeNodes];
 export type ToDateNode = ['ToDate', DateTypeNodes];
 export type ToTimeNode = ['ToTime', DateTypeNodes];
 export type CurrentTimestampNode = ['CurrentTimestamp'];
