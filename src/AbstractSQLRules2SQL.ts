@@ -1192,7 +1192,7 @@ const typeRules: Record<string, MatchFn> = {
 		return `DATE(${date})`;
 	},
 	DateTrunc: (args, indent) => {
-		checkArgs('DateTrunc', args, 2);
+		checkMinArgs('DateTrunc', args, 2);
 		const precision = TextValue(getAbstractSqlQuery(args, 0), indent);
 		const date = DateValue(getAbstractSqlQuery(args, 1), indent);
 		// Postgres generated timestamps have a microseconds precision
@@ -1200,7 +1200,13 @@ const typeRules: Record<string, MatchFn> = {
 		// js timestamps that have only milliseconds precision
 		// thus supporting for truncating to a given precision
 		if (engine === Engines.postgres) {
-			return `DATE_TRUNC(${precision}, ${date})`;
+			const timeZone =
+				args.length === 3
+					? TextValue(getAbstractSqlQuery(args, 2), indent)
+					: undefined;
+			return timeZone
+				? `DATE_TRUNC(${precision}, ${date} AT TIME ZONE ${timeZone}, ${timeZone})`
+				: `DATE_TRUNC(${precision}, ${date})`;
 		} else if (
 			// not postgresql ==> no need to truncate ==> return timestamp as is (milliseconds precision)
 			precision === "'milliseconds'" ||
