@@ -1205,7 +1205,7 @@ const typeRules: Record<string, MatchFn> = {
 					? TextValue(getAbstractSqlQuery(args, 2), indent)
 					: undefined;
 			return timeZone
-				? `DATE_TRUNC(${precision}, ${date} AT TIME ZONE ${timeZone}, ${timeZone})`
+				? `DATE_TRUNC(${precision}, ${date}, ${timeZone})`
 				: `DATE_TRUNC(${precision}, ${date})`;
 		} else if (
 			// not postgresql ==> no need to truncate ==> return timestamp as is (milliseconds precision)
