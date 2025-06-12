@@ -1,4 +1,16 @@
 - commits:
+    - subject: Extend `IsNotDistinctFrom` paren omission to more atomic node types
+      hash: d88c42902f0de4a26dfc1739b05c321f707e47c7
+      body: ""
+      footer:
+        Change-type: patch
+        change-type: patch
+      author: Pagan Gazzard
+      nested: []
+  version: 10.3.2
+  title: ""
+  date: 2025-06-12T13:09:06.989Z
+- commits:
     - subject: Omit parens for `IsNotDistinctFrom` when the value is a field node
       hash: 57126032875eca0b0b050ff09fa461f471b77936
       body: ""
