@@ -252,8 +252,8 @@ const isNotDistinctFrom: MatchFn = (args, indent) => {
 	const a = getAbstractSqlQuery(args, 0);
 	const b = getAbstractSqlQuery(args, 1);
 
-	const aSql = AnyValue(a, indent);
-	const bSql = AnyValue(b, indent);
+	const aSql = `(${AnyValue(a, indent)})`;
+	const bSql = `(${AnyValue(b, indent)})`;
 
 	if (engine === Engines.postgres) {
 		const aIsNotNullable = isNotNullable(a);
@@ -263,18 +263,18 @@ const isNotDistinctFrom: MatchFn = (args, indent) => {
 		}
 		const isNotNullChecks: string[] = [];
 		if (!aIsNotNullable) {
-			isNotNullChecks.push(`(${aSql}) IS NOT NULL`);
+			isNotNullChecks.push(`${aSql} IS NOT NULL`);
 		}
 		if (!bIsNotNullable) {
-			isNotNullChecks.push(`(${bSql}) IS NOT NULL`);
+			isNotNullChecks.push(`${bSql} IS NOT NULL`);
 		}
 		const orBothNull =
 			!aIsNotNullable && !bIsNotNullable
-				? ` OR (${aSql}) IS NULL AND (${bSql}) IS NULL`
+				? ` OR ${aSql} IS NULL AND ${bSql} IS NULL`
 				: '';
 		return `${isNotNullChecks.join(
 			' AND ',
-		)} AND (${aSql}) = (${bSql})${orBothNull}`;
+		)} AND ${aSql} = ${bSql}${orBothNull}`;
 	} else if (engine === Engines.mysql) {
 		return aSql + ' <=> ' + bSql;
 	} else if (engine === Engines.websql) {
