@@ -7,11 +7,11 @@ const filterIDs = _.range(1, 5000);
 const filterBindsInString = _.map(filterIDs, () => '?').join(', ');
 const filterBindsOrString = _.map(
 	filterIDs,
-	() => '("pilot"."id") IS NOT NULL AND ("pilot"."id") = (?)',
+	() => '"pilot"."id" IS NOT NULL AND "pilot"."id" = (?)',
 ).join('\nOR ');
 const filterBindsNandString = _.map(
 	filterIDs,
-	() => 'NOT(("pilot"."id") IS NOT NULL AND ("pilot"."id") = (?))',
+	() => 'NOT("pilot"."id" IS NOT NULL AND "pilot"."id" = (?))',
 ).join('\nAND ');
 
 const filterBinds = filterIDs.map((_n, i) => ['Bind', i] as const);

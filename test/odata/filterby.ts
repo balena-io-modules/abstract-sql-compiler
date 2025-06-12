@@ -225,22 +225,23 @@ const createExpression = function (lhs: Operand, op?: Operand, rhs?: Operand) {
 				sql = lhs.sql + nullCheck;
 			}
 		} else {
+			const isField = /^[-." a-zA-Z]+$/;
+			const lhsSql = isField.test(lhs.sql) ? lhs.sql : `(${lhs.sql})`;
+			const rhsSql = isField.test(rhs.sql) ? rhs.sql : `(${rhs.sql})`;
 			const nullCheck = ' IS NOT NULL';
-			const lhsNullCheck =
-				lhs.sql === '?' ? '' : `(${lhs.sql})${nullCheck} AND `;
-			const rhsNullCheck =
-				rhs.sql === '?' ? '' : `(${rhs.sql})${nullCheck} AND `;
+			const lhsNullCheck = lhs.sql === '?' ? '' : `${lhsSql}${nullCheck} AND `;
+			const rhsNullCheck = rhs.sql === '?' ? '' : `${rhsSql}${nullCheck} AND `;
 			const bothNullCheck =
 				lhsNullCheck.length > 0 && rhsNullCheck.length > 0
-					? ` OR (${lhs.sql}) IS NULL AND (${rhs.sql}) IS NULL`
+					? ` OR ${lhsSql} IS NULL AND ${rhsSql} IS NULL`
 					: '';
 
 			if (lhsNullCheck.length > 0 || rhsNullCheck.length > 0) {
 				if (op === 'ne') {
-					const mainCheck = `(${lhs.sql})${sqlOps.eq} (${rhs.sql})`;
+					const mainCheck = `${lhsSql}${sqlOps.eq} ${rhsSql}`;
 					sql = `NOT(${lhsNullCheck}${rhsNullCheck}${mainCheck}${bothNullCheck})`;
 				} else {
-					const mainCheck = `(${lhs.sql})${sqlOps[op]} (${rhs.sql})`;
+					const mainCheck = `${lhsSql}${sqlOps[op]} ${rhsSql}`;
 					sql = `${lhsNullCheck}${rhsNullCheck}${mainCheck}${bothNullCheck}`;
 				}
 			} else {
@@ -541,7 +542,7 @@ run(function () {
 					`\
 SELECT ${pilotFieldsStr}
 FROM "pilot"
-WHERE ("pilot"."name") IS NOT NULL AND ("pilot"."name") = (?)`,
+WHERE "pilot"."name" IS NOT NULL AND "pilot"."name" = (?)`,
 				);
 			});
 		},
@@ -561,8 +562,8 @@ run(function () {
 					`\
 SELECT ${pilotFieldsStr}
 FROM "pilot"
-WHERE (("pilot"."name") IS NOT NULL AND ("pilot"."name") = ($1)
-OR ("pilot"."favourite colour") IS NOT NULL AND ("pilot"."favourite colour") = ($1))`,
+WHERE ("pilot"."name" IS NOT NULL AND "pilot"."name" = ($1)
+OR "pilot"."favourite colour" IS NOT NULL AND "pilot"."favourite colour" = ($1))`,
 				);
 			});
 		},
@@ -607,9 +608,9 @@ SELECT ${aliasPilotCanFlyPlaneFieldsStr}
 FROM "pilot",
 	"pilot-can fly-plane" AS "pilot.pilot-can fly-plane"
 LEFT JOIN "plane" AS "pilot.pilot-can fly-plane.can fly-plane" ON "pilot.pilot-can fly-plane"."can fly-plane" = "pilot.pilot-can fly-plane.can fly-plane"."id"
-WHERE ("pilot.pilot-can fly-plane.can fly-plane"."id") IS NOT NULL AND ("pilot.pilot-can fly-plane.can fly-plane"."id") = (?)
+WHERE "pilot.pilot-can fly-plane.can fly-plane"."id" IS NOT NULL AND "pilot.pilot-can fly-plane.can fly-plane"."id" = (?)
 AND "pilot"."id" = "pilot.pilot-can fly-plane"."pilot"
-AND ("pilot"."id") IS NOT NULL AND ("pilot"."id") = (?)`,
+AND "pilot"."id" IS NOT NULL AND "pilot"."id" = (?)`,
 					);
 				},
 			);
@@ -820,7 +821,7 @@ run(function () {
 					`\
 UPDATE "pilot"
 SET "name" = ?
-WHERE ("pilot"."id") IS NOT NULL AND ("pilot"."id") = (?)
+WHERE "pilot"."id" IS NOT NULL AND "pilot"."id" = (?)
 AND "pilot"."id" IN ((
 	SELECT "pilot"."id" AS "$modifyid"
 	FROM "pilot"
@@ -856,7 +857,7 @@ WHERE EXISTS (
 		SELECT "$insert".*
 	) AS "pilot"
 	WHERE ${sql}
-	AND ("pilot"."id") IS NOT NULL AND ("pilot"."id") = (?)
+	AND "pilot"."id" IS NOT NULL AND "pilot"."id" = (?)
 )`,
 					);
 				});
@@ -877,7 +878,7 @@ SET "created at" = DEFAULT,
 	"licence" = DEFAULT,
 	"hire date" = DEFAULT,
 	"was trained by-pilot" = DEFAULT
-WHERE ("pilot"."id") IS NOT NULL AND ("pilot"."id") = (?)
+WHERE "pilot"."id" IS NOT NULL AND "pilot"."id" = (?)
 AND "pilot"."id" IN ((
 	SELECT "pilot"."id" AS "$modifyid"
 	FROM "pilot"
@@ -913,7 +914,7 @@ FROM "pilot",
 	"pilot-can fly-plane" AS "pilot.pilot-can fly-plane"
 WHERE ${sql}
 AND "pilot"."id" = "pilot.pilot-can fly-plane"."pilot"
-AND ("pilot"."id") IS NOT NULL AND ("pilot"."id") = (?)`,
+AND "pilot"."id" IS NOT NULL AND "pilot"."id" = (?)`,
 					);
 				},
 			);
@@ -1049,7 +1050,7 @@ WHERE EXISTS (
 	FROM "pilot-can fly-plane" AS "pilot.pilot-can fly-plane"
 	LEFT JOIN "plane" AS "pilot.pilot-can fly-plane.plane" ON "pilot.pilot-can fly-plane"."can fly-plane" = "pilot.pilot-can fly-plane.plane"."id"
 	WHERE "pilot"."id" = "pilot.pilot-can fly-plane"."pilot"
-	AND ("pilot.pilot-can fly-plane.plane"."name") IS NOT NULL AND ("pilot.pilot-can fly-plane.plane"."name") = (?)
+	AND "pilot.pilot-can fly-plane.plane"."name" IS NOT NULL AND "pilot.pilot-can fly-plane.plane"."name" = (?)
 )`,
 			);
 		});
@@ -1072,7 +1073,7 @@ WHERE EXISTS (
 	FROM "pilot-can fly-plane" AS "pilot.pilot-can fly-plane"
 	LEFT JOIN "plane" AS "pilot.pilot-can fly-plane.plane" ON "pilot.pilot-can fly-plane"."can fly-plane" = "pilot.pilot-can fly-plane.plane"."id"
 	WHERE "pilot"."id" = "pilot.pilot-can fly-plane"."pilot"
-	AND ("pilot.pilot-can fly-plane.plane"."name") IS NOT NULL AND ("pilot.pilot-can fly-plane.plane"."name") = (?)
+	AND "pilot.pilot-can fly-plane.plane"."name" IS NOT NULL AND "pilot.pilot-can fly-plane.plane"."name" = (?)
 )`,
 			);
 		});
@@ -1101,12 +1102,12 @@ WHERE (EXISTS (
 	FROM "pilot-can fly-plane" AS "pilot.pilot-can fly-plane"
 	LEFT JOIN "plane" AS "pilot.pilot-can fly-plane.plane" ON "pilot.pilot-can fly-plane"."can fly-plane" = "pilot.pilot-can fly-plane.plane"."id"
 	WHERE "pilot"."id" = "pilot.pilot-can fly-plane"."pilot"
-	AND ("pilot.pilot-can fly-plane.plane"."name") IS NOT NULL AND ("pilot.pilot-can fly-plane.plane"."name") = (?)
+	AND "pilot.pilot-can fly-plane.plane"."name" IS NOT NULL AND "pilot.pilot-can fly-plane.plane"."name" = (?)
 )
-OR ("pilot"."id") IS NOT NULL AND ("pilot"."id") = (?)
-OR ("pilot"."id") IS NOT NULL AND ("pilot"."id") = (?)
-OR ("pilot"."name") IS NOT NULL AND ("pilot"."name") = (?)
-OR ("pilot"."name") IS NOT NULL AND ("pilot"."name") = (?))`,
+OR "pilot"."id" IS NOT NULL AND "pilot"."id" = (?)
+OR "pilot"."id" IS NOT NULL AND "pilot"."id" = (?)
+OR "pilot"."name" IS NOT NULL AND "pilot"."name" = (?)
+OR "pilot"."name" IS NOT NULL AND "pilot"."name" = (?))`,
 			);
 		});
 	},
@@ -1135,12 +1136,12 @@ WHERE NOT (
 		FROM "pilot-can fly-plane" AS "pilot.pilot-can fly-plane"
 		LEFT JOIN "plane" AS "pilot.pilot-can fly-plane.plane" ON "pilot.pilot-can fly-plane"."can fly-plane" = "pilot.pilot-can fly-plane.plane"."id"
 		WHERE "pilot"."id" = "pilot.pilot-can fly-plane"."pilot"
-		AND ("pilot.pilot-can fly-plane.plane"."name") IS NOT NULL AND ("pilot.pilot-can fly-plane.plane"."name") = (?)
+		AND "pilot.pilot-can fly-plane.plane"."name" IS NOT NULL AND "pilot.pilot-can fly-plane.plane"."name" = (?)
 	)
-	OR ("pilot"."id") IS NOT NULL AND ("pilot"."id") = (?)
-	OR ("pilot"."id") IS NOT NULL AND ("pilot"."id") = (?)
-	OR ("pilot"."name") IS NOT NULL AND ("pilot"."name") = (?)
-	OR ("pilot"."name") IS NOT NULL AND ("pilot"."name") = (?))
+	OR "pilot"."id" IS NOT NULL AND "pilot"."id" = (?)
+	OR "pilot"."id" IS NOT NULL AND "pilot"."id" = (?)
+	OR "pilot"."name" IS NOT NULL AND "pilot"."name" = (?)
+	OR "pilot"."name" IS NOT NULL AND "pilot"."name" = (?))
 )`,
 			);
 		});
@@ -1164,7 +1165,7 @@ WHERE NOT EXISTS (
 	LEFT JOIN "plane" AS "pilot.pilot-can fly-plane.plane" ON "pilot.pilot-can fly-plane"."can fly-plane" = "pilot.pilot-can fly-plane.plane"."id"
 	WHERE "pilot"."id" = "pilot.pilot-can fly-plane"."pilot"
 	AND NOT (
-		("pilot.pilot-can fly-plane.plane"."name") IS NOT NULL AND ("pilot.pilot-can fly-plane.plane"."name") = (?)
+		"pilot.pilot-can fly-plane.plane"."name" IS NOT NULL AND "pilot.pilot-can fly-plane.plane"."name" = (?)
 	)
 )`,
 			);
@@ -1189,7 +1190,7 @@ WHERE NOT EXISTS (
 	LEFT JOIN "plane" AS "pilot.pilot-can fly-plane.plane" ON "pilot.pilot-can fly-plane"."can fly-plane" = "pilot.pilot-can fly-plane.plane"."id"
 	WHERE "pilot"."id" = "pilot.pilot-can fly-plane"."pilot"
 	AND NOT (
-		("pilot.pilot-can fly-plane.plane"."name") IS NOT NULL AND ("pilot.pilot-can fly-plane.plane"."name") = (?)
+		"pilot.pilot-can fly-plane.plane"."name" IS NOT NULL AND "pilot.pilot-can fly-plane.plane"."name" = (?)
 	)
 )`,
 			);
@@ -1213,7 +1214,7 @@ WHERE EXISTS (
 	SELECT 1
 	FROM "plane" AS "pilot.pilot-can fly-plane.plane"
 	WHERE "pilot.pilot-can fly-plane"."can fly-plane" = "pilot.pilot-can fly-plane.plane"."id"
-	AND ("pilot.pilot-can fly-plane.plane"."name") IS NOT NULL AND ("pilot.pilot-can fly-plane.plane"."name") = (?)
+	AND "pilot.pilot-can fly-plane.plane"."name" IS NOT NULL AND "pilot.pilot-can fly-plane.plane"."name" = (?)
 )`,
 			);
 		});
@@ -1236,7 +1237,7 @@ WHERE EXISTS (
 	SELECT 1
 	FROM "plane" AS "pilot.pilot-can fly-plane.plane"
 	WHERE "pilot.pilot-can fly-plane"."can fly-plane" = "pilot.pilot-can fly-plane.plane"."id"
-	AND ("pilot.pilot-can fly-plane.plane"."name") IS NOT NULL AND ("pilot.pilot-can fly-plane.plane"."name") = (?)
+	AND "pilot.pilot-can fly-plane.plane"."name" IS NOT NULL AND "pilot.pilot-can fly-plane.plane"."name" = (?)
 )`,
 			);
 		});
@@ -1260,7 +1261,7 @@ WHERE NOT EXISTS (
 	FROM "plane" AS "pilot.pilot-can fly-plane.plane"
 	WHERE "pilot.pilot-can fly-plane"."can fly-plane" = "pilot.pilot-can fly-plane.plane"."id"
 	AND NOT (
-		("pilot.pilot-can fly-plane.plane"."name") IS NOT NULL AND ("pilot.pilot-can fly-plane.plane"."name") = (?)
+		"pilot.pilot-can fly-plane.plane"."name" IS NOT NULL AND "pilot.pilot-can fly-plane.plane"."name" = (?)
 	)
 )`,
 			);
@@ -1285,7 +1286,7 @@ WHERE NOT EXISTS (
 	FROM "plane" AS "pilot.pilot-can fly-plane.plane"
 	WHERE "pilot.pilot-can fly-plane"."can fly-plane" = "pilot.pilot-can fly-plane.plane"."id"
 	AND NOT (
-		("pilot.pilot-can fly-plane.plane"."name") IS NOT NULL AND ("pilot.pilot-can fly-plane.plane"."name") = (?)
+		"pilot.pilot-can fly-plane.plane"."name" IS NOT NULL AND "pilot.pilot-can fly-plane.plane"."name" = (?)
 	)
 )`,
 			);
@@ -1315,12 +1316,12 @@ WHERE (EXISTS (
 	FROM "pilot-can fly-plane" AS "pilot.pilot-can fly-plane"
 	LEFT JOIN "plane" AS "pilot.pilot-can fly-plane.plane" ON "pilot.pilot-can fly-plane"."can fly-plane" = "pilot.pilot-can fly-plane.plane"."id"
 	WHERE "pilot"."id" = "pilot.pilot-can fly-plane"."pilot"
-	AND ("pilot.pilot-can fly-plane.plane"."name") IS NOT NULL AND ("pilot.pilot-can fly-plane.plane"."name") = (?)
+	AND "pilot.pilot-can fly-plane.plane"."name" IS NOT NULL AND "pilot.pilot-can fly-plane.plane"."name" = (?)
 )
-OR ("pilot"."id") IS NOT NULL AND ("pilot"."id") = (?)
-OR ("pilot"."name") IS NOT NULL AND ("pilot"."name") = (?)
-OR ("pilot"."id") IS NOT NULL AND ("pilot"."id") = (?)
-OR ("pilot"."name") IS NOT NULL AND ("pilot"."name") = (?))`,
+OR "pilot"."id" IS NOT NULL AND "pilot"."id" = (?)
+OR "pilot"."name" IS NOT NULL AND "pilot"."name" = (?)
+OR "pilot"."id" IS NOT NULL AND "pilot"."id" = (?)
+OR "pilot"."name" IS NOT NULL AND "pilot"."name" = (?))`,
 			);
 		});
 	},
@@ -1348,12 +1349,12 @@ WHERE EXISTS (
 	FROM "pilot-can fly-plane" AS "pilot.pilot-can fly-plane"
 	LEFT JOIN "plane" AS "pilot.pilot-can fly-plane.plane" ON "pilot.pilot-can fly-plane"."can fly-plane" = "pilot.pilot-can fly-plane.plane"."id"
 	WHERE "pilot"."id" = "pilot.pilot-can fly-plane"."pilot"
-	AND ("pilot.pilot-can fly-plane.plane"."name") IS NOT NULL AND ("pilot.pilot-can fly-plane.plane"."name") = (?)
+	AND "pilot.pilot-can fly-plane.plane"."name" IS NOT NULL AND "pilot.pilot-can fly-plane.plane"."name" = (?)
 )
-AND NOT(("pilot"."id") IS NOT NULL AND ("pilot"."id") = (?))
-AND NOT(("pilot"."id") IS NOT NULL AND ("pilot"."id") = (?))
-AND NOT(("pilot"."name") IS NOT NULL AND ("pilot"."name") = (?))
-AND NOT(("pilot"."name") IS NOT NULL AND ("pilot"."name") = (?))`,
+AND NOT("pilot"."id" IS NOT NULL AND "pilot"."id" = (?))
+AND NOT("pilot"."id" IS NOT NULL AND "pilot"."id" = (?))
+AND NOT("pilot"."name" IS NOT NULL AND "pilot"."name" = (?))
+AND NOT("pilot"."name" IS NOT NULL AND "pilot"."name" = (?))`,
 			);
 		});
 	},
@@ -1381,12 +1382,12 @@ WHERE EXISTS (
 	FROM "pilot-can fly-plane" AS "pilot.pilot-can fly-plane"
 	LEFT JOIN "plane" AS "pilot.pilot-can fly-plane.plane" ON "pilot.pilot-can fly-plane"."can fly-plane" = "pilot.pilot-can fly-plane.plane"."id"
 	WHERE "pilot"."id" = "pilot.pilot-can fly-plane"."pilot"
-	AND ("pilot.pilot-can fly-plane.plane"."name") IS NOT NULL AND ("pilot.pilot-can fly-plane.plane"."name") = (?)
+	AND "pilot.pilot-can fly-plane.plane"."name" IS NOT NULL AND "pilot.pilot-can fly-plane.plane"."name" = (?)
 )
-AND NOT(("pilot"."id") IS NOT NULL AND ("pilot"."id") = (?))
-AND NOT(("pilot"."name") IS NOT NULL AND ("pilot"."name") = (?))
-AND NOT(("pilot"."id") IS NOT NULL AND ("pilot"."id") = (?))
-AND NOT(("pilot"."name") IS NOT NULL AND ("pilot"."name") = (?))`,
+AND NOT("pilot"."id" IS NOT NULL AND "pilot"."id" = (?))
+AND NOT("pilot"."name" IS NOT NULL AND "pilot"."name" = (?))
+AND NOT("pilot"."id" IS NOT NULL AND "pilot"."id" = (?))
+AND NOT("pilot"."name" IS NOT NULL AND "pilot"."name" = (?))`,
 			);
 		});
 	},

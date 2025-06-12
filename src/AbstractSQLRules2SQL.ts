@@ -252,8 +252,15 @@ const isNotDistinctFrom: MatchFn = (args, indent) => {
 	const a = getAbstractSqlQuery(args, 0);
 	const b = getAbstractSqlQuery(args, 1);
 
-	const aSql = `(${AnyValue(a, indent)})`;
-	const bSql = `(${AnyValue(b, indent)})`;
+	let aSql = AnyValue(a, indent);
+	let bSql = AnyValue(b, indent);
+	// We can omit the parens if the value is a field type node, for slightly smaller/more readable sql
+	if (!isFieldTypeNode(a)) {
+		aSql = `(${aSql})`;
+	}
+	if (!isFieldTypeNode(b)) {
+		bSql = `(${bSql})`;
+	}
 
 	if (engine === Engines.postgres) {
 		const aIsNotNullable = isNotNullable(a);
