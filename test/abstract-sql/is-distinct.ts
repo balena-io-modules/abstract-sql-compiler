@@ -34,7 +34,7 @@ describe('IsDistinctFrom', () => {
 		[['Text', '2']],
 		(result, sqlEquals) => {
 			it('should produce a valid is distinct from statement', () => {
-				sqlEquals(result, 'SELECT NOT("a" IS NOT NULL AND "a" = ($1))');
+				sqlEquals(result, 'SELECT NOT("a" IS NOT NULL AND "a" = $1)');
 			});
 		},
 	);
@@ -83,7 +83,7 @@ describe('IsNotDistinctFrom', () => {
 		[['Text', '2']],
 		(result, sqlEquals) => {
 			it('should produce a valid is not distinct from statement', () => {
-				sqlEquals(result, 'SELECT "a" IS NOT NULL AND "a" = ($1)');
+				sqlEquals(result, 'SELECT "a" IS NOT NULL AND "a" = $1');
 			});
 		},
 	);

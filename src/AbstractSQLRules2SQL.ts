@@ -248,17 +248,27 @@ export const isNotNullable = (node: AbstractSqlType): boolean => {
 	return false;
 };
 
+const isAtomicNode = (n: AbstractSqlType): boolean =>
+	isFieldTypeNode(n) ||
+	n[0] === 'Bind' ||
+	n[0] === 'Null' ||
+	n[0] === 'Value' ||
+	n[0] === 'Text' ||
+	n[0] === 'Number' ||
+	n[0] === 'Real' ||
+	n[0] === 'Integer' ||
+	n[0] === 'Boolean';
 const isNotDistinctFrom: MatchFn = (args, indent) => {
 	const a = getAbstractSqlQuery(args, 0);
 	const b = getAbstractSqlQuery(args, 1);
 
 	let aSql = AnyValue(a, indent);
 	let bSql = AnyValue(b, indent);
-	// We can omit the parens if the value is a field type node, for slightly smaller/more readable sql
-	if (!isFieldTypeNode(a)) {
+	// We can omit the parens if the value is a atomic type node, for slightly smaller/more readable sql
+	if (!isAtomicNode(a)) {
 		aSql = `(${aSql})`;
 	}
-	if (!isFieldTypeNode(b)) {
+	if (!isAtomicNode(b)) {
 		bSql = `(${bSql})`;
 	}
 
