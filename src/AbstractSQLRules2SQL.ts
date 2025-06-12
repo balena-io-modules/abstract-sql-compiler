@@ -53,9 +53,6 @@ const escapeField = (field: string | AbstractSqlQuery) =>
 
 const AnyValue: MetaMatchFn = (args, indent) => {
 	const [type, ...rest] = args;
-	if (type === 'Case') {
-		return typeRules[type](rest, indent);
-	}
 
 	for (const matcher of [
 		isJSONValue,
@@ -81,6 +78,7 @@ const UnknownValue: MetaMatchFn = (args, indent) => {
 		case 'EqualsAny':
 		case 'Bind':
 		case 'Cast':
+		case 'Case':
 		case 'Coalesce':
 		case 'ToJSON':
 		case 'Any':
