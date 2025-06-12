@@ -196,9 +196,6 @@ const tryMatches = <T extends AnyTypeNodes>(
 
 const AnyValue: MetaMatchFn<AnyTypeNodes> = (args) => {
 	const [type, ...rest] = args;
-	if (type === 'Case') {
-		return typeRules[type](rest);
-	}
 
 	for (const matcher of [
 		isJSONValue,
@@ -224,6 +221,7 @@ const UnknownValue: MetaMatchFn<UnknownTypeNodes> = (args) => {
 		case 'EqualsAny':
 		case 'Bind':
 		case 'Cast':
+		case 'Case':
 		case 'Coalesce':
 		case 'Any':
 			return typeRules[type](rest);
