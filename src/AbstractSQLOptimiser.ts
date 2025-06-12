@@ -105,6 +105,7 @@ import type {
 	EscapeForLikeNode,
 	EqualsAnyNode,
 	NotInNode,
+	DateTypeNodes,
 } from './AbstractSQLCompiler';
 import { isFieldTypeNode } from './AbstractSQLCompiler';
 import * as AbstractSQLRules2SQL from './AbstractSQLRules2SQL';
@@ -887,7 +888,16 @@ const typeRules = {
 	Floor: matchArgs<FloorNode>('Floor', NumericValue),
 	Ceiling: matchArgs<CeilingNode>('Ceiling', NumericValue),
 	ToDate: matchArgs<ToDateNode>('ToDate', DateValue),
-	DateTrunc: matchArgs<DateTruncNode>('DateTrunc', TextValue, DateValue),
+	DateTrunc: (args): DateTruncNode => {
+		checkMinArgs('DateTrunc', args, 2);
+		const precision = TextValue(getAbstractSqlQuery(args, 0));
+		const date = DateValue(getAbstractSqlQuery(args, 1)) as DateTypeNodes;
+		const timeZone =
+			args.length === 3 ? TextValue(getAbstractSqlQuery(args, 2)) : undefined;
+		return timeZone
+			? ['DateTrunc', precision, date, timeZone]
+			: ['DateTrunc', precision, date];
+	},
 	ToTime: matchArgs<ToTimeNode>('ToTime', DateValue),
 	ExtractJSONPathAsText: (args): ExtractJSONPathAsTextNode => {
 		checkMinArgs('ExtractJSONPathAsText', args, 1);
