@@ -1,4 +1,18 @@
 - commits:
+    - subject: Treat `CaseNode` as an unknown type node as expected
+      hash: 3e07fe58ed65e73e9104a84ccff02f4fbc155e1e
+      body: |
+        This matches the fact that the result type is unknown/can be anything
+        and also matches the existing typing
+      footer:
+        Change-type: minor
+        change-type: minor
+      author: Pagan Gazzard
+      nested: []
+  version: 10.3.0
+  title: ""
+  date: 2025-06-12T09:17:31.179Z
+- commits:
     - subject: Update dependency lint-staged to v16
       hash: 65f51a7d4c10810989efb02c96ae2bf754f6b365
       body: |
