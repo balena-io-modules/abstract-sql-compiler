@@ -1,4 +1,16 @@
 - commits:
+    - subject: Omit parens for `IsNotDistinctFrom` when the value is a field node
+      hash: 57126032875eca0b0b050ff09fa461f471b77936
+      body: ""
+      footer:
+        Change-type: patch
+        change-type: patch
+      author: Pagan Gazzard
+      nested: []
+  version: 10.3.1
+  title: ""
+  date: 2025-06-12T09:52:48.898Z
+- commits:
     - subject: Treat `CaseNode` as an unknown type node as expected
       hash: 3e07fe58ed65e73e9104a84ccff02f4fbc155e1e
       body: |
