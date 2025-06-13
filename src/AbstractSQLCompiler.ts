@@ -780,14 +780,14 @@ const compileSchema = (
 			createSchemaStatements.push(`\
 DO $$
 BEGIN
-	PERFORM '"${fnName}"()'::regprocedure;
-EXCEPTION WHEN undefined_function THEN
 	CREATE FUNCTION "${fnName}"()
 	RETURNS TRIGGER AS $fn$
 	BEGIN
 		${fnDefinition.body}
 	END;
 	$fn$ LANGUAGE ${fnDefinition.language};
+EXCEPTION WHEN duplicate_function THEN
+	NULL;
 END;
 $$;`);
 			dropSchemaStatements.push(`DROP FUNCTION "${fnName}"();`);
