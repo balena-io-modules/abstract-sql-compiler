@@ -1,4 +1,16 @@
 - commits:
+    - subject: Allow sbvr-types v10 as peer dependency
+      hash: 3eae2f1145b6ed53d3759c67b4f6d9abdc8f39b1
+      body: ""
+      footer:
+        Change-type: patch
+        change-type: patch
+      author: Otavio Jacobi
+      nested: []
+  version: 10.3.3
+  title: ""
+  date: 2025-06-19T17:19:01.333Z
+- commits:
     - subject: Extend `IsNotDistinctFrom` paren omission to more atomic node types
       hash: d88c42902f0de4a26dfc1739b05c321f707e47c7
       body: ""
