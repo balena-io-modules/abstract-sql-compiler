@@ -1,4 +1,19 @@
 - commits:
+    - subject: Throw an error when trying to combine computed fields with a definition
+      hash: 0092dd499c9b4e8a3418144acbdf37084f73a3bc
+      body: |
+        This is poorly/unsupported and will cause all sorts of edge cases and
+        breaking behavior so blocking it early will avoid bugs and allow
+        handling computed fields in a better way in future
+      footer:
+        Change-type: patch
+        change-type: patch
+      author: Pagan Gazzard
+      nested: []
+  version: 10.3.4
+  title: ""
+  date: 2025-06-20T13:11:18.564Z
+- commits:
     - subject: Allow sbvr-types v10 as peer dependency
       hash: 3eae2f1145b6ed53d3759c67b4f6d9abdc8f39b1
       body: ""
