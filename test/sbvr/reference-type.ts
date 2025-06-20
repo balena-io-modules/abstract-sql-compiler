@@ -1,8 +1,8 @@
-import * as fs from 'node:fs';
-import { getTestHelpers } from './test';
+import fs from 'node:fs';
+import { getTestHelpers } from './test.js';
 
 const typeVocab = fs.readFileSync(
-	require.resolve('@balena/sbvr-types/Type.sbvr'),
+	new URL(import.meta.resolve('@balena/sbvr-types/Type.sbvr')),
 	'utf8',
 );
 

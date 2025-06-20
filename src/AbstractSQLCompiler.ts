@@ -6,24 +6,28 @@ export const enum Engines {
 	/* eslint-enable @typescript-eslint/no-shadow */
 }
 
-import { AbstractSQLOptimiser } from './AbstractSQLOptimiser';
-import type { Binding, SqlResult } from './AbstractSQLRules2SQL';
-import { AbstractSQLRules2SQL } from './AbstractSQLRules2SQL';
-export { Binding, SqlResult } from './AbstractSQLRules2SQL';
+import { AbstractSQLOptimiser } from './AbstractSQLOptimiser.js';
+import type { Binding, SqlResult } from './AbstractSQLRules2SQL.js';
+import { AbstractSQLRules2SQL } from './AbstractSQLRules2SQL.js';
+export { Binding, SqlResult } from './AbstractSQLRules2SQL.js';
 import type { SbvrType } from '@balena/sbvr-types';
-import sbvrTypes from '@balena/sbvr-types';
-import { optimizeSchema, generateRuleSlug } from './AbstractSQLSchemaOptimiser';
+import $sbvrTypes from '@balena/sbvr-types';
+const { default: sbvrTypes } = $sbvrTypes;
+import {
+	optimizeSchema,
+	generateRuleSlug,
+} from './AbstractSQLSchemaOptimiser.js';
 import type {
 	ReferencedFields,
 	RuleReferencedFields,
 	ModifiedFields,
-} from './referenced-fields';
+} from './referenced-fields.js';
 import {
 	getReferencedFields,
 	getRuleReferencedFields,
 	getModifiedFields,
 	insertAffectedIdsBinds,
-} from './referenced-fields';
+} from './referenced-fields.js';
 
 export type { ReferencedFields, RuleReferencedFields, ModifiedFields };
 

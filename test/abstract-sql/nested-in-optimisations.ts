@@ -1,5 +1,5 @@
 import { stripIndent } from 'common-tags';
-import test from './test';
+import test from './test.js';
 
 describe('Nested OR EQUALs should create a single IN statement', () => {
 	test(

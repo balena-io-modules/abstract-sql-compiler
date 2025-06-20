@@ -4,17 +4,18 @@ export const enum Engines {
 	websql = 'websql',
 }
 
-import { AbstractSQLOptimiser } from './AbstractSQLOptimiser';
-export { Binding, SqlResult } from './AbstractSQLRules2SQL';
-import sbvrTypes from '@balena/sbvr-types';
+import { AbstractSQLOptimiser } from './AbstractSQLOptimiser.js';
+export { Binding, SqlResult } from './AbstractSQLRules2SQL.js';
+import $sbvrTypes from '@balena/sbvr-types';
+const { default: sbvrTypes } = $sbvrTypes;
 import type {
 	AbstractSqlModel,
 	AbstractSqlQuery,
 	AbstractSqlType,
 	BooleanTypeNodes,
 	WhereNode,
-} from './AbstractSQLCompiler';
-import { isFromNode, isSelectQueryNode } from './AbstractSQLCompiler';
+} from './AbstractSQLCompiler.js';
+import { isFromNode, isSelectQueryNode } from './AbstractSQLCompiler.js';
 
 const countFroms = (n: AbstractSqlType[]) => {
 	let count = 0;
