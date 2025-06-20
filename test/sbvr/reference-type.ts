@@ -44,8 +44,6 @@ Fact Type: term history references term
 				`\
 DO $$
 BEGIN
-	PERFORM '"trigger_update_modified_at"()'::regprocedure;
-EXCEPTION WHEN undefined_function THEN
 	CREATE FUNCTION "trigger_update_modified_at"()
 	RETURNS TRIGGER AS $fn$
 	BEGIN
@@ -53,6 +51,8 @@ EXCEPTION WHEN undefined_function THEN
 RETURN NEW;
 	END;
 	$fn$ LANGUAGE plpgsql;
+EXCEPTION WHEN duplicate_function THEN
+	NULL;
 END;
 $$;`,
 
@@ -89,8 +89,6 @@ Fact Type: term history references term
 				`\
 DO $$
 BEGIN
-	PERFORM '"trigger_update_modified_at"()'::regprocedure;
-EXCEPTION WHEN undefined_function THEN
 	CREATE FUNCTION "trigger_update_modified_at"()
 	RETURNS TRIGGER AS $fn$
 	BEGIN
@@ -98,6 +96,8 @@ EXCEPTION WHEN undefined_function THEN
 RETURN NEW;
 	END;
 	$fn$ LANGUAGE plpgsql;
+EXCEPTION WHEN duplicate_function THEN
+	NULL;
 END;
 $$;`,
 
@@ -133,8 +133,6 @@ Fact Type: 	term history references term
 				`\
 DO $$
 BEGIN
-	PERFORM '"trigger_update_modified_at"()'::regprocedure;
-EXCEPTION WHEN undefined_function THEN
 	CREATE FUNCTION "trigger_update_modified_at"()
 	RETURNS TRIGGER AS $fn$
 	BEGIN
@@ -142,6 +140,8 @@ EXCEPTION WHEN undefined_function THEN
 RETURN NEW;
 	END;
 	$fn$ LANGUAGE plpgsql;
+EXCEPTION WHEN duplicate_function THEN
+	NULL;
 END;
 $$;`,
 
@@ -177,8 +177,6 @@ Fact Type: 	term history references term
 				`\
 DO $$
 BEGIN
-	PERFORM '"trigger_update_modified_at"()'::regprocedure;
-EXCEPTION WHEN undefined_function THEN
 	CREATE FUNCTION "trigger_update_modified_at"()
 	RETURNS TRIGGER AS $fn$
 	BEGIN
@@ -186,6 +184,8 @@ EXCEPTION WHEN undefined_function THEN
 RETURN NEW;
 	END;
 	$fn$ LANGUAGE plpgsql;
+EXCEPTION WHEN duplicate_function THEN
+	NULL;
 END;
 $$;`,
 
