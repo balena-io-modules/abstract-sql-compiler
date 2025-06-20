@@ -103,6 +103,7 @@ import type {
 	EscapeForLikeNode,
 	EqualsAnyNode,
 	NotInNode,
+	FnCallNode,
 } from './abstract-sql-compiler.js';
 import {
 	isFieldNode,
@@ -226,6 +227,7 @@ const UnknownValue: MetaMatchFn<UnknownTypeNodes> = (args) => {
 		case 'Case':
 		case 'Coalesce':
 		case 'Any':
+		case 'FnCall':
 			return typeRules[type](rest);
 		case 'SelectQuery':
 		case 'UnionQuery':
@@ -1532,6 +1534,29 @@ const typeRules = {
 	},
 
 	EscapeForLike: matchArgs<EscapeForLikeNode>('EscapeForLike', TextValue),
+
+	FnCall: (args): FnCallNode => {
+		checkMinArgs('FnCall', args, 2);
+
+		if (typeof args[0] !== 'string') {
+			throw new SyntaxError(
+				`'FnCall' first argument must be the function name as a string, got ${typeof args[0]}`,
+			);
+		}
+
+		return [
+			'FnCall',
+			args[0],
+			...args.slice(1).map((arg) => {
+				if (!isAbstractSqlQuery(arg)) {
+					throw new SyntaxError(
+						`Expected AbstractSqlQuery array but got ${typeof arg}`,
+					);
+				}
+				return AnyValue(arg);
+			}),
+		];
+	},
 
 	// Virtual functions
 	Contains: rewriteMatch(

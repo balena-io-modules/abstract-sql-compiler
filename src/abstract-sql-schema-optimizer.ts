@@ -56,13 +56,23 @@ export const optimizeSchema = (
 		}
 
 		const computedFields: Array<
-			NonNullable<Exclude<AbstractSqlField['computed'], true>>
+			NonNullable<Extract<AbstractSqlField['computed'], any[]>>
 		> = [];
 		for (const field of table.fields) {
 			const { fieldName, computed } = field;
 			if (computed != null && computed !== true) {
-				field.computed = true;
-				computedFields.push(['Alias', computed, fieldName]);
+				if (Array.isArray(computed)) {
+					field.computed = true;
+					computedFields.push(['Alias', computed, fieldName]);
+				} else {
+					// If an fnName is not provided then generate one and trim it to a max of 63 characters
+					computed.fnName ??= `fn_${table.name}_${fieldName}`.slice(0, 63);
+					computedFields.push([
+						'Alias',
+						['FnCall', computed.fnName, ['ReferencedField', table.name, '*']],
+						fieldName,
+					]);
+				}
 			}
 		}
 
