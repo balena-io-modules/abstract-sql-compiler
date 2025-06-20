@@ -861,9 +861,12 @@ ${compileRule(definitionAbstractSql as AbstractSqlQuery, engine, true).replace(
 		const createSqlElements: string[] = [];
 		const createIndexes: string[] = [];
 
+		const computedFields: Array<NonNullable<AbstractSqlField['computed']>> = [];
 		for (const field of table.fields) {
 			const { fieldName, references, dataType, computed } = field;
-			if (!computed) {
+			if (computed) {
+				computedFields.push(['Alias', computed, fieldName]);
+			} else {
 				createSqlElements.push(
 					'"' + fieldName + '" ' + dataTypeGen(engine, field),
 				);
@@ -914,6 +917,15 @@ $$;`);
 					}
 				}
 			}
+		}
+		if (computedFields.length > 0) {
+			table.definition = {
+				abstractSql: [
+					'SelectQuery',
+					['Select', [['Field', '*'], ...computedFields]],
+					['From', ['Table', table.name]],
+				],
+			};
 		}
 
 		createSqlElements.push(...foreignKeys);
