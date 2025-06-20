@@ -1,20 +1,20 @@
 import _ from 'lodash';
-import sbvrTypes from '@balena/sbvr-types';
+import $sbvrTypes from '@balena/sbvr-types';
+const { default: sbvrTypes } = $sbvrTypes;
+import { SBVRParser } from '@balena/sbvr-parser';
+import LF2AbstractSQL from '@balena/lf-to-abstract-sql';
 
 import { expect } from 'chai';
-import * as AbstractSQLCompiler from '../..';
+import * as AbstractSQLCompiler from '../../out/AbstractSQLCompiler.js';
 
 export function getTestHelpers(builtInVocab: string | boolean = false) {
-	// eslint-disable-next-line @typescript-eslint/no-require-imports
-	const SBVRParser = require('@balena/sbvr-parser').SBVRParser.createInstance();
-	SBVRParser.enableReusingMemoizations(SBVRParser._sideEffectingRules);
+	const sbvrParser = SBVRParser.createInstance();
+	sbvrParser.enableReusingMemoizations(sbvrParser._sideEffectingRules);
 
-	// eslint-disable-next-line @typescript-eslint/no-require-imports
-	const LF2AbstractSQL = require('@balena/lf-to-abstract-sql');
 	const LF2AbstractSQLTranslator = LF2AbstractSQL.createTranslator(sbvrTypes);
 
 	if (builtInVocab) {
-		SBVRParser.AddBuiltInVocab(builtInVocab);
+		sbvrParser.AddBuiltInVocab(builtInVocab);
 	}
 
 	let seSoFar = '';
@@ -27,8 +27,8 @@ export function getTestHelpers(builtInVocab: string | boolean = false) {
 		it(input, function () {
 			let result;
 			try {
-				SBVRParser.reset();
-				const lf = SBVRParser.matchAll(seSoFar + input, 'Process');
+				sbvrParser.reset();
+				const lf = sbvrParser.matchAll(seSoFar + input, 'Process');
 				const schema = LF2AbstractSQLTranslator(lf, 'Process');
 				result = AbstractSQLCompiler.postgres.compileSchema(schema);
 			} catch (e: any) {
