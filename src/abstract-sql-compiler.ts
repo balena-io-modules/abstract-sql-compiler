@@ -447,7 +447,7 @@ export interface AbstractSqlField {
 		type?: string;
 	};
 	defaultValue?: string;
-	computed?: AnyTypeNodes;
+	computed?: AnyTypeNodes | true;
 	checks?: BooleanTypeNodes[];
 }
 export interface Trigger {
@@ -817,7 +817,11 @@ $$;`);
 			throw new Error('Cannot have both a definition and a viewDefinition');
 		}
 		if (definition != null || viewDefinition != null) {
-			if (table.fields.some(({ computed }) => computed != null)) {
+			if (
+				table.fields.some(
+					({ computed }) => computed != null && computed !== true,
+				)
+			) {
 				throw new Error(
 					`Using computed fields alongside a custom table definition is unsupported, found for table resourceName: '${table.resourceName}', name: '${table.name}'`,
 				);

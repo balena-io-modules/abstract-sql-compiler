@@ -9,6 +9,7 @@ export { Binding, SqlResult } from './abstract-sql-rules-to-sql.js';
 import $sbvrTypes from '@balena/sbvr-types';
 const { default: sbvrTypes } = $sbvrTypes;
 import type {
+	AbstractSqlField,
 	AbstractSqlModel,
 	AbstractSqlType,
 	BooleanTypeNodes,
@@ -45,6 +46,40 @@ export const optimizeSchema = (
 	abstractSqlModel: AbstractSqlModel,
 	{ createCheckConstraints = true } = {},
 ): AbstractSqlModel => {
+	for (const resourceName of Object.keys(abstractSqlModel.tables)) {
+		const table = abstractSqlModel.tables[resourceName];
+		if (typeof table === 'string') {
+			continue;
+		}
+		if (table.viewDefinition || table.definition) {
+			continue;
+		}
+
+		const computedFields: Array<
+			NonNullable<Exclude<AbstractSqlField['computed'], true>>
+		> = [];
+		for (const field of table.fields) {
+			const { fieldName, computed } = field;
+			if (computed != null && computed !== true) {
+				field.computed = true;
+				computedFields.push(['Alias', computed, fieldName]);
+			}
+		}
+
+		if (computedFields.length > 0) {
+			// If there are computed fields then set the `modifyFields` to only the non-computed fields, modifiable fields,
+			// and create a definition that computes them
+			table.modifyFields ??= table.fields.filter(({ computed }) => !computed);
+			table.definition = {
+				abstractSql: [
+					'SelectQuery',
+					['Select', [['Field', '*'], ...computedFields]],
+					['From', ['Table', table.name]],
+				],
+			};
+		}
+	}
+
 	abstractSqlModel.rules = abstractSqlModel.rules
 		.map((rule) => {
 			const [, ruleBodyNode, ruleSENode] = rule;
