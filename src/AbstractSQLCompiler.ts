@@ -493,6 +493,7 @@ export interface AbstractSqlTable {
 	primitive: false | string;
 	triggers?: Trigger[];
 	checks?: Check[];
+	viewDefinition?: Omit<Definition, 'binds'>;
 	definition?: Definition;
 	modifyFields?: AbstractSqlTable['fields'];
 	modifyName?: AbstractSqlTable['name'];
@@ -811,18 +812,19 @@ $$;`);
 		if (typeof table === 'string') {
 			return;
 		}
-		const { definition } = table;
-		if (definition != null) {
+		const { definition, viewDefinition } = table;
+		if (viewDefinition != null && definition != null) {
+			throw new Error('Cannot have both a definition and a viewDefinition');
+		}
+		if (definition != null || viewDefinition != null) {
 			if (table.fields.some(({ computed }) => computed != null)) {
 				throw new Error(
 					`Using computed fields alongside a custom table definition is unsupported, found for table resourceName: '${table.resourceName}', name: '${table.name}'`,
 				);
 			}
-			if (definition.binds != null && definition.binds.length > 0) {
-				// If there are any binds then it's a dynamic definition and cannot become a view
-				return;
-			}
-			let definitionAbstractSql = definition.abstractSql;
+		}
+		if (viewDefinition != null) {
+			let definitionAbstractSql = viewDefinition.abstractSql;
 			// If there are any resource nodes then it's a dynamic definition and cannot become a view
 			if (containsNode(definitionAbstractSql, isResourceNode)) {
 				return;
