@@ -1,5 +1,5 @@
 import { expect } from 'chai';
-import test from './test';
+import test from './test.js';
 
 describe('Count', () => {
 	test(['SelectQuery', ['Select', [['Count', '*']]]], (result, sqlEquals) => {
