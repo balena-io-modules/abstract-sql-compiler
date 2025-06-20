@@ -1131,6 +1131,7 @@ const generateExport = (engine: Engines, ifNotExists: boolean) => {
 		getModifiedFields,
 	};
 };
+export { optimizeSchema };
 export const postgres = generateExport(Engines.postgres, true);
 export const mysql = generateExport(Engines.mysql, true);
 export const websql = generateExport(Engines.websql, false);
