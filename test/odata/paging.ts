@@ -1,5 +1,5 @@
-import test from './test';
-import { pilotFields } from './fields';
+import test from './test.js';
+import { pilotFields } from './fields.js';
 const pilotFieldsStr = pilotFields.join(', ');
 
 test('/pilot?$top=5', 'GET', [['Bind', 0]], (result, sqlEquals) => {
