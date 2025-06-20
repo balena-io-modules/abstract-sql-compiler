@@ -857,9 +857,12 @@ ${compileRule(definitionAbstractSql as AbstractSqlQuery, engine, true).replace(
 		const createSqlElements: string[] = [];
 		const createIndexes: string[] = [];
 
+		const computedFields: Array<AbstractSqlField['computed']> = [];
 		for (const field of table.fields) {
 			const { fieldName, references, dataType, computed } = field;
-			if (!computed) {
+			if (computed) {
+				computedFields.push(['Alias', computed, fieldName]);
+			} else {
 				createSqlElements.push(
 					'"' + fieldName + '" ' + dataTypeGen(engine, field),
 				);
@@ -910,6 +913,16 @@ $$;`);
 					}
 				}
 			}
+		}
+		if (computedFields.length > 0) {
+			table.definition = {
+				abstractSql: [
+					'SelectQuery',
+					// TODO: The computed field typing should be better so we don't need to cast
+					['Select', [['Field', '*'], ...(computedFields as AnyTypeNodes[])]],
+					['From', ['Table', table.name]],
+				],
+			};
 		}
 
 		createSqlElements.push(...foreignKeys);
