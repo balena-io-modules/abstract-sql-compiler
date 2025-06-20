@@ -813,6 +813,11 @@ $$;`);
 		}
 		const { definition } = table;
 		if (definition != null) {
+			if (table.fields.some(({ computed }) => computed != null)) {
+				throw new Error(
+					`Using computed fields alongside a custom table definition is unsupported, found for table resourceName: '${table.resourceName}', name: '${table.name}'`,
+				);
+			}
 			if (definition.binds != null && definition.binds.length > 0) {
 				// If there are any binds then it's a dynamic definition and cannot become a view
 				return;
