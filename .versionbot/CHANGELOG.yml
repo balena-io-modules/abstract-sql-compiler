@@ -1,4 +1,21 @@
 - commits:
+    - subject: Switch to using a duplicate function exception to handle double
+        function creation
+      hash: 4354e067178bf7b462eb01182b078a8885b38031
+      body: |
+        This should have slightly less edge cases than trying to execute the
+        function and checking that it does not already exist, particularly if
+        we add arguments or similar in future where the `PERFORM` command would
+        need to match precisely
+      footer:
+        Change-type: patch
+        change-type: patch
+      author: Pagan Gazzard
+      nested: []
+  version: 10.3.5
+  title: ""
+  date: 2025-06-20T13:28:03.428Z
+- commits:
     - subject: Throw an error when trying to combine computed fields with a definition
       hash: 0092dd499c9b4e8a3418144acbdf37084f73a3bc
       body: |
