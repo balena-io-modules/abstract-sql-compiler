@@ -33,7 +33,10 @@ describe('Sum', () => {
 
 describe('Subtract now timestamp from now timestamp', () => {
 	test(
-		['SelectQuery', ['Select', [['Subtract', ['Now'], ['Now']]]]],
+		[
+			'SelectQuery',
+			['Select', [['Subtract', ['CurrentTimestamp'], ['CurrentTimestamp']]]],
+		],
 		(result, sqlEquals) => {
 			it('Subtract now timestamp from now timestamp', () => {
 				sqlEquals(result, 'SELECT CURRENT_TIMESTAMP - CURRENT_TIMESTAMP');
@@ -46,7 +49,10 @@ describe('Subtract Duration from now timestamp', () => {
 	test(
 		[
 			'SelectQuery',
-			['Select', [['Subtract', ['Now'], ['Duration', { day: 1 }]]]],
+			[
+				'Select',
+				[['Subtract', ['CurrentTimestamp'], ['Duration', { day: 1 }]]],
+			],
 		],
 		(result, sqlEquals) => {
 			it('Subtract Duration from now timestamp', () => {
@@ -58,16 +64,25 @@ describe('Subtract Duration from now timestamp', () => {
 
 // this is not allowed
 describe('Add now timestamp to now timestamp should fail', () => {
-	test.fail(['SelectQuery', ['Select', [['Add', ['Now'], ['Now']]]]], (err) => {
-		it('Add now timestamp to now timestamp should fail', () => {
-			expect(err).to.be.an('error');
-		});
-	});
+	test.fail(
+		[
+			'SelectQuery',
+			['Select', [['Add', ['CurrentTimestamp'], ['CurrentTimestamp']]]],
+		],
+		(err) => {
+			it('Add now timestamp to now timestamp should fail', () => {
+				expect(err).to.be.an('error');
+			});
+		},
+	);
 });
 
 describe('Add Duration to now timestamp', () => {
 	test(
-		['SelectQuery', ['Select', [['Add', ['Now'], ['Duration', { day: 1 }]]]]],
+		[
+			'SelectQuery',
+			['Select', [['Add', ['CurrentTimestamp'], ['Duration', { day: 1 }]]]],
+		],
 		(result, sqlEquals) => {
 			it('Add Duration to now timestamp', () => {
 				sqlEquals(result, `SELECT CURRENT_TIMESTAMP + INTERVAL '1 0:0:0.0'`);
@@ -85,7 +100,7 @@ describe('Substract DateTrunc datefield from now timestamp', () => {
 				[
 					[
 						'Subtract',
-						['Now'],
+						['CurrentTimestamp'],
 						[
 							'DateTrunc',
 							['EmbeddedText', 'milliseconds'],

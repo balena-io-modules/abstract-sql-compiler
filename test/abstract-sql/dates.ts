@@ -336,7 +336,13 @@ describe('SubtractDateDate', () => {
 			'SelectQuery',
 			[
 				'Select',
-				[['Multiply', ['SubtractDateDate', ['Now'], ['Now']], ['Number', 4]]],
+				[
+					[
+						'Multiply',
+						['SubtractDateDate', ['CurrentTimestamp'], ['CurrentTimestamp']],
+						['Number', 4],
+					],
+				],
 			],
 		],
 		(result, sqlEquals) => {
@@ -354,7 +360,7 @@ describe('SubtractDateDate', () => {
 				[
 					[
 						'Multiply',
-						['SubtractDateDate', ['Now'], ['Now']],
+						['SubtractDateDate', ['CurrentTimestamp'], ['CurrentTimestamp']],
 						['Subtract', ['Number', 4], ['Number', 5]],
 					],
 				],
@@ -380,7 +386,7 @@ describe('SubtractDateDate', () => {
 						'SubtractDateDate',
 						[
 							'AddDateDuration',
-							['Now'],
+							['CurrentTimestamp'],
 							[
 								'Duration',
 								{

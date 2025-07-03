@@ -71,7 +71,6 @@ import type {
 	ReferencedFieldNode,
 	ReplaceNode,
 	StrictBooleanTypeNodes,
-	StrictDateTypeNodes,
 	StrictNumberTypeNodes,
 	StrictTextTypeNodes,
 	RightJoinNode,
@@ -299,9 +298,7 @@ const BooleanValue = MatchValue<BooleanTypeNodes>(
 	isBooleanValue as typeof AbstractSQLRules2SQL.isBooleanValue,
 );
 
-const isDateValue = (type: unknown): type is 'Now' | StrictDateTypeNodes[0] => {
-	return type === 'Now' || AbstractSQLRules2SQL.isDateValue(type);
-};
+const { isDateValue } = AbstractSQLRules2SQL;
 const DateValue = MatchValue(isDateValue);
 
 const { isJSONValue } = AbstractSQLRules2SQL;
@@ -1524,11 +1521,6 @@ const typeRules = {
 	EscapeForLike: matchArgs<EscapeForLikeNode>('EscapeForLike', TextValue),
 
 	// Virtual functions
-	Now: rewriteMatch(
-		'Now',
-		[],
-		Helper<MatchFn<CurrentTimestampNode>>(() => ['CurrentTimestamp']),
-	),
 	Contains: rewriteMatch(
 		'Contains',
 		[TextValue, TextValue],
