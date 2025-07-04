@@ -71,7 +71,6 @@ import type {
 	ReferencedFieldNode,
 	ReplaceNode,
 	StrictBooleanTypeNodes,
-	StrictDateTypeNodes,
 	StrictNumberTypeNodes,
 	StrictTextTypeNodes,
 	RightJoinNode,
@@ -105,9 +104,9 @@ import type {
 	EscapeForLikeNode,
 	EqualsAnyNode,
 	NotInNode,
-} from './AbstractSQLCompiler';
-import { isFieldTypeNode } from './AbstractSQLCompiler';
-import * as AbstractSQLRules2SQL from './AbstractSQLRules2SQL';
+} from './AbstractSQLCompiler.js';
+import { isFieldTypeNode } from './AbstractSQLCompiler.js';
+import * as AbstractSQLRules2SQL from './AbstractSQLRules2SQL.js';
 
 const {
 	isAbstractSqlQuery,
@@ -298,9 +297,7 @@ const BooleanValue = MatchValue<BooleanTypeNodes>(
 	isBooleanValue as typeof AbstractSQLRules2SQL.isBooleanValue,
 );
 
-const isDateValue = (type: unknown): type is 'Now' | StrictDateTypeNodes[0] => {
-	return type === 'Now' || AbstractSQLRules2SQL.isDateValue(type);
-};
+const { isDateValue } = AbstractSQLRules2SQL;
 const DateValue = MatchValue(isDateValue);
 
 const { isJSONValue } = AbstractSQLRules2SQL;
@@ -1523,11 +1520,6 @@ const typeRules = {
 	EscapeForLike: matchArgs<EscapeForLikeNode>('EscapeForLike', TextValue),
 
 	// Virtual functions
-	Now: rewriteMatch(
-		'Now',
-		[],
-		Helper<MatchFn<CurrentTimestampNode>>(() => ['CurrentTimestamp']),
-	),
 	Contains: rewriteMatch(
 		'Contains',
 		[TextValue, TextValue],
