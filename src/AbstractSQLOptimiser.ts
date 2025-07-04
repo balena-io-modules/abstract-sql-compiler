@@ -218,7 +218,6 @@ const UnknownValue: MetaMatchFn<UnknownTypeNodes> = (args) => {
 		case 'Null':
 		case 'Field':
 		case 'ReferencedField':
-		case 'EqualsAny':
 		case 'Bind':
 		case 'Cast':
 		case 'Case':

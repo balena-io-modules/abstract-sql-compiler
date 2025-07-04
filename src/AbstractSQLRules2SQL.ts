@@ -75,7 +75,6 @@ const UnknownValue: MetaMatchFn = (args, indent) => {
 		case 'Null':
 		case 'Field':
 		case 'ReferencedField':
-		case 'EqualsAny':
 		case 'Bind':
 		case 'Cast':
 		case 'Case':
@@ -175,7 +174,8 @@ export const isBooleanValue = (
 		type === 'Like' ||
 		type === 'IsNotDistinctFrom' ||
 		type === 'IsDistinctFrom' ||
-		type === 'StartsWith'
+		type === 'StartsWith' ||
+		type === 'EqualsAny'
 	);
 };
 const BooleanValue = MatchValue(isBooleanValue);

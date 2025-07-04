@@ -254,7 +254,6 @@ export type UnknownTypeNodes =
 	| NullNode
 	| FieldNode
 	| ReferencedFieldNode
-	| EqualsAnyNode
 	| BindNode
 	| CastNode
 	| CaseNode
