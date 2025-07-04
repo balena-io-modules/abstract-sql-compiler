@@ -1,4 +1,16 @@
 - commits:
+    - subject: Correctly treat `EqualsAnyNode` as the boolean type we know it to be
+      hash: 862d36cf5ade46cc40be2909d6af6bafe16d5409
+      body: ""
+      footer:
+        Change-type: patch
+        change-type: patch
+      author: Pagan Gazzard
+      nested: []
+  version: 10.4.1
+  title: ""
+  date: 2025-07-04T23:10:21.328Z
+- commits:
     - subject: Export an `optimizeSchema` variant that is database engine agnostic
       hash: 9b52888ca68ed9298b469fbda89eb2dbbb861668
       body: |
