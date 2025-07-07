@@ -1,4 +1,16 @@
 - commits:
+    - subject: Add optional time zone argument for DateTrunc
+      hash: 51521852f16d12fdcd22b51d24bf6a2cea3247e3
+      body: ""
+      footer:
+        Change-type: minor
+        change-type: minor
+      author: joshbwlng
+      nested: []
+  version: 10.5.0
+  title: ""
+  date: 2025-07-07T23:20:12.115Z
+- commits:
     - subject: Correctly treat `EqualsAnyNode` as the boolean type we know it to be
       hash: 862d36cf5ade46cc40be2909d6af6bafe16d5409
       body: ""
