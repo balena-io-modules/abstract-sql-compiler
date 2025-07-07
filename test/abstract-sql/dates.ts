@@ -127,6 +127,29 @@ describe('DateTrunc', () => {
 			});
 		},
 	);
+
+	test(
+		[
+			'SelectQuery',
+			[
+				'Select',
+				[
+					[
+						'DateTrunc',
+						['EmbeddedText', 'year'],
+						['Date', '2022-10-10'],
+						['EmbeddedText', 'UTC'],
+					],
+				],
+			],
+		],
+		[['Date', '2022-10-10']],
+		(result, sqlEquals) => {
+			it('should produce a valid DateTrunc statement', () => {
+				sqlEquals(result, `SELECT DATE_TRUNC('year', $1, 'UTC')`);
+			});
+		},
+	);
 });
 
 describe('ToTime', () => {

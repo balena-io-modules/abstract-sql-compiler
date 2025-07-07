@@ -25,7 +25,6 @@ import type {
 	CrossJoinNode,
 	CurrentDateNode,
 	CurrentTimestampNode,
-	DateTruncNode,
 	DeleteQueryNode,
 	DivideNode,
 	DurationNode,
@@ -886,7 +885,16 @@ const typeRules = {
 	Floor: matchArgs<FloorNode>('Floor', NumericValue),
 	Ceiling: matchArgs<CeilingNode>('Ceiling', NumericValue),
 	ToDate: matchArgs<ToDateNode>('ToDate', DateValue),
-	DateTrunc: matchArgs<DateTruncNode>('DateTrunc', TextValue, DateValue),
+	DateTrunc: (args) => {
+		checkMinArgs('DateTrunc', args, 2);
+		const precision = TextValue(getAbstractSqlQuery(args, 0));
+		const date = DateValue(getAbstractSqlQuery(args, 1));
+		const timeZone =
+			args.length === 3 ? TextValue(getAbstractSqlQuery(args, 2)) : undefined;
+		return timeZone
+			? ['DateTrunc', precision, date, timeZone]
+			: ['DateTrunc', precision, date];
+	},
 	ToTime: matchArgs<ToTimeNode>('ToTime', DateValue),
 	ExtractJSONPathAsText: (args): ExtractJSONPathAsTextNode => {
 		checkMinArgs('ExtractJSONPathAsText', args, 1);

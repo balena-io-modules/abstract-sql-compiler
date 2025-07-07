@@ -184,7 +184,6 @@ function runExpectation<ExpectFail extends boolean>(
 					0,
 				);
 				_.assign(body, extraBodyVars);
-				// @ts-expect-error - The tree returned by odata2AbstractSQL is typed using an older version of this module but works fine
 				result = AbstractSQLCompiler[engine].compileRule(tree);
 			} catch (e: any) {
 				if (!expectFailure) {
