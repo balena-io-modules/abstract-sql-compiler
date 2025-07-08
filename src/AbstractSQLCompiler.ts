@@ -6,24 +6,28 @@ export const enum Engines {
 	/* eslint-enable @typescript-eslint/no-shadow */
 }
 
-import { AbstractSQLOptimiser } from './AbstractSQLOptimiser';
-import type { Binding, SqlResult } from './AbstractSQLRules2SQL';
-import { AbstractSQLRules2SQL } from './AbstractSQLRules2SQL';
-export { Binding, SqlResult } from './AbstractSQLRules2SQL';
+import { AbstractSQLOptimiser } from './AbstractSQLOptimiser.js';
+import type { Binding, SqlResult } from './AbstractSQLRules2SQL.js';
+import { AbstractSQLRules2SQL } from './AbstractSQLRules2SQL.js';
+export { Binding, SqlResult } from './AbstractSQLRules2SQL.js';
 import type { SbvrType } from '@balena/sbvr-types';
-import sbvrTypes from '@balena/sbvr-types';
-import { optimizeSchema, generateRuleSlug } from './AbstractSQLSchemaOptimiser';
+import $sbvrTypes from '@balena/sbvr-types';
+const { default: sbvrTypes } = $sbvrTypes;
+import {
+	optimizeSchema,
+	generateRuleSlug,
+} from './AbstractSQLSchemaOptimiser.js';
 import type {
 	ReferencedFields,
 	RuleReferencedFields,
 	ModifiedFields,
-} from './referenced-fields';
+} from './referenced-fields.js';
 import {
 	getReferencedFields,
 	getRuleReferencedFields,
 	getModifiedFields,
 	insertAffectedIdsBinds,
-} from './referenced-fields';
+} from './referenced-fields.js';
 
 export type { ReferencedFields, RuleReferencedFields, ModifiedFields };
 
@@ -494,6 +498,7 @@ export interface AbstractSqlTable {
 	primitive: false | string;
 	triggers?: Trigger[];
 	checks?: Check[];
+	viewDefinition?: Omit<Definition, 'binds'>;
 	definition?: Definition;
 	modifyFields?: AbstractSqlTable['fields'];
 	modifyName?: AbstractSqlTable['name'];
@@ -812,18 +817,19 @@ $$;`);
 		if (typeof table === 'string') {
 			return;
 		}
-		const { definition } = table;
-		if (definition != null) {
+		const { definition, viewDefinition } = table;
+		if (viewDefinition != null && definition != null) {
+			throw new Error('Cannot have both a definition and a viewDefinition');
+		}
+		if (definition != null || viewDefinition != null) {
 			if (table.fields.some(({ computed }) => computed != null)) {
 				throw new Error(
 					`Using computed fields alongside a custom table definition is unsupported, found for table resourceName: '${table.resourceName}', name: '${table.name}'`,
 				);
 			}
-			if (definition.binds != null && definition.binds.length > 0) {
-				// If there are any binds then it's a dynamic definition and cannot become a view
-				return;
-			}
-			let definitionAbstractSql = definition.abstractSql;
+		}
+		if (viewDefinition != null) {
+			let definitionAbstractSql = viewDefinition.abstractSql;
 			// If there are any resource nodes then it's a dynamic definition and cannot become a view
 			if (containsNode(definitionAbstractSql, isResourceNode)) {
 				return;

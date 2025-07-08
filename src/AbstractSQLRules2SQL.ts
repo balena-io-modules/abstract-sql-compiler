@@ -1,4 +1,5 @@
-import sbvrTypes from '@balena/sbvr-types';
+import $sbvrTypes from '@balena/sbvr-types';
+const { default: sbvrTypes } = $sbvrTypes;
 import type {
 	AbstractSqlQuery,
 	AbstractSqlType,
@@ -17,8 +18,8 @@ import type {
 	StrictDurationTypeNodes,
 	StrictTextArrayTypeNodes,
 	StrictJSONTypeNodes,
-} from './AbstractSQLCompiler';
-import { Engines, isFieldTypeNode } from './AbstractSQLCompiler';
+} from './AbstractSQLCompiler.js';
+import { Engines, isFieldTypeNode } from './AbstractSQLCompiler.js';
 
 export type Binding =
 	| [string, any]

@@ -1,5 +1,5 @@
 import { expect } from 'chai';
-import * as AbstractSqlCompiler from '../../src/AbstractSQLCompiler';
+import * as AbstractSqlCompiler from '../../out/AbstractSQLCompiler.js';
 
 describe('getReferencedFields', () => {
 	it('should work with selected fields', () => {
