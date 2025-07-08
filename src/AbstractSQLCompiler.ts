@@ -443,6 +443,7 @@ export type UnknownNode = AbstractSqlQuery;
 export interface AbstractSqlQuery extends Array<AbstractSqlType> {
 	0: string;
 }
+export type AllowedAction = Set<'Read' | 'Write' | 'Update'>;
 
 export interface AbstractSqlField {
 	fieldName: string;
@@ -457,6 +458,7 @@ export interface AbstractSqlField {
 	defaultValue?: string;
 	computed?: AbstractSqlQuery;
 	checks?: BooleanTypeNodes[];
+	allowedAction?: AllowedAction;
 }
 export interface Trigger {
 	operation: 'INSERT' | 'UPDATE' | 'DELETE' | 'TRUNCATE';
