@@ -1,4 +1,16 @@
 - commits:
+    - subject: Allow sbvr-types v11
+      hash: 0b961faffe188162d82968df0e50522b7840eeae
+      body: ""
+      footer:
+        Change-type: patch
+        change-type: patch
+      author: joshbwlng
+      nested: []
+  version: 10.5.1
+  title: ""
+  date: 2025-07-08T14:05:27.340Z
+- commits:
     - subject: Add optional time zone argument for DateTrunc
       hash: 51521852f16d12fdcd22b51d24bf6a2cea3247e3
       body: ""
