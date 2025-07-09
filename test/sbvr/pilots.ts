@@ -106,24 +106,24 @@ CREATE TABLE IF NOT EXISTS "pilot" (
 	"created at" TIMESTAMP DEFAULT CURRENT_TIMESTAMP NOT NULL
 ,	"modified at" TIMESTAMP DEFAULT CURRENT_TIMESTAMP NOT NULL
 ,	"id" SERIAL NOT NULL PRIMARY KEY
-,	"person" INTEGER NOT NULL
-,	"name" VARCHAR(255) NOT NULL
-,	"years of experience" INTEGER NOT NULL
-,	"is experienced" BOOLEAN DEFAULT FALSE NOT NULL
 ,	"licence" INTEGER NOT NULL
-,	FOREIGN KEY ("person") REFERENCES "person" ("id")
+,	"person" INTEGER NOT NULL
+,	"years of experience" INTEGER NOT NULL
+,	"name" VARCHAR(255) NOT NULL
+,	"is experienced" BOOLEAN DEFAULT FALSE NOT NULL
 ,	FOREIGN KEY ("licence") REFERENCES "licence" ("id")
+,	FOREIGN KEY ("person") REFERENCES "person" ("id")
 );`,
 			modifiedAtTrigger('pilot'),
 			`\
 CREATE TABLE IF NOT EXISTS "pilot-can fly-plane" (
 	"created at" TIMESTAMP DEFAULT CURRENT_TIMESTAMP NOT NULL
 ,	"modified at" TIMESTAMP DEFAULT CURRENT_TIMESTAMP NOT NULL
-,	"pilot" INTEGER NOT NULL
 ,	"can fly-plane" INTEGER NOT NULL
 ,	"id" SERIAL NOT NULL PRIMARY KEY
-,	FOREIGN KEY ("pilot") REFERENCES "pilot" ("id")
+,	"pilot" INTEGER NOT NULL
 ,	FOREIGN KEY ("can fly-plane") REFERENCES "plane" ("id")
+,	FOREIGN KEY ("pilot") REFERENCES "pilot" ("id")
 ,	UNIQUE("pilot", "can fly-plane")
 );`,
 			modifiedAtTrigger('pilot-can fly-plane'),
