@@ -24,6 +24,7 @@ import {
 	getModifiedFields,
 	insertAffectedIdsBinds,
 } from './referenced-fields';
+import _ from 'lodash';
 
 export type { ReferencedFields, RuleReferencedFields, ModifiedFields };
 
@@ -746,6 +747,66 @@ export function compileRule(
 	return AbstractSQLRules2SQL(abstractSQL, engine, noBinds);
 }
 
+// Define sorting weights by data types
+// TODO: Add support for all possible data types
+// TODO: Decide if we want to try and always start with 'id', 'created at', 'modified at'
+const sortWeightByType: Record<string, number> = {
+	'Big Integer': 1,
+	'Big Serial': 1,
+	'Date Time': 1,
+	Integer: 2,
+	Serial: 2,
+	'Short Text': 3,
+	File: 4,
+	Text: 4,
+	// eslint-disable-next-line id-denylist
+	Boolean: 5,
+} as const;
+
+// Get the data type of a field, following any references
+const getFieldDataType = (
+	abstractSqlModel: AbstractSqlModel,
+	field: AbstractSqlField,
+): string => {
+	if (
+		['ForeignKey', 'ConceptType'].includes(field.dataType) &&
+		field.references != null
+	) {
+		const dataType = abstractSqlModel.tables[
+			field.references.resourceName
+		].fields.find((f) => f.fieldName === field.references?.fieldName)?.dataType;
+		if (dataType == null) {
+			throw new Error(
+				`Failed to find data type for field '${field.fieldName}' in table '${field.references.resourceName}'`,
+			);
+		}
+		return dataType;
+	}
+	return field.dataType;
+};
+
+// Sort fields by their data type to reduce extra padding
+const optimizeFieldOrder = (
+	abstractSqlModel: AbstractSqlModel,
+	fields: AbstractSqlField[],
+): AbstractSqlField[] => {
+	// Split computed from non-computed as we can only sort non-computed fields
+	const [nonComputedFields, computedFields] = _.partition(
+		fields,
+		(f) => !f.computed,
+	);
+
+	// Return fields sorted by data type weight then field name
+	return [
+		...nonComputedFields.sort((a, b) => {
+			const aWeight = sortWeightByType[getFieldDataType(abstractSqlModel, a)];
+			const bWeight = sortWeightByType[getFieldDataType(abstractSqlModel, b)];
+			return aWeight - bWeight || a.fieldName.localeCompare(b.fieldName);
+		}),
+		...computedFields.sort((a, b) => a.fieldName.localeCompare(b.fieldName)),
+	];
+};
+
 const compileSchema = (
 	abstractSqlModel: AbstractSqlModel,
 	engine: Engines,
@@ -858,7 +919,11 @@ ${compileRule(definitionAbstractSql as AbstractSqlQuery, engine, true).replace(
 		const createSqlElements: string[] = [];
 		const createIndexes: string[] = [];
 
-		for (const field of table.fields) {
+		const fields =
+			engine === Engines.postgres
+				? optimizeFieldOrder(abstractSqlModel, table.fields)
+				: table.fields;
+		for (const field of fields) {
 			const { fieldName, references, dataType, computed } = field;
 			if (!computed) {
 				createSqlElements.push(
