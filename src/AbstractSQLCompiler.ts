@@ -687,7 +687,7 @@ export const isFieldTypeNode = (
  * @param n The abstract sql to check
  * @param checkNodeTypeFn A function that checks if a given node is the correct type
  */
-const containsNode = (
+export const abstractSqlContainsNode = (
 	n: AnyTypeNodes,
 	checkNodeTypeFn: (n: AnyTypeNodes) => boolean,
 ): boolean => {
@@ -695,7 +695,10 @@ const containsNode = (
 		return true;
 	}
 	for (const p of n) {
-		if (Array.isArray(p) && containsNode(p as AnyTypeNodes, checkNodeTypeFn)) {
+		if (
+			Array.isArray(p) &&
+			abstractSqlContainsNode(p as AnyTypeNodes, checkNodeTypeFn)
+		) {
 			return true;
 		}
 	}
@@ -825,7 +828,7 @@ $$;`);
 			}
 			let definitionAbstractSql = definition.abstractSql;
 			// If there are any resource nodes then it's a dynamic definition and cannot become a view
-			if (containsNode(definitionAbstractSql, isResourceNode)) {
+			if (abstractSqlContainsNode(definitionAbstractSql, isResourceNode)) {
 				return;
 			}
 			if (isTableNode(definitionAbstractSql)) {
