@@ -1,4 +1,16 @@
 - commits:
+    - subject: Export `abstractSqlContainsNode` helper function
+      hash: 92e7d4dd97329fb93e2f1c27b275c9cc38ab74c5
+      body: ""
+      footer:
+        Change-type: minor
+        change-type: minor
+      author: Pagan Gazzard
+      nested: []
+  version: 10.6.0
+  title: ""
+  date: 2025-07-14T23:48:55.689Z
+- commits:
     - subject: Allow sbvr-types v11
       hash: 0b961faffe188162d82968df0e50522b7840eeae
       body: ""
