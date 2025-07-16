@@ -238,14 +238,7 @@ export type CaseNode =
 	| ['Case', ...WhenNode[]]
 	| ['Case', ...WhenNode[], ElseNode];
 
-/**
- * @deprecated This gets converted to the `['Bind', [string, string]]` form during compilation
- */
-type BackCompatBindNode = ['Bind', string, string];
-export type BindNode =
-	| ['Bind', number | string]
-	| ['Bind', [string, string]]
-	| BackCompatBindNode;
+export type BindNode = ['Bind', number | string] | ['Bind', [string, string]];
 export type CastNode = ['Cast', AnyTypeNodes, string];
 export type CoalesceNode = [
 	'Coalesce',

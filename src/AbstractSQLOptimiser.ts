@@ -1216,21 +1216,13 @@ const typeRules = {
 			];
 		},
 	),
-	Bind: tryMatches<BindNode>(
-		Helper<OptimisationMatchFn<BindNode>>((args) => {
-			if (args.length !== 2) {
-				return false;
-			}
-			return ['Bind', args] as BindNode;
-		}),
-		(args) => {
-			if (noBinds) {
-				throw new SyntaxError('Cannot use a bind whilst they are disabled');
-			}
-			checkArgs('Bind', args, 1);
-			return ['Bind', ...args] as BindNode;
-		},
-	),
+	Bind: (args) => {
+		if (noBinds) {
+			throw new SyntaxError('Cannot use a bind whilst they are disabled');
+		}
+		checkArgs('Bind', args, 1);
+		return ['Bind', ...args] as BindNode;
+	},
 	Text,
 	Value: Text,
 	Date: matchArgs('Date', identity),
