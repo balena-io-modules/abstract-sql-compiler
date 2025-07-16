@@ -6,7 +6,7 @@ export const enum Engines {
 	/* eslint-enable @typescript-eslint/no-shadow */
 }
 
-import { AbstractSQLOptimiser } from './abstract-sql-optimizer.js';
+import { AbstractSQLOptimizer } from './abstract-sql-optimizer.js';
 import type { Binding, SqlResult } from './abstract-sql-rules-to-sql.js';
 import { AbstractSQLRules2SQL } from './abstract-sql-rules-to-sql.js';
 export { Binding, SqlResult } from './abstract-sql-rules-to-sql.js';
@@ -740,7 +740,7 @@ export function compileRule(
 	engine: Engines,
 	noBinds = false,
 ): SqlResult | [SqlResult, SqlResult] | string | [string, string] {
-	abstractSQL = AbstractSQLOptimiser(abstractSQL, noBinds);
+	abstractSQL = AbstractSQLOptimizer(abstractSQL, noBinds);
 	return AbstractSQLRules2SQL(abstractSQL, engine, noBinds);
 }
 

@@ -4,7 +4,7 @@ export const enum Engines {
 	websql = 'websql',
 }
 
-import { AbstractSQLOptimiser } from './abstract-sql-optimizer.js';
+import { AbstractSQLOptimizer } from './abstract-sql-optimizer.js';
 export { Binding, SqlResult } from './abstract-sql-rules-to-sql.js';
 import $sbvrTypes from '@balena/sbvr-types';
 const { default: sbvrTypes } = $sbvrTypes;
@@ -64,7 +64,7 @@ export const optimizeSchema = (
 			}
 
 			// Optimize the rule body, this also normalizes it making the check constraint check easier
-			ruleBodyNode[1] = ruleBody = AbstractSQLOptimiser(ruleBody, true);
+			ruleBodyNode[1] = ruleBody = AbstractSQLOptimizer(ruleBody, true);
 
 			const count = countFroms(ruleBody);
 			if (

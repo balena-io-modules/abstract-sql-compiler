@@ -1589,7 +1589,7 @@ const typeRules = {
 	),
 } satisfies Record<string, MatchFn<AnyTypeNodes>>;
 
-export const AbstractSQLOptimiser = (
+export const AbstractSQLOptimizer = (
 	abstractSQL: AbstractSqlQuery,
 	$noBinds = false,
 ): AbstractSqlQuery => {

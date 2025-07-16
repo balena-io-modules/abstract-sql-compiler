@@ -57,7 +57,7 @@ import {
 	isTableNode,
 	isWhereNode,
 } from './abstract-sql-compiler.js';
-import { AbstractSQLOptimiser } from './abstract-sql-optimizer.js';
+import { AbstractSQLOptimizer } from './abstract-sql-optimizer.js';
 import { isAbstractSqlQuery } from './abstract-sql-rules-to-sql.js';
 
 export interface ReferencedFields {
@@ -266,7 +266,7 @@ const $getRuleReferencedFields = (
 };
 export const getRuleReferencedFields: EngineInstance['getRuleReferencedFields'] =
 	(ruleBody) => {
-		ruleBody = AbstractSQLOptimiser(ruleBody);
+		ruleBody = AbstractSQLOptimizer(ruleBody);
 		const referencedFields: RuleReferencedFields = {};
 		if (
 			ruleBody[0] === 'Equals' &&
