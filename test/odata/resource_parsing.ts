@@ -158,7 +158,7 @@ test(
 INSERT INTO "pilot" ("id")
 SELECT "$insert"."id"
 FROM (
-	SELECT CAST(NULL AS TIMESTAMP) AS "created at", CAST(NULL AS TIMESTAMP) AS "modified at", CAST(? AS INTEGER) AS "id", CAST(NULL AS INTEGER) AS "person", CAST(NULL AS BOOLEAN) AS "is experienced", CAST(NULL AS VARCHAR(255)) AS "name", CAST(NULL AS INTEGER) AS "age", CAST(NULL AS INTEGER) AS "favourite colour", CAST(NULL AS INTEGER) AS "is on-team", CAST(NULL AS INTEGER) AS "licence", CAST(NULL AS TIMESTAMP) AS "hire date", CAST(NULL AS INTEGER) AS "was trained by-pilot"
+	SELECT CAST(NULL AS TIMESTAMPTZ) AS "created at", CAST(NULL AS TIMESTAMPTZ) AS "modified at", CAST(? AS INTEGER) AS "id", CAST(NULL AS INTEGER) AS "person", CAST(NULL AS BOOLEAN) AS "is experienced", CAST(NULL AS VARCHAR(255)) AS "name", CAST(NULL AS INTEGER) AS "age", CAST(NULL AS INTEGER) AS "favourite colour", CAST(NULL AS INTEGER) AS "is on-team", CAST(NULL AS INTEGER) AS "licence", CAST(NULL AS TIMESTAMPTZ) AS "hire date", CAST(NULL AS INTEGER) AS "was trained by-pilot"
 ) AS "$insert"
 WHERE EXISTS (
 	SELECT 1
@@ -272,7 +272,7 @@ test(
 INSERT INTO "pilot-can fly-plane" ("id")
 SELECT "$insert"."id"
 FROM (
-	SELECT CAST(NULL AS TIMESTAMP) AS "created at", CAST(NULL AS TIMESTAMP) AS "modified at", CAST(NULL AS INTEGER) AS "pilot", CAST(NULL AS INTEGER) AS "can fly-plane", CAST(? AS INTEGER) AS "id"
+	SELECT CAST(NULL AS TIMESTAMPTZ) AS "created at", CAST(NULL AS TIMESTAMPTZ) AS "modified at", CAST(NULL AS INTEGER) AS "pilot", CAST(NULL AS INTEGER) AS "can fly-plane", CAST(? AS INTEGER) AS "id"
 ) AS "$insert"
 WHERE EXISTS (
 	SELECT 1
