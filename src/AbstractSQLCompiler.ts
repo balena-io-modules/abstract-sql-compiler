@@ -384,11 +384,6 @@ export type FromTypeNodes =
 	| FromTypeNode[keyof FromTypeNode]
 	| AliasNode<FromTypeNode[keyof FromTypeNode]>;
 
-/**
- * @deprecated `FromTypeNodes` already includes aliased versions
- */
-export type AliasableFromTypeNodes = FromTypeNodes;
-
 export type SelectNode = ['Select', AnyTypeNodes[]];
 export type FromNode = ['From', FromTypeNodes];
 export type InnerJoinNode = ['Join', FromTypeNodes, OnNode?];
