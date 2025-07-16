@@ -447,7 +447,7 @@ export interface AbstractSqlField {
 		type?: string;
 	};
 	defaultValue?: string;
-	computed?: AbstractSqlQuery;
+	computed?: AnyTypeNodes;
 	checks?: BooleanTypeNodes[];
 }
 export interface Trigger {
