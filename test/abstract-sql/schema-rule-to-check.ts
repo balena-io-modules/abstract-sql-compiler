@@ -60,7 +60,7 @@ it('should convert a basic rule to a check using NOT EXISTS', () => {
 								],
 							],
 						],
-					] as AbstractSQLCompiler.AbstractSqlQuery,
+					],
 					[
 						'StructuredEnglish',
 						'It is necessary that each test has an id that is greater than 0.',
@@ -132,7 +132,7 @@ it('should convert a basic rule to a check using COUNT(*) = 0', () => {
 							],
 							['Number', 0],
 						],
-					] as AbstractSQLCompiler.AbstractSqlQuery,
+					],
 					[
 						'StructuredEnglish',
 						'It is necessary that each test has an id that is greater than 0.',
@@ -224,7 +224,7 @@ it('should correctly shorten a converted check rule with a long name', () => {
 								],
 							],
 						],
-					] as AbstractSQLCompiler.AbstractSqlQuery,
+					],
 					[
 						'StructuredEnglish',
 						'It is necessary that each test_table_with_very_very_long_name has an id that is greater than 0.',
@@ -298,7 +298,7 @@ it('should work with differing table/resource names using NOT EXISTS', () => {
 								],
 							],
 						],
-					] as AbstractSQLCompiler.AbstractSqlQuery,
+					],
 					[
 						'StructuredEnglish',
 						'It is necessary that each test has an id that is greater than 0.',
@@ -370,7 +370,7 @@ it('should work with differing table/resource names using COUNT(*) = 0', () => {
 							],
 							['Number', 0],
 						],
-					] as AbstractSQLCompiler.AbstractSqlQuery,
+					],
 					[
 						'StructuredEnglish',
 						'It is necessary that each test has an id that is greater than 0.',

@@ -70,7 +70,7 @@ it('should convert a basic rule to a check', () => {
 								],
 							],
 						],
-					] as AbstractSQLCompiler.AbstractSqlQuery,
+					],
 					['StructuredEnglish', 'Test rule abstract sql optimization'],
 				],
 			],

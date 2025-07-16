@@ -10,7 +10,6 @@ import $sbvrTypes from '@balena/sbvr-types';
 const { default: sbvrTypes } = $sbvrTypes;
 import type {
 	AbstractSqlModel,
-	AbstractSqlQuery,
 	AbstractSqlType,
 	BooleanTypeNodes,
 	WhereNode,
@@ -47,23 +46,16 @@ export const optimizeSchema = (
 	{ createCheckConstraints = true } = {},
 ): AbstractSqlModel => {
 	abstractSqlModel.rules = abstractSqlModel.rules
-		.map((rule): AbstractSqlQuery | undefined => {
-			const ruleBodyNode = rule.find((r) => r[0] === 'Body') as [
-				'Body',
-				AbstractSqlQuery,
-			];
-			if (ruleBodyNode == null || typeof ruleBodyNode === 'string') {
+		.map((rule) => {
+			const [, ruleBodyNode, ruleSENode] = rule;
+			if (ruleBodyNode == null || ruleBodyNode[0] !== 'Body') {
 				throw new Error('Invalid rule');
 			}
 			let ruleBody = ruleBodyNode[1];
 			if (typeof ruleBody === 'string') {
 				throw new Error('Invalid rule');
 			}
-			const ruleSENode = rule.find((r) => r[0] === 'StructuredEnglish') as [
-				'StructuredEnglish',
-				string,
-			];
-			if (ruleSENode == null) {
+			if (ruleSENode == null || ruleSENode[0] !== 'StructuredEnglish') {
 				throw new Error('Invalid structured English');
 			}
 			const ruleSE = ruleSENode[1];

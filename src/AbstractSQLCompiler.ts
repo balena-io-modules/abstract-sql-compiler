@@ -529,7 +529,9 @@ export interface AbstractSqlModel {
 	tables: {
 		[resourceName: string]: AbstractSqlTable;
 	};
-	rules: AbstractSqlQuery[];
+	rules: Array<
+		['Rule', ['Body', AbstractSqlQuery], ['StructuredEnglish', string]]
+	>;
 	functions?: Record<
 		string,
 		{
@@ -1059,22 +1061,15 @@ CREATE TABLE ${ifNotExistsStr}"${table.name}" (
 
 	const ruleStatements: SqlRule[] = abstractSqlModel.rules.map(
 		(rule): SqlRule => {
-			const ruleBodyNode = rule.find((r) => r[0] === 'Body') as [
-				'Body',
-				AbstractSqlQuery,
-			];
-			if (ruleBodyNode == null || typeof ruleBodyNode === 'string') {
+			const [, ruleBodyNode, ruleSENode] = rule;
+			if (ruleBodyNode == null || ruleBodyNode[0] !== 'Body') {
 				throw new Error('Invalid rule');
 			}
 			const ruleBody = ruleBodyNode[1];
 			if (typeof ruleBody === 'string') {
 				throw new Error('Invalid rule');
 			}
-			const ruleSENode = rule.find((r) => r[0] === 'StructuredEnglish') as [
-				'StructuredEnglish',
-				string,
-			];
-			if (ruleSENode == null) {
+			if (ruleSENode == null || ruleSENode[0] !== 'StructuredEnglish') {
 				throw new Error('Invalid structured English');
 			}
 			const ruleSE = ruleSENode[1];
