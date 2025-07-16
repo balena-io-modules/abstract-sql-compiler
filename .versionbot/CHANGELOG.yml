@@ -1,4 +1,16 @@
 - commits:
+    - subject: Include comments in generated output to preserve jsdoc info
+      hash: 7045c5bd5244459330a7899ad0fbb974a429ca14
+      body: ""
+      footer:
+        Change-type: patch
+        change-type: patch
+      author: Pagan Gazzard
+      nested: []
+  version: 10.6.2
+  title: ""
+  date: 2025-07-16T12:44:51.636Z
+- commits:
     - subject: Update dev dependencies
       hash: 444f515b81454a512eaf3a28f49f7b25938b4b9c
       body: ""
