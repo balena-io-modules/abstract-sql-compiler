@@ -759,7 +759,9 @@ const compileSchema = (
 	engine: Engines,
 	ifNotExists: boolean,
 ): SqlModel => {
-	abstractSqlModel = optimizeSchema(abstractSqlModel, false);
+	abstractSqlModel = optimizeSchema(abstractSqlModel, {
+		createCheckConstraints: false,
+	});
 
 	let ifNotExistsStr = '';
 	let orReplaceStr = '';
