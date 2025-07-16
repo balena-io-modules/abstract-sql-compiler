@@ -1,4 +1,16 @@
 - commits:
+    - subject: Update dev dependencies
+      hash: 444f515b81454a512eaf3a28f49f7b25938b4b9c
+      body: ""
+      footer:
+        Change-type: patch
+        change-type: patch
+      author: Pagan Gazzard
+      nested: []
+  version: 10.6.1
+  title: ""
+  date: 2025-07-16T11:37:51.776Z
+- commits:
     - subject: Export `abstractSqlContainsNode` helper function
       hash: 92e7d4dd97329fb93e2f1c27b275c9cc38ab74c5
       body: ""
