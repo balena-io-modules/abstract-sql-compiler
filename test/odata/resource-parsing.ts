@@ -10,7 +10,7 @@ import {
 	aliasPilotLicenceFields,
 	aliasLicenceFields,
 } from './fields.js';
-import type { SqlResult } from '../../out/AbstractSQLCompiler.js';
+import type { SqlResult } from '../../out/abstract-sql-compiler.js';
 const aliasPilotFields = aliasFields(
 	'plane.pilot-can fly-plane.pilot',
 	pilotFields,

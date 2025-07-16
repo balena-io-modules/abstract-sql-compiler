@@ -3,8 +3,8 @@
   "version": "10.6.3",
   "description": "A translator for abstract sql into sql.",
   "type": "module",
-  "main": "out/AbstractSQLCompiler.js",
-  "types": "out/AbstractSQLCompiler.d.ts",
+  "main": "out/abstract-sql-compiler.js",
+  "types": "out/abstract-sql-compiler.d.ts",
   "scripts": {
     "build": "tsc --project ./tsconfig.build.json",
     "pretest": "npm run build",

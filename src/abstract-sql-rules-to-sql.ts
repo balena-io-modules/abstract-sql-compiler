@@ -18,8 +18,8 @@ import type {
 	StrictDurationTypeNodes,
 	StrictTextArrayTypeNodes,
 	StrictJSONTypeNodes,
-} from './AbstractSQLCompiler.js';
-import { Engines, isFieldTypeNode } from './AbstractSQLCompiler.js';
+} from './abstract-sql-compiler.js';
+import { Engines, isFieldTypeNode } from './abstract-sql-compiler.js';
 
 export type Binding =
 	| [string, any]

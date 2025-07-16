@@ -17,7 +17,7 @@ const typeVocab = await fs.promises.readFile(
 	'utf8',
 );
 
-import * as AbstractSQLCompiler from '../../out/AbstractSQLCompiler.js';
+import * as AbstractSQLCompiler from '../../out/abstract-sql-compiler.js';
 
 import { expect } from 'chai';
 import _ from 'lodash';

@@ -1,5 +1,5 @@
 import { stripIndent } from 'common-tags';
-import type { SelectQueryNode } from '../../out/AbstractSQLCompiler.js';
+import type { SelectQueryNode } from '../../out/abstract-sql-compiler.js';
 
 import test from './test.js';
 

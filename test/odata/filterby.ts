@@ -17,7 +17,7 @@ import type {
 	Binding,
 	DurationNode,
 	SqlResult,
-} from '../../out/AbstractSQLCompiler.js';
+} from '../../out/abstract-sql-compiler.js';
 
 const pilotFieldsStr = pilotFields.join(', ');
 const aliasPilotCanFlyPlaneFieldsStr = aliasPilotCanFlyPlaneFields.join(', ');

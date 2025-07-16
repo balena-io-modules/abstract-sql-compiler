@@ -103,9 +103,9 @@ import type {
 	EscapeForLikeNode,
 	EqualsAnyNode,
 	NotInNode,
-} from './AbstractSQLCompiler.js';
-import { isFieldTypeNode } from './AbstractSQLCompiler.js';
-import * as AbstractSQLRules2SQL from './AbstractSQLRules2SQL.js';
+} from './abstract-sql-compiler.js';
+import { isFieldTypeNode } from './abstract-sql-compiler.js';
+import * as AbstractSQLRules2SQL from './abstract-sql-rules-to-sql.js';
 
 const {
 	isAbstractSqlQuery,

@@ -48,7 +48,7 @@ import type {
 	ToJSONNode,
 	UnionQueryNode,
 	WhereNode,
-} from './AbstractSQLCompiler.js';
+} from './abstract-sql-compiler.js';
 import {
 	isAliasNode,
 	isFromNode,
@@ -56,9 +56,9 @@ import {
 	isSelectQueryNode,
 	isTableNode,
 	isWhereNode,
-} from './AbstractSQLCompiler.js';
-import { AbstractSQLOptimiser } from './AbstractSQLOptimiser.js';
-import { isAbstractSqlQuery } from './AbstractSQLRules2SQL.js';
+} from './abstract-sql-compiler.js';
+import { AbstractSQLOptimiser } from './abstract-sql-optimizer.js';
+import { isAbstractSqlQuery } from './abstract-sql-rules-to-sql.js';
 
 export interface ReferencedFields {
 	[alias: string]: string[];

@@ -1,4 +1,4 @@
-import * as AbstractSQLCompiler from '../../out/AbstractSQLCompiler.js';
+import * as AbstractSQLCompiler from '../../out/abstract-sql-compiler.js';
 import { expect } from 'chai';
 
 const generateSchema = (

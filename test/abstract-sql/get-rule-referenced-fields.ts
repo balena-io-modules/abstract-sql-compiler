@@ -1,5 +1,5 @@
 import { expect } from 'chai';
-import * as AbstractSqlCompiler from '../../out/AbstractSQLCompiler.js';
+import * as AbstractSqlCompiler from '../../out/abstract-sql-compiler.js';
 
 describe('getRuleReferencedFields', () => {
 	it('should work with single table NOT EXISTS', () => {

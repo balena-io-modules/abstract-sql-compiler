@@ -7,7 +7,7 @@ import { SBVRParser } from '@balena/sbvr-parser';
 import LF2AbstractSQL from '@balena/lf-to-abstract-sql';
 
 import { expect } from 'chai';
-import * as AbstractSQLCompiler from '../../out/AbstractSQLCompiler.js';
+import * as AbstractSQLCompiler from '../../out/abstract-sql-compiler.js';
 
 export function getTestHelpers(builtInVocab: string | boolean = false) {
 	const sbvrParser = SBVRParser.createInstance();

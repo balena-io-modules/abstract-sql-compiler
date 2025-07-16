@@ -6,17 +6,17 @@ export const enum Engines {
 	/* eslint-enable @typescript-eslint/no-shadow */
 }
 
-import { AbstractSQLOptimiser } from './AbstractSQLOptimiser.js';
-import type { Binding, SqlResult } from './AbstractSQLRules2SQL.js';
-import { AbstractSQLRules2SQL } from './AbstractSQLRules2SQL.js';
-export { Binding, SqlResult } from './AbstractSQLRules2SQL.js';
+import { AbstractSQLOptimiser } from './abstract-sql-optimizer.js';
+import type { Binding, SqlResult } from './abstract-sql-rules-to-sql.js';
+import { AbstractSQLRules2SQL } from './abstract-sql-rules-to-sql.js';
+export { Binding, SqlResult } from './abstract-sql-rules-to-sql.js';
 import type { SbvrType } from '@balena/sbvr-types';
 import $sbvrTypes from '@balena/sbvr-types';
 const { default: sbvrTypes } = $sbvrTypes;
 import {
 	optimizeSchema,
 	generateRuleSlug,
-} from './AbstractSQLSchemaOptimiser.js';
+} from './abstract-sql-schema-optimizer.js';
 import type {
 	ReferencedFields,
 	RuleReferencedFields,
