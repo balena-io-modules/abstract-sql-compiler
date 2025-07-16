@@ -314,25 +314,25 @@ const createMethodCall = function (method: string, ...args: Operand[]) {
 		case 'HOUR':
 		case 'MINUTE':
 			return {
-				sql: `EXTRACT('${method}' FROM DATE_TRUNC('milliseconds', ${parsedArgs[0].sql}))`,
+				sql: `EXTRACT('${method}' FROM DATE_TRUNC('milliseconds', ${parsedArgs[0].sql}, 'UTC'))`,
 				bindings: parsedArgs[0].bindings,
 				odata,
 			};
 		case 'SECOND':
 			return {
-				sql: `FLOOR(EXTRACT('${method}' FROM DATE_TRUNC('milliseconds', ${parsedArgs[0].sql})))`,
+				sql: `FLOOR(EXTRACT('${method}' FROM DATE_TRUNC('milliseconds', ${parsedArgs[0].sql}, 'UTC')))`,
 				bindings: parsedArgs[0].bindings,
 				odata,
 			};
 		case 'FRACTIONALSECONDS':
 			return {
-				sql: `EXTRACT('SECOND' FROM DATE_TRUNC('milliseconds', ${parsedArgs[0].sql})) - FLOOR(EXTRACT('SECOND' FROM DATE_TRUNC('milliseconds', ${parsedArgs[0].sql})))`,
+				sql: `EXTRACT('SECOND' FROM DATE_TRUNC('milliseconds', ${parsedArgs[0].sql}, 'UTC')) - FLOOR(EXTRACT('SECOND' FROM DATE_TRUNC('milliseconds', ${parsedArgs[0].sql}, 'UTC')))`,
 				bindings: parsedArgs[0].bindings,
 				odata,
 			};
 		case 'TIME':
 			return {
-				sql: `CAST(DATE_TRUNC('milliseconds', ${parsedArgs[0].sql}) AS ${method})`,
+				sql: `CAST(DATE_TRUNC('milliseconds', ${parsedArgs[0].sql}, 'UTC') AS ${method})`,
 				bindings: parsedArgs[0].bindings,
 				odata,
 			};
@@ -344,7 +344,7 @@ const createMethodCall = function (method: string, ...args: Operand[]) {
 			};
 		case 'DATE':
 			return {
-				sql: `DATE(DATE_TRUNC('milliseconds', ${parsedArgs[0].sql}))`,
+				sql: `DATE(DATE_TRUNC('milliseconds', ${parsedArgs[0].sql}, 'UTC'))`,
 				bindings: parsedArgs[0].bindings,
 				odata,
 			};
@@ -1462,7 +1462,7 @@ run(function () {
 				`\
 SELECT ${pilotFieldsStr}
 FROM "pilot"
-WHERE CURRENT_TIMESTAMP - DATE_TRUNC('milliseconds', "pilot"."created at") < INTERVAL '1 0:0:0.0'`,
+WHERE CURRENT_TIMESTAMP - DATE_TRUNC('milliseconds', "pilot"."created at", 'UTC') < INTERVAL '1 0:0:0.0'`,
 			);
 		});
 	});
@@ -1491,7 +1491,7 @@ run(function () {
 				`\
 SELECT ${pilotFieldsStr}
 FROM "pilot"
-WHERE DATE_TRUNC('milliseconds', "pilot"."created at") + INTERVAL '1 0:0:0.0' > CURRENT_TIMESTAMP`,
+WHERE DATE_TRUNC('milliseconds', "pilot"."created at", 'UTC') + INTERVAL '1 0:0:0.0' > CURRENT_TIMESTAMP`,
 			);
 		});
 	});
