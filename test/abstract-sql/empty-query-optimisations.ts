@@ -1,7 +1,7 @@
 import { stripIndent } from 'common-tags';
-import type { SelectQueryNode } from '../../src/AbstractSQLCompiler';
+import type { SelectQueryNode } from '../../out/abstract-sql-compiler.js';
 
-import test from './test';
+import test from './test.js';
 
 describe('Empty queries should be optimized', () => {
 	const emptyQuery: SelectQueryNode = [

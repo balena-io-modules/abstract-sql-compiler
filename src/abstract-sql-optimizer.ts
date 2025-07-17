@@ -70,7 +70,6 @@ import type {
 	ReferencedFieldNode,
 	ReplaceNode,
 	StrictBooleanTypeNodes,
-	StrictDateTypeNodes,
 	StrictNumberTypeNodes,
 	StrictTextTypeNodes,
 	RightJoinNode,
@@ -104,9 +103,9 @@ import type {
 	EscapeForLikeNode,
 	EqualsAnyNode,
 	NotInNode,
-} from './AbstractSQLCompiler';
-import { isFieldTypeNode } from './AbstractSQLCompiler';
-import * as AbstractSQLRules2SQL from './AbstractSQLRules2SQL';
+} from './abstract-sql-compiler.js';
+import { isFieldTypeNode } from './abstract-sql-compiler.js';
+import * as AbstractSQLRules2SQL from './abstract-sql-rules-to-sql.js';
 
 const {
 	isAbstractSqlQuery,
@@ -297,9 +296,7 @@ const BooleanValue = MatchValue<BooleanTypeNodes>(
 	isBooleanValue as typeof AbstractSQLRules2SQL.isBooleanValue,
 );
 
-const isDateValue = (type: unknown): type is 'Now' | StrictDateTypeNodes[0] => {
-	return type === 'Now' || AbstractSQLRules2SQL.isDateValue(type);
-};
+const { isDateValue } = AbstractSQLRules2SQL;
 const DateValue = MatchValue(isDateValue);
 
 const { isJSONValue } = AbstractSQLRules2SQL;
@@ -1219,21 +1216,13 @@ const typeRules = {
 			];
 		},
 	),
-	Bind: tryMatches<BindNode>(
-		Helper<OptimisationMatchFn<BindNode>>((args) => {
-			if (args.length !== 2) {
-				return false;
-			}
-			return ['Bind', args] as BindNode;
-		}),
-		(args) => {
-			if (noBinds) {
-				throw new SyntaxError('Cannot use a bind whilst they are disabled');
-			}
-			checkArgs('Bind', args, 1);
-			return ['Bind', ...args] as BindNode;
-		},
-	),
+	Bind: (args) => {
+		if (noBinds) {
+			throw new SyntaxError('Cannot use a bind whilst they are disabled');
+		}
+		checkArgs('Bind', args, 1);
+		return ['Bind', ...args] as BindNode;
+	},
 	Text,
 	Value: Text,
 	Date: matchArgs('Date', identity),
@@ -1531,11 +1520,6 @@ const typeRules = {
 	EscapeForLike: matchArgs<EscapeForLikeNode>('EscapeForLike', TextValue),
 
 	// Virtual functions
-	Now: rewriteMatch(
-		'Now',
-		[],
-		Helper<MatchFn<CurrentTimestampNode>>(() => ['CurrentTimestamp']),
-	),
 	Contains: rewriteMatch(
 		'Contains',
 		[TextValue, TextValue],
@@ -1605,7 +1589,7 @@ const typeRules = {
 	),
 } satisfies Record<string, MatchFn<AnyTypeNodes>>;
 
-export const AbstractSQLOptimiser = (
+export const AbstractSQLOptimizer = (
 	abstractSQL: AbstractSqlQuery,
 	$noBinds = false,
 ): AbstractSqlQuery => {

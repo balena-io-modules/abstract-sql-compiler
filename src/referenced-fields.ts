@@ -48,7 +48,7 @@ import type {
 	ToJSONNode,
 	UnionQueryNode,
 	WhereNode,
-} from './AbstractSQLCompiler';
+} from './abstract-sql-compiler.js';
 import {
 	isAliasNode,
 	isFromNode,
@@ -56,9 +56,9 @@ import {
 	isSelectQueryNode,
 	isTableNode,
 	isWhereNode,
-} from './AbstractSQLCompiler';
-import { AbstractSQLOptimiser } from './AbstractSQLOptimiser';
-import { isAbstractSqlQuery } from './AbstractSQLRules2SQL';
+} from './abstract-sql-compiler.js';
+import { AbstractSQLOptimizer } from './abstract-sql-optimizer.js';
+import { isAbstractSqlQuery } from './abstract-sql-rules-to-sql.js';
 
 export interface ReferencedFields {
 	[alias: string]: string[];
@@ -266,7 +266,7 @@ const $getRuleReferencedFields = (
 };
 export const getRuleReferencedFields: EngineInstance['getRuleReferencedFields'] =
 	(ruleBody) => {
-		ruleBody = AbstractSQLOptimiser(ruleBody);
+		ruleBody = AbstractSQLOptimizer(ruleBody);
 		const referencedFields: RuleReferencedFields = {};
 		if (
 			ruleBody[0] === 'Equals' &&

@@ -2,9 +2,9 @@
   "name": "@balena/abstract-sql-compiler",
   "version": "10.6.3",
   "description": "A translator for abstract sql into sql.",
-  "type": "commonjs",
-  "main": "out/AbstractSQLCompiler.js",
-  "types": "out/AbstractSQLCompiler.d.ts",
+  "type": "module",
+  "main": "out/abstract-sql-compiler.js",
+  "types": "out/abstract-sql-compiler.d.ts",
   "scripts": {
     "build": "tsc --project ./tsconfig.build.json",
     "pretest": "npm run build",
@@ -47,7 +47,7 @@
   "mocha": {
     "reporter": "spec",
     "recursive": true,
-    "require": "ts-node/register/transpile-only",
+    "loader": "ts-node/esm/transpile-only",
     "bail": true,
     "_": "test/**/*.ts"
   },

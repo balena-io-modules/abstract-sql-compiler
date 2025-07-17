@@ -1,5 +1,5 @@
 import { stripIndent } from 'common-tags';
-import test from './test';
+import test from './test.js';
 
 describe('Date trunc function on ReferencedField for milliseconds', () => {
 	test(
