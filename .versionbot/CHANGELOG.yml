@@ -1,4 +1,16 @@
 - commits:
+    - subject: "Tests: Update @balena/odata-to-abstract-sql to 8.0.1"
+      hash: 66ee93652310d4add5b0c8c09843dc052d796f5e
+      body: ""
+      footer:
+        Change-type: patch
+        change-type: patch
+      author: Pagan Gazzard
+      nested: []
+  version: 10.6.3
+  title: ""
+  date: 2025-07-17T11:05:36.688Z
+- commits:
     - subject: Include comments in generated output to preserve jsdoc info
       hash: 7045c5bd5244459330a7899ad0fbb974a429ca14
       body: ""
