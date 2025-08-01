@@ -1,4 +1,107 @@
 - commits:
+    - subject: Only publish the `out` directory
+      hash: 7511b8ebe5a9461f20add0ed97d0670ed3b5a479
+      body: ""
+      footer:
+        Change-type: major
+        change-type: major
+      author: Pagan Gazzard
+      nested: []
+    - subject: Compile computed fields into the table definition
+      hash: 45529f014aa1c181f338c0f7348767f2990a9084
+      body: |
+        This allows all downstream consumers to simplify as they only ever have
+        to look at/use the table definition and can completely ignore whether
+        fields are computed or not as it will have been handled for them
+        already as necessary
+      footer:
+        Change-type: major
+        change-type: major
+      author: Pagan Gazzard
+      nested: []
+    - subject: Standardize filenames
+      hash: 2bf244d1b75f0248df7ba897487425272c234989
+      body: ""
+      footer:
+        Change-type: major
+        change-type: major
+      author: Pagan Gazzard
+      nested: []
+    - subject: Improve typing of `AbstractSqlField['computed']`
+      hash: cb702d0505617fed4b60297a4951a89a9ddbce02
+      body: ""
+      footer:
+        Change-type: major
+        change-type: major
+      author: Pagan Gazzard
+      nested: []
+    - subject: Improve typing of `AbstractSqlModel['rules']`
+      hash: c4099bb461f7633d57f6d5173bbd6315bcc6ee62
+      body: ""
+      footer:
+        Change-type: major
+        change-type: major
+      author: Pagan Gazzard
+      nested: []
+    - subject: Remove support for deprecated `['Bind', string, string]` bind node format
+      hash: 6a6f353f44475b369181d71a6fd93924939aceba
+      body: |
+        Use `['Bind', [string, string]]` instead
+      footer:
+        Change-type: major
+        change-type: major
+      author: Pagan Gazzard
+      nested: []
+    - subject: Remove deprecated `AliasableFromTypeNodes` type, use `FromTypeNodes`
+        instead
+      hash: 73d2e69e3ee2969d1bd6e73bab4bd56a032a76fa
+      body: ""
+      footer:
+        Change-type: major
+        change-type: major
+      author: Pagan Gazzard
+      nested: []
+    - subject: Use an options object for `optimizeSchema` rather than flags
+      hash: c8451a5781df92f0f6e4f21fb666db493ae4c810
+      body: ""
+      footer:
+        Change-type: major
+        change-type: major
+      author: Pagan Gazzard
+      nested: []
+    - subject: Convert to ESM
+      hash: d71031138e0b0cc49aaaa514f8bc4ff5abfcbdc2
+      body: ""
+      footer:
+        Change-type: major
+        change-type: major
+      author: Pagan Gazzard
+      nested: []
+    - subject: Remove support for legacy `Now` nodes in favor of `CurrentTimestamp`
+      hash: 903a7ab4a727d09e1089684140b5fcdf48bf9967
+      body: ""
+      footer:
+        Change-type: major
+        change-type: major
+      author: Pagan Gazzard
+      nested: []
+    - subject: Switch to a separate `viewDefinition` property for creating views
+      hash: 214523e0cfe05e256c2d1c67c48231968a32d620
+      body: |
+        This removes the inference of whether to create a view from based on
+        inspecting the definition and instead makes it a conscious choice to
+        avoid converting a definition to a view in cases where that may not
+        make sense, eg if using a definition over a materialized table in order
+        to have a dynamic view over that table
+      footer:
+        Change-type: major
+        change-type: major
+      author: Pagan Gazzard
+      nested: []
+  version: 11.0.0
+  title: ""
+  date: 2025-08-01T11:57:14.534Z
+- commits:
     - subject: "Tests: Update @balena/odata-to-abstract-sql to 8.0.1"
       hash: 66ee93652310d4add5b0c8c09843dc052d796f5e
       body: ""
