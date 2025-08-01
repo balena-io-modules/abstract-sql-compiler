@@ -5,6 +5,9 @@
   "type": "module",
   "main": "out/abstract-sql-compiler.js",
   "types": "out/abstract-sql-compiler.d.ts",
+    "files": [
+    "out/"
+  ],
   "scripts": {
     "build": "tsc --project ./tsconfig.build.json",
     "pretest": "npm run build",
