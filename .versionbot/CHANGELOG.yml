@@ -1,4 +1,24 @@
 - commits:
+    - subject: Update tsconfig module to `Node18`
+      hash: 7b551369ed6974b4b537c80085bfad74b8a692a0
+      body: ""
+      footer:
+        Change-type: patch
+        change-type: patch
+      author: Pagan Gazzard
+      nested: []
+    - subject: "Tests: switch from ts-node to @swc-node/register"
+      hash: 0645665e87ad356aa91a97f9e730a855feb8bd67
+      body: ""
+      footer:
+        Change-type: patch
+        change-type: patch
+      author: Pagan Gazzard
+      nested: []
+  version: 11.0.1
+  title: ""
+  date: 2025-08-01T13:37:39.968Z
+- commits:
     - subject: Only publish the `out` directory
       hash: 7511b8ebe5a9461f20add0ed97d0670ed3b5a479
       body: ""
