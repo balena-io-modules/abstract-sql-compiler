@@ -1,33 +1,37 @@
-import * as fs from 'node:fs';
-import * as ODataParser from '@balena/odata-parser';
+import fs from 'node:fs';
+import ODataParser from '@balena/odata-parser';
 import { OData2AbstractSQL } from '@balena/odata-to-abstract-sql';
-const sbvrModel = fs.readFileSync(require.resolve('../model.sbvr'), 'utf8');
+import $sbvrTypes from '@balena/sbvr-types';
+const { default: sbvrTypes } = $sbvrTypes;
+// @ts-expect-error @balena/sbvr-parser doesn't have types
+import { SBVRParser } from '@balena/sbvr-parser';
+// @ts-expect-error @balena/lf-to-abstract-sql doesn't have types
+import LF2AbstractSQL from '@balena/lf-to-abstract-sql';
 
-import * as AbstractSQLCompiler from '../..';
+const sbvrModel = await fs.promises.readFile(
+	new URL(import.meta.resolve('../model.sbvr')),
+	'utf8',
+);
+const typeVocab = await fs.promises.readFile(
+	new URL(import.meta.resolve('@balena/sbvr-types/Type.sbvr')),
+	'utf8',
+);
+
+import * as AbstractSQLCompiler from '../../out/abstract-sql-compiler.js';
 
 import { expect } from 'chai';
 import _ from 'lodash';
 
 const generateClientModel = function (input: string) {
-	// eslint-disable-next-line @typescript-eslint/no-require-imports
-	const sbvrTypes = require('@balena/sbvr-types').default;
-	const typeVocab = fs.readFileSync(
-		require.resolve('@balena/sbvr-types/Type.sbvr'),
-		'utf8',
-	);
+	const sbvrParser = SBVRParser.createInstance();
+	sbvrParser.enableReusingMemoizations(sbvrParser._sideEffectingRules);
+	sbvrParser.AddCustomAttribute('Database ID Field:');
+	sbvrParser.AddCustomAttribute('Database Table Name:');
+	sbvrParser.AddBuiltInVocab(typeVocab);
 
-	// eslint-disable-next-line @typescript-eslint/no-require-imports
-	const SBVRParser = require('@balena/sbvr-parser').SBVRParser.createInstance();
-	SBVRParser.enableReusingMemoizations(SBVRParser._sideEffectingRules);
-	SBVRParser.AddCustomAttribute('Database ID Field:');
-	SBVRParser.AddCustomAttribute('Database Table Name:');
-	SBVRParser.AddBuiltInVocab(typeVocab);
-
-	// eslint-disable-next-line @typescript-eslint/no-require-imports
-	const LF2AbstractSQL = require('@balena/lf-to-abstract-sql');
 	const LF2AbstractSQLTranslator = LF2AbstractSQL.createTranslator(sbvrTypes);
 
-	const lf = SBVRParser.matchAll(input, 'Process');
+	const lf = sbvrParser.matchAll(input, 'Process');
 	const abstractSql = LF2AbstractSQLTranslator(lf, 'Process');
 	return abstractSql;
 };

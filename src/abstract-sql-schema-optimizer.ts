@@ -4,17 +4,18 @@ export const enum Engines {
 	websql = 'websql',
 }
 
-import { AbstractSQLOptimiser } from './AbstractSQLOptimiser';
-export { Binding, SqlResult } from './AbstractSQLRules2SQL';
-import sbvrTypes from '@balena/sbvr-types';
+import { AbstractSQLOptimizer } from './abstract-sql-optimizer.js';
+export { Binding, SqlResult } from './abstract-sql-rules-to-sql.js';
+import $sbvrTypes from '@balena/sbvr-types';
+const { default: sbvrTypes } = $sbvrTypes;
 import type {
+	AbstractSqlField,
 	AbstractSqlModel,
-	AbstractSqlQuery,
 	AbstractSqlType,
 	BooleanTypeNodes,
 	WhereNode,
-} from './AbstractSQLCompiler';
-import { isFromNode, isSelectQueryNode } from './AbstractSQLCompiler';
+} from './abstract-sql-compiler.js';
+import { isFromNode, isSelectQueryNode } from './abstract-sql-compiler.js';
 
 const countFroms = (n: AbstractSqlType[]) => {
 	let count = 0;
@@ -43,26 +44,53 @@ export const generateRuleSlug = (
 
 export const optimizeSchema = (
 	abstractSqlModel: AbstractSqlModel,
-	createCheckConstraints = true,
+	{ createCheckConstraints = true } = {},
 ): AbstractSqlModel => {
+	for (const resourceName of Object.keys(abstractSqlModel.tables)) {
+		const table = abstractSqlModel.tables[resourceName];
+		if (typeof table === 'string') {
+			continue;
+		}
+		if (table.viewDefinition || table.definition) {
+			continue;
+		}
+
+		const computedFields: Array<
+			NonNullable<Exclude<AbstractSqlField['computed'], true>>
+		> = [];
+		for (const field of table.fields) {
+			const { fieldName, computed } = field;
+			if (computed != null && computed !== true) {
+				field.computed = true;
+				computedFields.push(['Alias', computed, fieldName]);
+			}
+		}
+
+		if (computedFields.length > 0) {
+			// If there are computed fields then set the `modifyFields` to only the non-computed fields, modifiable fields,
+			// and create a definition that computes them
+			table.modifyFields ??= table.fields.filter(({ computed }) => !computed);
+			table.definition = {
+				abstractSql: [
+					'SelectQuery',
+					['Select', [['Field', '*'], ...computedFields]],
+					['From', ['Table', table.name]],
+				],
+			};
+		}
+	}
+
 	abstractSqlModel.rules = abstractSqlModel.rules
-		.map((rule): AbstractSqlQuery | undefined => {
-			const ruleBodyNode = rule.find((r) => r[0] === 'Body') as [
-				'Body',
-				AbstractSqlQuery,
-			];
-			if (ruleBodyNode == null || typeof ruleBodyNode === 'string') {
+		.map((rule) => {
+			const [, ruleBodyNode, ruleSENode] = rule;
+			if (ruleBodyNode == null || ruleBodyNode[0] !== 'Body') {
 				throw new Error('Invalid rule');
 			}
 			let ruleBody = ruleBodyNode[1];
 			if (typeof ruleBody === 'string') {
 				throw new Error('Invalid rule');
 			}
-			const ruleSENode = rule.find((r) => r[0] === 'StructuredEnglish') as [
-				'StructuredEnglish',
-				string,
-			];
-			if (ruleSENode == null) {
+			if (ruleSENode == null || ruleSENode[0] !== 'StructuredEnglish') {
 				throw new Error('Invalid structured English');
 			}
 			const ruleSE = ruleSENode[1];
@@ -71,7 +99,7 @@ export const optimizeSchema = (
 			}
 
 			// Optimize the rule body, this also normalizes it making the check constraint check easier
-			ruleBodyNode[1] = ruleBody = AbstractSQLOptimiser(ruleBody, true);
+			ruleBodyNode[1] = ruleBody = AbstractSQLOptimizer(ruleBody, true);
 
 			const count = countFroms(ruleBody);
 			if (

@@ -1,4 +1,4 @@
-import * as AbstractSQLCompiler from '../..';
+import * as AbstractSQLCompiler from '../../out/abstract-sql-compiler.js';
 import { expect } from 'chai';
 
 const generateSchema = (
@@ -70,7 +70,7 @@ it('should convert a basic rule to a check', () => {
 								],
 							],
 						],
-					] as AbstractSQLCompiler.AbstractSqlQuery,
+					],
 					['StructuredEnglish', 'Test rule abstract sql optimization'],
 				],
 			],

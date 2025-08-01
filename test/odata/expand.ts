@@ -1,12 +1,12 @@
-import type { ExpectationFailFn, ExpectationSuccessFn } from './test';
-import test from './test';
+import type { ExpectationFailFn, ExpectationSuccessFn } from './test.js';
+import test from './test.js';
 import {
 	pilotFields,
 	aliasFields,
 	aliasLicenceFields,
 	aliasPlaneFields,
 	aliasPilotCanFlyPlaneFields,
-} from './fields';
+} from './fields.js';
 import _ from 'lodash';
 
 type TestFn = (

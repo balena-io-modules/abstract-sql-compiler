@@ -2,9 +2,12 @@
   "name": "@balena/abstract-sql-compiler",
   "version": "10.6.3",
   "description": "A translator for abstract sql into sql.",
-  "type": "commonjs",
-  "main": "out/AbstractSQLCompiler.js",
-  "types": "out/AbstractSQLCompiler.d.ts",
+  "type": "module",
+  "main": "out/abstract-sql-compiler.js",
+  "types": "out/abstract-sql-compiler.d.ts",
+    "files": [
+    "out/"
+  ],
   "scripts": {
     "build": "tsc --project ./tsconfig.build.json",
     "pretest": "npm run build",
@@ -25,12 +28,12 @@
     "@balena/odata-parser": "^3.1.2",
     "@balena/odata-to-abstract-sql": "^8.0.1",
     "@balena/sbvr-parser": "^1.4.12",
-    "@types/chai": "^4.3.20",
+    "@types/chai": "^5.2.2",
     "@types/common-tags": "^1.8.4",
     "@types/lodash": "^4.17.20",
     "@types/mocha": "^10.0.10",
     "@types/node": "^20.19.8",
-    "chai": "^4.5.0",
+    "chai": "^5.2.1",
     "common-tags": "^1.8.2",
     "husky": "^9.1.7",
     "lint-staged": "^16.1.2",
@@ -47,7 +50,7 @@
   "mocha": {
     "reporter": "spec",
     "recursive": true,
-    "require": "ts-node/register/transpile-only",
+    "loader": "ts-node/esm/transpile-only",
     "bail": true,
     "_": "test/**/*.ts"
   },

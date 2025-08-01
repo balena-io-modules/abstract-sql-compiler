@@ -1,4 +1,4 @@
-import * as AbstractSQLCompiler from '../..';
+import * as AbstractSQLCompiler from '../../out/abstract-sql-compiler.js';
 import { expect } from 'chai';
 
 it('an empty abstractSql model should produce an empty schema', () => {

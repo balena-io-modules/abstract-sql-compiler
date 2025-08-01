@@ -1,4 +1,4 @@
-import * as AbstractSQLCompiler from '../..';
+import * as AbstractSQLCompiler from '../../out/abstract-sql-compiler.js';
 import { expect } from 'chai';
 
 describe('generate informative reference schema', () => {

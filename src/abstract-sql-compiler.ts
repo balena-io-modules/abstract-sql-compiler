@@ -6,24 +6,28 @@ export const enum Engines {
 	/* eslint-enable @typescript-eslint/no-shadow */
 }
 
-import { AbstractSQLOptimiser } from './AbstractSQLOptimiser';
-import type { Binding, SqlResult } from './AbstractSQLRules2SQL';
-import { AbstractSQLRules2SQL } from './AbstractSQLRules2SQL';
-export { Binding, SqlResult } from './AbstractSQLRules2SQL';
+import { AbstractSQLOptimizer } from './abstract-sql-optimizer.js';
+import type { Binding, SqlResult } from './abstract-sql-rules-to-sql.js';
+import { AbstractSQLRules2SQL } from './abstract-sql-rules-to-sql.js';
+export { Binding, SqlResult } from './abstract-sql-rules-to-sql.js';
 import type { SbvrType } from '@balena/sbvr-types';
-import sbvrTypes from '@balena/sbvr-types';
-import { optimizeSchema, generateRuleSlug } from './AbstractSQLSchemaOptimiser';
+import $sbvrTypes from '@balena/sbvr-types';
+const { default: sbvrTypes } = $sbvrTypes;
+import {
+	optimizeSchema,
+	generateRuleSlug,
+} from './abstract-sql-schema-optimizer.js';
 import type {
 	ReferencedFields,
 	RuleReferencedFields,
 	ModifiedFields,
-} from './referenced-fields';
+} from './referenced-fields.js';
 import {
 	getReferencedFields,
 	getRuleReferencedFields,
 	getModifiedFields,
 	insertAffectedIdsBinds,
-} from './referenced-fields';
+} from './referenced-fields.js';
 
 export type { ReferencedFields, RuleReferencedFields, ModifiedFields };
 
@@ -234,14 +238,7 @@ export type CaseNode =
 	| ['Case', ...WhenNode[]]
 	| ['Case', ...WhenNode[], ElseNode];
 
-/**
- * @deprecated This gets converted to the `['Bind', [string, string]]` form during compilation
- */
-type BackCompatBindNode = ['Bind', string, string];
-export type BindNode =
-	| ['Bind', number | string]
-	| ['Bind', [string, string]]
-	| BackCompatBindNode;
+export type BindNode = ['Bind', number | string] | ['Bind', [string, string]];
 export type CastNode = ['Cast', AnyTypeNodes, string];
 export type CoalesceNode = [
 	'Coalesce',
@@ -380,11 +377,6 @@ export type FromTypeNodes =
 	| FromTypeNode[keyof FromTypeNode]
 	| AliasNode<FromTypeNode[keyof FromTypeNode]>;
 
-/**
- * @deprecated `FromTypeNodes` already includes aliased versions
- */
-export type AliasableFromTypeNodes = FromTypeNodes;
-
 export type SelectNode = ['Select', AnyTypeNodes[]];
 export type FromNode = ['From', FromTypeNodes];
 export type InnerJoinNode = ['Join', FromTypeNodes, OnNode?];
@@ -455,7 +447,7 @@ export interface AbstractSqlField {
 		type?: string;
 	};
 	defaultValue?: string;
-	computed?: AbstractSqlQuery;
+	computed?: AnyTypeNodes | true;
 	checks?: BooleanTypeNodes[];
 }
 export interface Trigger {
@@ -494,6 +486,7 @@ export interface AbstractSqlTable {
 	primitive: false | string;
 	triggers?: Trigger[];
 	checks?: Check[];
+	viewDefinition?: Omit<Definition, 'binds'>;
 	definition?: Definition;
 	modifyFields?: AbstractSqlTable['fields'];
 	modifyName?: AbstractSqlTable['name'];
@@ -536,7 +529,9 @@ export interface AbstractSqlModel {
 	tables: {
 		[resourceName: string]: AbstractSqlTable;
 	};
-	rules: AbstractSqlQuery[];
+	rules: Array<
+		['Rule', ['Body', AbstractSqlQuery], ['StructuredEnglish', string]]
+	>;
 	functions?: Record<
 		string,
 		{
@@ -745,7 +740,7 @@ export function compileRule(
 	engine: Engines,
 	noBinds = false,
 ): SqlResult | [SqlResult, SqlResult] | string | [string, string] {
-	abstractSQL = AbstractSQLOptimiser(abstractSQL, noBinds);
+	abstractSQL = AbstractSQLOptimizer(abstractSQL, noBinds);
 	return AbstractSQLRules2SQL(abstractSQL, engine, noBinds);
 }
 
@@ -754,7 +749,9 @@ const compileSchema = (
 	engine: Engines,
 	ifNotExists: boolean,
 ): SqlModel => {
-	abstractSqlModel = optimizeSchema(abstractSqlModel, false);
+	abstractSqlModel = optimizeSchema(abstractSqlModel, {
+		createCheckConstraints: false,
+	});
 
 	let ifNotExistsStr = '';
 	let orReplaceStr = '';
@@ -815,21 +812,28 @@ $$;`);
 		if (typeof table === 'string') {
 			return;
 		}
-		const { definition } = table;
-		if (definition != null) {
-			if (table.fields.some(({ computed }) => computed != null)) {
+		const { definition, viewDefinition } = table;
+		if (viewDefinition != null && definition != null) {
+			throw new Error('Cannot have both a definition and a viewDefinition');
+		}
+		if (definition != null || viewDefinition != null) {
+			if (
+				table.fields.some(
+					({ computed }) => computed != null && computed !== true,
+				)
+			) {
 				throw new Error(
 					`Using computed fields alongside a custom table definition is unsupported, found for table resourceName: '${table.resourceName}', name: '${table.name}'`,
 				);
 			}
-			if (definition.binds != null && definition.binds.length > 0) {
-				// If there are any binds then it's a dynamic definition and cannot become a view
-				return;
-			}
-			let definitionAbstractSql = definition.abstractSql;
+		}
+		if (viewDefinition != null) {
+			let definitionAbstractSql = viewDefinition.abstractSql;
 			// If there are any resource nodes then it's a dynamic definition and cannot become a view
 			if (abstractSqlContainsNode(definitionAbstractSql, isResourceNode)) {
-				return;
+				throw new Error(
+					`Cannot create a view from a dynamic viewDefinition, found for table resourceName: '${table.resourceName}', name: '${table.name}'`,
+				);
 			}
 			if (isTableNode(definitionAbstractSql)) {
 				// If the definition is a table node we need to wrap it in a select query for the view creation
@@ -1061,22 +1065,15 @@ CREATE TABLE ${ifNotExistsStr}"${table.name}" (
 
 	const ruleStatements: SqlRule[] = abstractSqlModel.rules.map(
 		(rule): SqlRule => {
-			const ruleBodyNode = rule.find((r) => r[0] === 'Body') as [
-				'Body',
-				AbstractSqlQuery,
-			];
-			if (ruleBodyNode == null || typeof ruleBodyNode === 'string') {
+			const [, ruleBodyNode, ruleSENode] = rule;
+			if (ruleBodyNode == null || ruleBodyNode[0] !== 'Body') {
 				throw new Error('Invalid rule');
 			}
 			const ruleBody = ruleBodyNode[1];
 			if (typeof ruleBody === 'string') {
 				throw new Error('Invalid rule');
 			}
-			const ruleSENode = rule.find((r) => r[0] === 'StructuredEnglish') as [
-				'StructuredEnglish',
-				string,
-			];
-			if (ruleSENode == null) {
+			if (ruleSENode == null || ruleSENode[0] !== 'StructuredEnglish') {
 				throw new Error('Invalid structured English');
 			}
 			const ruleSE = ruleSENode[1];

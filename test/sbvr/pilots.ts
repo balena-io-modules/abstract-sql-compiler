@@ -1,9 +1,9 @@
-import * as fs from 'node:fs';
+import fs from 'node:fs';
 const typeVocab = fs.readFileSync(
-	require.resolve('@balena/sbvr-types/Type.sbvr'),
+	new URL(import.meta.resolve('@balena/sbvr-types/Type.sbvr')),
 	'utf8',
 );
-import { getTestHelpers } from './test';
+import { getTestHelpers } from './test.js';
 const test = getTestHelpers(typeVocab);
 
 const modifiedAtTrigger = (tableName: string) => `\
