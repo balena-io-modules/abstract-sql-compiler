@@ -1,4 +1,16 @@
 - commits:
+    - subject: "Tests: update dev dependencies"
+      hash: d3b7d59ef4413015b28b78a5943753304bfdfb01
+      body: ""
+      footer:
+        Change-type: patch
+        change-type: patch
+      author: Pagan Gazzard
+      nested: []
+  version: 11.0.2
+  title: ""
+  date: 2025-08-08T14:17:18.123Z
+- commits:
     - subject: Update tsconfig module to `Node18`
       hash: 7b551369ed6974b4b537c80085bfad74b8a692a0
       body: ""
