@@ -56,13 +56,26 @@ export const optimizeSchema = (
 		}
 
 		const computedFields: Array<
-			NonNullable<Exclude<AbstractSqlField['computed'], true>>
+			NonNullable<Extract<AbstractSqlField['computed'], any[]>>
 		> = [];
 		for (const field of table.fields) {
 			const { fieldName, computed } = field;
 			if (computed != null && computed !== true) {
-				field.computed = true;
-				computedFields.push(['Alias', computed, fieldName]);
+				if (Array.isArray(computed)) {
+					field.computed = true;
+					computedFields.push(['Alias', computed, fieldName]);
+				} else {
+					computed.inDefinition = true;
+					computedFields.push([
+						'Alias',
+						[
+							'FnCall',
+							`computed_${table.name}_${fieldName}`,
+							['ReferencedField', table.name, '*'],
+						],
+						fieldName,
+					]);
+				}
 			}
 		}
 
