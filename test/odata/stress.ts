@@ -4,7 +4,6 @@ import { pilotFields } from './fields.js';
 const pilotFieldsStr = pilotFields.join(', ');
 
 const filterIDs = _.range(1, 5000);
-const filterBindsInString = _.map(filterIDs, () => '?').join(', ');
 const filterBindsOrString = _.map(
 	filterIDs,
 	() => '"pilot"."id" IS NOT NULL AND "pilot"."id" = ?',
@@ -20,7 +19,7 @@ let filterString = `id in (${filterIDs.join(', ')})`;
 test(
 	'/pilot?$filter=' + filterString,
 	'GET',
-	filterBinds,
+	[['Bind', 0]],
 	(result, sqlEquals) => {
 		it('should select from pilot with a long IN clause', () => {
 			sqlEquals(
@@ -28,9 +27,7 @@ test(
 				`\
 SELECT ${pilotFieldsStr}
 FROM "pilot"
-WHERE "pilot"."id" IN (` +
-					filterBindsInString +
-					')',
+WHERE "pilot"."id" = ANY($1)`,
 			);
 		});
 	},
@@ -40,7 +37,7 @@ filterString = `not(id in (${filterIDs.join(', ')}))`;
 test(
 	'/pilot?$filter=' + filterString,
 	'GET',
-	filterBinds,
+	[['Bind', 0]],
 	(result, sqlEquals) => {
 		it('should select from pilot with a long NOT IN clause', () => {
 			sqlEquals(
@@ -48,9 +45,9 @@ test(
 				`\
 SELECT ${pilotFieldsStr}
 FROM "pilot"
-WHERE "pilot"."id" NOT IN (` +
-					filterBindsInString +
-					')',
+WHERE NOT (
+	"pilot"."id" = ANY($1)
+)`,
 			);
 		});
 	},
