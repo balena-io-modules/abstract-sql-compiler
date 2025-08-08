@@ -104,7 +104,12 @@ import type {
 	EqualsAnyNode,
 	NotInNode,
 } from './abstract-sql-compiler.js';
-import { isFieldTypeNode } from './abstract-sql-compiler.js';
+import {
+	isFieldNode,
+	isFieldTypeNode,
+	isReferencedFieldNode,
+	isTableNode,
+} from './abstract-sql-compiler.js';
 import * as AbstractSQLRules2SQL from './abstract-sql-rules-to-sql.js';
 
 const {
@@ -463,13 +468,22 @@ const MaybeAlias = <T extends AnyTypeNodes>(
 ): T | AliasNode<T> => {
 	const [type, ...rest] = args;
 	switch (type) {
-		case 'Alias':
+		case 'Alias': {
 			checkArgs('Alias', rest, 2);
-			return [
-				'Alias',
-				matchFn(getAbstractSqlQuery(rest, 0)),
-				rest[1] as AliasNode<T>[2],
-			];
+			const aliasedNode = getAbstractSqlQuery(rest, 0);
+			const alias = rest[1] as AliasNode<T>[2];
+
+			let currentName: undefined | string;
+			if (isTableNode(aliasedNode) || isFieldNode(aliasedNode)) {
+				currentName = aliasedNode[1];
+			} else if (isReferencedFieldNode(aliasedNode)) {
+				currentName = aliasedNode[2];
+			}
+			if (currentName != null && currentName === alias) {
+				return matchFn(aliasedNode);
+			}
+			return ['Alias', matchFn(aliasedNode), alias];
+		}
 		default:
 			return matchFn(args);
 	}
