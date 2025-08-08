@@ -350,7 +350,7 @@ test('/pilot(1)/$links/licence', 'GET', [['Bind', 0]], (result, sqlEquals) => {
 		sqlEquals(
 			result,
 			`\
-SELECT "pilot"."licence" AS "licence"
+SELECT "pilot"."licence"
 FROM "pilot"
 WHERE "pilot"."id" IS NOT NULL AND "pilot"."id" = ?`,
 		);
