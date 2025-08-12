@@ -778,6 +778,8 @@ const compileSchema = (
 	const createSchemaStatements: string[] = [];
 	const alterSchemaStatements: string[] = [];
 	let dropSchemaStatements: string[] = [];
+	const createComputedFunctions: string[] = [];
+	const dropComputedFunctions: string[] = [];
 
 	const fns: Record<string, true> = {};
 	if (abstractSqlModel.functions) {
@@ -825,6 +827,11 @@ $$;`);
 	Object.keys(abstractSqlModel.tables).forEach((resourceName) => {
 		const table = abstractSqlModel.tables[resourceName];
 		if (typeof table === 'string') {
+			// Skip primitive tables
+			return;
+		}
+		if (resourceName !== table.resourceName) {
+			// Skip aliased tables
 			return;
 		}
 		const { definition, viewDefinition } = table;
@@ -882,8 +889,6 @@ ${compileRule(definitionAbstractSql as AbstractSqlQuery, engine, true).replace(
 		const depends: string[] = [];
 		const createSqlElements: string[] = [];
 		const createIndexes: string[] = [];
-		const createComputedFunctions: string[] = [];
-		const dropComputedFunctions: string[] = [];
 
 		for (const field of table.fields) {
 			const { fieldName, references, dataType, computed } = field;
@@ -1063,15 +1068,10 @@ $$;`);
 CREATE TABLE ${ifNotExistsStr}"${table.name}" (
 	${createSqlElements.join('\n,\t')}
 );`,
-				...createComputedFunctions,
 				...createIndexes,
 				...createTriggers,
 			],
-			dropSQL: [
-				...dropTriggers,
-				`DROP TABLE "${table.name}";`,
-				...dropComputedFunctions,
-			],
+			dropSQL: [...dropTriggers, `DROP TABLE "${table.name}";`],
 			depends,
 		};
 	});
@@ -1121,6 +1121,10 @@ CREATE TABLE ${ifNotExistsStr}"${table.name}" (
 		throw new Error('Failed to resolve all schema dependencies');
 	}
 	createSchemaStatements.push(...alterSchemaStatements);
+	// We put the computed function definitions last as they reference tables as their type, and potentially can in their body too,
+	// so we want the table definitions to all exist first
+	createSchemaStatements.push(...createComputedFunctions);
+	dropSchemaStatements.push(...dropComputedFunctions);
 	dropSchemaStatements = dropSchemaStatements.reverse();
 
 	const ruleStatements: SqlRule[] = abstractSqlModel.rules.map(
