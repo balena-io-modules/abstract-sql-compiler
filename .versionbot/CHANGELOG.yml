@@ -1,4 +1,16 @@
 - commits:
+    - subject: Create computed functions after table definitions
+      hash: f5b3ec1e7f4a23c8958e16ecfc016abb4b83ec15
+      body: ""
+      footer:
+        Change-type: patch
+        change-type: patch
+      author: Pagan Gazzard
+      nested: []
+  version: 11.1.1
+  title: ""
+  date: 2025-08-12T15:07:21.133Z
+- commits:
     - subject: Add the ability to have computed fields generate/call functions
       hash: 2a0d1a357a7baa36eaaef71c5b15c206b44a1a0f
       body: ""
