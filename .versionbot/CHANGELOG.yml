@@ -1,4 +1,16 @@
 - commits:
+    - subject: Add the ability to have computed fields generate/call functions
+      hash: 2a0d1a357a7baa36eaaef71c5b15c206b44a1a0f
+      body: ""
+      footer:
+        Change-type: minor
+        change-type: minor
+      author: Pagan Gazzard
+      nested: []
+  version: 11.1.0
+  title: ""
+  date: 2025-08-12T00:17:28.281Z
+- commits:
     - subject: Optimize away unnecessary aliasing
       hash: bc19f720415adc56684978d56a70d1c5407c3ab7
       body: ""
