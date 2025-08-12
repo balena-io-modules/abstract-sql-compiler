@@ -247,6 +247,7 @@ export type CoalesceNode = [
 	...AnyTypeNodes[],
 ];
 export type AnyNode = ['Any', AnyTypeNodes, string];
+export type FnCallNode = ['FnCall', string, ...AnyTypeNodes[]];
 export type UnknownTypeNodes =
 	| SelectQueryNode
 	| UnionQueryNode
@@ -257,7 +258,8 @@ export type UnknownTypeNodes =
 	| CastNode
 	| CaseNode
 	| CoalesceNode
-	| AnyNode;
+	| AnyNode
+	| FnCallNode;
 
 export type ToJSONNode = ['ToJSON', AnyTypeNodes];
 export type AggregateJSONNode = [
@@ -447,7 +449,15 @@ export interface AbstractSqlField {
 		type?: string;
 	};
 	defaultValue?: string;
-	computed?: AnyTypeNodes | true;
+	computed?:
+		| AnyTypeNodes
+		| true
+		| {
+				parallel: 'UNSAFE' | 'RESTRICTED' | 'SAFE';
+				volatility: 'STABLE' | 'IMMUTABLE' | 'VOLATILE';
+				definition: AnyTypeNodes;
+				fnName?: string;
+		  };
 	checks?: BooleanTypeNodes[];
 }
 export interface Trigger {
@@ -824,7 +834,10 @@ $$;`);
 		if (definition != null || viewDefinition != null) {
 			if (
 				table.fields.some(
-					({ computed }) => computed != null && computed !== true,
+					({ computed }) =>
+						computed != null &&
+						computed !== true &&
+						(Array.isArray(computed) || computed.fnName == null),
 				)
 			) {
 				throw new Error(
@@ -869,10 +882,47 @@ ${compileRule(definitionAbstractSql as AbstractSqlQuery, engine, true).replace(
 		const depends: string[] = [];
 		const createSqlElements: string[] = [];
 		const createIndexes: string[] = [];
+		const createComputedFunctions: string[] = [];
+		const dropComputedFunctions: string[] = [];
 
 		for (const field of table.fields) {
 			const { fieldName, references, dataType, computed } = field;
-			if (!computed) {
+			if (computed != null) {
+				if (!Array.isArray(computed) && computed !== true) {
+					let sqlType =
+						sbvrTypes[dataType as keyof typeof sbvrTypes]?.types[engine];
+					if (sqlType == null) {
+						throw new Error(
+							`Unknown data type '${dataType}' for engine: ${engine}`,
+						);
+					}
+					if (typeof sqlType === 'function') {
+						sqlType = sqlType.castType;
+					}
+					const fnSignature = `"${computed.fnName}"("${table.name}" "${table.name}")`;
+					createComputedFunctions.push(`\
+CREATE FUNCTION ${fnSignature}
+RETURNS ${sqlType} AS $fn$
+	${compileRule(
+		[
+			'SelectQuery',
+			['Select', [computed.definition]],
+			[
+				'From',
+				[
+					'Alias',
+					['SelectQuery', ['Select', [['ReferencedField', table.name, '*']]]],
+					table.name,
+				],
+			],
+		] satisfies SelectQueryNode,
+		engine,
+		true,
+	)}
+$fn$ LANGUAGE SQL ${computed.volatility} PARALLEL ${computed.parallel};`);
+					dropComputedFunctions.push(`DROP FUNCTION IF EXISTS ${fnSignature};`);
+				}
+			} else {
 				createSqlElements.push(
 					'"' + fieldName + '" ' + dataTypeGen(engine, field),
 				);
@@ -1013,10 +1063,15 @@ $$;`);
 CREATE TABLE ${ifNotExistsStr}"${table.name}" (
 	${createSqlElements.join('\n,\t')}
 );`,
+				...createComputedFunctions,
 				...createIndexes,
 				...createTriggers,
 			],
-			dropSQL: [...dropTriggers, `DROP TABLE "${table.name}";`],
+			dropSQL: [
+				...dropTriggers,
+				`DROP TABLE "${table.name}";`,
+				...dropComputedFunctions,
+			],
 			depends,
 		};
 	});

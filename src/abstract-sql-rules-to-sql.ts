@@ -83,6 +83,7 @@ const UnknownValue: MetaMatchFn = (args, indent) => {
 		case 'ToJSON':
 		case 'Any':
 		case 'TextArray':
+		case 'FnCall':
 			return typeRules[type](rest, indent);
 		case 'SelectQuery':
 		case 'UnionQuery': {
@@ -1626,6 +1627,23 @@ const typeRules: Record<string, MatchFn> = {
 			],
 			indent,
 		);
+	},
+	FnCall: (args, indent) => {
+		checkMinArgs('FnCall', args, 2);
+
+		const fnName = args[0];
+
+		return `"${fnName}"(${args
+			.slice(1)
+			.map((arg) => {
+				if (!isAbstractSqlQuery(arg)) {
+					throw new SyntaxError(
+						`Expected AbstractSqlQuery array but got ${typeof arg}`,
+					);
+				}
+				return AnyValue(arg, indent);
+			})
+			.join(', ')})`;
 	},
 };
 
