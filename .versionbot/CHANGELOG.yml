@@ -1,4 +1,16 @@
 - commits:
+    - subject: Ignore duplicate function errors when creating computed functions
+      hash: e98a9ca6c287f320bf7d55006ec861339179a3fb
+      body: ""
+      footer:
+        Change-type: patch
+        change-type: patch
+      author: Pagan Gazzard
+      nested: []
+  version: 11.1.2
+  title: ""
+  date: 2025-08-13T11:45:56.590Z
+- commits:
     - subject: Create computed functions after table definitions
       hash: f5b3ec1e7f4a23c8958e16ecfc016abb4b83ec15
       body: ""
