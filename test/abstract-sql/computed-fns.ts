@@ -41,13 +41,19 @@ CREATE TABLE IF NOT EXISTS "test" (
 	"id" INTEGER NULL PRIMARY KEY
 );`,
 			`\
-CREATE FUNCTION "fn_test_computed"("test" "test")
-RETURNS BOOLEAN AS $fn$
-	SELECT TRUE
+DO $$
+BEGIN
+	CREATE FUNCTION "fn_test_computed"("test" "test")
+	RETURNS BOOLEAN AS $fn$
+SELECT TRUE
 FROM (
 	SELECT "test".*
 ) AS "test"
-$fn$ LANGUAGE SQL IMMUTABLE PARALLEL SAFE;`,
+	$fn$ LANGUAGE SQL IMMUTABLE PARALLEL SAFE;
+EXCEPTION WHEN duplicate_function THEN
+	NULL;
+END;
+$$;`,
 		]);
 	expect(sqlModel)
 		.have.property('tables')

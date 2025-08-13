@@ -906,25 +906,31 @@ ${compileRule(definitionAbstractSql as AbstractSqlQuery, engine, true).replace(
 					}
 					const fnSignature = `"${computed.fnName}"("${table.name}" "${table.name}")`;
 					createComputedFunctions.push(`\
-CREATE FUNCTION ${fnSignature}
-RETURNS ${sqlType} AS $fn$
-	${compileRule(
+DO $$
+BEGIN
+	CREATE FUNCTION ${fnSignature}
+	RETURNS ${sqlType} AS $fn$
+${compileRule(
+	[
+		'SelectQuery',
+		['Select', [computed.definition]],
 		[
-			'SelectQuery',
-			['Select', [computed.definition]],
+			'From',
 			[
-				'From',
-				[
-					'Alias',
-					['SelectQuery', ['Select', [['ReferencedField', table.name, '*']]]],
-					table.name,
-				],
+				'Alias',
+				['SelectQuery', ['Select', [['ReferencedField', table.name, '*']]]],
+				table.name,
 			],
-		] satisfies SelectQueryNode,
-		engine,
-		true,
-	)}
-$fn$ LANGUAGE SQL ${computed.volatility} PARALLEL ${computed.parallel};`);
+		],
+	] satisfies SelectQueryNode,
+	engine,
+	true,
+)}
+	$fn$ LANGUAGE SQL ${computed.volatility} PARALLEL ${computed.parallel};
+EXCEPTION WHEN duplicate_function THEN
+	NULL;
+END;
+$$;`);
 					dropComputedFunctions.push(`DROP FUNCTION IF EXISTS ${fnSignature};`);
 				}
 			} else {
