@@ -105,6 +105,10 @@ function runExpectation<ExpectFail extends boolean>(
 			result = AbstractSQLCompiler[engine].compileRule(input);
 		} catch (e: any) {
 			if (!expectFailure) {
+				it(`shouldn't have thrown an error`, () => {
+					// Ensure mocha recognizes this as a failed test in case it doesn't get caught via other means
+					throw e;
+				});
 				throw e;
 			}
 			(expectation as ExpectationFailFn)(e);

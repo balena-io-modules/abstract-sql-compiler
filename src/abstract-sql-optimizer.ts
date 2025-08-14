@@ -455,10 +455,8 @@ const FromMatch: MetaMatchFn<FromTypeNode[keyof FromTypeNode]> = (args) => {
 	switch (type) {
 		case 'SelectQuery':
 		case 'UnionQuery':
-			return typeRules[type](rest);
 		case 'Table':
-			checkArgs('Table', rest, 1);
-			return ['Table', rest[0] as TableNode[1]];
+			return typeRules[type](rest);
 		default:
 			throw new SyntaxError(`From does not support ${type}`);
 	}
@@ -715,6 +713,7 @@ const typeRules = {
 	},
 	Average: matchArgs('Average', NumericValue),
 	Sum: matchArgs('Sum', NumericValue),
+	Table: matchArgs<TableNode>('Table', identity),
 	Field: matchArgs<FieldNode>('Field', identity),
 	ReferencedField: matchArgs<ReferencedFieldNode>(
 		'ReferencedField',

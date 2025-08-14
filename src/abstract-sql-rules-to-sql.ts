@@ -663,12 +663,7 @@ const FromMatch: MetaMatchFn = (args, indent) => {
 			return '(' + nestedindent + query + indent + ')';
 		}
 		case 'Table': {
-			checkArgs('Table', rest, 1);
-			const [table] = rest;
-			if (typeof table !== 'string') {
-				throw new SyntaxError('`Table` table must be a string');
-			}
-			return escapeField(table);
+			return typeRules[type](rest, indent);
 		}
 		default:
 			throw new SyntaxError(`From does not support ${type}`);
@@ -915,6 +910,14 @@ const typeRules: Record<string, MatchFn> = {
 		checkArgs('Sum', args, 1);
 		const num = NumericValue(getAbstractSqlQuery(args, 0), indent);
 		return `SUM(${num})`;
+	},
+	Table: (args) => {
+		checkArgs('Table', args, 1);
+		const [table] = args;
+		if (typeof table !== 'string') {
+			throw new SyntaxError('`Table` table must be a string');
+		}
+		return escapeField(table);
 	},
 	Field: (args) => {
 		checkArgs('Field', args, 1);
