@@ -88,6 +88,7 @@ const UnknownValue: MetaMatchFn = (args, indent) => {
 		case 'Any':
 		case 'TextArray':
 		case 'FnCall':
+		case 'JSONPopulateRecord':
 			return typeRules[type](rest, indent);
 		case 'SelectQuery':
 		case 'UnionQuery': {
@@ -666,7 +667,8 @@ const FromMatch: MetaMatchFn = (args, indent) => {
 			const query = typeRules[type](rest, nestedindent);
 			return '(' + nestedindent + query + indent + ')';
 		}
-		case 'Table': {
+		case 'Table':
+		case 'JSONPopulateRecord': {
 			return typeRules[type](rest, indent);
 		}
 		default:
@@ -1272,6 +1274,15 @@ const typeRules: Record<string, MatchFn> = {
 		}
 		const value = AnyValue(getAbstractSqlQuery(args, 0), indent);
 		return `ROW_TO_JSON(${value})`;
+	},
+	JSONPopulateRecord: (args, indent) => {
+		checkMinArgs('JSONPopulateRecord', args, 1);
+		if (engine !== Engines.postgres) {
+			throw new SyntaxError('JSONPopulateRecord not supported on: ' + engine);
+		}
+		const recordType = UnknownValue(getAbstractSqlQuery(args, 0), indent);
+		const value = AnyValue(getAbstractSqlQuery(args, 1), indent);
+		return `JSON_POPULATE_RECORD(${recordType}, ${value})`;
 	},
 	Any: (args, indent) => {
 		checkArgs('Any', args, 2);

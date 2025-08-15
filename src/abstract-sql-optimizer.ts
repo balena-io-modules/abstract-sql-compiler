@@ -105,6 +105,7 @@ import type {
 	NotInNode,
 	FnCallNode,
 	RowToJSONNode,
+	JSONPopulateRecordNode,
 } from './abstract-sql-compiler.js';
 import {
 	isFieldNode,
@@ -229,7 +230,7 @@ const UnknownValue: MetaMatchFn<UnknownTypeNodes> = (args) => {
 		case 'Coalesce':
 		case 'Any':
 		case 'FnCall':
-			return typeRules[type](rest);
+		case 'JSONPopulateRecord':
 		case 'SelectQuery':
 		case 'UnionQuery':
 			return typeRules[type](rest);
@@ -457,6 +458,7 @@ const FromMatch: MetaMatchFn<FromTypeNode[keyof FromTypeNode]> = (args) => {
 		case 'SelectQuery':
 		case 'UnionQuery':
 		case 'Table':
+		case 'JSONPopulateRecord':
 			return typeRules[type](rest);
 		default:
 			throw new SyntaxError(`From does not support ${type}`);
@@ -921,6 +923,11 @@ const typeRules = {
 	},
 	ToJSON: matchArgs<ToJSONNode>('ToJSON', AnyValue),
 	RowToJSON: matchArgs<RowToJSONNode>('RowToJSON', AnyValue),
+	JSONPopulateRecord: matchArgs<JSONPopulateRecordNode>(
+		'JSONPopulateRecord',
+		identity,
+		AnyValue,
+	),
 	Any: matchArgs<AnyNode>('Any', AnyValue, identity),
 	Coalesce: (args): CoalesceNode => {
 		checkMinArgs('Coalesce', args, 2);

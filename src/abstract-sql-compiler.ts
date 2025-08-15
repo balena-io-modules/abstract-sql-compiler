@@ -250,6 +250,7 @@ export type AnyNode = ['Any', AnyTypeNodes, string];
 export type FnCallNode = ['FnCall', string, ...AnyTypeNodes[]];
 export type UnknownTypeNodes =
 	| SelectQueryNode
+	| JSONPopulateRecordNode
 	| UnionQueryNode
 	| NullNode
 	| FieldNode
@@ -261,6 +262,11 @@ export type UnknownTypeNodes =
 	| AnyNode
 	| FnCallNode;
 
+export type JSONPopulateRecordNode = [
+	'JSONPopulateRecord',
+	CastNode,
+	JSONTypeNodes,
+];
 export type ToJSONNode = ['ToJSON', AnyTypeNodes];
 /**
  * The referenced field node should be like `table.*`
@@ -376,6 +382,7 @@ export interface FromTypeNode {
 	UnionQueryNode: UnionQueryNode;
 	TableNode: TableNode;
 	ResourceNode: ResourceNode;
+	JSONPopulateRecordNode: JSONPopulateRecordNode;
 }
 /**
  * This is not currently understood by the abstract-sql-compiler but is a placeholder for future support
