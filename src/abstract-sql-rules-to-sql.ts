@@ -19,7 +19,11 @@ import type {
 	StrictTextArrayTypeNodes,
 	StrictJSONTypeNodes,
 } from './abstract-sql-compiler.js';
-import { Engines, isFieldTypeNode } from './abstract-sql-compiler.js';
+import {
+	Engines,
+	isFieldTypeNode,
+	isTableNode,
+} from './abstract-sql-compiler.js';
 
 export type Binding =
 	| [string, any]
@@ -941,24 +945,30 @@ const typeRules: Record<string, MatchFn> = {
 	Cast: (args, indent) => {
 		checkArgs('Cast', args, 2);
 		const value = AnyValue(getAbstractSqlQuery(args, 0), indent);
-		const typeName = args[1] as keyof typeof sbvrTypes;
-		if (!sbvrTypes[typeName]?.types[engine]) {
-			throw new SyntaxError(`Invalid cast type: ${typeName}`);
-		}
+		const castType = args[1];
+
 		let type: string;
-		const dbType = sbvrTypes[typeName].types[engine];
-		if (typeof dbType === 'function') {
-			type = dbType.castType;
-		} else if (dbType.toUpperCase() === 'SERIAL') {
-			// HACK: SERIAL type in postgres is really an INTEGER with automatic sequence,
-			// so it's not actually possible to cast to SERIAL, instead you have to cast to INTEGER.
-			type = 'INTEGER';
-		} else if (dbType.toUpperCase() === 'BIGSERIAL') {
-			// HACK: BIGSERIAL type in postgres is really a BIGINT with automatic sequence,
-			// so it's not actually possible to cast to BIGSERIAL, instead you have to cast to BIGINT.
-			type = 'BIGINT';
+		if (isTableNode(castType)) {
+			type = typeRules.Table(castType.slice(1), indent);
 		} else {
-			type = dbType;
+			const dbType =
+				sbvrTypes[castType as keyof typeof sbvrTypes]?.types[engine];
+			if (!dbType) {
+				throw new SyntaxError(`Invalid cast type: ${castType}`);
+			}
+			if (typeof dbType === 'function') {
+				type = dbType.castType;
+			} else if (dbType.toUpperCase() === 'SERIAL') {
+				// HACK: SERIAL type in postgres is really an INTEGER with automatic sequence,
+				// so it's not actually possible to cast to SERIAL, instead you have to cast to INTEGER.
+				type = 'INTEGER';
+			} else if (dbType.toUpperCase() === 'BIGSERIAL') {
+				// HACK: BIGSERIAL type in postgres is really a BIGINT with automatic sequence,
+				// so it's not actually possible to cast to BIGSERIAL, instead you have to cast to BIGINT.
+				type = 'BIGINT';
+			} else {
+				type = dbType;
+			}
 		}
 		return `CAST(${value} AS ${type})`;
 	},

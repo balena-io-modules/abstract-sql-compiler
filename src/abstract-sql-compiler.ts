@@ -239,7 +239,7 @@ export type CaseNode =
 	| ['Case', ...WhenNode[], ElseNode];
 
 export type BindNode = ['Bind', number | string] | ['Bind', [string, string]];
-export type CastNode = ['Cast', AnyTypeNodes, string];
+export type CastNode = ['Cast', AnyTypeNodes, type: string | TableNode];
 export type CoalesceNode = [
 	'Coalesce',
 	AnyTypeNodes,
