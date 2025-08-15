@@ -239,7 +239,7 @@ export type CaseNode =
 	| ['Case', ...WhenNode[], ElseNode];
 
 export type BindNode = ['Bind', number | string] | ['Bind', [string, string]];
-export type CastNode = ['Cast', AnyTypeNodes, string];
+export type CastNode = ['Cast', AnyTypeNodes, type: string | TableNode];
 export type CoalesceNode = [
 	'Coalesce',
 	AnyTypeNodes,
@@ -250,6 +250,7 @@ export type AnyNode = ['Any', AnyTypeNodes, string];
 export type FnCallNode = ['FnCall', string, ...AnyTypeNodes[]];
 export type UnknownTypeNodes =
 	| SelectQueryNode
+	| JSONPopulateRecordNode
 	| UnionQueryNode
 	| NullNode
 	| FieldNode
@@ -261,12 +262,30 @@ export type UnknownTypeNodes =
 	| AnyNode
 	| FnCallNode;
 
+/**
+ * This converts a row that looks like a specific table row based upon column names to the actual row type
+ * of that table using the column names and avoiding issues due to the positional order of the columns.
+ * Note: this only takes effect on postgres
+ */
+export type ConvertRowNode = ['ConvertRow', SelectQueryNode, TableNode];
+export type JSONPopulateRecordNode = [
+	'JSONPopulateRecord',
+	CastNode,
+	JSONTypeNodes,
+];
 export type ToJSONNode = ['ToJSON', AnyTypeNodes];
+/**
+ * The referenced field node should be like `table.*`
+ */
+export type RowToJSONNode = ['RowToJSON', ReferencedFieldNode];
 export type AggregateJSONNode = [
 	'AggregateJSON',
 	FieldNode | ReferencedFieldNode,
 ];
-export type StrictJSONTypeNodes = AggregateJSONNode | ToJSONNode;
+export type StrictJSONTypeNodes =
+	| AggregateJSONNode
+	| ToJSONNode
+	| RowToJSONNode;
 export type JSONTypeNodes = StrictJSONTypeNodes | UnknownTypeNodes;
 
 export type EmbeddedTextNode = ['EmbeddedText', string];
@@ -369,6 +388,8 @@ export interface FromTypeNode {
 	UnionQueryNode: UnionQueryNode;
 	TableNode: TableNode;
 	ResourceNode: ResourceNode;
+	JSONPopulateRecordNode: JSONPopulateRecordNode;
+	ConvertRowNode: ConvertRowNode;
 }
 /**
  * This is not currently understood by the abstract-sql-compiler but is a placeholder for future support
@@ -755,7 +776,7 @@ export function compileRule(
 	engine: Engines,
 	noBinds = false,
 ): SqlResult | [SqlResult, SqlResult] | string | [string, string] {
-	abstractSQL = AbstractSQLOptimizer(abstractSQL, noBinds);
+	abstractSQL = AbstractSQLOptimizer(abstractSQL, noBinds, engine);
 	return AbstractSQLRules2SQL(abstractSQL, engine, noBinds);
 }
 
