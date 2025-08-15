@@ -108,6 +108,7 @@ import type {
 	JSONPopulateRecordNode,
 } from './abstract-sql-compiler.js';
 import {
+	Engines,
 	isFieldNode,
 	isFieldTypeNode,
 	isReferencedFieldNode,
@@ -132,6 +133,7 @@ type MatchFn<T extends AnyTypeNodes> = (args: AbstractSqlType[]) => T;
 const identity = <T>(x: T): T => x;
 
 let helped = false;
+let engine: Engines | undefined;
 let noBinds = false;
 const Helper = <F extends (...args: any[]) => any>(fn: F) => {
 	return (...args: Parameters<F>): ReturnType<F> => {
@@ -231,6 +233,7 @@ const UnknownValue: MetaMatchFn<UnknownTypeNodes> = (args) => {
 		case 'Any':
 		case 'FnCall':
 		case 'JSONPopulateRecord':
+		case 'ConvertRow':
 		case 'SelectQuery':
 		case 'UnionQuery':
 			return typeRules[type](rest);
@@ -459,6 +462,7 @@ const FromMatch: MetaMatchFn<FromTypeNode[keyof FromTypeNode]> = (args) => {
 		case 'UnionQuery':
 		case 'Table':
 		case 'JSONPopulateRecord':
+		case 'ConvertRow':
 			return typeRules[type](rest);
 		default:
 			throw new SyntaxError(`From does not support ${type}`);
@@ -1634,12 +1638,33 @@ const typeRules = {
 			],
 		),
 	),
+	ConvertRow: rewriteMatch(
+		'ConvertRow',
+		[MatchValue((t) => t === 'SelectQuery'), MatchValue((t) => t === 'Table')],
+		Helper<MatchFn<JSONPopulateRecordNode | SelectQueryNode>>(
+			([selectQuery, castTable]: [SelectQueryNode, TableNode]) =>
+				engine !== Engines.postgres
+					? // We only support `ConvertRow` when explicitly for postgres so for other dbs, or unknown, we keep the record as-is
+						selectQuery
+					: [
+							'JSONPopulateRecord',
+							['Cast', ['Null'], castTable],
+							[
+								'SelectQuery',
+								['Select', [['RowToJSON', ['ReferencedField', 'r', '*']]]],
+								['From', ['Alias', selectQuery, 'r']],
+							],
+						],
+		),
+	),
 } satisfies Record<string, MatchFn<AnyTypeNodes>>;
 
 export const AbstractSQLOptimizer = (
 	abstractSQL: AbstractSqlQuery,
 	$noBinds = false,
+	$engine?: Engines,
 ): AbstractSqlQuery => {
+	engine = $engine;
 	noBinds = $noBinds;
 	do {
 		helped = false;

@@ -262,6 +262,12 @@ export type UnknownTypeNodes =
 	| AnyNode
 	| FnCallNode;
 
+/**
+ * This converts a row that looks like a specific table row based upon column names to the actual row type
+ * of that table using the column names and avoiding issues due to the positional order of the columns.
+ * Note: this only takes effect on postgres
+ */
+export type ConvertRowNode = ['ConvertRow', SelectQueryNode, TableNode];
 export type JSONPopulateRecordNode = [
 	'JSONPopulateRecord',
 	CastNode,
@@ -383,6 +389,7 @@ export interface FromTypeNode {
 	TableNode: TableNode;
 	ResourceNode: ResourceNode;
 	JSONPopulateRecordNode: JSONPopulateRecordNode;
+	ConvertRowNode: ConvertRowNode;
 }
 /**
  * This is not currently understood by the abstract-sql-compiler but is a placeholder for future support
@@ -769,7 +776,7 @@ export function compileRule(
 	engine: Engines,
 	noBinds = false,
 ): SqlResult | [SqlResult, SqlResult] | string | [string, string] {
-	abstractSQL = AbstractSQLOptimizer(abstractSQL, noBinds);
+	abstractSQL = AbstractSQLOptimizer(abstractSQL, noBinds, engine);
 	return AbstractSQLRules2SQL(abstractSQL, engine, noBinds);
 }
 
