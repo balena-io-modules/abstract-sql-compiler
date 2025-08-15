@@ -1,4 +1,42 @@
 - commits:
+    - subject: Add support for a `ConvertRow` virtual node to convert a row that looks
+        like a table row to match the type
+      hash: e1988d6cbc6cb5a759b14e31854636bebc5a26a6
+      body: |
+        Note: this is only supported on postgres currently
+      footer:
+        Change-type: minor
+        change-type: minor
+      author: Pagan Gazzard
+      nested: []
+    - subject: Add support for a `JSONPopulateRecord` node to convert JSON to a row
+      hash: 54720af879b4a799b441984705b7ff22e0c6f640
+      body: ""
+      footer:
+        Change-type: minor
+        change-type: minor
+      author: Pagan Gazzard
+      nested: []
+    - subject: Add support for a `RowToJSON` node to convert a row to JSON
+      hash: 5bcb0aa3bc03f3e9abdf22c266b9a6dc3816ed84
+      body: ""
+      footer:
+        Change-type: minor
+        change-type: minor
+      author: Pagan Gazzard
+      nested: []
+    - subject: Add support for casting to a table/record type
+      hash: fe84e97d6a5709cbfbb874fedda7a08c1315cdc0
+      body: ""
+      footer:
+        Change-type: minor
+        change-type: minor
+      author: Pagan Gazzard
+      nested: []
+  version: 11.2.0
+  title: ""
+  date: 2025-08-15T14:55:12.172Z
+- commits:
     - subject: Remove redundant exports from abstract-sql-schema-optimizer
       hash: 467259a9fe3dd09a83d2c9a7b2e68dc5619eefb5
       body: ""
