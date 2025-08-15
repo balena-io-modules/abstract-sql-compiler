@@ -262,11 +262,18 @@ export type UnknownTypeNodes =
 	| FnCallNode;
 
 export type ToJSONNode = ['ToJSON', AnyTypeNodes];
+/**
+ * The referenced field node should be like `table.*`
+ */
+export type RowToJSONNode = ['RowToJSON', ReferencedFieldNode];
 export type AggregateJSONNode = [
 	'AggregateJSON',
 	FieldNode | ReferencedFieldNode,
 ];
-export type StrictJSONTypeNodes = AggregateJSONNode | ToJSONNode;
+export type StrictJSONTypeNodes =
+	| AggregateJSONNode
+	| ToJSONNode
+	| RowToJSONNode;
 export type JSONTypeNodes = StrictJSONTypeNodes | UnknownTypeNodes;
 
 export type EmbeddedTextNode = ['EmbeddedText', string];

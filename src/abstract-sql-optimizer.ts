@@ -104,6 +104,7 @@ import type {
 	EqualsAnyNode,
 	NotInNode,
 	FnCallNode,
+	RowToJSONNode,
 } from './abstract-sql-compiler.js';
 import {
 	isFieldNode,
@@ -919,6 +920,7 @@ const typeRules = {
 		return ['TextArray', ...args.map(TextValue)];
 	},
 	ToJSON: matchArgs<ToJSONNode>('ToJSON', AnyValue),
+	RowToJSON: matchArgs<RowToJSONNode>('RowToJSON', AnyValue),
 	Any: matchArgs<AnyNode>('Any', AnyValue, identity),
 	Coalesce: (args): CoalesceNode => {
 		checkMinArgs('Coalesce', args, 2);

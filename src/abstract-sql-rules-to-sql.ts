@@ -207,7 +207,7 @@ export const isArrayValue = (
 };
 
 export const isJSONValue = (type: unknown): type is StrictJSONTypeNodes[0] => {
-	return type === 'AggregateJSON' || type === 'ToJSON';
+	return type === 'AggregateJSON' || type === 'ToJSON' || type === 'RowToJSON';
 };
 const JSONValue = MatchValue(isJSONValue);
 
@@ -1264,6 +1264,14 @@ const typeRules: Record<string, MatchFn> = {
 		}
 		const value = AnyValue(getAbstractSqlQuery(args, 0), indent);
 		return `TO_JSON(${value})`;
+	},
+	RowToJSON: (args, indent) => {
+		checkMinArgs('RowToJSON', args, 1);
+		if (engine !== Engines.postgres) {
+			throw new SyntaxError('RowToJSON not supported on: ' + engine);
+		}
+		const value = AnyValue(getAbstractSqlQuery(args, 0), indent);
+		return `ROW_TO_JSON(${value})`;
 	},
 	Any: (args, indent) => {
 		checkArgs('Any', args, 2);
