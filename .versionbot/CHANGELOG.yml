@@ -1,4 +1,16 @@
 - commits:
+    - subject: Remove redundant exports from abstract-sql-schema-optimizer
+      hash: 467259a9fe3dd09a83d2c9a7b2e68dc5619eefb5
+      body: ""
+      footer:
+        Change-type: patch
+        change-type: patch
+      author: Pagan Gazzard
+      nested: []
+  version: 11.1.4
+  title: ""
+  date: 2025-08-15T12:44:01.234Z
+- commits:
     - subject: Handle optimizing/compiling table nodes in the standard manner
       hash: 5e656c36b73b6c4d9343bbed28cceb52c74be300
       body: |
