@@ -1,4 +1,16 @@
 - commits:
+    - subject: Update dev dependencies
+      hash: 2b3e90b922b1394d991bd4898bb2c63dc9637fb1
+      body: ""
+      footer:
+        Change-type: patch
+        change-type: patch
+      author: Pagan Gazzard
+      nested: []
+  version: 11.2.1
+  title: ""
+  date: 2025-08-19T12:03:05.758Z
+- commits:
     - subject: Add support for a `ConvertRow` virtual node to convert a row that looks
         like a table row to match the type
       hash: e1988d6cbc6cb5a759b14e31854636bebc5a26a6
