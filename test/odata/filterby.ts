@@ -636,9 +636,12 @@ run(function () {
 			`\
 INSERT INTO "pilot" ("name")
 SELECT "$insert"."name"
-FROM (
-	SELECT CAST(NULL AS TIMESTAMPTZ) AS "created at", CAST(NULL AS TIMESTAMPTZ) AS "modified at", CAST(NULL AS INTEGER) AS "id", CAST(NULL AS INTEGER) AS "person", CAST(NULL AS BOOLEAN) AS "is experienced", CAST(? AS VARCHAR(255)) AS "name", CAST(NULL AS INTEGER) AS "age", CAST(NULL AS INTEGER) AS "favourite colour", CAST(NULL AS INTEGER) AS "is on-team", CAST(NULL AS INTEGER) AS "licence", CAST(NULL AS TIMESTAMPTZ) AS "hire date", CAST(NULL AS INTEGER) AS "was trained by-pilot"
-) AS "$insert"
+FROM JSON_POPULATE_RECORD(CAST(NULL AS "pilot"), (
+	SELECT ROW_TO_JSON("r".*)
+	FROM (
+		SELECT CAST(NULL AS TIMESTAMPTZ) AS "created at", CAST(NULL AS TIMESTAMPTZ) AS "modified at", CAST(NULL AS INTEGER) AS "id", CAST(NULL AS INTEGER) AS "person", CAST(NULL AS BOOLEAN) AS "is experienced", CAST(? AS VARCHAR(255)) AS "name", CAST(NULL AS INTEGER) AS "age", CAST(NULL AS INTEGER) AS "favourite colour", CAST(NULL AS INTEGER) AS "is on-team", CAST(NULL AS INTEGER) AS "licence", CAST(NULL AS TIMESTAMPTZ) AS "hire date", CAST(NULL AS INTEGER) AS "was trained by-pilot"
+	) AS "r"
+)) AS "$insert"
 WHERE EXISTS (
 	SELECT 1
 	FROM (
@@ -777,9 +780,12 @@ run(function () {
 					`\
 INSERT INTO "pilot" ("name")
 SELECT "$insert"."name"
-FROM (
-	SELECT CAST(NULL AS TIMESTAMPTZ) AS "created at", CAST(NULL AS TIMESTAMPTZ) AS "modified at", CAST(NULL AS INTEGER) AS "id", CAST(NULL AS INTEGER) AS "person", CAST(NULL AS BOOLEAN) AS "is experienced", CAST(? AS VARCHAR(255)) AS "name", CAST(NULL AS INTEGER) AS "age", CAST(NULL AS INTEGER) AS "favourite colour", CAST(NULL AS INTEGER) AS "is on-team", CAST(NULL AS INTEGER) AS "licence", CAST(NULL AS TIMESTAMPTZ) AS "hire date", CAST(NULL AS INTEGER) AS "was trained by-pilot"
-) AS "$insert"
+FROM JSON_POPULATE_RECORD(CAST(NULL AS "pilot"), (
+	SELECT ROW_TO_JSON("r".*)
+	FROM (
+		SELECT CAST(NULL AS TIMESTAMPTZ) AS "created at", CAST(NULL AS TIMESTAMPTZ) AS "modified at", CAST(NULL AS INTEGER) AS "id", CAST(NULL AS INTEGER) AS "person", CAST(NULL AS BOOLEAN) AS "is experienced", CAST(? AS VARCHAR(255)) AS "name", CAST(NULL AS INTEGER) AS "age", CAST(NULL AS INTEGER) AS "favourite colour", CAST(NULL AS INTEGER) AS "is on-team", CAST(NULL AS INTEGER) AS "licence", CAST(NULL AS TIMESTAMPTZ) AS "hire date", CAST(NULL AS INTEGER) AS "was trained by-pilot"
+	) AS "r"
+)) AS "$insert"
 WHERE EXISTS (
 	SELECT 1
 	FROM (
@@ -852,9 +858,12 @@ AND "pilot"."id" IN ((
 						`\
 INSERT INTO "pilot" ("id", "name")
 SELECT "$insert"."id", "$insert"."name"
-FROM (
-	SELECT CAST(NULL AS TIMESTAMPTZ) AS "created at", CAST(NULL AS TIMESTAMPTZ) AS "modified at", CAST(? AS INTEGER) AS "id", CAST(NULL AS INTEGER) AS "person", CAST(NULL AS BOOLEAN) AS "is experienced", CAST(? AS VARCHAR(255)) AS "name", CAST(NULL AS INTEGER) AS "age", CAST(NULL AS INTEGER) AS "favourite colour", CAST(NULL AS INTEGER) AS "is on-team", CAST(NULL AS INTEGER) AS "licence", CAST(NULL AS TIMESTAMPTZ) AS "hire date", CAST(NULL AS INTEGER) AS "was trained by-pilot"
-) AS "$insert"
+FROM JSON_POPULATE_RECORD(CAST(NULL AS "pilot"), (
+	SELECT ROW_TO_JSON("r".*)
+	FROM (
+		SELECT CAST(NULL AS TIMESTAMPTZ) AS "created at", CAST(NULL AS TIMESTAMPTZ) AS "modified at", CAST(? AS INTEGER) AS "id", CAST(NULL AS INTEGER) AS "person", CAST(NULL AS BOOLEAN) AS "is experienced", CAST(? AS VARCHAR(255)) AS "name", CAST(NULL AS INTEGER) AS "age", CAST(NULL AS INTEGER) AS "favourite colour", CAST(NULL AS INTEGER) AS "is on-team", CAST(NULL AS INTEGER) AS "licence", CAST(NULL AS TIMESTAMPTZ) AS "hire date", CAST(NULL AS INTEGER) AS "was trained by-pilot"
+	) AS "r"
+)) AS "$insert"
 WHERE EXISTS (
 	SELECT 1
 	FROM (
@@ -1419,9 +1428,12 @@ run(function () {
 					`\
 INSERT INTO "team" ("favourite colour")
 SELECT "$insert"."favourite colour"
-FROM (
-	SELECT CAST(NULL AS TIMESTAMPTZ) AS "created at", CAST(NULL AS TIMESTAMPTZ) AS "modified at", CAST(? AS INTEGER) AS "favourite colour"
-) AS "$insert"
+FROM JSON_POPULATE_RECORD(CAST(NULL AS "team"), (
+	SELECT ROW_TO_JSON("r".*)
+	FROM (
+		SELECT CAST(NULL AS TIMESTAMPTZ) AS "created at", CAST(NULL AS TIMESTAMPTZ) AS "modified at", CAST(? AS INTEGER) AS "favourite colour"
+	) AS "r"
+)) AS "$insert"
 WHERE EXISTS (
 	SELECT 1
 	FROM (

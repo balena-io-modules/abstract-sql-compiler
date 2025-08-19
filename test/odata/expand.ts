@@ -31,7 +31,7 @@ const websqlAgg = mysqlAgg;
 				result,
 				`\
 SELECT (
-	SELECT ${aggFunc('"pilot.licence".*')} AS "licence"
+	SELECT ${aggFunc('"pilot.licence".*')}
 	FROM (
 		SELECT ${fields}
 		FROM "licence" AS "pilot.licence"
@@ -81,10 +81,10 @@ FROM "pilot"`,
 				result,
 				`\
 SELECT (
-	SELECT ${aggFunc('"pilot.pilot-can fly-plane".*')} AS "can_fly__plane"
+	SELECT ${aggFunc('"pilot.pilot-can fly-plane".*')}
 	FROM (
 		SELECT (
-			SELECT ${aggFunc('"pilot.pilot-can fly-plane.plane".*')} AS "plane"
+			SELECT ${aggFunc('"pilot.pilot-can fly-plane.plane".*')}
 			FROM (
 				SELECT ${aliasPlaneFields.join(', ')}
 				FROM "plane" AS "pilot.pilot-can fly-plane.plane"
@@ -125,10 +125,10 @@ FROM "pilot"`,
 				result,
 				`\
 SELECT (
-	SELECT ${aggFunc('"pilot.pilot-can fly-plane".*')} AS "can_fly__plane"
+	SELECT ${aggFunc('"pilot.pilot-can fly-plane".*')}
 	FROM (
 		SELECT (
-			SELECT ${aggFunc('"pilot.pilot-can fly-plane.plane".*')} AS "plane"
+			SELECT ${aggFunc('"pilot.pilot-can fly-plane.plane".*')}
 			FROM (
 				SELECT ${aliasPlaneFields.join(', ')}
 				FROM "plane" AS "pilot.pilot-can fly-plane.plane"
@@ -139,7 +139,7 @@ SELECT (
 		WHERE "pilot"."id" = "pilot.pilot-can fly-plane"."pilot"
 	) AS "pilot.pilot-can fly-plane"
 ) AS "can_fly__plane", (
-	SELECT ${aggFunc('"pilot.licence".*')} AS "licence"
+	SELECT ${aggFunc('"pilot.licence".*')}
 	FROM (
 		SELECT ${aliasLicenceFields.join(', ')}
 		FROM "licence" AS "pilot.licence"
@@ -168,7 +168,7 @@ FROM "pilot"`,
 				result,
 				`\
 SELECT (
-	SELECT ${aggFunc('"pilot.licence".*')} AS "licence"
+	SELECT ${aggFunc('"pilot.licence".*')}
 	FROM (
 		SELECT ${aliasLicenceFields.join(', ')}
 		FROM "licence" AS "pilot.licence"
@@ -196,10 +196,10 @@ FROM "pilot"`,
 				result,
 				`\
 SELECT (
-	SELECT ${aggFunc('"pilot.pilot-can fly-plane".*')} AS "can_fly__plane"
+	SELECT ${aggFunc('"pilot.pilot-can fly-plane".*')}
 	FROM (
 		SELECT (
-			SELECT ${aggFunc('"pilot.pilot-can fly-plane.plane".*')} AS "plane"
+			SELECT ${aggFunc('"pilot.pilot-can fly-plane.plane".*')}
 			FROM (
 				SELECT ${aliasPlaneFields.join(', ')}
 				FROM "plane" AS "pilot.pilot-can fly-plane.plane"
@@ -236,10 +236,10 @@ FROM "pilot"`,
 				result,
 				`\
 SELECT (
-	SELECT ${aggFunc('"pilot.pilot-can fly-plane".*')} AS "can_fly__plane"
+	SELECT ${aggFunc('"pilot.pilot-can fly-plane".*')}
 	FROM (
 		SELECT (
-			SELECT ${aggFunc('"pilot.pilot-can fly-plane.plane".*')} AS "plane"
+			SELECT ${aggFunc('"pilot.pilot-can fly-plane.plane".*')}
 			FROM (
 				SELECT ${aliasPlaneFields.join(', ')}
 				FROM "plane" AS "pilot.pilot-can fly-plane.plane"
@@ -250,7 +250,7 @@ SELECT (
 		WHERE "pilot"."id" = "pilot.pilot-can fly-plane"."pilot"
 	) AS "pilot.pilot-can fly-plane"
 ) AS "can_fly__plane", (
-	SELECT ${aggFunc('"pilot.licence".*')} AS "licence"
+	SELECT ${aggFunc('"pilot.licence".*')}
 	FROM (
 		SELECT ${aliasLicenceFields.join(', ')}
 		FROM "licence" AS "pilot.licence"
@@ -279,7 +279,7 @@ FROM "pilot"`,
 				result,
 				`\
 SELECT (
-	SELECT ${aggFunc('"pilot.pilot-can fly-plane".*')} AS "can_fly__plane"
+	SELECT ${aggFunc('"pilot.pilot-can fly-plane".*')}
 	FROM (
 		SELECT "pilot.pilot-can fly-plane"."id"
 		FROM "pilot-can fly-plane" AS "pilot.pilot-can fly-plane"
@@ -307,7 +307,7 @@ FROM "pilot"`,
 				result,
 				`\
 SELECT (
-	SELECT ${aggFunc('"pilot.licence".*')} AS "licence"
+	SELECT ${aggFunc('"pilot.licence".*')}
 	FROM (
 		SELECT ${fields}
 		FROM "licence" AS "pilot.licence"
@@ -376,7 +376,7 @@ FROM "pilot"`,
 				result,
 				`\
 SELECT (
-	SELECT ${aggFunc('"pilot.licence".*')} AS "licence"
+	SELECT ${aggFunc('"pilot.licence".*')}
 	FROM (
 		SELECT ${aliasLicenceFields.join(', ')}
 		FROM "licence" AS "pilot.licence"
@@ -416,7 +416,7 @@ FROM "pilot"`,
 				result,
 				`\
 SELECT (
-	SELECT ${aggFunc('"pilot.licence".*')} AS "licence"
+	SELECT ${aggFunc('"pilot.licence".*')}
 	FROM (
 		SELECT ${aliasLicenceFields.join(', ')}
 		FROM "licence" AS "pilot.licence"
@@ -445,7 +445,7 @@ FROM "pilot"`,
 				result,
 				`\
 SELECT (
-	SELECT ${aggFunc('"pilot.licence".*')} AS "licence"
+	SELECT ${aggFunc('"pilot.licence".*')}
 	FROM (
 		SELECT COUNT(*) AS "$count"
 		FROM "licence" AS "pilot.licence"
@@ -473,7 +473,7 @@ FROM "pilot"`,
 				result,
 				`\
 SELECT (
-	SELECT ${aggFunc('"pilot.licence".*')} AS "licence"
+	SELECT ${aggFunc('"pilot.licence".*')}
 	FROM (
 		SELECT ${aliasLicenceFields.join(', ')}
 		FROM "licence" AS "pilot.licence"
@@ -512,7 +512,7 @@ FROM "pilot"`,
 				result,
 				`\
 SELECT (
-	SELECT ${aggFunc('"pilot.licence".*')} AS "licence"
+	SELECT ${aggFunc('"pilot.licence".*')}
 	FROM (
 		SELECT COUNT(*) AS "$count"
 		FROM "licence" AS "pilot.licence"
@@ -540,7 +540,7 @@ FROM "pilot"`,
 				result,
 				`\
 SELECT (
-	SELECT ${aggFunc('"pilot.licence".*')} AS "licence"
+	SELECT ${aggFunc('"pilot.licence".*')}
 	FROM (
 		SELECT ${aliasLicenceFields.join(', ')}
 		FROM "licence" AS "pilot.licence"
@@ -579,7 +579,7 @@ FROM "pilot"`,
 				result,
 				`\
 SELECT (
-	SELECT ${aggFunc('"pilot.licence".*')} AS "licence"
+	SELECT ${aggFunc('"pilot.licence".*')}
 	FROM (
 		SELECT COUNT(*) AS "$count"
 		FROM "licence" AS "pilot.licence"
@@ -603,7 +603,7 @@ FROM "pilot"`,
 				result,
 				`\
 SELECT (
-	SELECT ${aggFunc('"pilot.pilot-can fly-plane".*')} AS "can_fly__plane"
+	SELECT ${aggFunc('"pilot.pilot-can fly-plane".*')}
 	FROM (
 		SELECT "pilot.pilot-can fly-plane"."can fly-plane" AS "plane"
 		FROM "pilot-can fly-plane" AS "pilot.pilot-can fly-plane"
@@ -627,7 +627,7 @@ FROM "pilot"`,
 				result,
 				`\
 SELECT (
-	SELECT ${aggFunc('"pilot.pilot-can fly-plane".*')} AS "can_fly__plane"
+	SELECT ${aggFunc('"pilot.pilot-can fly-plane".*')}
 	FROM (
 		SELECT COUNT(*) AS "$count"
 		FROM "pilot-can fly-plane" AS "pilot.pilot-can fly-plane"
@@ -656,7 +656,7 @@ FROM "pilot"`,
 				result,
 				`\
 SELECT (
-	SELECT ${aggFunc('"pilot.trained-pilot".*')} AS "trained__pilot"
+	SELECT ${aggFunc('"pilot.trained-pilot".*')}
 	FROM (
 		SELECT ${aliasedFields.join(', ')}
 		FROM "pilot" AS "pilot.trained-pilot"
