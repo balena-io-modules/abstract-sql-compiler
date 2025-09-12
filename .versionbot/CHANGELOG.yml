@@ -1,4 +1,24 @@
 - commits:
+    - subject: Add a test for getting the Length of JSON fields
+      hash: 2e9547ed7542ef22a3f9d42e34ec10b6116f339d
+      body: ""
+      footer:
+        Change-type: patch
+        change-type: patch
+      author: Thodoris Greasidis
+      nested: []
+    - subject: Fix Cast to Text in MySQL
+      hash: 1c6c61b6e1b460647d9e67da56ab335e6583eb4c
+      body: ""
+      footer:
+        Change-type: patch
+        change-type: patch
+      author: Thodoris Greasidis
+      nested: []
+  version: 11.2.3
+  title: ""
+  date: 2025-09-12T12:47:39.916Z
+- commits:
     - subject: Update dependency chai to v6
       hash: 104f044041ae45dfb04dd513dbe570fe935f6e15
       body: |
