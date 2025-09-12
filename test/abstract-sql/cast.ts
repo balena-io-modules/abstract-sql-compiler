@@ -22,4 +22,28 @@ describe('Cast', () => {
 			});
 		},
 	);
+
+	test(
+		[
+			'SelectQuery',
+			['Select', [['Cast', ['ReferencedField', 'foo', 'bar'], 'Text']]],
+		],
+		(result, sqlEquals) => {
+			it('should produce a valid text cast statement', () => {
+				sqlEquals(result, 'SELECT CAST("foo"."bar" AS TEXT)');
+			});
+		},
+	);
+
+	test.mysql(
+		[
+			'SelectQuery',
+			['Select', [['Cast', ['ReferencedField', 'foo', 'bar'], 'Text']]],
+		],
+		(result, sqlEquals) => {
+			it('should produce a valid text cast statement', () => {
+				sqlEquals(result, 'SELECT CAST("foo"."bar" AS CHAR)');
+			});
+		},
+	);
 });

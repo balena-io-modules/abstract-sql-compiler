@@ -968,6 +968,9 @@ const typeRules: Record<string, MatchFn> = {
 				// HACK: BIGSERIAL type in postgres is really a BIGINT with automatic sequence,
 				// so it's not actually possible to cast to BIGSERIAL, instead you have to cast to BIGINT.
 				type = 'BIGINT';
+			} else if (engine === Engines.mysql && dbType === 'TEXT') {
+				// mySql doesn't support TEXT in its CAST
+				type = 'CHAR';
 			} else {
 				type = dbType;
 			}
