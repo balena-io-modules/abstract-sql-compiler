@@ -577,24 +577,28 @@ export const insertAffectedIdsBinds = (
 		],
 	];
 
-	// Assume (but check) that the query is of the form:
-	//
-	// SELECT (SELECT COUNT(*) ...) = 0
+	// Check if the query is of the form:
 	if (
-		abstractSql[0] !== 'Equals' ||
-		abstractSql[1][0] !== 'SelectQuery' ||
-		abstractSql[2][0] !== 'Number'
+		// SELECT (SELECT COUNT(*) ...) = 0
+		(abstractSql[0] === 'Equals' &&
+			abstractSql[1][0] === 'SelectQuery' &&
+			abstractSql[2][0] === 'Number') ||
+		// SELECT NOT EXISTS (SELECT ...)
+		(abstractSql[0] === 'NotExists' && abstractSql[1][0] === 'SelectQuery')
 	) {
-		throw new Error(
-			'Query is not of the form: SELECT (SELECT COUNT(*) ...) = 0',
-		);
+		const selectQueryNode = abstractSql[1] as SelectQueryNode;
+		const whereNode = selectQueryNode.slice(1).find(isWhereNode);
+		if (whereNode === undefined) {
+			selectQueryNode.push(['Where', narrowing]);
+		} else {
+			whereNode[1] = ['And', whereNode[1], narrowing];
+		}
+		return;
 	}
-
-	const selectQueryNode = abstractSql[1] as SelectQueryNode;
-	const whereNode = selectQueryNode.slice(1).find(isWhereNode);
-	if (whereNode === undefined) {
-		selectQueryNode.push(['Where', narrowing]);
-	} else {
-		whereNode[1] = ['And', whereNode[1], narrowing];
-	}
+	throw new Error(`\
+Only queries in the form of:
+	SELECT (SELECT COUNT(*) ...) = 0
+	SELECT NOT EXISTS (SELECT ...)
+are supported for affected IDs insertion.
+	`);
 };
