@@ -1,7 +1,6 @@
 import * as AbstractSQLCompiler from '../../out/abstract-sql-compiler.js';
 
 import { expect } from 'chai';
-import _ from 'lodash';
 
 type ExpectedBindings = Array<
 	AbstractSQLCompiler.Binding | AbstractSQLCompiler.Binding[]
@@ -42,7 +41,7 @@ const sqlEquals = {
 	mysql: equals,
 	postgres(actual, expected) {
 		let num = 1;
-		while (_.includes(expected, '?')) {
+		while (expected.includes('?')) {
 			expected = expected.replace('?', '$' + num);
 			num++;
 		}

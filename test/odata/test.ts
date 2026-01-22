@@ -75,7 +75,7 @@ const sqlEquals = {
 	mysql: equals,
 	postgres(actual, expected) {
 		let num = 1;
-		while (_.includes(expected, '?')) {
+		while (expected.includes('?')) {
 			expected = expected.replace('?', '$' + num);
 			num++;
 		}
@@ -184,10 +184,10 @@ function runExpectation<ExpectFail extends boolean>(
 				const { tree, extraBodyVars } = odata2AbstractSQL.match(
 					odataAST.tree,
 					method,
-					_.keys(body),
+					Object.keys(body),
 					0,
 				);
-				_.assign(body, extraBodyVars);
+				Object.assign(body, extraBodyVars);
 				result = AbstractSQLCompiler[engine].compileRule(tree);
 			} catch (e: any) {
 				if (!expectFailure) {
