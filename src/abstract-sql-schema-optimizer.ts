@@ -86,14 +86,14 @@ export const optimizeSchema = (
 	abstractSqlModel.rules = abstractSqlModel.rules
 		.map((rule) => {
 			const [, ruleBodyNode, ruleSENode] = rule;
-			if (ruleBodyNode == null || ruleBodyNode[0] !== 'Body') {
+			if (ruleBodyNode?.[0] !== 'Body') {
 				throw new Error('Invalid rule');
 			}
 			let ruleBody = ruleBodyNode[1];
 			if (typeof ruleBody === 'string') {
 				throw new Error('Invalid rule');
 			}
-			if (ruleSENode == null || ruleSENode[0] !== 'StructuredEnglish') {
+			if (ruleSENode?.[0] !== 'StructuredEnglish') {
 				throw new Error('Invalid structured English');
 			}
 			const ruleSE = ruleSENode[1];

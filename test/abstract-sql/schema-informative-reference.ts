@@ -12,13 +12,13 @@ describe('generate informative reference schema', () => {
 								dataType: 'Date Time',
 								fieldName: 'created at',
 								required: true,
-								defaultValue: 'CURRENT_TIMESTAMP',
+								defaultValue: 'CURRENT_TIMESTAMPTZ',
 							},
 							{
 								dataType: 'Date Time',
 								fieldName: 'modified at',
 								required: true,
-								defaultValue: 'CURRENT_TIMESTAMP',
+								defaultValue: 'CURRENT_TIMESTAMPTZ',
 							},
 							{
 								dataType: 'Serial',
@@ -39,13 +39,13 @@ describe('generate informative reference schema', () => {
 								dataType: 'Date Time',
 								fieldName: 'created at',
 								required: true,
-								defaultValue: 'CURRENT_TIMESTAMP',
+								defaultValue: 'CURRENT_TIMESTAMPTZ',
 							},
 							{
 								dataType: 'Date Time',
 								fieldName: 'modified at',
 								required: true,
-								defaultValue: 'CURRENT_TIMESTAMP',
+								defaultValue: 'CURRENT_TIMESTAMPTZ',
 							},
 							{
 								dataType: 'Serial',
@@ -81,14 +81,14 @@ describe('generate informative reference schema', () => {
 			.that.deep.equals([
 				`\
 CREATE TABLE IF NOT EXISTS "term" (
-	"created at" TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP NOT NULL
-,	"modified at" TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP NOT NULL
+	"created at" TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMPTZ NOT NULL
+,	"modified at" TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMPTZ NOT NULL
 ,	"id" SERIAL NOT NULL PRIMARY KEY
 );`,
 				`\
 CREATE TABLE IF NOT EXISTS "term history" (
-	"created at" TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP NOT NULL
-,	"modified at" TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP NOT NULL
+	"created at" TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMPTZ NOT NULL
+,	"modified at" TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMPTZ NOT NULL
 ,	"id" SERIAL NOT NULL PRIMARY KEY
 ,	"references-term" INTEGER NOT NULL
 );`,
@@ -105,13 +105,13 @@ CREATE TABLE IF NOT EXISTS "term history" (
 								dataType: 'Date Time',
 								fieldName: 'created at',
 								required: true,
-								defaultValue: 'CURRENT_TIMESTAMP',
+								defaultValue: 'CURRENT_TIMESTAMPTZ',
 							},
 							{
 								dataType: 'Date Time',
 								fieldName: 'modified at',
 								required: true,
-								defaultValue: 'CURRENT_TIMESTAMP',
+								defaultValue: 'CURRENT_TIMESTAMPTZ',
 							},
 							{
 								dataType: 'Serial',
@@ -132,13 +132,13 @@ CREATE TABLE IF NOT EXISTS "term history" (
 								dataType: 'Date Time',
 								fieldName: 'created at',
 								required: true,
-								defaultValue: 'CURRENT_TIMESTAMP',
+								defaultValue: 'CURRENT_TIMESTAMPTZ',
 							},
 							{
 								dataType: 'Date Time',
 								fieldName: 'modified at',
 								required: true,
-								defaultValue: 'CURRENT_TIMESTAMP',
+								defaultValue: 'CURRENT_TIMESTAMPTZ',
 							},
 							{
 								dataType: 'Serial',
@@ -159,13 +159,13 @@ CREATE TABLE IF NOT EXISTS "term history" (
 								dataType: 'Date Time',
 								fieldName: 'created at',
 								required: true,
-								defaultValue: 'CURRENT_TIMESTAMP',
+								defaultValue: 'CURRENT_TIMESTAMPTZ',
 							},
 							{
 								dataType: 'Date Time',
 								fieldName: 'modified at',
 								required: true,
-								defaultValue: 'CURRENT_TIMESTAMP',
+								defaultValue: 'CURRENT_TIMESTAMPTZ',
 							},
 							{
 								dataType: 'Serial',
@@ -210,20 +210,20 @@ CREATE TABLE IF NOT EXISTS "term history" (
 			.that.deep.equals([
 				`\
 CREATE TABLE IF NOT EXISTS "term" (
-	"created at" TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP NOT NULL
-,	"modified at" TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP NOT NULL
+	"created at" TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMPTZ NOT NULL
+,	"modified at" TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMPTZ NOT NULL
 ,	"id" SERIAL NOT NULL PRIMARY KEY
 );`,
 				`\
 CREATE TABLE IF NOT EXISTS "termterm" (
-	"created at" TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP NOT NULL
-,	"modified at" TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP NOT NULL
+	"created at" TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMPTZ NOT NULL
+,	"modified at" TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMPTZ NOT NULL
 ,	"id" SERIAL NOT NULL PRIMARY KEY
 );`,
 				`\
 CREATE TABLE IF NOT EXISTS "term history" (
-	"created at" TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP NOT NULL
-,	"modified at" TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP NOT NULL
+	"created at" TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMPTZ NOT NULL
+,	"modified at" TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMPTZ NOT NULL
 ,	"id" SERIAL NOT NULL PRIMARY KEY
 ,	"references-term" INTEGER NOT NULL
 ,	"references-termterm" INTEGER NOT NULL
@@ -241,13 +241,13 @@ CREATE TABLE IF NOT EXISTS "term history" (
 								dataType: 'Date Time',
 								fieldName: 'created at',
 								required: true,
-								defaultValue: 'CURRENT_TIMESTAMP',
+								defaultValue: 'CURRENT_TIMESTAMPTZ',
 							},
 							{
 								dataType: 'Date Time',
 								fieldName: 'modified at',
 								required: true,
-								defaultValue: 'CURRENT_TIMESTAMP',
+								defaultValue: 'CURRENT_TIMESTAMPTZ',
 							},
 							{
 								dataType: 'Serial',
@@ -268,13 +268,13 @@ CREATE TABLE IF NOT EXISTS "term history" (
 								dataType: 'Date Time',
 								fieldName: 'created at',
 								required: true,
-								defaultValue: 'CURRENT_TIMESTAMP',
+								defaultValue: 'CURRENT_TIMESTAMPTZ',
 							},
 							{
 								dataType: 'Date Time',
 								fieldName: 'modified at',
 								required: true,
-								defaultValue: 'CURRENT_TIMESTAMP',
+								defaultValue: 'CURRENT_TIMESTAMPTZ',
 							},
 							{
 								dataType: 'Serial',
@@ -310,14 +310,14 @@ CREATE TABLE IF NOT EXISTS "term history" (
 			.that.deep.equals([
 				`\
 CREATE TABLE IF NOT EXISTS "term" (
-	"created at" TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP NOT NULL
-,	"modified at" TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP NOT NULL
+	"created at" TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMPTZ NOT NULL
+,	"modified at" TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMPTZ NOT NULL
 ,	"id" SERIAL NOT NULL PRIMARY KEY
 );`,
 				`\
 CREATE TABLE IF NOT EXISTS "term history" (
-	"created at" TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP NOT NULL
-,	"modified at" TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP NOT NULL
+	"created at" TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMPTZ NOT NULL
+,	"modified at" TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMPTZ NOT NULL
 ,	"id" SERIAL NOT NULL PRIMARY KEY
 ,	"references-term" INTEGER NOT NULL
 ,	FOREIGN KEY ("references-term") REFERENCES "term" ("id")
@@ -335,13 +335,13 @@ CREATE TABLE IF NOT EXISTS "term history" (
 								dataType: 'Date Time',
 								fieldName: 'created at',
 								required: true,
-								defaultValue: 'CURRENT_TIMESTAMP',
+								defaultValue: 'CURRENT_TIMESTAMPTZ',
 							},
 							{
 								dataType: 'Date Time',
 								fieldName: 'modified at',
 								required: true,
-								defaultValue: 'CURRENT_TIMESTAMP',
+								defaultValue: 'CURRENT_TIMESTAMPTZ',
 							},
 							{
 								dataType: 'Serial',
@@ -362,13 +362,13 @@ CREATE TABLE IF NOT EXISTS "term history" (
 								dataType: 'Date Time',
 								fieldName: 'created at',
 								required: true,
-								defaultValue: 'CURRENT_TIMESTAMP',
+								defaultValue: 'CURRENT_TIMESTAMPTZ',
 							},
 							{
 								dataType: 'Date Time',
 								fieldName: 'modified at',
 								required: true,
-								defaultValue: 'CURRENT_TIMESTAMP',
+								defaultValue: 'CURRENT_TIMESTAMPTZ',
 							},
 							{
 								dataType: 'Serial',
@@ -403,14 +403,14 @@ CREATE TABLE IF NOT EXISTS "term history" (
 			.that.deep.equals([
 				`\
 CREATE TABLE IF NOT EXISTS "term" (
-	"created at" TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP NOT NULL
-,	"modified at" TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP NOT NULL
+	"created at" TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMPTZ NOT NULL
+,	"modified at" TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMPTZ NOT NULL
 ,	"id" SERIAL NOT NULL PRIMARY KEY
 );`,
 				`\
 CREATE TABLE IF NOT EXISTS "term history" (
-	"created at" TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP NOT NULL
-,	"modified at" TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP NOT NULL
+	"created at" TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMPTZ NOT NULL
+,	"modified at" TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMPTZ NOT NULL
 ,	"id" SERIAL NOT NULL PRIMARY KEY
 ,	"references-term" INTEGER NOT NULL
 ,	FOREIGN KEY ("references-term") REFERENCES "term" ("id")
