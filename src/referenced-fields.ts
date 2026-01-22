@@ -326,7 +326,7 @@ const checkQuery = (query: AbstractSqlQuery): ModifiedFields | undefined => {
 	}
 
 	const fields = query
-		.filter((v): v is FieldsNode => v != null && v[0] === 'Fields')
+		.filter((v): v is FieldsNode => v?.[0] === 'Fields')
 		.flatMap((v) => v[1]);
 	return { table: tableName, action: 'update', fields };
 };
