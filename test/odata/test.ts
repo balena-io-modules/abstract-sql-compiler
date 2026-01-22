@@ -20,7 +20,9 @@ const typeVocab = await fs.promises.readFile(
 import * as AbstractSQLCompiler from '../../out/abstract-sql-compiler.js';
 
 import { expect } from 'chai';
-import _ from 'lodash';
+
+const truncate = (input: string, length: number) =>
+	input.length > length ? `${input.slice(0, length - 3)}...` : input;
 
 const generateClientModel = function (input: string) {
 	const sbvrParser = SBVRParser.createInstance();
@@ -175,53 +177,50 @@ function runExpectation<ExpectFail extends boolean>(
 			break;
 	}
 
-	describe(
-		'Parsing ' + method + ' ' + _.truncate(input, { length: 100 }),
-		function () {
-			let result;
-			try {
-				const odataAST = ODataParser.parse(input);
-				const { tree, extraBodyVars } = odata2AbstractSQL.match(
-					odataAST.tree,
-					method,
-					Object.keys(body),
-					0,
-				);
-				Object.assign(body, extraBodyVars);
-				result = AbstractSQLCompiler[engine].compileRule(tree);
-			} catch (e: any) {
-				if (!expectFailure) {
-					throw e;
-				}
-				(expectation as ExpectationFailFn)(e);
-				return;
+	describe('Parsing ' + method + ' ' + truncate(input, 100), function () {
+		let result;
+		try {
+			const odataAST = ODataParser.parse(input);
+			const { tree, extraBodyVars } = odata2AbstractSQL.match(
+				odataAST.tree,
+				method,
+				Object.keys(body),
+				0,
+			);
+			Object.assign(body, extraBodyVars);
+			result = AbstractSQLCompiler[engine].compileRule(tree);
+		} catch (e: any) {
+			if (!expectFailure) {
+				throw e;
 			}
-			if (Array.isArray(result)) {
-				for (let i = 0; i < result.length; i++) {
-					const actualResult = result[i];
-					if (expectedBindings === false) {
-						bindingsTest(actualResult.bindings, false);
-					} else if (expectedBindings[0][0] === 'Bind') {
-						bindingsTest(
-							actualResult.bindings,
-							expectedBindings as AbstractSQLCompiler.Binding[],
-						);
-					} else {
-						bindingsTest(
-							actualResult.bindings,
-							expectedBindings[i] as AbstractSQLCompiler.Binding[],
-						);
-					}
+			(expectation as ExpectationFailFn)(e);
+			return;
+		}
+		if (Array.isArray(result)) {
+			for (let i = 0; i < result.length; i++) {
+				const actualResult = result[i];
+				if (expectedBindings === false) {
+					bindingsTest(actualResult.bindings, false);
+				} else if (expectedBindings[0][0] === 'Bind') {
+					bindingsTest(
+						actualResult.bindings,
+						expectedBindings as AbstractSQLCompiler.Binding[],
+					);
+				} else {
+					bindingsTest(
+						actualResult.bindings,
+						expectedBindings[i] as AbstractSQLCompiler.Binding[],
+					);
 				}
-			} else {
-				bindingsTest(
-					result.bindings,
-					expectedBindings as AbstractSQLCompiler.Binding[],
-				);
 			}
-			(expectation as ExpectationSuccessFn)(result, sqlEquals[engine]);
-		},
-	);
+		} else {
+			bindingsTest(
+				result.bindings,
+				expectedBindings as AbstractSQLCompiler.Binding[],
+			);
+		}
+		(expectation as ExpectationSuccessFn)(result, sqlEquals[engine]);
+	});
 }
 
 interface BoundRunExpectation<ExpectFail extends boolean> {

@@ -1,4 +1,3 @@
-import _ from 'lodash';
 import $sbvrTypes from '@balena/sbvr-types';
 const { default: sbvrTypes } = $sbvrTypes;
 // @ts-expect-error @balena/sbvr-parser doesn't have types
@@ -50,9 +49,9 @@ export function getTestHelpers(builtInVocab: string | boolean = false) {
 	) => {
 		runExpectation(it, input, function (result) {
 			seSoFar += input + '\n';
-			if (_.isFunction(expectation)) {
+			if (typeof expectation === 'function') {
 				expectation(result);
-			} else if (_.isError(result)) {
+			} else if (result instanceof Error) {
 				throw result;
 			} else {
 				expect(result).to.have.property('createSchema');
@@ -74,9 +73,9 @@ export function getTestHelpers(builtInVocab: string | boolean = false) {
 			| string,
 	) => {
 		runExpectation(it, 'Rule: ' + input, function (result) {
-			if (_.isFunction(expectation)) {
+			if (typeof expectation === 'function') {
 				expectation(result);
-			} else if (_.isError(result)) {
+			} else if (result instanceof Error) {
 				throw result;
 			} else {
 				expect(result).to.have.property('rules');
