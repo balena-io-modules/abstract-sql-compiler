@@ -131,14 +131,14 @@ let parseOperandFactory = function (defaultResource = 'pilot') {
 						sqlNameParts.join('.'),
 					).$;
 					const refTable = mapping[1][0];
-					if (sqlNameParts.length > 1 && !_.includes(refTable, '-')) {
+					if (sqlNameParts.length > 1 && !refTable.includes('-')) {
 						alias = `${alias}.${sqlNameParts[0]}-${refTable}`;
 					} else {
 						alias = `${alias}.${refTable}`;
 					}
 					previousResource = refTable;
 				}
-				mapping = [alias, _.last(fieldParts)];
+				mapping = [alias, fieldParts.at(-1)];
 			} else {
 				mapping = [resource, odataNameToSqlName(operand)];
 			}
@@ -297,13 +297,13 @@ const createMethodCall = function (method: string, ...args: Operand[]) {
 		case 'CONCAT':
 			return {
 				sql: '(' + parsedArgs.map((arg) => arg.sql).join(' || ') + ')',
-				bindings: _.flatten(parsedArgs.map((arg) => arg.bindings)),
+				bindings: parsedArgs.flatMap((arg) => arg.bindings),
 				odata,
 			};
 		case 'INDEXOF':
 			return {
 				sql: 'STRPOS(' + parsedArgs.map((arg) => arg.sql).join(', ') + ') - 1',
-				bindings: _.flatten(parsedArgs.map((arg) => arg.bindings)),
+				bindings: parsedArgs.flatMap((arg) => arg.bindings),
 				odata,
 			};
 		case 'NOW':
@@ -365,7 +365,7 @@ const createMethodCall = function (method: string, ...args: Operand[]) {
 				method + '(' + parsedArgs.map((arg) => arg.sql).join(', ') + ')';
 			return {
 				sql,
-				bindings: _.flatten(parsedArgs.map((arg) => arg.bindings)),
+				bindings: parsedArgs.flatMap((arg) => arg.bindings),
 				odata,
 			};
 		}
@@ -383,7 +383,7 @@ const operandTest = (
 		let { odata, sql, bindings } = createExpression(lhs, op, rhs);
 		bindings = override?.bindings ?? bindings;
 		sql = override?.sql ?? sql;
-		if (_.includes(odata, '/')) {
+		if (odata.includes('/')) {
 			from = `\
 "pilot"
 LEFT JOIN "pilot" AS "pilot.trained-pilot" ON "pilot"."id" = "pilot.trained-pilot"."was trained by-pilot"`;

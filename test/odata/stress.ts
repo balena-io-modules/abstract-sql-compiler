@@ -4,14 +4,12 @@ import { pilotFields } from './fields.js';
 const pilotFieldsStr = pilotFields.join(', ');
 
 const filterIDs = _.range(1, 5000);
-const filterBindsOrString = _.map(
-	filterIDs,
-	() => '"pilot"."id" IS NOT NULL AND "pilot"."id" = ?',
-).join('\nOR ');
-const filterBindsNandString = _.map(
-	filterIDs,
-	() => 'NOT("pilot"."id" IS NOT NULL AND "pilot"."id" = ?)',
-).join('\nAND ');
+const filterBindsOrString = filterIDs
+	.map(() => '"pilot"."id" IS NOT NULL AND "pilot"."id" = ?')
+	.join('\nOR ');
+const filterBindsNandString = filterIDs
+	.map(() => 'NOT("pilot"."id" IS NOT NULL AND "pilot"."id" = ?)')
+	.join('\nAND ');
 
 const filterBinds = filterIDs.map((_n, i) => ['Bind', i] as const);
 

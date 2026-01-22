@@ -80,7 +80,7 @@ export function getTestHelpers(builtInVocab: string | boolean = false) {
 				throw result;
 			} else {
 				expect(result).to.have.property('rules');
-				const lastRule = _.last(result.rules);
+				const lastRule = result.rules.at(-1);
 				expect(lastRule)
 					.to.have.property('structuredEnglish')
 					.that.equals(input);
