@@ -1,4 +1,26 @@
 - commits:
+    - subject: Re-run balena-lint
+      hash: b60bf48f4b1cfa411dc799f1497a059dc0faa697
+      body: ""
+      footer:
+        Change-type: patch
+        change-type: patch
+      author: Thodoris Greasidis
+      nested: []
+    - subject: Update tests for sbvr-types v11
+      hash: 155ffe53a9e18cdd0b261197673048d3ad483d1a
+      body: ""
+      footer:
+        Change-type: patch
+        change-type: patch
+        See: https://balena.fibery.io/Work/Project/961
+        see: https://balena.fibery.io/Work/Project/961
+      author: Thodoris Greasidis
+      nested: []
+  version: 11.2.4
+  title: ""
+  date: 2026-01-22T13:21:34.907Z
+- commits:
     - subject: Add a test for getting the Length of JSON fields
       hash: 2e9547ed7542ef22a3f9d42e34ec10b6116f339d
       body: ""
