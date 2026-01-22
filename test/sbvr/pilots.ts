@@ -1094,4 +1094,20 @@ SELECT (
 	)
 ) = 0 AS "result";`,
 	);
+
+	test.rule(
+		'It is necessary that no pilot can fly more than 100 planes.',
+		`\
+SELECT NOT EXISTS (
+	SELECT 1
+	FROM "pilot" AS "pilot.0"
+	WHERE (
+		SELECT COUNT(*)
+		FROM "pilot-can fly-plane" AS "pilot.0-can fly-plane.1"
+		WHERE "pilot.0-can fly-plane.1"."pilot" = "pilot.0"."id"
+	) >= 101
+	AND ($1 = '{}'
+	OR "pilot.0"."id" = ANY(CAST($1 AS INTEGER[])))
+) AS "result";`,
+	);
 });
