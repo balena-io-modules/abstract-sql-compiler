@@ -1,4 +1,18 @@
 - commits:
+    - subject: "tests: Replace lodash helpers with native alternatives"
+      hash: 56c6b0e816b1f228258411fbcbae7b035fb3b21e
+      body: ""
+      footer:
+        Change-type: patch
+        change-type: patch
+        See: https://balena.fibery.io/Work/Project/961
+        see: https://balena.fibery.io/Work/Project/961
+      author: Thodoris Greasidis
+      nested: []
+  version: 11.2.6
+  title: ""
+  date: 2026-01-22T15:28:51.659Z
+- commits:
     - subject: "tests: Replace lodash helpers with native counterparts where possible"
       hash: 51d203d57cd59cbe350e21f59d868c648df27000
       body: ""
