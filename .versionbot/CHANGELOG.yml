@@ -1,4 +1,17 @@
 - commits:
+    - subject: Add affected ids optimization support for `SELECT NOT EXISTS (SELECT
+        ...)` rules
+      hash: 141d124deafea993927b57d1656721d434bac920
+      body: ""
+      footer:
+        Change-type: minor
+        change-type: minor
+      author: Pagan Gazzard
+      nested: []
+  version: 11.3.0
+  title: ""
+  date: 2026-01-22T15:45:47.996Z
+- commits:
     - subject: "tests: Replace lodash helpers with native alternatives"
       hash: 56c6b0e816b1f228258411fbcbae7b035fb3b21e
       body: ""
