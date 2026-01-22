@@ -6,7 +6,6 @@
 import { expect } from 'chai';
 import type { ExpectationSuccessFn } from './test.js';
 import test, { clientModel } from './test.js';
-import _ from 'lodash';
 import { odataNameToSqlName } from '@balena/odata-to-abstract-sql';
 import {
 	pilotFields,
@@ -36,6 +35,9 @@ type Operand =
 	| DurationNode[1]
 	| ParsedOperand;
 
+const get = (object: Record<string, any>, propertyPath: string[]) =>
+	propertyPath.reduce((obj, path) => obj?.[path], object);
+
 let parseOperandFactory = function (defaultResource = 'pilot') {
 	let bindNo = 0;
 	const operandToOData = function (operand: Operand) {
@@ -43,7 +45,7 @@ let parseOperandFactory = function (defaultResource = 'pilot') {
 			if ('odata' in operand) {
 				return operand.odata;
 			}
-			if (_.isDate(operand)) {
+			if (operand instanceof Date) {
 				return "datetime'" + encodeURIComponent(operand.toISOString()) + "'";
 			}
 
@@ -89,7 +91,7 @@ let parseOperandFactory = function (defaultResource = 'pilot') {
 		if (
 			typeof operand === 'boolean' ||
 			typeof operand === 'number' ||
-			_.isDate(operand) ||
+			operand instanceof Date ||
 			(typeof operand === 'string' && operand.startsWith("'"))
 		) {
 			return [['Bind', bindNo++]];
@@ -107,7 +109,7 @@ let parseOperandFactory = function (defaultResource = 'pilot') {
 		if (
 			typeof operand === 'boolean' ||
 			typeof operand === 'number' ||
-			_.isDate(operand)
+			operand instanceof Date
 		) {
 			return '?';
 		}
@@ -126,9 +128,9 @@ let parseOperandFactory = function (defaultResource = 'pilot') {
 				for (const resourceName of fieldParts.slice(0, -1)) {
 					const sqlName = odataNameToSqlName(resourceName);
 					const sqlNameParts = sqlName.split('-');
-					mapping = _.get(
+					mapping = get(
 						clientModel.relationships[previousResource],
-						sqlNameParts.join('.'),
+						sqlNameParts,
 					).$;
 					const refTable = mapping[1][0];
 					if (sqlNameParts.length > 1 && !refTable.includes('-')) {
@@ -1408,7 +1410,8 @@ AND NOT("pilot"."name" IS NOT NULL AND "pilot"."name" = ?)`,
 
 // Switch parseOperandFactory permanently to using 'team' as the resource,
 // as we are switch to using that as our base resource from here on.
-parseOperandFactory = _.partialRight(parseOperandFactory, 'team');
+const originalParseOperandFactory = parseOperandFactory;
+parseOperandFactory = () => originalParseOperandFactory('team');
 run(function () {
 	const favouriteColour = 'purple';
 	const { odata, sql, bindings } = createExpression(

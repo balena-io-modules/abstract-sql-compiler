@@ -1,9 +1,8 @@
 import test from './test.js';
-import _ from 'lodash';
 import { pilotFields } from './fields.js';
 const pilotFieldsStr = pilotFields.join(', ');
 
-const filterIDs = _.range(1, 5000);
+const filterIDs = Array.from({ length: 4999 }, (_v, i) => i + 1);
 const filterBindsOrString = filterIDs
 	.map(() => '"pilot"."id" IS NOT NULL AND "pilot"."id" = ?')
 	.join('\nOR ');

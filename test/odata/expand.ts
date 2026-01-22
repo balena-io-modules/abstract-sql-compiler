@@ -7,7 +7,6 @@ import {
 	aliasPlaneFields,
 	aliasPilotCanFlyPlaneFields,
 } from './fields.js';
-import _ from 'lodash';
 
 type TestFn = (
 	aggFunc: (field: string) => string,
@@ -21,10 +20,9 @@ const mysqlAgg = (field: string) =>
 const websqlAgg = mysqlAgg;
 
 (function () {
-	const remainingPilotFields = _.reject(
-		pilotFields,
-		(field) => field === '"pilot"."licence"',
-	).join(', ');
+	const remainingPilotFields = pilotFields
+		.filter((field) => field !== '"pilot"."licence"')
+		.join(', ');
 	const testFunc: TestFn = (aggFunc, fields) => (result, sqlEquals) => {
 		it('should select from pilot.*, aggregated licence', () => {
 			sqlEquals?.(
@@ -71,10 +69,9 @@ FROM "pilot"`,
 })();
 
 (function () {
-	const remainingAliasPilotCanFlyFields = _.reject(
-		aliasPilotCanFlyPlaneFields,
-		(field) => field === '"pilot.pilot-can fly-plane"."can fly-plane"',
-	).join(', ');
+	const remainingAliasPilotCanFlyFields = aliasPilotCanFlyPlaneFields
+		.filter((field) => field !== '"pilot.pilot-can fly-plane"."can fly-plane"')
+		.join(', ');
 	const testFunc: TestFn = (aggFunc) => (result, sqlEquals) => {
 		it('should select from pilot.*, aggregated(pilot-can fly-plane, aggregated plane)', () => {
 			sqlEquals?.(
@@ -111,14 +108,12 @@ FROM "pilot"`,
 })();
 
 (function () {
-	const remainingAliasPilotCanFlyFields = _.reject(
-		aliasPilotCanFlyPlaneFields,
-		(field) => field === '"pilot.pilot-can fly-plane"."can fly-plane"',
-	).join(', ');
-	const remainingPilotFields = _.reject(
-		pilotFields,
-		(field) => field === '"pilot"."licence"',
-	).join(', ');
+	const remainingAliasPilotCanFlyFields = aliasPilotCanFlyPlaneFields
+		.filter((field) => field !== '"pilot.pilot-can fly-plane"."can fly-plane"')
+		.join(', ');
+	const remainingPilotFields = pilotFields
+		.filter((field) => field !== '"pilot"."licence"')
+		.join(', ');
 	const testFunc: TestFn = (aggFunc) => (result, sqlEquals) => {
 		it('should select from pilot.*, aggregated(pilot-can fly-plane, aggregated plane), aggregated licence', () => {
 			sqlEquals?.(
@@ -186,10 +181,9 @@ FROM "pilot"`,
 })();
 
 (function () {
-	const remainingAliasPilotCanFlyFields = _.reject(
-		aliasPilotCanFlyPlaneFields,
-		(field) => field === '"pilot.pilot-can fly-plane"."can fly-plane"',
-	).join(', ');
+	const remainingAliasPilotCanFlyFields = aliasPilotCanFlyPlaneFields
+		.filter((field) => field !== '"pilot.pilot-can fly-plane"."can fly-plane"')
+		.join(', ');
 	const testFunc: TestFn = (aggFunc) => (result, sqlEquals) => {
 		it('should select from pilot.*, aggregated(pilot-can fly-plane, aggregated plane)', () => {
 			sqlEquals?.(
@@ -226,10 +220,9 @@ FROM "pilot"`,
 })();
 
 (function () {
-	const remainingAliasPilotCanFlyFields = _.reject(
-		aliasPilotCanFlyPlaneFields,
-		(field) => field === '"pilot.pilot-can fly-plane"."can fly-plane"',
-	).join(', ');
+	const remainingAliasPilotCanFlyFields = aliasPilotCanFlyPlaneFields
+		.filter((field) => field !== '"pilot.pilot-can fly-plane"."can fly-plane"')
+		.join(', ');
 	const testFunc: TestFn = (aggFunc) => (result, sqlEquals) => {
 		it('should select from pilot.*, aggregated(pilot-can fly-plane, aggregated plane), aggregated licence', () => {
 			sqlEquals?.(
@@ -297,10 +290,9 @@ FROM "pilot"`,
 })();
 
 (function () {
-	const remainingPilotFields = _.reject(
-		pilotFields,
-		(field) => field === '"pilot"."licence"',
-	).join(', ');
+	const remainingPilotFields = pilotFields
+		.filter((field) => field !== '"pilot"."licence"')
+		.join(', ');
 	const testFunc: TestFn = (aggFunc, fields) => (result, sqlEquals) => {
 		it('should select from pilot.*, aggregated licence', () => {
 			sqlEquals?.(
@@ -366,10 +358,9 @@ FROM "pilot"`,
 })();
 
 (function () {
-	const remainingPilotFields = _.reject(
-		pilotFields,
-		(field) => field === '"pilot"."licence"',
-	).join(', ');
+	const remainingPilotFields = pilotFields
+		.filter((field) => field !== '"pilot"."licence"')
+		.join(', ');
 	const testFunc: TestFn = (aggFunc) => (result, sqlEquals) => {
 		it('should select from pilot.*, aggregated licence', () => {
 			sqlEquals?.(
@@ -406,10 +397,9 @@ FROM "pilot"`,
 })();
 
 (function () {
-	const remainingPilotFields = _.reject(
-		pilotFields,
-		(field) => field === '"pilot"."licence"',
-	).join(', ');
+	const remainingPilotFields = pilotFields
+		.filter((field) => field !== '"pilot"."licence"')
+		.join(', ');
 	const testFunc: TestFn = (aggFunc) => (result, sqlEquals) => {
 		it('should select from pilot.*, aggregated licence', () => {
 			sqlEquals?.(
@@ -435,10 +425,9 @@ FROM "pilot"`,
 })();
 
 (function () {
-	const remainingPilotFields = _.reject(
-		pilotFields,
-		(field) => field === '"pilot"."licence"',
-	).join(', ');
+	const remainingPilotFields = pilotFields
+		.filter((field) => field !== '"pilot"."licence"')
+		.join(', ');
 	const testFunc: TestFn = (aggFunc) => (result, sqlEquals) => {
 		it('should select from pilot.*, aggregated count(*) licence and ignore orderby', () => {
 			sqlEquals?.(
@@ -463,10 +452,9 @@ FROM "pilot"`,
 })();
 
 (function () {
-	const remainingPilotFields = _.reject(
-		pilotFields,
-		(field) => field === '"pilot"."licence"',
-	).join(', ');
+	const remainingPilotFields = pilotFields
+		.filter((field) => field !== '"pilot"."licence"')
+		.join(', ');
 	const testFunc: TestFn = (aggFunc) => (result, sqlEquals) => {
 		it('should select from pilot.*, aggregated licence', () => {
 			sqlEquals?.(
@@ -502,10 +490,9 @@ FROM "pilot"`,
 })();
 
 (function () {
-	const remainingPilotFields = _.reject(
-		pilotFields,
-		(field) => field === '"pilot"."licence"',
-	).join(', ');
+	const remainingPilotFields = pilotFields
+		.filter((field) => field !== '"pilot"."licence"')
+		.join(', ');
 	const testFunc: TestFn = (aggFunc) => (result, sqlEquals) => {
 		it('should select from pilot.*, aggregated count(*) licence and ignore top', () => {
 			sqlEquals?.(
@@ -530,10 +517,9 @@ FROM "pilot"`,
 })();
 
 (function () {
-	const remainingPilotFields = _.reject(
-		pilotFields,
-		(field) => field === '"pilot"."licence"',
-	).join(', ');
+	const remainingPilotFields = pilotFields
+		.filter((field) => field !== '"pilot"."licence"')
+		.join(', ');
 	const testFunc: TestFn = (aggFunc) => (result, sqlEquals) => {
 		it('should select from pilot.*, aggregated licence', () => {
 			sqlEquals?.(
@@ -569,10 +555,9 @@ FROM "pilot"`,
 })();
 
 (function () {
-	const remainingPilotFields = _.reject(
-		pilotFields,
-		(field) => field === '"pilot"."licence"',
-	).join(', ');
+	const remainingPilotFields = pilotFields
+		.filter((field) => field !== '"pilot"."licence"')
+		.join(', ');
 	const testFunc: TestFn = (aggFunc) => (result, sqlEquals) => {
 		it('should select from pilot.*, aggregated count(*) licence and ignore skip', () => {
 			sqlEquals?.(
@@ -646,10 +631,9 @@ FROM "pilot"`,
 
 (function () {
 	const aliasedFields = aliasFields('pilot.trained-pilot', pilotFields);
-	const remainingPilotFields = _.reject(
-		pilotFields,
-		(field) => field === '"pilot"."trained-pilot"',
-	).join(', ');
+	const remainingPilotFields = pilotFields
+		.filter((field) => field !== '"pilot"."trained-pilot"')
+		.join(', ');
 	const testFunc: TestFn = (aggFunc) => (result, sqlEquals) => {
 		it('should select from pilot.*, aggregated pilot', () => {
 			sqlEquals?.(
