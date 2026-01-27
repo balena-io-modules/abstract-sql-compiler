@@ -809,3 +809,246 @@ WHERE ("optional key" IS NOT NULL);`,
 		'child$2pSl7vw7IjAvHFu1U50UXWTumZ9g3ASd/mWNxEnqW5Q=',
 	);
 });
+
+it('should identify and convert a conditional uniqueness rule on referenced fields to a partial UNIQUE INDEX', () => {
+	const schema = {
+		synonyms: {},
+		relationships: {},
+		tables: {
+			application: {
+				name: 'application',
+				resourceName: 'application',
+				idField: 'id',
+				fields: [
+					{
+						dataType: 'Serial',
+						fieldName: 'id',
+						required: true,
+						index: 'PRIMARY KEY',
+					},
+				],
+				primitive: false,
+				indexes: [],
+			},
+			release: {
+				name: 'release',
+				resourceName: 'release',
+				idField: 'id',
+				fields: [
+					{
+						dataType: 'ForeignKey',
+						fieldName: 'belongs to-application',
+						required: true,
+						references: {
+							resourceName: 'application',
+							fieldName: 'id',
+						},
+					},
+					{
+						dataType: 'Integer',
+						fieldName: 'semver major',
+						required: true,
+					},
+					{
+						dataType: 'Integer',
+						fieldName: 'semver minor',
+						required: true,
+					},
+					{
+						dataType: 'Integer',
+						fieldName: 'semver patch',
+						required: true,
+					},
+					{
+						dataType: 'Short Text',
+						fieldName: 'semver prerelease',
+						required: true,
+					},
+					{
+						dataType: 'Short Text',
+						fieldName: 'semver build',
+						required: true,
+					},
+					{
+						dataType: 'Short Text',
+						fieldName: 'variant',
+						required: true,
+					},
+					{
+						dataType: 'Integer',
+						fieldName: 'revision',
+						required: false,
+					},
+				],
+				primitive: false,
+				indexes: [],
+			},
+		},
+		rules: [
+			[
+				'Rule',
+				[
+					'Body',
+					[
+						'Equals',
+						[
+							'SelectQuery',
+							['Select', [['Count', '*']]],
+							['From', ['Alias', ['Table', 'application'], 'application.0']],
+							['From', ['Alias', ['Table', 'release'], 'release.1']],
+							[
+								'Where',
+								[
+									'And',
+									['Exists', ['ReferencedField', 'release.1', 'revision']],
+									[
+										'Equals',
+										['ReferencedField', 'release.1', 'belongs to-application'],
+										['ReferencedField', 'application.0', 'id'],
+									],
+									[
+										'GreaterThanOrEqual',
+										[
+											'SelectQuery',
+											['Select', [['Count', '*']]],
+											['From', ['Alias', ['Table', 'release'], 'release.3']],
+											[
+												'Where',
+												[
+													'And',
+													[
+														'Equals',
+														['ReferencedField', 'release.1', 'semver major'],
+														['ReferencedField', 'release.3', 'semver major'],
+													],
+													[
+														'Exists',
+														['ReferencedField', 'release.3', 'semver major'],
+													],
+													[
+														'Equals',
+														['ReferencedField', 'release.1', 'semver minor'],
+														['ReferencedField', 'release.3', 'semver minor'],
+													],
+													[
+														'Exists',
+														['ReferencedField', 'release.3', 'semver minor'],
+													],
+													[
+														'Equals',
+														['ReferencedField', 'release.1', 'semver patch'],
+														['ReferencedField', 'release.3', 'semver patch'],
+													],
+													[
+														'Exists',
+														['ReferencedField', 'release.3', 'semver patch'],
+													],
+													[
+														'Equals',
+														[
+															'ReferencedField',
+															'release.1',
+															'semver prerelease',
+														],
+														[
+															'ReferencedField',
+															'release.3',
+															'semver prerelease',
+														],
+													],
+													[
+														'Exists',
+														[
+															'ReferencedField',
+															'release.3',
+															'semver prerelease',
+														],
+													],
+													[
+														'Equals',
+														['ReferencedField', 'release.1', 'variant'],
+														['ReferencedField', 'release.3', 'variant'],
+													],
+													[
+														'Exists',
+														['ReferencedField', 'release.3', 'variant'],
+													],
+													[
+														'Equals',
+														['ReferencedField', 'release.1', 'revision'],
+														['ReferencedField', 'release.3', 'revision'],
+													],
+													[
+														'Exists',
+														['ReferencedField', 'release.3', 'revision'],
+													],
+													[
+														'Equals',
+														[
+															'ReferencedField',
+															'release.3',
+															'belongs to-application',
+														],
+														['ReferencedField', 'application.0', 'id'],
+													],
+												],
+											],
+										],
+										['Number', 2],
+									],
+								],
+							],
+						],
+						['Number', 0],
+					],
+				],
+				[
+					'StructuredEnglish',
+					'It is necessary that each application that owns a release1 that has a revision, owns at most one release2 that has a semver major that is of the release1 and has a semver minor that is of the release1 and has a semver patch that is of the release1 and has a semver prerelease that is of the release1 and has a variant that is of the release1 and has a revision that is of the release1.',
+				],
+			],
+		],
+		lfInfo: {
+			rules: {
+				'It is necessary that each application that owns a release1 that has a revision, owns at most one release2 that has a semver major that is of the release1 and has a semver minor that is of the release1 and has a semver patch that is of the release1 and has a semver prerelease that is of the release1 and has a variant that is of the release1 and has a revision that is of the release1.':
+					{
+						root: {
+							table: 'application',
+							alias: 'application.0',
+						},
+					},
+			},
+		},
+	} satisfies AbstractSQLCompiler.AbstractSqlModel;
+	// compute the index auto-generated name upfront to ensure that that the generated name
+	// is not affected by any possible modifications that generateSchema() might do to the rule definition.
+	const expectedIndexName = generateRuleSlug('release', schema.rules[0][1][1]);
+	expect(generateSchema(schema))
+		.to.have.property('createSchema')
+		.that.deep.equals([
+			`\
+CREATE TABLE IF NOT EXISTS "application" (
+	"id" SERIAL NOT NULL PRIMARY KEY
+);`,
+			`\
+CREATE TABLE IF NOT EXISTS "release" (
+	"belongs to-application" INTEGER NOT NULL
+,	"semver major" INTEGER NOT NULL
+,	"semver minor" INTEGER NOT NULL
+,	"semver patch" INTEGER NOT NULL
+,	"semver prerelease" VARCHAR(255) NOT NULL
+,	"semver build" VARCHAR(255) NOT NULL
+,	"variant" VARCHAR(255) NOT NULL
+,	"revision" INTEGER NULL
+,	FOREIGN KEY ("belongs to-application") REFERENCES "application" ("id")
+);`,
+			`\
+-- It is necessary that each application that owns a release1 that has a revision, owns at most one release2 that has a semver major that is of the release1 and has a semver minor that is of the release1 and has a semver patch that is of the release1 and has a semver prerelease that is of the release1 and has a variant that is of the release1 and has a revision that is of the release1.
+CREATE UNIQUE INDEX IF NOT EXISTS "${expectedIndexName}"
+ON "release" ("belongs to-application", "semver major", "semver minor", "semver patch", "semver prerelease", "variant", "revision")
+WHERE ("revision" IS NOT NULL);`,
+		]);
+	expect(expectedIndexName).to.equal(
+		'release$lw8hG1Xzvlj9RtiG4rqioAkZ+lMKKZQ6nFlIerB9DSk=',
+	);
+});
