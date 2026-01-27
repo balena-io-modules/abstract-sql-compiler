@@ -9,6 +9,173 @@ const generateSchema = (
 		AbstractSQLCompiler.postgres.optimizeSchema(abstractSqlModel),
 	);
 
+it('should identify and convert a conditional uniqueness rule with references to a partial UNIQUE INDEX', () => {
+	const schema = {
+		synonyms: {},
+		relationships: {},
+		tables: {
+			task: {
+				name: 'task',
+				resourceName: 'task',
+				idField: 'id',
+				fields: [
+					{
+						fieldName: 'id',
+						dataType: 'Integer',
+						index: 'PRIMARY KEY',
+					},
+					{
+						dataType: 'Short Text',
+						fieldName: 'is executed by-handler',
+						required: true,
+					},
+					{
+						dataType: 'Short Text',
+						fieldName: 'is scheduled with-cron expression',
+						required: false,
+					},
+					{
+						dataType: 'Short Text',
+						fieldName: 'status',
+						required: true,
+						checks: [
+							[
+								'In',
+								['Field', 'status'],
+								['Text', 'queued'],
+								['Text', 'cancelled'],
+								['Text', 'succeeded'],
+								['Text', 'failed'],
+							],
+						],
+					},
+				],
+				indexes: [],
+				primitive: false,
+			},
+		},
+		rules: [
+			[
+				'Rule',
+				[
+					'Body',
+					[
+						'NotExists',
+						[
+							'SelectQuery',
+							[
+								'Select',
+								[['ReferencedField', 'task.1', 'is executed by-handler']],
+							],
+							['From', ['Alias', ['Table', 'task'], 'task.1']],
+							[
+								'Where',
+								[
+									'And',
+									[
+										'Exists',
+										[
+											'ReferencedField',
+											'task.1',
+											'is scheduled with-cron expression',
+										],
+									],
+									[
+										'Equals',
+										['Text', 'queued'],
+										['ReferencedField', 'task.1', 'status'],
+									],
+									['Exists', ['ReferencedField', 'task.1', 'status']],
+									[
+										'GreaterThanOrEqual',
+										[
+											'SelectQuery',
+											['Select', [['Count', '*']]],
+											['From', ['Alias', ['Table', 'task'], 'task.4']],
+											[
+												'Where',
+												[
+													'And',
+													[
+														'Exists',
+														[
+															'ReferencedField',
+															'task.4',
+															'is scheduled with-cron expression',
+														],
+													],
+													[
+														'Equals',
+														['Text', 'queued'],
+														['ReferencedField', 'task.4', 'status'],
+													],
+													['Exists', ['ReferencedField', 'task.4', 'status']],
+													[
+														'Equals',
+														[
+															'ReferencedField',
+															'task.4',
+															'is executed by-handler',
+														],
+														[
+															'ReferencedField',
+															'task.1',
+															'is executed by-handler',
+														],
+													],
+												],
+											],
+										],
+										['Number', 2],
+									],
+								],
+							],
+						],
+					],
+				],
+				[
+					'StructuredEnglish',
+					'It is necessary that each handler that executes a task that is scheduled with a cron expression and has a status that is equal to "queued", executes at most one task that is scheduled with a cron expression and has a status that is equal to "queued".',
+				],
+			],
+		],
+		lfInfo: {
+			rules: {
+				'It is necessary that each handler that executes a task that is scheduled with a cron expression and has a status that is equal to "queued", executes at most one task that is scheduled with a cron expression and has a status that is equal to "queued".':
+					{
+						root: {
+							table: 'task',
+							alias: 'task.1',
+						},
+					},
+			},
+		},
+	} satisfies AbstractSQLCompiler.AbstractSqlModel;
+	// compute the index auto-generated name upfront to ensure that that the generated name
+	// is not affected by any possible modifications that generateSchema() might do to the rule definition.
+	const expectedIndexName = generateRuleSlug('task', schema.rules[0][1][1]);
+	expect(generateSchema(schema))
+		.to.have.property('createSchema')
+		.that.deep.equals([
+			`\
+CREATE TABLE IF NOT EXISTS "task" (
+	"id" INTEGER NULL PRIMARY KEY
+,	"is executed by-handler" VARCHAR(255) NOT NULL
+,	"is scheduled with-cron expression" VARCHAR(255) NULL
+,	"status" VARCHAR(255) NOT NULL CHECK ("status" IN ('queued', 'cancelled', 'succeeded', 'failed'))
+);`,
+			`\
+-- It is necessary that each handler that executes a task that is scheduled with a cron expression and has a status that is equal to "queued", executes at most one task that is scheduled with a cron expression and has a status that is equal to "queued".
+CREATE UNIQUE INDEX IF NOT EXISTS "${expectedIndexName}"
+ON "task" ("is executed by-handler")
+WHERE ("is scheduled with-cron expression" IS NOT NULL
+AND 'queued' = "status");`,
+		]);
+	expect(expectedIndexName).to.equal(
+		'task$/Mt7Ad3mHEm0JFpuaX1BioDwNSWTgsEFOG1igq8EIrk=',
+	);
+});
+
 it('should identify and convert a conditional uniqueness rule on primitive fields to a partial UNIQUE INDEX', () => {
 	const schema = {
 		synonyms: {},
