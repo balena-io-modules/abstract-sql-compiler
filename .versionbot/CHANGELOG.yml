@@ -1,4 +1,18 @@
 - commits:
+    - subject: Extract convertReferencedFieldsToFields helper and switch to a for loop
+      hash: e34931fdfb981f00a1630a0e01f6a0bb52ee3118
+      body: ""
+      footer:
+        Change-type: patch
+        change-type: patch
+        See: https://balena.fibery.io/Work/Project/961
+        see: https://balena.fibery.io/Work/Project/961
+      author: Thodoris Greasidis
+      nested: []
+  version: 11.3.1
+  title: ""
+  date: 2026-01-29T05:22:04.348Z
+- commits:
     - subject: Add affected ids optimization support for `SELECT NOT EXISTS (SELECT
         ...)` rules
       hash: 141d124deafea993927b57d1656721d434bac920
