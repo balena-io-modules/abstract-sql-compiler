@@ -106,6 +106,7 @@ import type {
 	FnCallNode,
 	RowToJSONNode,
 	JSONPopulateRecordNode,
+	LockingClauseNode,
 } from './abstract-sql-compiler.js';
 import {
 	Engines,
@@ -121,6 +122,7 @@ const {
 	getAbstractSqlQuery,
 	checkArgs,
 	checkMinArgs,
+	checkMaxArgs,
 	isNotNullable,
 } = AbstractSQLRules2SQL;
 
@@ -597,6 +599,7 @@ const typeRules = {
 			OrderBy: [] as OrderByNode[],
 			Limit: [] as LimitNode[],
 			Offset: [] as OffsetNode[],
+			LockingClause: [] as LockingClauseNode[],
 		};
 		for (const arg of args) {
 			if (!isAbstractSqlQuery(arg)) {
@@ -626,6 +629,7 @@ const typeRules = {
 				case 'OrderBy':
 				case 'Limit':
 				case 'Offset':
+				case 'LockingClause':
 					if (groups[type].length !== 0) {
 						throw new SyntaxError(
 							`'SelectQuery' can only accept one '${type}'`,
@@ -638,6 +642,7 @@ const typeRules = {
 							| HavingNode
 							| OrderByNode
 							| LimitNode
+							| LockingClauseNode
 							// The cast as any is because I couldn't find a way to automatically match up the correct type based upon the group we're assigning
 							| OffsetNode as any,
 					];
@@ -657,6 +662,7 @@ const typeRules = {
 			...groups.OrderBy,
 			...groups.Limit,
 			...groups.Offset,
+			...groups.LockingClause,
 		];
 	},
 	Select: (args): SelectNode => {
@@ -1657,6 +1663,41 @@ const typeRules = {
 						],
 		),
 	),
+	LockingClause: (args): LockingClauseNode => {
+		checkMinArgs('LockingClause', args, 1);
+		checkMaxArgs('LockingClause', args, 3);
+		const [lockStrength, fromReference, lockedBehavior] = args;
+		if (
+			lockStrength !== 'UPDATE' &&
+			lockStrength !== 'NO KEY UPDATE' &&
+			lockStrength !== 'SHARE' &&
+			lockStrength !== 'KEY SHARE'
+		) {
+			throw new SyntaxError(
+				`'LockingClause' first argument must one of 'UPDATE', 'NO KEY UPDATE', 'SHARE', 'KEY SHARE', got ${lockStrength}`,
+			);
+		}
+		if (
+			fromReference != null &&
+			(!Array.isArray(fromReference) ||
+				!fromReference.every((r) => typeof r === 'string'))
+		) {
+			throw new SyntaxError(
+				`'LockingClause' second argument must be the an array or undefined, got ${fromReference}`,
+			);
+		}
+		if (
+			lockedBehavior != null &&
+			lockedBehavior !== 'NOWAIT' &&
+			lockedBehavior !== 'SKIP LOCKED'
+		) {
+			throw new SyntaxError(
+				`'LockingClause' third argument must one of 'NOWAIT', 'SKIP LOCKED' or undefined, got ${lockedBehavior}`,
+			);
+		}
+
+		return ['LockingClause', lockStrength, fromReference, lockedBehavior];
+	},
 } satisfies Record<string, MatchFn<AnyTypeNodes>>;
 
 export const AbstractSQLOptimizer = (

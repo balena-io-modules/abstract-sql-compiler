@@ -357,6 +357,7 @@ export type SelectQueryStatementNode =
 	| HavingNode
 	| OrderByNode
 	| LimitNode
+	| LockingClauseNode
 	| OffsetNode;
 export type SelectQueryNode = ['SelectQuery', ...SelectQueryStatementNode[]];
 export type UnionQueryNode = [
@@ -374,6 +375,15 @@ export type UpdateQueryNode = [
 ];
 export type DeleteQueryNode = ['DeleteQuery', ...Array<FromNode | WhereNode>];
 export type UpsertQueryNode = ['UpsertQuery', InsertQueryNode, UpdateQueryNode];
+
+// Names borrowed from  from Postgresql docs:
+// FOR lock_strength [ OF from_reference [, ...] ] [ NOWAIT | SKIP LOCKED ]
+export type LockingClauseNode = [
+	'LockingClause',
+	lockStrength: 'UPDATE' | 'NO KEY UPDATE' | 'SHARE' | 'KEY SHARE',
+	fromReference?: string[],
+	lockedBehavior?: 'NOWAIT' | 'SKIP LOCKED',
+];
 
 /**
  * This interface allows adding to the valid set of FromTypeNodes using interface merging, eg
@@ -450,6 +460,7 @@ export type AnyTypeNodes =
 	| ValuesNode
 	| SelectQueryStatementNode
 	| FromTypeNodes
+	| LockingClauseNode
 	| UnknownNode;
 
 export type AbstractSqlType = string | string[] | AnyTypeNodes;
