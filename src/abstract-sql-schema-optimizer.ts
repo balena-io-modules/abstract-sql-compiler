@@ -35,6 +35,19 @@ export const generateRuleSlug = (
 	return `${tableName.slice(0, 30)}$${sha}`.slice(0, 63);
 };
 
+const convertReferencedFieldsToFields = (nodes: AbstractSqlType[]) => {
+	for (let i = 0; i < nodes.length; i++) {
+		const node = nodes[i];
+		if (Array.isArray(node)) {
+			if (node[0] === 'ReferencedField') {
+				nodes[i] = ['Field', node[2]];
+			} else {
+				convertReferencedFieldsToFields(node as AbstractSqlType[]);
+			}
+		}
+	}
+};
+
 export const optimizeSchema = (
 	abstractSqlModel: AbstractSqlModel,
 	{ createCheckConstraints = true } = {},
@@ -137,17 +150,6 @@ export const optimizeSchema = (
 						// This replaces the `Not` we stripped from the `NotExists`
 						whereNode = ['Not', whereNode];
 
-						const convertReferencedFieldsToFields = (n: AbstractSqlType[]) => {
-							n.forEach((p, i) => {
-								if (Array.isArray(p)) {
-									if (p[0] === 'ReferencedField') {
-										n[i] = ['Field', p[2]];
-									} else {
-										convertReferencedFieldsToFields(p as AbstractSqlType[]);
-									}
-								}
-							});
-						};
 						convertReferencedFieldsToFields(whereNode);
 
 						const tableName = fromNode[1];
