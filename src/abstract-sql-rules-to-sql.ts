@@ -182,7 +182,8 @@ export const isBooleanValue = (
 		type === 'IsNotDistinctFrom' ||
 		type === 'IsDistinctFrom' ||
 		type === 'StartsWith' ||
-		type === 'EqualsAny'
+		type === 'EqualsAny' ||
+		type === 'RangeUpperInf'
 	);
 };
 const BooleanValue = MatchValue(isBooleanValue);
@@ -197,7 +198,9 @@ export const isDateValue = (type: unknown): type is StrictDateTypeNodes[0] => {
 		type === 'AddDateNumber' ||
 		type === 'AddDateDuration' ||
 		type === 'SubtractDateDuration' ||
-		type === 'SubtractDateNumber'
+		type === 'SubtractDateNumber' ||
+		type === 'RangeLower' ||
+		type === 'RangeUpper'
 	);
 };
 const DateValue = MatchValue(isDateValue);
@@ -1679,6 +1682,21 @@ const typeRules: Record<string, MatchFn> = {
 				return AnyValue(arg, indent);
 			})
 			.join(', ')})`;
+	},
+	RangeLower: (args, indent) => {
+		checkArgs('RangeLower', args, 1);
+		const range = AnyValue(getAbstractSqlQuery(args, 0), indent);
+		return `LOWER(${range})`;
+	},
+	RangeUpper: (args, indent) => {
+		checkArgs('RangeUpper', args, 1);
+		const range = AnyValue(getAbstractSqlQuery(args, 0), indent);
+		return `UPPER(${range})`;
+	},
+	RangeUpperInf: (args, indent) => {
+		checkArgs('RangeUpperInf', args, 1);
+		const range = AnyValue(getAbstractSqlQuery(args, 0), indent);
+		return `UPPER_INF(${range})`;
 	},
 };
 
