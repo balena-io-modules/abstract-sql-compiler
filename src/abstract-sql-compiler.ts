@@ -185,6 +185,10 @@ export type ToDateNode = ['ToDate', DateTypeNodes];
 export type ToTimeNode = ['ToTime', DateTypeNodes];
 export type CurrentTimestampNode = ['CurrentTimestamp'];
 export type CurrentDateNode = ['CurrentDate'];
+// Range extraction functions
+export type RangeLowerNode = ['RangeLower', RangeTypeNodes];
+export type RangeUpperNode = ['RangeUpper', RangeTypeNodes];
+export type RangeTypeNodes = UnknownTypeNodes;
 export type StrictDateTypeNodes =
 	| DateNode
 	| ToDateNode
@@ -260,7 +264,9 @@ export type UnknownTypeNodes =
 	| CaseNode
 	| CoalesceNode
 	| AnyNode
-	| FnCallNode;
+	| FnCallNode
+	| RangeLowerNode
+	| RangeUpperNode;
 
 /**
  * This converts a row that looks like a specific table row based upon column names to the actual row type

@@ -89,6 +89,8 @@ const UnknownValue: MetaMatchFn = (args, indent) => {
 		case 'TextArray':
 		case 'FnCall':
 		case 'JSONPopulateRecord':
+		case 'RangeLower':
+		case 'RangeUpper':
 			return typeRules[type](rest, indent);
 		case 'SelectQuery':
 		case 'UnionQuery': {
@@ -201,6 +203,9 @@ export const isDateValue = (type: unknown): type is StrictDateTypeNodes[0] => {
 	);
 };
 const DateValue = MatchValue(isDateValue);
+// No dedicated range-type nodes exist yet; RangeValue currently falls through to UnknownValue.
+export const isRangeValue = (_type: unknown): _type is never => false;
+const RangeValue = MatchValue(isRangeValue);
 export const isArrayValue = (
 	type: unknown,
 ): type is StrictTextArrayTypeNodes[0] => {
@@ -1679,6 +1684,16 @@ const typeRules: Record<string, MatchFn> = {
 				return AnyValue(arg, indent);
 			})
 			.join(', ')})`;
+	},
+	RangeLower: (args, indent) => {
+		checkArgs('RangeLower', args, 1);
+		const range = RangeValue(getAbstractSqlQuery(args, 0), indent);
+		return `LOWER(${range})`;
+	},
+	RangeUpper: (args, indent) => {
+		checkArgs('RangeUpper', args, 1);
+		const range = RangeValue(getAbstractSqlQuery(args, 0), indent);
+		return `UPPER(${range})`;
 	},
 };
 
