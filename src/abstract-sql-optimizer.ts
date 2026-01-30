@@ -106,6 +106,9 @@ import type {
 	FnCallNode,
 	RowToJSONNode,
 	JSONPopulateRecordNode,
+	RangeLowerNode,
+	RangeUpperNode,
+	RangeUpperInfNode,
 } from './abstract-sql-compiler.js';
 import {
 	Engines,
@@ -915,6 +918,9 @@ const typeRules = {
 			: ['DateTrunc', precision, date];
 	},
 	ToTime: matchArgs<ToTimeNode>('ToTime', DateValue),
+	RangeLower: matchArgs<RangeLowerNode>('RangeLower', AnyValue),
+	RangeUpper: matchArgs<RangeUpperNode>('RangeUpper', AnyValue),
+	RangeUpperInf: matchArgs<RangeUpperInfNode>('RangeUpperInf', AnyValue),
 	ExtractJSONPathAsText: (args): ExtractJSONPathAsTextNode => {
 		checkMinArgs('ExtractJSONPathAsText', args, 1);
 		const json = JSONValue(getAbstractSqlQuery(args, 0));
