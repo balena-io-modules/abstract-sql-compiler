@@ -106,6 +106,8 @@ import type {
 	FnCallNode,
 	RowToJSONNode,
 	JSONPopulateRecordNode,
+	RangeLowerNode,
+	RangeUpperNode,
 } from './abstract-sql-compiler.js';
 import {
 	Engines,
@@ -236,6 +238,8 @@ const UnknownValue: MetaMatchFn<UnknownTypeNodes> = (args) => {
 		case 'ConvertRow':
 		case 'SelectQuery':
 		case 'UnionQuery':
+		case 'RangeLower':
+		case 'RangeUpper':
 			return typeRules[type](rest);
 		default:
 			throw new Error(`Invalid "UnknownValue" type: ${type}`);
@@ -915,6 +919,8 @@ const typeRules = {
 			: ['DateTrunc', precision, date];
 	},
 	ToTime: matchArgs<ToTimeNode>('ToTime', DateValue),
+	RangeLower: matchArgs<RangeLowerNode>('RangeLower', AnyValue),
+	RangeUpper: matchArgs<RangeUpperNode>('RangeUpper', AnyValue),
 	ExtractJSONPathAsText: (args): ExtractJSONPathAsTextNode => {
 		checkMinArgs('ExtractJSONPathAsText', args, 1);
 		const json = JSONValue(getAbstractSqlQuery(args, 0));
