@@ -185,6 +185,9 @@ export type ToDateNode = ['ToDate', DateTypeNodes];
 export type ToTimeNode = ['ToTime', DateTypeNodes];
 export type CurrentTimestampNode = ['CurrentTimestamp'];
 export type CurrentDateNode = ['CurrentDate'];
+// Range extraction functions
+export type RangeLowerNode = ['RangeLower', AnyTypeNodes];
+export type RangeUpperNode = ['RangeUpper', AnyTypeNodes];
 export type StrictDateTypeNodes =
 	| DateNode
 	| ToDateNode
@@ -194,7 +197,9 @@ export type StrictDateTypeNodes =
 	| DateTruncNode
 	| SubtractDateNumberNode
 	| SubtractDateDurationNode
-	| AddDateTypeNodes;
+	| AddDateTypeNodes
+	| RangeLowerNode
+	| RangeUpperNode;
 export type DateTypeNodes = StrictDateTypeNodes | UnknownTypeNodes;
 
 // Date operations return different types dependent on the operand types
