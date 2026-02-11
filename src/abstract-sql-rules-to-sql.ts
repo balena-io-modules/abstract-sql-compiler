@@ -89,6 +89,8 @@ const UnknownValue: MetaMatchFn = (args, indent) => {
 		case 'TextArray':
 		case 'FnCall':
 		case 'JSONPopulateRecord':
+		case 'RangeLower':
+		case 'RangeUpper':
 			return typeRules[type](rest, indent);
 		case 'SelectQuery':
 		case 'UnionQuery': {
@@ -1679,6 +1681,16 @@ const typeRules: Record<string, MatchFn> = {
 				return AnyValue(arg, indent);
 			})
 			.join(', ')})`;
+	},
+	RangeLower: (args, indent) => {
+		checkArgs('RangeLower', args, 1);
+		const range = AnyValue(getAbstractSqlQuery(args, 0), indent);
+		return `LOWER(${range})`;
+	},
+	RangeUpper: (args, indent) => {
+		checkArgs('RangeUpper', args, 1);
+		const range = AnyValue(getAbstractSqlQuery(args, 0), indent);
+		return `UPPER(${range})`;
 	},
 };
 
