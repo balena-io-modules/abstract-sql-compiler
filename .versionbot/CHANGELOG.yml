@@ -1,4 +1,18 @@
 - commits:
+    - subject: "Add id-token: write permission for NPM OIDC publishing"
+      hash: 0eaaeff40d5cbc496038b4328ae203c1769ce584
+      body: ""
+      footer:
+        Change-type: patch
+        change-type: patch
+        Signed-off-by: Kyle Harding <kyle@balena.io>
+        signed-off-by: Kyle Harding <kyle@balena.io>
+      author: Kyle Harding
+      nested: []
+  version: 11.3.2
+  title: ""
+  date: 2026-02-19T14:07:34.826Z
+- commits:
     - subject: Extract convertReferencedFieldsToFields helper and switch to a for loop
       hash: e34931fdfb981f00a1630a0e01f6a0bb52ee3118
       body: ""
