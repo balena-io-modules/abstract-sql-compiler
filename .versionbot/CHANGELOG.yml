@@ -1,4 +1,18 @@
 - commits:
+    - subject: Split the check-constraint schema optimization to a separate file
+      hash: b54ec3a27411b354e192238d4af0797e2becf976
+      body: ""
+      footer:
+        Change-type: patch
+        change-type: patch
+        See: https://balena.fibery.io/Work/Project/961
+        see: https://balena.fibery.io/Work/Project/961
+      author: Thodoris Greasidis
+      nested: []
+  version: 11.3.3
+  title: ""
+  date: 2026-03-11T15:25:54.082Z
+- commits:
     - subject: "Add id-token: write permission for NPM OIDC publishing"
       hash: 0eaaeff40d5cbc496038b4328ae203c1769ce584
       body: ""
