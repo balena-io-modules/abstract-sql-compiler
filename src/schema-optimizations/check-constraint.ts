@@ -6,7 +6,12 @@ import type {
 	Check,
 	WhereNode,
 } from '../abstract-sql-compiler.js';
-import { isFromNode, isSelectQueryNode } from '../abstract-sql-compiler.js';
+import {
+	isAliasNode,
+	isFromNode,
+	isSelectQueryNode,
+} from '../abstract-sql-compiler.js';
+import { convertReferencedFieldsToFields } from './utils.js';
 import { generateRuleSlug } from '../abstract-sql-schema-optimizer.js';
 
 const countFroms = (n: AbstractSqlType[]) => {
@@ -21,19 +26,6 @@ const countFroms = (n: AbstractSqlType[]) => {
 		}
 	});
 	return count;
-};
-
-const convertReferencedFieldsToFields = (nodes: AbstractSqlType[]) => {
-	for (let i = 0; i < nodes.length; i++) {
-		const node = nodes[i];
-		if (Array.isArray(node)) {
-			if (node[0] === 'ReferencedField') {
-				nodes[i] = ['Field', node[2]];
-			} else {
-				convertReferencedFieldsToFields(node as AbstractSqlType[]);
-			}
-		}
-	}
 };
 
 export function convertRuleToCheckConstraint(
@@ -56,10 +48,13 @@ export function convertRuleToCheckConstraint(
 			selectQueryNodes.every((n) => ['Select', 'From', 'Where'].includes(n[0]))
 		) {
 			let fromNode = selectQueryNodes.find(isFromNode)![1];
-			if (fromNode[0] === 'Alias') {
+			let tableNameOrAlias: string | undefined;
+			if (isAliasNode(fromNode)) {
+				tableNameOrAlias = fromNode[2];
 				fromNode = fromNode[1];
 			}
 			if (fromNode[0] === 'Table') {
+				tableNameOrAlias ??= fromNode[1];
 				const whereNodes = selectQueryNodes.filter(
 					(n): n is WhereNode => n[0] === 'Where',
 				);
@@ -72,7 +67,7 @@ export function convertRuleToCheckConstraint(
 				// This replaces the `Not` we stripped from the `NotExists`
 				whereNode = ['Not', whereNode];
 
-				convertReferencedFieldsToFields(whereNode);
+				convertReferencedFieldsToFields(tableNameOrAlias, whereNode);
 
 				const tableName = fromNode[1];
 				const table = Object.values(abstractSqlModel.tables).find(
