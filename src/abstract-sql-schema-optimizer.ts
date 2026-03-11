@@ -5,24 +5,8 @@ import type {
 	AbstractSqlField,
 	AbstractSqlModel,
 	AbstractSqlType,
-	BooleanTypeNodes,
-	WhereNode,
 } from './abstract-sql-compiler.js';
-import { isFromNode, isSelectQueryNode } from './abstract-sql-compiler.js';
-
-const countFroms = (n: AbstractSqlType[]) => {
-	let count = 0;
-	n.forEach((p) => {
-		if (Array.isArray(p)) {
-			if (isFromNode(p)) {
-				count++;
-			} else {
-				count += countFroms(p as AbstractSqlType[]);
-			}
-		}
-	});
-	return count;
-};
+import { convertRuleToCheckConstraint } from './schema-optimizations/check-constraint.js';
 
 export const generateRuleSlug = (
 	tableName: string,
@@ -33,19 +17,6 @@ export const generateRuleSlug = (
 	).replace(/^\$sha256\$/, '');
 	// Trim the trigger to a max of 63 characters, reserving at least 32 characters for the hash
 	return `${tableName.slice(0, 30)}$${sha}`.slice(0, 63);
-};
-
-const convertReferencedFieldsToFields = (nodes: AbstractSqlType[]) => {
-	for (let i = 0; i < nodes.length; i++) {
-		const node = nodes[i];
-		if (Array.isArray(node)) {
-			if (node[0] === 'ReferencedField') {
-				nodes[i] = ['Field', node[2]];
-			} else {
-				convertReferencedFieldsToFields(node as AbstractSqlType[]);
-			}
-		}
-	}
 };
 
 export const optimizeSchema = (
@@ -117,56 +88,11 @@ export const optimizeSchema = (
 			// Optimize the rule body, this also normalizes it making the check constraint check easier
 			ruleBodyNode[1] = ruleBody = AbstractSQLOptimizer(ruleBody, true);
 
-			const count = countFroms(ruleBody);
 			if (
 				createCheckConstraints &&
-				count === 1 &&
-				(ruleBody[0] === 'NotExists' ||
-					(ruleBody[0] === 'Equals' &&
-						ruleBody[2][0] === 'Number' &&
-						ruleBody[2][1] === 0)) &&
-				isSelectQueryNode(ruleBody[1])
+				convertRuleToCheckConstraint(abstractSqlModel, ruleSE, ruleBody)
 			) {
-				const selectQueryNodes = ruleBody[1].slice(1);
-				if (
-					selectQueryNodes.every((n) =>
-						['Select', 'From', 'Where'].includes(n[0]),
-					)
-				) {
-					let fromNode = selectQueryNodes.find(isFromNode)![1];
-					if (fromNode[0] === 'Alias') {
-						fromNode = fromNode[1];
-					}
-					if (fromNode[0] === 'Table') {
-						const whereNodes = selectQueryNodes.filter(
-							(n): n is WhereNode => n[0] === 'Where',
-						);
-						let whereNode: BooleanTypeNodes;
-						if (whereNodes.length > 1) {
-							whereNode = ['And', ...whereNodes.map((n) => n[1])];
-						} else {
-							whereNode = whereNodes[0][1];
-						}
-						// This replaces the `Not` we stripped from the `NotExists`
-						whereNode = ['Not', whereNode];
-
-						convertReferencedFieldsToFields(whereNode);
-
-						const tableName = fromNode[1];
-						const table = Object.values(abstractSqlModel.tables).find(
-							(t) => t.name === tableName,
-						);
-						if (table) {
-							table.checks ??= [];
-							table.checks.push({
-								description: ruleSE,
-								name: generateRuleSlug(tableName, ruleBody),
-								abstractSql: whereNode,
-							});
-							return;
-						}
-					}
-				}
+				return;
 			}
 
 			return rule;
