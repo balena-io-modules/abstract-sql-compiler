@@ -1,4 +1,19 @@
 - commits:
+    - subject: "optimizations/check-constraint: Check that the ReferencedFieldToField
+        conversion only runs for the expected table"
+      hash: 41bd92a6d0094286234e7fe02af2694ea5746836
+      body: ""
+      footer:
+        Change-type: patch
+        change-type: patch
+        See: https://balena.fibery.io/Work/Project/961
+        see: https://balena.fibery.io/Work/Project/961
+      author: Thodoris Greasidis
+      nested: []
+  version: 11.3.4
+  title: ""
+  date: 2026-03-17T15:14:16.563Z
+- commits:
     - subject: Split the check-constraint schema optimization to a separate file
       hash: b54ec3a27411b354e192238d4af0797e2becf976
       body: ""
