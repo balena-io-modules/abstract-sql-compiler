@@ -32,7 +32,7 @@
     "@types/chai": "^5.2.2",
     "@types/common-tags": "^1.8.4",
     "@types/mocha": "^10.0.10",
-    "@types/node": "^20.19.11",
+    "@types/node": "^24.0.0",
     "chai": "^6.0.0",
     "common-tags": "^1.8.2",
     "husky": "^9.1.7",
