@@ -502,6 +502,11 @@ export const checkMinArgs = (matchName: string, args: any[], num: number) => {
 		throw new SyntaxError(`"${matchName}" requires at least ${num} arg(s)`);
 	}
 };
+export const checkMaxArgs = (matchName: string, args: any[], num: number) => {
+	if (args.length > num) {
+		throw new SyntaxError(`"${matchName}" requires at most ${num} arg(s)`);
+	}
+};
 
 const AddDateNumber: MatchFn = (args, indent) => {
 	checkArgs('AddDateNumber', args, 2);
@@ -748,6 +753,7 @@ const typeRules: Record<string, MatchFn> = {
 			OrderBy: '',
 			Limit: '',
 			Offset: '',
+			LockingClause: '',
 		};
 		for (const arg of args) {
 			if (!isAbstractSqlQuery(arg)) {
@@ -779,6 +785,7 @@ const typeRules: Record<string, MatchFn> = {
 				case 'OrderBy':
 				case 'Limit':
 				case 'Offset':
+				case 'LockingClause':
 					if (groups[type] !== '') {
 						throw new SyntaxError(
 							`'SelectQuery' can only accept one '${type}'`,
@@ -814,7 +821,8 @@ const typeRules: Record<string, MatchFn> = {
 			groups.Having +
 			groups.OrderBy +
 			groups.Limit +
-			groups.Offset
+			groups.Offset +
+			groups.LockingClause
 		);
 	},
 	Select: (args, indent) => {
@@ -1679,6 +1687,21 @@ const typeRules: Record<string, MatchFn> = {
 				return AnyValue(arg, indent);
 			})
 			.join(', ')})`;
+	},
+	LockingClause: (args) => {
+		if (engine !== Engines.postgres) {
+			throw new SyntaxError('LockingClauses not supported on: ' + engine);
+		}
+		checkMinArgs('LockingClause', args, 1);
+		checkMaxArgs('LockingClause', args, 3);
+		const [lockStrength, fromReference, lockedBehavior] = args;
+		const compiledReferences =
+			Array.isArray(fromReference) && fromReference.length > 0
+				? ` OF ${fromReference.map((r) => `"${r}"`).join(', ')}`
+				: '';
+		const compiledLockedBehavior =
+			lockedBehavior != null ? ` ${lockedBehavior}` : '';
+		return `FOR ${lockStrength}${compiledReferences}${compiledLockedBehavior}`;
 	},
 };
 
