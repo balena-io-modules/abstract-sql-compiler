@@ -1,4 +1,26 @@
 - commits:
+    - subject: Update product-os/flowzone digest to eb703ea
+      hash: a12800ff78023a1f82bd08e95301afcced33195a
+      body: |
+        Update product-os/flowzone
+      footer:
+        Change-type: patch
+        change-type: patch
+      author: balena-renovate[bot]
+      nested: []
+    - subject: Pin product-os/flowzone action to 54776e8
+      hash: cd45ca6dbfcebc746337a925b01feaf26e9f8d02
+      body: |
+        Update product-os/flowzone
+      footer:
+        Change-type: patch
+        change-type: patch
+      author: balena-renovate[bot]
+      nested: []
+  version: 11.3.5
+  title: ""
+  date: 2026-03-25T20:03:02.960Z
+- commits:
     - subject: "optimizations/check-constraint: Check that the ReferencedFieldToField
         conversion only runs for the expected table"
       hash: 41bd92a6d0094286234e7fe02af2694ea5746836
