@@ -23,7 +23,7 @@
     "@balena/sbvr-types": "^7.1.0 || ^8.0.0 || ^9.0.2 || ^10.0.0 || ^11.0.0"
   },
   "devDependencies": {
-    "@balena/lf-to-abstract-sql": "^5.0.10",
+    "@balena/lf-to-abstract-sql": "^6.0.0",
     "@balena/lint": "^9.3.2",
     "@balena/odata-parser": "^4.2.6",
     "@balena/odata-to-abstract-sql": "^10.0.1",
