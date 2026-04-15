@@ -1,4 +1,45 @@
 - commits:
+    - subject: Update dependency @balena/lf-to-abstract-sql to v6
+      hash: 65f107f2c8de968cdda01ba71aea1e6bb7127a37
+      body: |
+        Update @balena/lf-to-abstract-sql from 5.0.31 to 6.0.0
+      footer:
+        Change-type: patch
+        change-type: patch
+      author: balena-renovate[bot]
+      nested:
+        - commits:
+            - subject: Drop support for nodejs < 22.2.0
+              hash: 6499c4f1b5e05382c3efc667619e1840130bad86
+              body: ""
+              footer:
+                Change-type: major
+                change-type: major
+              author: Thodoris Greasidis
+              nested: []
+            - subject: Replace attribute check with single this.tables lookup
+              hash: da88a79627609665328142984b8c60baf30413ae
+              body: |
+                this.attributes was a redundant registry that
+                only AttrDatabaseAttribute ever wrote to, causing
+                the term-form case to be missed. All other rules
+                already use GetTable() === 'Attribute' so align
+                ProcessAtomicFormulationsAttributes with the same
+                pattern.
+              footer:
+                Change-type: patch
+                change-type: patch
+                Signed-off-by: jaomaloy <jan.maloy@balena.io>
+                signed-off-by: jaomaloy <jan.maloy@balena.io>
+              author: jaomaloy
+              nested: []
+          version: lf-to-abstract-sql-6.0.0
+          title: ""
+          date: 2026-04-06T16:06:16.378Z
+  version: 11.3.19
+  title: ""
+  date: 2026-04-15T09:50:04.588Z
+- commits:
     - subject: Revert flowzone pinning to master
       hash: 14578726007f8ed6baf4ec23bfe21aee6f7f1cd4
       body: ""
