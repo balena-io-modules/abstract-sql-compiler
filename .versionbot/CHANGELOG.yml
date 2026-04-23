@@ -1,4 +1,21 @@
 - commits:
+    - subject: Add Upper/Lower range functions
+      hash: bbd09083d41fe6e4bd5df8744eb1c13c53c4ffa2
+      body: |
+        Allow querying upper/lower limits
+        of a range such as a "Date Time Range"
+        (Tstzrange).
+      footer:
+        Change-type: patch
+        change-type: patch
+        Signed-off-by: jaomaloy <jan.maloy@balena.io>
+        signed-off-by: jaomaloy <jan.maloy@balena.io>
+      author: jaomaloy
+      nested: []
+  version: 11.3.20
+  title: ""
+  date: 2026-04-23T14:59:42.295Z
+- commits:
     - subject: Update dependency @balena/lf-to-abstract-sql to v6
       hash: 65f107f2c8de968cdda01ba71aea1e6bb7127a37
       body: |
