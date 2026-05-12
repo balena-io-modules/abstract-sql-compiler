@@ -1,4 +1,17 @@
 - commits:
+    - subject: Update dependency lint-staged to v17
+      hash: e0377e2b1141de4f64d6ff1192d61e0c105af2a7
+      body: |
+        Update lint-staged from 16.4.0 to 17.0.0
+      footer:
+        Change-type: patch
+        change-type: patch
+      author: balena-renovate[bot]
+      nested: []
+  version: 11.3.21
+  title: ""
+  date: 2026-05-12T04:26:54.615Z
+- commits:
     - subject: Add Upper/Lower range functions
       hash: bbd09083d41fe6e4bd5df8744eb1c13c53c4ffa2
       body: |
