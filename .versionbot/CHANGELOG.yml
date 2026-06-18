@@ -1,4 +1,16 @@
 - commits:
+    - subject: Update typescript to 6.x
+      hash: 2325cf82a4f27a5a5b004bebed9a7c4c160667d1
+      body: ""
+      footer:
+        Change-type: patch
+        change-type: patch
+      author: Pagan Gazzard
+      nested: []
+  version: 11.3.23
+  title: ""
+  date: 2026-06-18T13:38:15.685Z
+- commits:
     - subject: Pin dependencies
       hash: fbd0ef32992a8d2d3ce7605b264d91f056f84e41
       body: |
