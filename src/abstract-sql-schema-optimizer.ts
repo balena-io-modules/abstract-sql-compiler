@@ -7,6 +7,7 @@ import type {
 	AbstractSqlType,
 } from './abstract-sql-compiler.js';
 import { convertRuleToCheckConstraint } from './schema-optimizations/check-constraint.js';
+import { convertRuleToPartialUniqueIndex } from './schema-optimizations/partial-unique-index.js';
 
 export const generateRuleSlug = (
 	tableName: string,
@@ -21,7 +22,11 @@ export const generateRuleSlug = (
 
 export const optimizeSchema = (
 	abstractSqlModel: AbstractSqlModel,
-	{ createCheckConstraints = true } = {},
+	{
+		createCheckConstraints = true,
+		// TODO: default this to true in the next major
+		createPartialUniqueIndexes = false,
+	} = {},
 ): AbstractSqlModel => {
 	for (const resourceName of Object.keys(abstractSqlModel.tables)) {
 		const table = abstractSqlModel.tables[resourceName];
@@ -91,6 +96,13 @@ export const optimizeSchema = (
 			if (
 				createCheckConstraints &&
 				convertRuleToCheckConstraint(abstractSqlModel, ruleSE, ruleBody)
+			) {
+				return;
+			}
+
+			if (
+				createPartialUniqueIndexes &&
+				convertRuleToPartialUniqueIndex(abstractSqlModel, ruleSE, ruleBody)
 			) {
 				return;
 			}
