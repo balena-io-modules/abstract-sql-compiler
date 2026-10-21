@@ -51,4 +51,226 @@ describe('Empty queries should be optimized', () => {
 			});
 		},
 	);
+
+	const emptyCountQuery: SelectQueryNode = [
+		'SelectQuery',
+		['Select', [['Count', '*']]],
+		['From', ['Table', 'table']],
+		['Where', ['Boolean', false]],
+	];
+	test(
+		[
+			'SelectQuery',
+			['Select', []],
+			['From', ['Table', 'table']],
+			['Where', ['Exists', emptyCountQuery]],
+		],
+		(result, sqlEquals) => {
+			it('should not simplify `EXISTS($emptyCountQuery)` as an aggregate without a GROUP BY always returns a row', () => {
+				sqlEquals(
+					result,
+					stripIndent`
+						SELECT 1
+						FROM "table"
+						WHERE EXISTS (
+							SELECT COUNT(*)
+							FROM "table"
+							WHERE false
+						)
+					`,
+				);
+			});
+		},
+	);
+
+	test(
+		[
+			'SelectQuery',
+			['Select', []],
+			['From', ['Table', 'table']],
+			['Where', ['NotExists', emptyCountQuery]],
+		],
+		(result, sqlEquals) => {
+			it('should not simplify `NOT EXISTS($emptyCountQuery)` as an aggregate without a GROUP BY always returns a row', () => {
+				sqlEquals(
+					result,
+					stripIndent`
+						SELECT 1
+						FROM "table"
+						WHERE NOT EXISTS (
+							SELECT COUNT(*)
+							FROM "table"
+							WHERE false
+						)
+					`,
+				);
+			});
+		},
+	);
+
+	const emptyHavingQuery: SelectQueryNode = [
+		'SelectQuery',
+		['Select', []],
+		['From', ['Table', 'table']],
+		['Where', ['Boolean', false]],
+		['Having', ['Equals', ['Count', '*'], ['Number', 0]]],
+	];
+	test(
+		[
+			'SelectQuery',
+			['Select', []],
+			['From', ['Table', 'table']],
+			['Where', ['Exists', emptyHavingQuery]],
+		],
+		(result, sqlEquals) => {
+			it('should not simplify `EXISTS($emptyHavingQuery)` as a HAVING without a GROUP BY makes it an aggregate query', () => {
+				sqlEquals(
+					result,
+					stripIndent`
+						SELECT 1
+						FROM "table"
+						WHERE EXISTS (
+							SELECT 1
+							FROM "table"
+							WHERE false
+							HAVING COUNT(*) = 0
+						)
+					`,
+				);
+			});
+		},
+	);
+
+	const emptyOrderByCountQuery: SelectQueryNode = [
+		'SelectQuery',
+		['Select', []],
+		['From', ['Table', 'table']],
+		['Where', ['Boolean', false]],
+		['OrderBy', ['ASC', ['Count', '*']]],
+	];
+	test(
+		[
+			'SelectQuery',
+			['Select', []],
+			['From', ['Table', 'table']],
+			['Where', ['Exists', emptyOrderByCountQuery]],
+		],
+		(result, sqlEquals) => {
+			it('should not simplify `EXISTS($emptyOrderByCountQuery)` as an aggregate in the ORDER BY makes it an aggregate query', () => {
+				sqlEquals(
+					result,
+					stripIndent`
+						SELECT 1
+						FROM "table"
+						WHERE EXISTS (
+							SELECT 1
+							FROM "table"
+							WHERE false
+							ORDER BY COUNT(*) ASC
+						)
+					`,
+				);
+			});
+		},
+	);
+
+	const emptyNestedSumQuery: SelectQueryNode = [
+		'SelectQuery',
+		[
+			'Select',
+			[
+				[
+					'SelectQuery',
+					['Select', [['Sum', ['ReferencedField', 'table', 'x']]]],
+				],
+			],
+		],
+		['From', ['Table', 'table']],
+		['Where', ['Boolean', false]],
+	];
+	test(
+		[
+			'SelectQuery',
+			['Select', []],
+			['From', ['Table', 'table']],
+			['Where', ['Exists', emptyNestedSumQuery]],
+		],
+		(result, sqlEquals) => {
+			it('should not simplify `EXISTS($emptyNestedSumQuery)` as an aggregate of outer columns in a subquery belongs to the outer query', () => {
+				sqlEquals(
+					result,
+					stripIndent`
+						SELECT 1
+						FROM "table"
+						WHERE EXISTS (
+							SELECT (
+								SELECT SUM("table"."x")
+							)
+							FROM "table"
+							WHERE false
+						)
+					`,
+				);
+			});
+		},
+	);
+
+	const emptyFnCallQuery: SelectQueryNode = [
+		'SelectQuery',
+		['Select', [['FnCall', 'lower', ['ReferencedField', 'table', 'name']]]],
+		['From', ['Table', 'table']],
+		['Where', ['Boolean', false]],
+	];
+	test(
+		[
+			'SelectQuery',
+			['Select', []],
+			['From', ['Table', 'table']],
+			['Where', ['Exists', emptyFnCallQuery]],
+		],
+		(result, sqlEquals) => {
+			it('should not simplify `EXISTS($emptyFnCallQuery)` as a function call may be an aggregate, eg `max`', () => {
+				sqlEquals(
+					result,
+					stripIndent`
+						SELECT 1
+						FROM "table"
+						WHERE EXISTS (
+							SELECT "lower"("table"."name")
+							FROM "table"
+							WHERE false
+						)
+					`,
+				);
+			});
+		},
+	);
+
+	const emptyGroupedCountQuery: SelectQueryNode = [
+		'SelectQuery',
+		['Select', [['Count', '*']]],
+		['From', ['Table', 'table']],
+		['Where', ['Boolean', false]],
+		['GroupBy', [['ReferencedField', 'table', 'id']]],
+	];
+	test(
+		[
+			'SelectQuery',
+			['Select', []],
+			['From', ['Table', 'table']],
+			['Where', ['Exists', emptyGroupedCountQuery]],
+		],
+		(result, sqlEquals) => {
+			it('should simplify `EXISTS($emptyGroupedCountQuery)` to `false` as a grouped aggregate returns no rows', () => {
+				sqlEquals(
+					result,
+					stripIndent`
+						SELECT 1
+						FROM "table"
+						WHERE false
+					`,
+				);
+			});
+		},
+	);
 });
