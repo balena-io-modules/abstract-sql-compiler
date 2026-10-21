@@ -679,7 +679,13 @@ const dataTypeGen = (
 		sbvrTypes?.[dataType as keyof typeof sbvrTypes]?.types?.[engine];
 	if (dbType != null) {
 		if (typeof dbType === 'function') {
-			return dbType(requiredStr, index);
+			// The type functions use their own default (eg `DEFAULT FALSE` for `Boolean`) when one isn't provided.
+			// The checks are passed along with the index so they end up in the same position as for other types
+			return dbType(
+				requiredStr,
+				checksString + index,
+				defaultValue === '' ? undefined : defaultValue,
+			);
 		}
 		return dbType + defaultValue + requiredStr + checksString + index;
 	} else {
