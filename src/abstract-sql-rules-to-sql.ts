@@ -498,10 +498,14 @@ const ExtractNumericDatePart = (type: keyof typeof dateFormats): MatchFn => {
 	};
 };
 
+// Doubling single quotes is the standard way to escape them in a string literal, supported by all our engines
+const stringLiteral = (value: unknown) =>
+	`'${String(value).replaceAll("'", "''")}'`;
+
 const Text: MatchFn = (args) => {
 	checkArgs('Text', args, 1);
 	if (noBinds) {
-		return `'${args[0]}'`;
+		return stringLiteral(args[0]);
 	} else {
 		return AddBind(['Text', args[0]]);
 	}
@@ -1007,7 +1011,7 @@ const typeRules: Record<string, MatchFn> = {
 	},
 	EmbeddedText: (args) => {
 		checkArgs('EmbeddedText', args, 1);
-		return `'${args[0]}'`;
+		return stringLiteral(args[0]);
 	},
 	TextArray: (args, indent) => {
 		const values = args.map((arg) => {
