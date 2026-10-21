@@ -1143,7 +1143,7 @@ const typeRules: Record<string, MatchFn> = {
 		return `REPLACE(${str}, ${find}, ${replacement})`;
 	},
 	ExtractJSONPathAsText: (args, indent) => {
-		checkMinArgs('ExtractJSONPathAsText', args, 1);
+		checkArgs('ExtractJSONPathAsText', args, 2);
 		if (engine !== Engines.postgres) {
 			throw new SyntaxError(
 				'ExtractJSONPathAsText not supported on: ' + engine,
@@ -1299,7 +1299,7 @@ const typeRules: Record<string, MatchFn> = {
 		return `ROW_TO_JSON(${value})`;
 	},
 	JSONPopulateRecord: (args, indent) => {
-		checkMinArgs('JSONPopulateRecord', args, 1);
+		checkArgs('JSONPopulateRecord', args, 2);
 		if (engine !== Engines.postgres) {
 			throw new SyntaxError('JSONPopulateRecord not supported on: ' + engine);
 		}
