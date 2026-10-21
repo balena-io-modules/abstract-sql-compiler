@@ -51,4 +51,35 @@ describe('Empty queries should be optimized', () => {
 			});
 		},
 	);
+
+	const emptyCountQuery: SelectQueryNode = [
+		'SelectQuery',
+		['Select', [['Count', '*']]],
+		['From', ['Table', 'table']],
+		['Where', ['Boolean', false]],
+	];
+	test(
+		[
+			'SelectQuery',
+			['Select', []],
+			['From', ['Table', 'table']],
+			['Where', ['Exists', emptyCountQuery]],
+		],
+		(result, sqlEquals) => {
+			it('should not simplify `EXISTS($emptyCountQuery)` as an aggregate without a GROUP BY always returns a row', () => {
+				sqlEquals(
+					result,
+					stripIndent`
+						SELECT 1
+						FROM "table"
+						WHERE EXISTS (
+							SELECT COUNT(*)
+							FROM "table"
+							WHERE false
+						)
+					`,
+				);
+			});
+		},
+	);
 });
