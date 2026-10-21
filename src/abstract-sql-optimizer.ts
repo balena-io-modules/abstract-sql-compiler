@@ -1031,6 +1031,10 @@ const typeRules = {
 			if (containsFalse) {
 				return ['Boolean', false];
 			}
+			if (conditions.length === 0) {
+				// Every condition was `true`
+				return ['Boolean', true];
+			}
 			if (maybeHelped) {
 				return ['And', ...conditions] as AndNode;
 			}
@@ -1165,6 +1169,10 @@ const typeRules = {
 			});
 			if (containsTrue) {
 				return ['Boolean', true];
+			}
+			if (conditions.length === 0) {
+				// Every condition was `false`
+				return ['Boolean', false];
 			}
 			if (maybeHelped) {
 				return ['Or', ...conditions] as OrNode;
