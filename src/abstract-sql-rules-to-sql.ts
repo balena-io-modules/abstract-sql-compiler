@@ -25,6 +25,9 @@ import {
 	isTableNode,
 } from './abstract-sql-compiler.js';
 
+const MICROSECONDS_IN_SECOND = 1e6;
+const MICROSECONDS_IN_MINUTE = 60 * MICROSECONDS_IN_SECOND;
+
 export type Binding =
 	[string, any] | ['Bind', number | string | [string, string]];
 export interface SqlResult {
@@ -1424,19 +1427,44 @@ const typeRules: Record<string, MatchFn> = {
 		if (day == null && hour == null && minute == null && second == null) {
 			throw new SyntaxError('Invalid duration');
 		}
+		// These are embedded directly in the sql so make sure they really are numbers
+		for (const [part, value] of Object.entries({ day, hour, minute, second })) {
+			if (value != null && !Number.isFinite(value)) {
+				throw new SyntaxError(
+					`Duration ${part} must be a finite number, got ${typeof value === 'number' ? value : typeof value}`,
+				);
+			}
+		}
+		// Postgres rejects minutes >= 60 and seconds > 60 in the `H:M:S` part, eg for the OData
+		// `duration'PT90M'`, so we carry any excess into the larger units. Seconds are handled as
+		// microseconds, which is the precision supported by both postgres and mysql, to avoid float issues
+		let hours = hour ?? 0;
+		let minutes = minute ?? 0;
+		let microseconds = Math.round((second ?? 0) * MICROSECONDS_IN_SECOND);
+		if (microseconds >= MICROSECONDS_IN_MINUTE) {
+			minutes += Math.floor(microseconds / MICROSECONDS_IN_MINUTE);
+			microseconds %= MICROSECONDS_IN_MINUTE;
+		}
+		if (minutes >= 60) {
+			hours += Math.floor(minutes / 60);
+			minutes %= 60;
+		}
 		return (
 			"INTERVAL '" +
 			(negative ? '-' : '') +
 			(day ?? '0') +
 			' ' +
 			(negative ? '-' : '') +
-			(hour ?? '0') +
+			hours +
 			':' +
-			(minute ?? '0') +
+			minutes +
 			':' +
-			// Force seconds to be at least 0.0 - required for mysql
-			Number(second ?? 0).toLocaleString('en', {
+			(microseconds / MICROSECONDS_IN_SECOND).toLocaleString('en', {
+				// Force seconds to be at least 0.0 - required for mysql
 				minimumFractionDigits: 1,
+				maximumFractionDigits: 6,
+				// Avoid thousands separators, eg `1,500.0`, which are invalid
+				useGrouping: false,
 			}) +
 			"'" +
 			(engine === Engines.mysql ? ' DAY_MICROSECOND' : '')
