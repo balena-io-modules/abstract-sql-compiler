@@ -213,6 +213,7 @@ const AnyValue: MetaMatchFn<AnyTypeNodes> = (args) => {
 		isNumericValue,
 		isBooleanValue,
 		isDurationValue,
+		isArrayValue,
 	]) {
 		if (matcher(type)) {
 			return typeRules[type](rest);
