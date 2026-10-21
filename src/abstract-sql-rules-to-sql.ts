@@ -272,7 +272,12 @@ const isAtomicNode = (n: AbstractSqlType): boolean =>
 	n[0] === 'Real' ||
 	n[0] === 'Integer' ||
 	n[0] === 'Boolean';
-const isNotDistinctFrom: MatchFn = (args, indent) => {
+const isNotDistinctFrom = (
+	args: AbstractSqlType[],
+	indent: string,
+	// Whether the caller wraps the result in parentheses itself, eg `NOT(...)`
+	isWrapped: boolean,
+): string => {
 	const a = getAbstractSqlQuery(args, 0);
 	const b = getAbstractSqlQuery(args, 1);
 
@@ -299,13 +304,16 @@ const isNotDistinctFrom: MatchFn = (args, indent) => {
 		if (!bIsNotNullable) {
 			isNotNullChecks.push(`${bSql} IS NOT NULL`);
 		}
-		const orBothNull =
-			!aIsNotNullable && !bIsNotNullable
-				? ` OR ${aSql} IS NULL AND ${bSql} IS NULL`
-				: '';
-		return `${isNotNullChecks.join(
+		const notNullEqualsSql = `${isNotNullChecks.join(
 			' AND ',
-		)} AND ${aSql} = ${bSql}${orBothNull}`;
+		)} AND ${aSql} = ${bSql}`;
+		if (aIsNotNullable || bIsNotNullable) {
+			return notNullEqualsSql;
+		}
+		const orBothNullSql = `${notNullEqualsSql} OR ${aSql} IS NULL AND ${bSql} IS NULL`;
+		// `OR` has a lower precedence than `AND`, so unless the caller wraps this we have to, otherwise
+		// combining it with another condition, eg `x AND <this>`, would parse as `(x AND ...) OR ...`
+		return isWrapped ? orBothNullSql : `(${orBothNullSql})`;
 	} else if (engine === Engines.mysql) {
 		return aSql + ' <=> ' + bSql;
 	} else if (engine === Engines.websql) {
@@ -1047,11 +1055,11 @@ const typeRules: Record<string, MatchFn> = {
 	Like: Comparison('Like'),
 	IsNotDistinctFrom: (args, indent) => {
 		checkArgs('IsNotDistinctFrom', args, 2);
-		return isNotDistinctFrom(args, indent);
+		return isNotDistinctFrom(args, indent, false);
 	},
 	IsDistinctFrom: (args, indent) => {
 		checkArgs('IsDistinctFrom', args, 2);
-		return 'NOT(' + isNotDistinctFrom(args, indent) + ')';
+		return 'NOT(' + isNotDistinctFrom(args, indent, true) + ')';
 	},
 	Between: (args, indent) => {
 		checkArgs('Between', args, 3);

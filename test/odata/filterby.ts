@@ -244,6 +244,9 @@ const createExpression = function (lhs: Operand, op?: Operand, rhs?: Operand) {
 				} else {
 					const mainCheck = `${lhsSql}${sqlOps[op]} ${rhsSql}`;
 					sql = `${lhsNullCheck}${rhsNullCheck}${mainCheck}${bothNullCheck}`;
+					if (bothNullCheck.length > 0) {
+						sql = `(${sql})`;
+					}
 				}
 			} else {
 				const mainCheck = `${lhs.sql}${sqlOps[op]} ${rhs.sql}`;
@@ -569,6 +572,22 @@ OR "pilot"."favourite colour" IS NOT NULL AND "pilot"."favourite colour" = $1)`,
 			});
 		},
 	);
+});
+
+run(function () {
+	const odata = 'name eq favourite_colour and age eq 1';
+	test(`/pilot?$filter=${odata}`, 'GET', [['Bind', 0]], (result, sqlEquals) => {
+		it('should select from pilot where "' + odata + '"', () => {
+			sqlEquals(
+				result,
+				`\
+SELECT ${pilotFieldsStr}
+FROM "pilot"
+WHERE ("pilot"."name" IS NOT NULL AND "pilot"."favourite colour" IS NOT NULL AND "pilot"."name" = "pilot"."favourite colour" OR "pilot"."name" IS NULL AND "pilot"."favourite colour" IS NULL)
+AND "pilot"."age" IS NOT NULL AND "pilot"."age" = ?`,
+			);
+		});
+	});
 });
 
 run(function () {
