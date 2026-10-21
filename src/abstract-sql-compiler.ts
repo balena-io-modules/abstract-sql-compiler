@@ -797,6 +797,7 @@ const compileSchema = (
 
 	const createSchemaStatements: string[] = [];
 	const alterSchemaStatements: string[] = [];
+	const dropAlterSchemaStatements: string[] = [];
 	let dropSchemaStatements: string[] = [];
 	const createComputedFunctions: string[] = [];
 	const dropComputedFunctions: string[] = [];
@@ -995,6 +996,10 @@ BEGIN
 	END IF;
 END;
 $$;`);
+						// The constraint has to be dropped before either table can be
+						dropAlterSchemaStatements.push(
+							`ALTER TABLE "${table.name}" DROP CONSTRAINT IF EXISTS "${table.name}_${fieldName}_fkey";`,
+						);
 					} else {
 						if (references.type !== 'informative') {
 							foreignKeys.push(fkDefinition);
@@ -1082,7 +1087,7 @@ IF NOT EXISTS(
 END IF;
 END;
 $$;`);
-				dropTriggers.push(`DROP TRIGGER "${triggerName}";`);
+				dropTriggers.push(`DROP TRIGGER "${triggerName}" ON "${table.name}";`);
 			}
 		}
 
@@ -1097,7 +1102,8 @@ CREATE TABLE ${ifNotExistsStr}"${table.name}" (
 				...createIndexes,
 				...createTriggers,
 			],
-			dropSQL: [...dropTriggers, `DROP TABLE "${table.name}";`],
+			// These get reversed along with all the other drop statements, so the triggers are dropped before the table
+			dropSQL: [`DROP TABLE "${table.name}";`, ...dropTriggers],
 			depends,
 		};
 	});
@@ -1147,6 +1153,7 @@ CREATE TABLE ${ifNotExistsStr}"${table.name}" (
 		throw new Error('Failed to resolve all schema dependencies');
 	}
 	createSchemaStatements.push(...alterSchemaStatements);
+	dropSchemaStatements.push(...dropAlterSchemaStatements);
 	// We put the computed function definitions last as they reference tables as their type, and potentially can in their body too,
 	// so we want the table definitions to all exist first
 	createSchemaStatements.push(...createComputedFunctions);
