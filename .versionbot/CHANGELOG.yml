@@ -1,4 +1,17 @@
 - commits:
+    - subject: Update dependency flowzonify to v0.4.22
+      hash: d722ea04628723bef2957ed814eea6c87bd1cad7
+      body: |
+        Update flowzonify from 0.0.0 to 0.4.22
+      footer:
+        Change-type: patch
+        change-type: patch
+      author: balena-renovate[bot]
+      nested: []
+  version: 11.3.27
+  title: ""
+  date: 2026-10-22T11:57:48.063Z
+- commits:
     - subject: Update dependency @swc-node/register to v1.12.1
       hash: d12e64e0bda949f842a28958b5ea58536263dddb
       body: |
