@@ -1,3 +1,4 @@
+import { expect } from 'chai';
 import test from './test.js';
 
 describe('Insert boolean value', () => {
@@ -16,6 +17,27 @@ describe('Insert boolean value', () => {
 INSERT INTO "test" ("foo")
 VALUES (TRUE)`,
 				);
+			});
+		},
+	);
+});
+
+describe('Insert with mismatched fields and values', () => {
+	test.fail(
+		[
+			'InsertQuery',
+			['From', ['Table', 'test']],
+			['Fields', ['foo', 'bar']],
+			['Values', [['Boolean', true]]],
+		],
+		(err) => {
+			it('should be rejected by the optimizer', () => {
+				expect(err)
+					.to.be.instanceOf(SyntaxError)
+					.with.property(
+						'message',
+						"'InsertQuery' requires Fields and Values components to have the same length or use a query for Values",
+					);
 			});
 		},
 	);

@@ -1459,11 +1459,12 @@ const typeRules = {
 				"'InsertQuery' requires Values component to be present if Fields are provided ",
 			);
 		}
+		const valuesNode = values[0]?.[1];
 		if (
-			fields.length !== 0 &&
-			values.length !== 0 &&
-			!['SelectQuery', 'UnionQuery'].includes(values[0][0]) &&
-			fields[0].length !== values[0].length
+			valuesNode != null &&
+			valuesNode[0] !== 'SelectQuery' &&
+			valuesNode[0] !== 'UnionQuery' &&
+			fields[0][1].length !== valuesNode.length
 		) {
 			throw new SyntaxError(
 				"'InsertQuery' requires Fields and Values components to have the same length or use a query for Values",
