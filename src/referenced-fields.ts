@@ -457,10 +457,7 @@ const countTableSelects = (
 		case 'LeftJoin':
 		case 'RightJoin': {
 			const joinNode = abstractSql as
-				| FullJoinNode
-				| InnerJoinNode
-				| LeftJoinNode
-				| RightJoinNode;
+				FullJoinNode | InnerJoinNode | LeftJoinNode | RightJoinNode;
 			assertAbstractSqlIsNotLegacy(joinNode[1]);
 			if (joinNode[2] !== undefined) {
 				assertAbstractSqlIsNotLegacy(joinNode[2][1]);
@@ -476,11 +473,7 @@ const countTableSelects = (
 		case 'TextArray':
 		case 'UnionQuery': {
 			const selectQueryNode = abstractSql as
-				| AndNode
-				| OrNode
-				| SelectQueryNode
-				| TextArrayNode
-				| UnionQueryNode;
+				AndNode | OrNode | SelectQueryNode | TextArrayNode | UnionQueryNode;
 			for (const arg of selectQueryNode.slice(1)) {
 				assertAbstractSqlIsNotLegacy(arg);
 				sum += countTableSelects(arg, table);

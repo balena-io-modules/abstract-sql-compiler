@@ -44,8 +44,7 @@ export function getTestHelpers(builtInVocab: string | boolean = false) {
 		it: Mocha.TestFunction,
 		input: string,
 		expectation:
-			| ((result: AbstractSQLCompiler.SqlModel | Error) => void)
-			| string[],
+			((result: AbstractSQLCompiler.SqlModel | Error) => void) | string[],
 	) => {
 		runExpectation(it, input, function (result) {
 			seSoFar += input + '\n';
@@ -69,8 +68,7 @@ export function getTestHelpers(builtInVocab: string | boolean = false) {
 		it: Mocha.TestFunction,
 		input: string,
 		expectation:
-			| ((result: AbstractSQLCompiler.SqlModel | Error) => void)
-			| string,
+			((result: AbstractSQLCompiler.SqlModel | Error) => void) | string,
 	) => {
 		runExpectation(it, 'Rule: ' + input, function (result) {
 			if (typeof expectation === 'function') {
