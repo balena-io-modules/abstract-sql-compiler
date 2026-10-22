@@ -1,4 +1,16 @@
 - commits:
+    - subject: Fix error message on `InsertQuery` with no fields
+      hash: 0fd0fecb6dca5b357ffb5cd3c678f1e4e2352ba3
+      body: ""
+      footer:
+        Change-type: patch
+        change-type: patch
+      author: Pagan Gazzard
+      nested: []
+  version: 11.3.30
+  title: ""
+  date: 2026-10-22T23:47:54.415Z
+- commits:
     - subject: Fix quotes not being escaped in text literals
       hash: 38772c1aa775eb59150ef4758ac627bdc0056228
       body: |
