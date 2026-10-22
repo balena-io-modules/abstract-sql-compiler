@@ -1415,7 +1415,7 @@ const typeRules = {
 							`'InsertQuery' can only accept one '${type}'`,
 						);
 					}
-					checkMinArgs('Update fields', rest, 1);
+					checkMinArgs('Insert fields', rest, 1);
 					fields = [arg as FieldsNode];
 					break;
 				case 'Values': {
