@@ -1,4 +1,23 @@
 - commits:
+    - subject: Fix quotes not being escaped in text literals
+      hash: 38772c1aa775eb59150ef4758ac627bdc0056228
+      body: |
+        `EmbeddedText`, and `Text` when binds are disabled (eg for check
+        constraints, partial index predicates and view definitions), were
+        embedded as `'<value>'` without escaping, so any value containing a `'`
+        generated invalid SQL. Eg an SBVR enum definition of `"O'Brien" or
+        "Smith"` generated `CHECK ("name" IN ('O'Brien', 'Smith'))`, causing the
+        table creation to fail. Single quotes are now doubled, which is the
+        standard escaping supported by all of our engines.
+      footer:
+        Change-type: patch
+        change-type: patch
+      author: Pagan Gazzard
+      nested: []
+  version: 11.3.29
+  title: ""
+  date: 2026-10-22T21:44:24.787Z
+- commits:
     - subject: Fix optimizing an `And`/`Or` where every condition is the same boolean
       hash: 889971b94a915486f57dcfa021664cea97466449
       body: >
