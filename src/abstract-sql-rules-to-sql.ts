@@ -1519,7 +1519,7 @@ const typeRules: Record<string, MatchFn> = {
 							`'InsertQuery' can only accept one '${type}'`,
 						);
 					}
-					checkMinArgs('Update fields', rest, 1);
+					checkMinArgs('Insert fields', rest, 1);
 					fields = getAbstractSqlQuery(rest, 0).map(escapeField);
 					break;
 				case 'Values': {
