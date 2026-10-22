@@ -239,8 +239,7 @@ export type AddDateDurationNode = [
 export type WhenNode = ['When', BooleanTypeNodes, AnyTypeNodes];
 export type ElseNode = ['Else', AnyTypeNodes];
 export type CaseNode =
-	| ['Case', ...WhenNode[]]
-	| ['Case', ...WhenNode[], ElseNode];
+	['Case', ...WhenNode[]] | ['Case', ...WhenNode[], ElseNode];
 
 export type BindNode = ['Bind', number | string] | ['Bind', [string, string]];
 export type CastNode = ['Cast', AnyTypeNodes, type: string | TableNode];
@@ -289,9 +288,7 @@ export type AggregateJSONNode = [
 	FieldNode | ReferencedFieldNode,
 ];
 export type StrictJSONTypeNodes =
-	| AggregateJSONNode
-	| ToJSONNode
-	| RowToJSONNode;
+	AggregateJSONNode | ToJSONNode | RowToJSONNode;
 export type JSONTypeNodes = StrictJSONTypeNodes | UnknownTypeNodes;
 
 export type EmbeddedTextNode = ['EmbeddedText', string];
@@ -348,11 +345,7 @@ export type StrictTextTypeNodes =
 export type TextTypeNodes = StrictTextTypeNodes | UnknownTypeNodes;
 
 export type JoinTypeNodes =
-	| InnerJoinNode
-	| LeftJoinNode
-	| RightJoinNode
-	| FullJoinNode
-	| CrossJoinNode;
+	InnerJoinNode | LeftJoinNode | RightJoinNode | FullJoinNode | CrossJoinNode;
 
 export type SelectQueryStatementNode =
 	| SelectNode

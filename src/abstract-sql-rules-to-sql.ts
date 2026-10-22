@@ -26,8 +26,7 @@ import {
 } from './abstract-sql-compiler.js';
 
 export type Binding =
-	| [string, any]
-	| ['Bind', number | string | [string, string]];
+	[string, any] | ['Bind', number | string | [string, string]];
 export interface SqlResult {
 	query: string;
 	bindings: Binding[];

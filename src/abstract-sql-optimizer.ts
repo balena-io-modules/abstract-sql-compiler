@@ -127,8 +127,7 @@ const {
 } = AbstractSQLRules2SQL;
 
 type OptimisationMatchFn<T extends AnyTypeNodes> =
-	| ((args: AbstractSqlType[]) => T | false)
-	| ((args: AbstractSqlType[]) => T);
+	((args: AbstractSqlType[]) => T | false) | ((args: AbstractSqlType[]) => T);
 type MetaMatchFn<T extends AnyTypeNodes> = (args: AbstractSqlQuery) => T;
 type MatchFn<T extends AnyTypeNodes> = (args: AbstractSqlType[]) => T;
 

@@ -22,9 +22,7 @@ const bindingsTest = function (
 
 type SqlEquals = (
 	actual:
-		| AbstractSQLCompiler.SqlResult
-		| AbstractSQLCompiler.SqlResult[]
-		| string,
+		AbstractSQLCompiler.SqlResult | AbstractSQLCompiler.SqlResult[] | string,
 	expected: string,
 ) => void;
 const equals: SqlEquals = (actual, expected) => {

@@ -28,12 +28,7 @@ type ParsedOperand = {
 	sql: string;
 };
 type Operand =
-	| string
-	| number
-	| boolean
-	| Date
-	| DurationNode[1]
-	| ParsedOperand;
+	string | number | boolean | Date | DurationNode[1] | ParsedOperand;
 
 const get = (object: Record<string, any>, propertyPath: string[]) =>
 	propertyPath.reduce((obj, path) => obj?.[path], object);
