@@ -1,4 +1,26 @@
 - commits:
+    - subject: Fix optimizing an `And`/`Or` where every condition is the same boolean
+      hash: 889971b94a915486f57dcfa021664cea97466449
+      body: >
+        The boolean reduction removed every `true` from an `And` (or every
+        `false`
+
+        from an `Or`), but when that was every condition it produced an empty
+
+        `['And']`/`['Or']`, which then failed with `"And" requires at least 2
+
+        arg(s)`. Eg `['And', ['Boolean', true], ['Boolean', true]]` could not be
+
+        compiled. These now reduce to `true` and `false` respectively.
+      footer:
+        Change-type: patch
+        change-type: patch
+      author: Pagan Gazzard
+      nested: []
+  version: 11.3.28
+  title: ""
+  date: 2026-10-22T14:42:23.938Z
+- commits:
     - subject: Update dependency flowzonify to v0.4.22
       hash: d722ea04628723bef2957ed814eea6c87bd1cad7
       body: |
