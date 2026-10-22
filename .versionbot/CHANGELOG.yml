@@ -1,4 +1,40 @@
 - commits:
+    - subject: Fix `IsNotDistinctFrom` precedence when combined with other conditions
+      hash: 70726f99865a70ed3b3b468d2460152f6bc966f4
+      body: >
+        On postgres, when both operands are nullable `IsNotDistinctFrom`
+        compiles
+
+        to `a IS NOT NULL AND b IS NOT NULL AND a = b OR a IS NULL AND b IS
+        NULL`.
+
+        `OR` has a lower precedence than `AND`, so when that was combined with
+
+        other conditions, eg the OData `$filter=name eq favourite_colour and age
+        eq 1`
+
+        (odata-to-abstract-sql translates `eq` to `IsNotDistinctFrom`), the
+        other
+
+        conditions only applied to the "both null" branch and any row where the
+
+        first comparison matched was selected/updated/deleted regardless of the
+
+        rest of the filter.
+
+
+        The `OR` form is now wrapped in parentheses, unless the caller already
+
+        wraps it (`IsDistinctFrom` uses `NOT(...)`, so its output is unchanged).
+      footer:
+        Change-type: patch
+        change-type: patch
+      author: Pagan Gazzard
+      nested: []
+  version: 11.3.25
+  title: ""
+  date: 2026-10-22T10:02:14.049Z
+- commits:
     - subject: Update dependency lint-staged to v17.0.8
       hash: 51c3e6fc8c3989f35059f98a094a1f926a0592f9
       body: |
