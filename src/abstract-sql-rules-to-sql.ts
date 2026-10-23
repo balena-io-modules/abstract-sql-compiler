@@ -183,6 +183,7 @@ export const isBooleanValue = (
 		type === 'IsNotDistinctFrom' ||
 		type === 'IsDistinctFrom' ||
 		type === 'StartsWith' ||
+		type === 'EndsWith' ||
 		type === 'EqualsAny'
 	);
 };
