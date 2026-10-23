@@ -1,4 +1,27 @@
 - commits:
+    - subject: Fix `dropSchema` failing on postgres for triggers and circular references
+      hash: 045b20d2971f0f83804e8200465b8cc63cdbeb14
+      body: |
+        The generated drop schema could not be run on postgres:
+        - `DROP TRIGGER "name";` is missing the required `ON "table"`, and was
+          ordered after the `DROP TABLE` (which already drops its triggers).
+          Since lf-to-abstract-sql adds a `modified at` trigger to every table
+          this affected every model generated from SBVR
+        - foreign keys for circular references are added via `ALTER TABLE` and
+          were never dropped, so dropping either table failed with `cannot drop
+          table ... because other objects depend on it`
+
+        Triggers are now dropped with `ON "table"` before their table, and the
+        circular foreign key constraints are dropped before any tables.
+      footer:
+        Change-type: patch
+        change-type: patch
+      author: Pagan Gazzard
+      nested: []
+  version: 11.3.34
+  title: ""
+  date: 2026-10-23T10:33:10.374Z
+- commits:
     - subject: Fix the optimizer rejecting `TextArray` outside of JSON paths
       hash: 4762dd4e8616dd36358c0972eb1dacae2add723b
       body: >
