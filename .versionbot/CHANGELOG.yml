@@ -1,4 +1,17 @@
 - commits:
+    - subject: "Optimizer: fix `InsertQuery` check that `Fields`/`Values` have a
+        matching length"
+      hash: ea118646ecc39cc1dd6bfa5bdf4b1b0c6c47e5d6
+      body: ""
+      footer:
+        Change-type: patch
+        change-type: patch
+      author: Pagan Gazzard
+      nested: []
+  version: 11.3.32
+  title: ""
+  date: 2026-10-23T05:08:59.135Z
+- commits:
     - subject: Fix the `EndsWith` node being rejected
       hash: 77a204cab6886db9dfa4a9042d63b97ec488e2f9
       body: |
