@@ -925,7 +925,7 @@ const typeRules = {
 	RangeLower: matchArgs<RangeLowerNode>('RangeLower', RangeValue),
 	RangeUpper: matchArgs<RangeUpperNode>('RangeUpper', RangeValue),
 	ExtractJSONPathAsText: (args): ExtractJSONPathAsTextNode => {
-		checkMinArgs('ExtractJSONPathAsText', args, 1);
+		checkArgs('ExtractJSONPathAsText', args, 2);
 		const json = JSONValue(getAbstractSqlQuery(args, 0));
 		const path = ArrayValue(getAbstractSqlQuery(args, 1));
 		return ['ExtractJSONPathAsText', json, path];
