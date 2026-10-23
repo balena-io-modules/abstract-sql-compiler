@@ -1,4 +1,25 @@
 - commits:
+    - subject: Fix the optimizer rejecting `TextArray` outside of JSON paths
+      hash: 4762dd4e8616dd36358c0972eb1dacae2add723b
+      body: >
+        `TextArray` is a valid value node, and is compiled by the SQL generator
+
+        wherever a value is accepted, but the optimizer only recognized it as
+        the
+
+        path of `ExtractJSONPathAsText` and otherwise failed with `Invalid
+
+        "UnknownValue" type: TextArray`, eg for `['Select', [['TextArray',
+        ...]]]`.
+      footer:
+        Change-type: patch
+        change-type: patch
+      author: Pagan Gazzard
+      nested: []
+  version: 11.3.33
+  title: ""
+  date: 2026-10-23T05:48:19.832Z
+- commits:
     - subject: "Optimizer: fix `InsertQuery` check that `Fields`/`Values` have a
         matching length"
       hash: ea118646ecc39cc1dd6bfa5bdf4b1b0c6c47e5d6
