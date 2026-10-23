@@ -1,4 +1,20 @@
 - commits:
+    - subject: Fix the `EndsWith` node being rejected
+      hash: 77a204cab6886db9dfa4a9042d63b97ec488e2f9
+      body: |
+        `EndsWith` was added as a typed boolean node with a rewrite to `Like`
+        (bb2233220c988afaece120ece38e035c8dd14b02), but it was never added to
+        the compiler's list of boolean node types, so it was never reached and
+        any query using it failed with `Invalid "UnknownValue" type: EndsWith`.
+      footer:
+        Change-type: patch
+        change-type: patch
+      author: Pagan Gazzard
+      nested: []
+  version: 11.3.31
+  title: ""
+  date: 2026-10-23T01:10:12.414Z
+- commits:
     - subject: Fix error message on `InsertQuery` with no fields
       hash: 0fd0fecb6dca5b357ffb5cd3c678f1e4e2352ba3
       body: ""
