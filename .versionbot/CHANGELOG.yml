@@ -1,4 +1,16 @@
 - commits:
+    - subject: Fix `ExtractJSONPathAsText`/`JSONPopulateRecord` argument length check
+      hash: 22d49353d974440ed831f1c425adb17c2c6ed988
+      body: ""
+      footer:
+        Change-type: patch
+        change-type: patch
+      author: Pagan Gazzard
+      nested: []
+  version: 11.3.35
+  title: ""
+  date: 2026-10-23T11:23:58.084Z
+- commits:
     - subject: Fix `dropSchema` failing on postgres for triggers and circular references
       hash: 045b20d2971f0f83804e8200465b8cc63cdbeb14
       body: |
