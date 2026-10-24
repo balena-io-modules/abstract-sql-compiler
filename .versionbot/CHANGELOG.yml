@@ -1,4 +1,17 @@
 - commits:
+    - subject: Update dependency chai to v6.3.0
+      hash: 95d13c3a08d7990ce64beceb68138b3ab396f07a
+      body: |
+        Update chai from 6.2.2 to 6.3.0
+      footer:
+        Change-type: patch
+        change-type: patch
+      author: balena-renovate[bot]
+      nested: []
+  version: 11.3.36
+  title: ""
+  date: 2026-10-24T01:16:31.315Z
+- commits:
     - subject: Fix `ExtractJSONPathAsText`/`JSONPopulateRecord` argument length check
       hash: 22d49353d974440ed831f1c425adb17c2c6ed988
       body: ""
