@@ -1,4 +1,16 @@
 - commits:
+    - subject: Mark @balena/sbvr-types 12.x as a supported peer dependency
+      hash: d46fbfa0bef666180e4dec74e4ad9378f0119eff
+      body: ""
+      footer:
+        Change-type: patch
+        change-type: patch
+      author: Pagan Gazzard
+      nested: []
+  version: 11.3.39
+  title: ""
+  date: 2026-10-27T14:41:16.174Z
+- commits:
     - subject: Update dependency mocha to v11.8.0
       hash: 9da3fd38bf3cc00eb675000fc1bab582a2c9c3a9
       body: |
