@@ -1,4 +1,26 @@
 - commits:
+    - subject: Fix `dataTypeValidate` resolving with an error for unsupported types
+      hash: 55493482e5bb47b1bd1f3f526d16d68b37d062cd
+      body: >
+        When converting from bluebird (c103fcb) `return Promise.reject(new
+
+        Error(...))` became `return new Error(...)` in an async function, so for
+        an
+
+        unsupported data type the promise resolved with the `Error` as the
+
+        "validated" value instead of rejecting, and callers such as pinejs would
+
+        use that error object as the value to bind. It now rejects again.
+      footer:
+        Change-type: patch
+        change-type: patch
+      author: Pagan Gazzard
+      nested: []
+  version: 11.3.42
+  title: ""
+  date: 2026-10-30T22:05:55.685Z
+- commits:
     - subject: Fix converting rules to check constraints in cases where that is invalid
       hash: f3102a9aa3ab260a1ca0d5ccc39cc70f2bc14760
       body: >
