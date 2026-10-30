@@ -15,7 +15,7 @@
     "posttest": "npm run lint",
     "prepare": "node -e \"try { (await import('husky')).default() } catch (e) { if (e.code !== 'ERR_MODULE_NOT_FOUND') throw e }\" --input-type module && npm run build",
     "lint-fix": "balena-lint --fix src/ test/",
-    "lint": "balena-lint src/ test/ && tsc --noEmit"
+    "lint": "balena-lint src/ test/ && tsc --noEmit && tsc --noEmit --project ./test/tsconfig.json"
   },
   "repository": "https://github.com/balena-io-modules/abstract-sql-compiler.git",
   "author": "",
@@ -28,7 +28,6 @@
     "@balena/odata-parser": "^4.2.6",
     "@balena/odata-to-abstract-sql": "^10.0.1",
     "@balena/sbvr-parser": "^1.4.12",
-    "@swc-node/register": "1.12.1",
     "@types/chai": "5.2.3",
     "@types/common-tags": "1.8.4",
     "@types/mocha": "10.0.10",
@@ -48,7 +47,6 @@
   "mocha": {
     "reporter": "spec",
     "recursive": true,
-    "require": "@swc-node/register/esm-register",
     "enable-source-maps": true,
     "bail": true,
     "_": "test/**/*.ts"

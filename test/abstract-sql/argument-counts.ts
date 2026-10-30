@@ -1,5 +1,5 @@
 import { expect } from 'chai';
-import test from './test.js';
+import test from './test.ts';
 
 describe('ExtractJSONPathAsText argument count', () => {
 	test.fail(

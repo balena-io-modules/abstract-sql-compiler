@@ -1,6 +1,6 @@
 import * as AbstractSQLCompiler from '../../out/abstract-sql-compiler.js';
 import { expect } from 'chai';
-import test from './test.js';
+import test from './test.ts';
 
 describe('string literal escaping', () => {
 	test(

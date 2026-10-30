@@ -1,5 +1,5 @@
 import { stripIndent } from 'common-tags';
-import test from './test.js';
+import test from './test.ts';
 
 describe('NOT(NOT(...)) should cancel each other out', () => {
 	test(['Not', ['Not', ['Boolean', true]]], [], (result, sqlEquals) => {

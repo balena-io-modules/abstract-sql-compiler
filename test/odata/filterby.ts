@@ -4,14 +4,14 @@
  * Full docs: https://github.com/decaffeinate/decaffeinate/blob/master/docs/suggestions.md
  */
 import { expect } from 'chai';
-import type { ExpectationSuccessFn } from './test.js';
-import test, { clientModel } from './test.js';
+import type { ExpectationSuccessFn } from './test.ts';
+import test, { clientModel } from './test.ts';
 import { odataNameToSqlName } from '@balena/odata-to-abstract-sql';
 import {
 	pilotFields,
 	teamFields,
 	aliasPilotCanFlyPlaneFields,
-} from './fields.js';
+} from './fields.ts';
 import type {
 	Binding,
 	DurationNode,

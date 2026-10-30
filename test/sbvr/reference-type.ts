@@ -1,5 +1,5 @@
 import fs from 'node:fs';
-import { getTestHelpers } from './test.js';
+import { getTestHelpers } from './test.ts';
 
 const typeVocab = fs.readFileSync(
 	new URL(import.meta.resolve('@balena/sbvr-types/Type.sbvr')),

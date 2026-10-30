@@ -1,6 +1,6 @@
 import { expect } from 'chai';
-import type { ExpectationSuccessFn } from './test.js';
-import test from './test.js';
+import type { ExpectationSuccessFn } from './test.ts';
+import test from './test.ts';
 import ODataParser from '@balena/odata-parser';
 import {
 	pilotFields,
@@ -9,7 +9,7 @@ import {
 	aliasPlaneFields,
 	aliasPilotLicenceFields,
 	aliasLicenceFields,
-} from './fields.js';
+} from './fields.ts';
 import type { SqlResult } from '../../out/abstract-sql-compiler.js';
 const aliasPilotFields = aliasFields(
 	'plane.pilot-can fly-plane.pilot',

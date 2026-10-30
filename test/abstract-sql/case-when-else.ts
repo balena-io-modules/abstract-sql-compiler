@@ -2,7 +2,7 @@ import type {
 	CaseNode,
 	SelectQueryNode,
 } from '../../out/abstract-sql-compiler.js';
-import test from './test.js';
+import test from './test.ts';
 
 const buildSelect = (withElse: boolean): SelectQueryNode => {
 	let caseNode: CaseNode = [

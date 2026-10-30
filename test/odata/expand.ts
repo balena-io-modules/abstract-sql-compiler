@@ -1,12 +1,12 @@
-import type { ExpectationFailFn, ExpectationSuccessFn } from './test.js';
-import test from './test.js';
+import type { ExpectationFailFn, ExpectationSuccessFn } from './test.ts';
+import test from './test.ts';
 import {
 	pilotFields,
 	aliasFields,
 	aliasLicenceFields,
 	aliasPlaneFields,
 	aliasPilotCanFlyPlaneFields,
-} from './fields.js';
+} from './fields.ts';
 
 type TestFn = (
 	aggFunc: (field: string) => string,
