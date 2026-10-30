@@ -1,4 +1,17 @@
 - commits:
+    - subject: "Tests: switch from @swc-node/register to node type stripping"
+      hash: 8eefd2f8ccfebbe493d6b56dcf525d41c2185655
+      body: |
+        https://balena.fibery.io/Work/Project/3059
+      footer:
+        Change-type: patch
+        change-type: patch
+      author: Pagan Gazzard
+      nested: []
+  version: 11.3.40
+  title: ""
+  date: 2026-10-30T11:33:07.363Z
+- commits:
     - subject: Mark @balena/sbvr-types 12.x as a supported peer dependency
       hash: d46fbfa0bef666180e4dec74e4ad9378f0119eff
       body: ""
