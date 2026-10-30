@@ -1,4 +1,29 @@
 - commits:
+    - subject: Fix converting rules to check constraints in cases where that is invalid
+      hash: f3102a9aa3ab260a1ca0d5ccc39cc70f2bc14760
+      body: >
+        `optimizeSchema` (with `createCheckConstraints`, the default) converts
+
+        single table rules into check constraints, but:
+
+        - a `NOT EXISTS`/`COUNT(*) = 0` rule without a `Where` crashed with
+          `Cannot read properties of undefined`
+        - `(SELECT ...) = 0` was treated as `NOT EXISTS` regardless of what was
+          selected, eg `(SELECT SUM(x) FROM t WHERE c) = 0` became `CHECK (NOT c)`,
+          which is not equivalent
+        - a condition containing a subquery was converted, but check constraints
+          cannot contain subqueries
+
+        These rules are now left as rules.
+      footer:
+        Change-type: patch
+        change-type: patch
+      author: Pagan Gazzard
+      nested: []
+  version: 11.3.41
+  title: ""
+  date: 2026-10-30T16:27:49.063Z
+- commits:
     - subject: "Tests: switch from @swc-node/register to node type stripping"
       hash: 8eefd2f8ccfebbe493d6b56dcf525d41c2185655
       body: |
