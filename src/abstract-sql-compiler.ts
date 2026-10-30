@@ -960,7 +960,9 @@ $$;`);
 				);
 				if (
 					['ForeignKey', 'ConceptType'].includes(dataType) &&
-					references != null
+					references != null &&
+					// Informative references don't create a foreign key, so they also don't create a dependency
+					references.type !== 'informative'
 				) {
 					const referencedTable =
 						abstractSqlModel.tables[references.resourceName];
@@ -1001,9 +1003,7 @@ $$;`);
 							`ALTER TABLE "${table.name}" DROP CONSTRAINT IF EXISTS "${table.name}_${fieldName}_fkey";`,
 						);
 					} else {
-						if (references.type !== 'informative') {
-							foreignKeys.push(fkDefinition);
-						}
+						foreignKeys.push(fkDefinition);
 						depends.push(references.resourceName);
 						hasDependants[references.resourceName] = true;
 					}
