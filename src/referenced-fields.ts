@@ -11,7 +11,6 @@ import type {
 	CharacterLengthNode,
 	CountNode,
 	CrossJoinNode,
-	DateTruncNode,
 	EngineInstance,
 	EqualsNode,
 	ExistsNode,
@@ -353,11 +352,10 @@ function assertAbstractSqlIsNotLegacy(
 	}
 }
 
-// Find how many times an abstract sql fragment selects from the given table
-// TODO:
-// - Not all abstract sql nodes are supported here yet but hopefully nothing
-//   important is missing atm
-// - Create missing node types
+// Find how many times an abstract sql fragment selects from the given table.
+// Nodes that aren't explicitly handled have all of their arguments searched, which
+// can only ever over count (eg a `Table` used as a type), and over counting is safe
+// as it just means that we won't narrow
 const countTableSelects = (
 	abstractSql: AbstractSqlQuery,
 	table: string,
@@ -412,7 +410,6 @@ const countTableSelects = (
 		// Binary nodes
 		case 'AddDateDuration':
 		case 'AddDateNumber':
-		case 'DateTrunc':
 		case 'Equals':
 		case 'ExtractJSONPathAsText':
 		case 'GreaterThan':
@@ -428,7 +425,6 @@ const countTableSelects = (
 			const binaryOperation = abstractSql as
 				| AddDateDurationNode
 				| AddDateNumberNode
-				| DateTruncNode
 				| EqualsNode
 				| ExtractJSONPathAsTextNode
 				| GreaterThanNode
@@ -503,14 +499,17 @@ const countTableSelects = (
 			return sum;
 		}
 		// Uninteresting atomic nodes
+		case 'Bind':
 		case 'Boolean':
 		case 'Date':
 		case 'Duration':
 		case 'EmbeddedText':
+		case 'Field':
 		case 'GroupBy':
 		case 'Integer':
 		case 'Null':
 		case 'Number':
+		case 'Real':
 		case 'ReferencedField':
 		case 'Text':
 			return 0;
@@ -526,7 +525,14 @@ const countTableSelects = (
 			}
 		}
 		default:
-			throw new Error(`unknown abstract sql type: ${abstractSql[0]}`);
+			// This includes index 0 in case this is a list of nodes rather than a node
+			for (const arg of abstractSql) {
+				if (isAbstractSqlQuery(arg)) {
+					sum += countTableSelects(arg, table);
+				}
+			}
+
+			return sum;
 	}
 };
 
