@@ -11,6 +11,7 @@ import {
 	isFromNode,
 	isSelectQueryNode,
 } from '../abstract-sql-compiler.js';
+import { convertReferencedFieldsToFields } from './utils.js';
 import { generateRuleSlug } from '../abstract-sql-schema-optimizer.js';
 
 const countFroms = (n: AbstractSqlType[]) => {
@@ -25,30 +26,6 @@ const countFroms = (n: AbstractSqlType[]) => {
 		}
 	});
 	return count;
-};
-
-const convertReferencedFieldsToFields = (
-	tableNameOrAlias: string,
-	nodes: AbstractSqlType[],
-) => {
-	for (let i = 0; i < nodes.length; i++) {
-		const node = nodes[i];
-		if (Array.isArray(node)) {
-			if (node[0] === 'ReferencedField') {
-				if (node[1] !== tableNameOrAlias) {
-					throw new Error(
-						`Found ReferencedField of unexpected resource '${node[1]}' while converting ReferencedFields of '${tableNameOrAlias}' to Fields`,
-					);
-				}
-				nodes[i] = ['Field', node[2]];
-			} else {
-				convertReferencedFieldsToFields(
-					tableNameOrAlias,
-					node as AbstractSqlType[],
-				);
-			}
-		}
-	}
 };
 
 export function convertRuleToCheckConstraint(

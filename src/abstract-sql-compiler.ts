@@ -786,6 +786,7 @@ const compileSchema = (
 ): SqlModel => {
 	abstractSqlModel = optimizeSchema(abstractSqlModel, {
 		createCheckConstraints: false,
+		createPartialUniqueIndexes: false,
 	});
 
 	let ifNotExistsStr = '';
