@@ -639,7 +639,7 @@ const dataTypeValidate: EngineInstance['dataTypeValidate'] = async (
 	if (validateFn != null) {
 		return validateFn(value, required);
 	} else {
-		return new Error('is an unsupported type: ' + dataType);
+		throw new Error('is an unsupported type: ' + dataType);
 	}
 };
 

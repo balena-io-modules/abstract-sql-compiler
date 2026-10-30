@@ -1,6 +1,5 @@
 import $sbvrTypes from '@balena/sbvr-types';
 const { default: sbvrTypes } = $sbvrTypes;
-// @ts-expect-error @balena/sbvr-parser doesn't have types
 import { SBVRParser } from '@balena/sbvr-parser';
 // @ts-expect-error @balena/lf-to-abstract-sql doesn't have types
 import LF2AbstractSQL from '@balena/lf-to-abstract-sql';
@@ -8,7 +7,7 @@ import LF2AbstractSQL from '@balena/lf-to-abstract-sql';
 import { expect } from 'chai';
 import * as AbstractSQLCompiler from '../../out/abstract-sql-compiler.js';
 
-export function getTestHelpers(builtInVocab: string | boolean = false) {
+export function getTestHelpers(builtInVocab: string | false = false) {
 	const sbvrParser = SBVRParser.createInstance();
 	sbvrParser.enableReusingMemoizations(sbvrParser._sideEffectingRules);
 
