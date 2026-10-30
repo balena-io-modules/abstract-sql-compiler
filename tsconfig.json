@@ -13,6 +13,7 @@
 		"skipLibCheck": true,
 		"exactOptionalPropertyTypes": true,
 		"target": "es2023",
+		"rewriteRelativeImportExtensions": true,
 		"types": [
 			"mocha",
 			"node"

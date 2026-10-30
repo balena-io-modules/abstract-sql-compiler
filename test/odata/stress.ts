@@ -1,5 +1,5 @@
-import test from './test.js';
-import { pilotFields } from './fields.js';
+import test from './test.ts';
+import { pilotFields } from './fields.ts';
 const pilotFieldsStr = pilotFields.join(', ');
 
 const filterIDs = Array.from({ length: 4999 }, (_v, i) => i + 1);

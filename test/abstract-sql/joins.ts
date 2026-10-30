@@ -1,5 +1,5 @@
 import { stripIndent } from 'common-tags';
-import test from './test.js';
+import test from './test.ts';
 
 const joinTest = (
 	joinType: 'Join' | 'RightJoin' | 'LeftJoin' | 'FullJoin',
