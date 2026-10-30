@@ -77,6 +77,7 @@ import type {
 	RoundNode,
 	SelectNode,
 	SelectQueryNode,
+	SelectQueryStatementNode,
 	StrPosNode,
 	SubtractDateDateNode,
 	SubtractDateDurationNode,
@@ -110,6 +111,7 @@ import type {
 	RangeUpperNode,
 } from './abstract-sql-compiler.js';
 import {
+	abstractSqlContainsNode,
 	Engines,
 	isFieldNode,
 	isFieldTypeNode,
@@ -146,20 +148,41 @@ const Helper = <F extends (...args: any[]) => any>(fn: F) => {
 	};
 };
 
+// Function calls are included as they may be aggregates, eg `max`
+const aggregateNodeTypes = new Set([
+	'Count',
+	'Sum',
+	'Average',
+	'AggregateJSON',
+	'FnCall',
+]);
 const isEmptySelectQuery = (query: AnyTypeNodes): boolean => {
 	const [type, ...rest] = query;
-	switch (type) {
-		case 'SelectQuery':
-			for (const arg of rest as SelectQueryNode) {
-				if (arg[0] === 'Where') {
-					const maybeBool = arg[1];
-					if (maybeBool[0] === 'Boolean') {
-						if (maybeBool[1] === false) {
-							return true;
-						}
-					}
+	if (type !== 'SelectQuery') {
+		return false;
+	}
+	const clauses = rest as SelectQueryStatementNode[];
+	if (
+		// An aggregate query without a `GROUP BY` returns one row even when nothing matches the `WHERE`
+		!clauses.some((clause) => clause[0] === 'GroupBy') &&
+		clauses.some(
+			(clause) =>
+				clause[0] === 'Having' ||
+				(clause[0] === 'Select' &&
+					abstractSqlContainsNode(clause, (n) => aggregateNodeTypes.has(n[0]))),
+		)
+	) {
+		return false;
+	}
+	for (const arg of clauses) {
+		if (arg[0] === 'Where') {
+			const maybeBool = arg[1];
+			if (maybeBool[0] === 'Boolean') {
+				if (maybeBool[1] === false) {
+					return true;
 				}
 			}
+		}
 	}
 	return false;
 };
