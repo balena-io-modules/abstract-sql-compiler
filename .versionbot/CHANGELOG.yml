@@ -1,4 +1,39 @@
 - commits:
+    - subject: Fix compiling rules containing nodes unknown to the affected IDs
+        narrowing
+      hash: 6220a20ffb275aa22c998c8adb81f32be5f75b73
+      body: >
+        `countTableSelects` (used to decide whether a rule can be narrowed to
+        the
+
+        affected IDs) threw for any node type it did not explicitly list, and
+
+        `compileSchema` does not catch that error, so a single such rule made
+        the
+
+        whole model fail to compile. This includes plain SBVR rules, eg
+
+        `... has a years of experience that is greater than 2.5` (`Real`) or
+
+        `... can fly at least 2 and at most 5 planes` (`Between`).
+
+
+        Unlisted nodes now have all their arguments searched instead. This can
+
+        only over count (eg a `Table` used as a cast type), which is safe as it
+
+        just disables the narrowing for that rule. `DateTrunc` is also searched
+
+        fully now so its optional third argument is no longer skipped.
+      footer:
+        Change-type: patch
+        change-type: patch
+      author: Pagan Gazzard
+      nested: []
+  version: 11.3.44
+  title: ""
+  date: 2026-11-02T16:01:03.778Z
+- commits:
     - subject: Fix generating invalid intervals for durations with large components
       hash: de84a3b91c4eea46c975619d17779eacc21c8fc4
       body: >
