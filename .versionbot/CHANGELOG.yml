@@ -1,4 +1,41 @@
 - commits:
+    - subject: Fix generating invalid intervals for durations with large components
+      hash: de84a3b91c4eea46c975619d17779eacc21c8fc4
+      body: >
+        Durations are compiled to an `INTERVAL 'D H:M:S'` literal but:
+
+        - postgres rejects minutes >= 60 and seconds > 60 in that format, so
+          perfectly valid OData durations such as `duration'PT90M'` or
+          `duration'PT75S'` caused the query to fail
+        - seconds were formatted with `toLocaleString`, which added thousands
+          separators (`1,500.0`) and rounded to 3 decimal places
+
+        Minutes and seconds over the postgres limits are now carried into the
+
+        larger units, with seconds handled as whole microseconds (the precision
+
+        supported by postgres and mysql) to avoid floating point issues, and
+        they
+
+        are formatted without grouping. Durations that were already valid
+        produce
+
+        the same SQL as before.
+
+
+        The duration parts are also validated to be finite numbers since they
+        are
+
+        embedded directly in the SQL.
+      footer:
+        Change-type: patch
+        change-type: patch
+      author: Pagan Gazzard
+      nested: []
+  version: 11.3.43
+  title: ""
+  date: 2026-11-02T01:42:14.789Z
+- commits:
     - subject: Fix `dataTypeValidate` resolving with an error for unsupported types
       hash: 55493482e5bb47b1bd1f3f526d16d68b37d062cd
       body: >
