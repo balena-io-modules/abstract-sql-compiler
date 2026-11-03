@@ -1,4 +1,17 @@
 - commits:
+    - subject: Update dependency mocha to v12
+      hash: d62d2c1576fef26272842135fda25c5d6831ed98
+      body: |
+        Update mocha from 11.8.0 to 12.0.3
+      footer:
+        Change-type: patch
+        change-type: patch
+      author: balena-renovate[bot]
+      nested: []
+  version: 11.3.46
+  title: ""
+  date: 2026-11-03T11:56:48.299Z
+- commits:
     - subject: Update @balena/lint to 11.x
       hash: 65253778acdc5ad71e132272f0a97be0b5dd39d5
       body: ""
