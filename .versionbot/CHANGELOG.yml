@@ -1,4 +1,24 @@
 - commits:
+    - subject: Update @balena/lint to 11.x
+      hash: 65253778acdc5ad71e132272f0a97be0b5dd39d5
+      body: ""
+      footer:
+        Change-type: patch
+        change-type: patch
+      author: Pagan Gazzard
+      nested: []
+    - subject: Update dev dependencies
+      hash: 5364a0c1b99419b0f2a2376a8dcbe190c4a4e235
+      body: ""
+      footer:
+        Change-type: patch
+        change-type: patch
+      author: Pagan Gazzard
+      nested: []
+  version: 11.3.45
+  title: ""
+  date: 2026-11-03T05:11:05.321Z
+- commits:
     - subject: Fix compiling rules containing nodes unknown to the affected IDs
         narrowing
       hash: 6220a20ffb275aa22c998c8adb81f32be5f75b73
