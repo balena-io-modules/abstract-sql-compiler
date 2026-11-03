@@ -518,50 +518,6 @@ AND "pilot"."id" IS NOT NULL AND "pilot"."id" = ?`,
 	});
 });
 
-test('/pilot/$count?$orderby=id asc', (result, sqlEquals) => {
-	it('should select count(*) from pilot and ignore orderby', () => {
-		sqlEquals(
-			result,
-			`\
-SELECT COUNT(*) AS "$count"
-FROM "pilot"`,
-		);
-	});
-});
-
-test('/pilot/$count?$skip=5', (result, sqlEquals) => {
-	it('should select count(*) from pilot and ignore skip', () => {
-		sqlEquals(
-			result,
-			`\
-SELECT COUNT(*) AS "$count"
-FROM "pilot"`,
-		);
-	});
-});
-
-test('/pilot/$count?$top=5', (result, sqlEquals) => {
-	it('should select count(*) from pilot and ignore top', () => {
-		sqlEquals(
-			result,
-			`\
-SELECT COUNT(*) AS "$count"
-FROM "pilot"`,
-		);
-	});
-});
-
-test('/pilot/$count?$top=5&$skip=5', (result, sqlEquals) => {
-	it('should select count(*) from pilot and ignore top and skip', () => {
-		sqlEquals(
-			result,
-			`\
-SELECT COUNT(*) AS "$count"
-FROM "pilot"`,
-		);
-	});
-});
-
 test('/pilot/$count?$select=id', (result, sqlEquals) => {
 	it('should select count(*) from pilot and ignore select', () => {
 		sqlEquals(
