@@ -66,7 +66,6 @@ let parseOperandFactory = function (defaultResource = 'pilot') {
 			}
 			if (operand.second != null) {
 				if (!t) {
-					t = true;
 					duration.push('T');
 				}
 				duration.push(operand.second, 'S');
