@@ -1,4 +1,26 @@
 - commits:
+    - subject: Fix default values and checks being dropped for type function data types
+      hash: 10f71860356273cb1afc540c05069a12f0afa0b6
+      body: >
+        Data types that sbvr-types generates via a function (`Boolean` for every
+
+        engine, and `Serial`/`Big Serial` for mysql/websql) were generated with
+
+        only the necessity and index, so any `defaultValue` and `checks` on the
+
+        field were silently dropped. Eg a `Boolean` field with a default value
+        of
+
+        `TRUE` was created with `DEFAULT FALSE`.
+      footer:
+        Change-type: patch
+        change-type: patch
+      author: Pagan Gazzard
+      nested: []
+  version: 11.3.48
+  title: ""
+  date: 2026-11-06T03:10:44.557Z
+- commits:
     - subject: Update dev dependencies
       hash: c4eb44fe1c79ee4b20a0ce2c358378e7b1ba1217
       body: ""
