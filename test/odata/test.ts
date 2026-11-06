@@ -4,7 +4,6 @@ import { OData2AbstractSQL } from '@balena/odata-to-abstract-sql';
 import $sbvrTypes from '@balena/sbvr-types';
 const { default: sbvrTypes } = $sbvrTypes;
 import { SBVRParser } from '@balena/sbvr-parser';
-// @ts-expect-error @balena/lf-to-abstract-sql doesn't have types
 import LF2AbstractSQL from '@balena/lf-to-abstract-sql';
 
 const sbvrModel = await fs.promises.readFile(

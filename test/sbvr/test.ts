@@ -1,7 +1,6 @@
 import $sbvrTypes from '@balena/sbvr-types';
 const { default: sbvrTypes } = $sbvrTypes;
 import { SBVRParser } from '@balena/sbvr-parser';
-// @ts-expect-error @balena/lf-to-abstract-sql doesn't have types
 import LF2AbstractSQL from '@balena/lf-to-abstract-sql';
 
 import { expect } from 'chai';

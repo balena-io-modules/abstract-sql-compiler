@@ -23,11 +23,11 @@
     "@balena/sbvr-types": "^7.1.0 || ^8.0.0 || ^9.0.2 || ^10.0.0 || ^11.0.0 || ^12.0.0"
   },
   "devDependencies": {
-    "@balena/lf-to-abstract-sql": "^6.0.7",
-    "@balena/lint": "^11.0.1",
+    "@balena/lf-to-abstract-sql": "^6.1.0",
+    "@balena/lint": "^11.1.0",
     "@balena/odata-parser": "^4.4.3",
-    "@balena/odata-to-abstract-sql": "^10.0.44",
-    "@balena/sbvr-parser": "^1.4.39",
+    "@balena/odata-to-abstract-sql": "^10.0.45",
+    "@balena/sbvr-parser": "^1.4.41",
     "@types/chai": "5.2.3",
     "@types/common-tags": "1.8.4",
     "@types/mocha": "10.0.10",
