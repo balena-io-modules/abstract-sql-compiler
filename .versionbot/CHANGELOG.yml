@@ -1,4 +1,16 @@
 - commits:
+    - subject: Update dev dependencies
+      hash: c4eb44fe1c79ee4b20a0ce2c358378e7b1ba1217
+      body: ""
+      footer:
+        Change-type: patch
+        change-type: patch
+      author: Pagan Gazzard
+      nested: []
+  version: 11.3.47
+  title: ""
+  date: 2026-11-06T03:03:43.859Z
+- commits:
     - subject: Update dependency mocha to v12
       hash: d62d2c1576fef26272842135fda25c5d6831ed98
       body: |
