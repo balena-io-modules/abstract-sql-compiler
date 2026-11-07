@@ -536,12 +536,39 @@ const countTableSelects = (
 	}
 };
 
+const getAffectedIdsNarrowing = (
+	table: string,
+	alias: string,
+	idField: string,
+): OrNode => [
+	'Or',
+	['Equals', ['Bind', table], ['EmbeddedText', '{}']],
+	[
+		'Equals',
+		['ReferencedField', alias, idField],
+		['Any', ['Bind', table], 'Integer'],
+	],
+];
+
+// Narrowing:
+// - The root table of the rule is narrowed. This is always safe when the root
+//   table isn't selected from more than once and it is not negated in the LF.
+//   Right now we conservatively check for the former but not the second. The
+//   negative forms (e.g. it is forbidden that ...) are not fully supported
+//   anyway.
+// - Any other table that is selected from exactly once in the whole rule, with
+//   that selection being in the top level FROM of the rule query, is narrowed
+//   as well. Such a table is not selected from in any subquery, so when only
+//   rows of that table are modified, any newly introduced violation has to
+//   include one of the modified rows: for every other row nothing that the
+//   rule depends on has changed and the rule held before the modification.
+//   Without this, eg a modification of a `pilot` for a rule like "each
+//   plane that is flown by a pilot, ..." (whose root is `plane`) would
+//   re-validate every pilot.
+//   This is only done when `getIdField` is provided, so that we can use the
+//   right id field of each table.
+//
 // TODO:
-// - This function only narrows the root table of the rule. This is always
-//   safe when the root table isn't selected from more than once and it is not
-//   negated in the LF. Right now we conservatively check for the former but
-//   not the second. The negative forms (e.g. it is forbidden that ...) are
-//   not fully supported anyway.
 // - Removing multiple candidates selecting from the same database table to
 //   avoid visibility issues is too conservative. The correct criteria is to
 //   just remove any that are present in at least 2 disjoint subqueries.
@@ -549,7 +576,7 @@ const countTableSelects = (
 //   single place in the query that has visibility inside both disjoint
 //   subqueries and that is a requirement for adding the corrent binds for
 //   narrowing.
-// - We assume the ID column is named "id".
+// - We assume the ID column of the root table is named "id".
 // - This is a very restricted implementation of narrowing which could be
 //   expanded to cover more situations.
 //
@@ -557,47 +584,81 @@ const countTableSelects = (
 export const insertAffectedIdsBinds = (
 	abstractSql: AbstractSqlQuery,
 	lfRuleInfo: LfRuleInfo,
+	/** Returns the id field of the table with the given name, or `undefined` to not narrow that table */
+	getIdField?: (tableName: string) => string | undefined,
 ) => {
 	const rootTableSelectCount = countTableSelects(
 		abstractSql,
 		lfRuleInfo.root.table,
 	);
-	if (rootTableSelectCount !== 1) {
-		return;
-	}
-
-	const narrowing: OrNode = [
-		'Or',
-		['Equals', ['Bind', lfRuleInfo.root.table], ['EmbeddedText', '{}']],
-		[
-			'Equals',
-			['ReferencedField', lfRuleInfo.root.alias, 'id'],
-			['Any', ['Bind', lfRuleInfo.root.table], 'Integer'],
-		],
-	];
 
 	// Check if the query is of the form:
-	if (
+	const isSupportedForm =
 		// SELECT (SELECT COUNT(*) ...) = 0
 		(abstractSql[0] === 'Equals' &&
 			abstractSql[1][0] === 'SelectQuery' &&
 			abstractSql[2][0] === 'Number') ||
 		// SELECT NOT EXISTS (SELECT ...)
-		(abstractSql[0] === 'NotExists' && abstractSql[1][0] === 'SelectQuery')
-	) {
-		const selectQueryNode = abstractSql[1] as SelectQueryNode;
-		const whereNode = selectQueryNode.slice(1).find(isWhereNode);
-		if (whereNode === undefined) {
-			selectQueryNode.push(['Where', narrowing]);
-		} else {
-			whereNode[1] = ['And', whereNode[1], narrowing];
+		(abstractSql[0] === 'NotExists' && abstractSql[1][0] === 'SelectQuery');
+	if (!isSupportedForm) {
+		if (rootTableSelectCount !== 1) {
+			// We wouldn't have narrowed the root table so there is no need to throw
+			return;
 		}
-		return;
-	}
-	throw new Error(`\
+		throw new Error(`\
 Only queries in the form of:
 	SELECT (SELECT COUNT(*) ...) = 0
 	SELECT NOT EXISTS (SELECT ...)
 are supported for affected IDs insertion.
 	`);
+	}
+	const selectQueryNode = abstractSql[1] as SelectQueryNode;
+
+	const narrowings: OrNode[] = [];
+	if (rootTableSelectCount === 1) {
+		narrowings.push(
+			getAffectedIdsNarrowing(
+				lfRuleInfo.root.table,
+				lfRuleInfo.root.alias,
+				'id',
+			),
+		);
+	}
+	if (getIdField != null) {
+		for (const fromNode of selectQueryNode.filter(isFromNode)) {
+			const aliasNode = fromNode[1];
+			if (!isAliasNode(aliasNode)) {
+				continue;
+			}
+			const [, tableNode, alias] = aliasNode;
+			if (!isTableNode(tableNode) || typeof alias !== 'string') {
+				continue;
+			}
+			const table = tableNode[1];
+			if (table === lfRuleInfo.root.table) {
+				// The root table has already been handled above
+				continue;
+			}
+			const idField = getIdField(table);
+			if (idField == null) {
+				continue;
+			}
+			if (countTableSelects(abstractSql, table) !== 1) {
+				continue;
+			}
+			narrowings.push(getAffectedIdsNarrowing(table, alias, idField));
+		}
+	}
+	if (narrowings.length === 0) {
+		return;
+	}
+
+	const narrowing: OrNode | AndNode =
+		narrowings.length === 1 ? narrowings[0] : ['And', ...narrowings];
+	const whereNode = selectQueryNode.slice(1).find(isWhereNode);
+	if (whereNode === undefined) {
+		selectQueryNode.push(['Where', narrowing]);
+	} else {
+		whereNode[1] = ['And', whereNode[1], narrowing];
+	}
 };
