@@ -34,6 +34,7 @@ import type {
 	NotExistsNode,
 	NotInNode,
 	NotNode,
+	NumberNode,
 	OrNode,
 	RightJoinNode,
 	SelectNode,
@@ -536,6 +537,19 @@ const countTableSelects = (
 	}
 };
 
+const isCountAllEqualsZero = (
+	selectQueryNode: SelectQueryNode,
+	numberNode: NumberNode,
+): boolean => {
+	const selectFields = selectQueryNode.find(isSelectNode)?.[1];
+	return (
+		numberNode[1] === 0 &&
+		selectFields?.length === 1 &&
+		selectFields[0][0] === 'Count' &&
+		selectFields[0][1] === '*'
+	);
+};
+
 // TODO:
 // - This function only narrows the root table of the rule. This is always
 //   safe when the root table isn't selected from more than once and it is not
@@ -578,7 +592,7 @@ export const insertAffectedIdsBinds = (
 
 	// Check if the query is of the form:
 	if (
-		// SELECT (SELECT COUNT(*) ...) = 0
+		// SELECT (SELECT COUNT(*) ...) = N
 		(abstractSql[0] === 'Equals' &&
 			abstractSql[1][0] === 'SelectQuery' &&
 			abstractSql[2][0] === 'Number') ||
@@ -586,6 +600,17 @@ export const insertAffectedIdsBinds = (
 		(abstractSql[0] === 'NotExists' && abstractSql[1][0] === 'SelectQuery')
 	) {
 		const selectQueryNode = abstractSql[1] as SelectQueryNode;
+		if (
+			abstractSql[0] === 'Equals' &&
+			!isCountAllEqualsZero(selectQueryNode, abstractSql[2] as NumberNode)
+		) {
+			// Narrowing only checks the affected rows, which is only correct when each
+			// row that is counted is a violation on its own, ie `COUNT(*) = 0`. For
+			// anything else, eg the `COUNT(*) = 1` of "It is necessary that exactly
+			// one pilot is experienced", whether the rule holds also depends on the
+			// rows that were not affected, so it has to be checked against all rows
+			return;
+		}
 		const whereNode = selectQueryNode.slice(1).find(isWhereNode);
 		if (whereNode === undefined) {
 			selectQueryNode.push(['Where', narrowing]);

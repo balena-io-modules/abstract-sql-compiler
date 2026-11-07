@@ -1129,6 +1129,30 @@ SELECT (
 ) = 0 AS "result";`,
 	);
 
+	// Whether there is exactly one experienced pilot depends on all of the pilots
+	// and not just the affected ones, so the rule must not be narrowed
+	test.rule(
+		'It is necessary that exactly one pilot is experienced.',
+		`\
+SELECT (
+	SELECT COUNT(*)
+	FROM "pilot" AS "pilot.0"
+	WHERE "pilot.0"."is experienced" = TRUE
+) = 1 AS "result";`,
+	);
+
+	test.rule(
+		'It is necessary that exactly 2 pilots that can fly a plane, are experienced.',
+		`\
+SELECT (
+	SELECT COUNT(*)
+	FROM "pilot" AS "pilot.0",
+		"pilot-can fly-plane" AS "pilot.0-can fly-plane.1"
+	WHERE "pilot.0-can fly-plane.1"."pilot" = "pilot.0"."id"
+	AND "pilot.0"."is experienced" = TRUE
+) = 2 AS "result";`,
+	);
+
 	test.rule(
 		'It is necessary that no pilot can fly more than 100 planes.',
 		`\
