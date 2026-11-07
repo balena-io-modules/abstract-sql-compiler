@@ -1166,6 +1166,17 @@ CREATE TABLE ${ifNotExistsStr}"${table.name}" (
 	dropSchemaStatements.push(...dropComputedFunctions);
 	dropSchemaStatements = dropSchemaStatements.reverse();
 
+	// The id fields of the tables that rules can additionally be narrowed by, which we limit to
+	// integer id fields since the affected ids are bound as an INTEGER[]
+	const idFieldByTableName = new Map<string, string>();
+	for (const table of Object.values(abstractSqlModel.tables)) {
+		const idField = table.fields.find(
+			({ fieldName }) => fieldName === table.idField,
+		);
+		if (idField?.dataType === 'Serial' || idField?.dataType === 'Integer') {
+			idFieldByTableName.set(table.name, table.idField);
+		}
+	}
 	const ruleStatements: SqlRule[] = abstractSqlModel.rules.map(
 		(rule): SqlRule => {
 			const [, ruleBodyNode, ruleSENode] = rule;
@@ -1183,7 +1194,11 @@ CREATE TABLE ${ifNotExistsStr}"${table.name}" (
 			if (typeof ruleSE !== 'string') {
 				throw new Error('Invalid structured English');
 			}
-			insertAffectedIdsBinds(ruleBody, abstractSqlModel.lfInfo.rules[ruleSE]);
+			insertAffectedIdsBinds(
+				ruleBody,
+				abstractSqlModel.lfInfo.rules[ruleSE],
+				(tableName) => idFieldByTableName.get(tableName),
+			);
 			const { query: ruleSQL, bindings: ruleBindings } = compileRule(
 				ruleBody,
 				engine,
