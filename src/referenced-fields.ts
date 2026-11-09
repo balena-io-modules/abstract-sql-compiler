@@ -659,20 +659,32 @@ const isNarrowableByOtherTables = (
 //   anyway.
 // - When `modelInfo` is provided, any other table that is selected from exactly
 //   once in the whole rule, with that selection being in the top level FROM of
-//   the rule query, is narrowed as well. Such a table is not selected from in
-//   any subquery, so when only rows of that table are modified, any newly
-//   introduced violation has to include one of the modified rows: for every
-//   other row nothing that the rule depends on has changed and the rule held
-//   before the modification. Eg a modification of a `pilot` for a rule like
-//   "each plane that is flown by a pilot, ..." (whose root is `plane`) only
-//   needs to validate the modified pilots rather than all of them.
-//   This relies on each row of the rule query being a violation on its own,
-//   independently of any other row, and on the rule not depending on tables
-//   other than those it selects from, so we don't do it for:
-//   - `(SELECT COUNT(*) ...) = N` with N other than 0, or other aggregates
+//   the rule query, is narrowed as well. Eg a modification of a `pilot` for a
+//   rule like "each plane that is flown by a pilot, ..." (whose root is
+//   `plane`) only needs to validate the modified pilots rather than all of them.
+//   The rule query searches for a counterexample, ie a conjunction of the rows
+//   it selects and the conditions on them, so such a table `a` is a positive
+//   (not negated) occurrence in it. Following update propagation (see eg
+//   https://doi.org/10.1007/978-3-540-30204-9_2), the new counterexamples that
+//   an insert/update of `a` can introduce are:
+//     [+](a && b...) => [+]a && ![old]a && [new](b...)
+//   Only one table is written at a time and `a` is only selected from once, so
+//   `b...` doesn't depend on `a` and [new](b...) = [old](b...). And since the
+//   rule held before the write, dropping ![old]a can't introduce a violation
+//   that didn't already exist, which leaves [+]a: the inserted/updated rows,
+//   ie `a` narrowed to the affected ids. This holds for the root table too.
+//   Tables in subqueries are never narrowed, eg one in a NOT EXISTS is a
+//   negated occurrence, for which:
+//     [+]!(a && b...) => [-]a && ![new]a && [old](b...)
+//   ie the new counterexamples come from the deleted or pre-update rows of `a`,
+//   which would need a check before the write rather than the affected ids.
+//   This relies on the rule query being a plain search for a counterexample
+//   and on `a` being the only thing that changes, so we don't do it for:
+//   - `(SELECT COUNT(*) ...) = N` with N other than 0, or other aggregates,
+//     where whether there is a violation depends on all of the rows
 //   - top level joins (where a table can be null), grouping, ordering, limits
 //   - rules that reference views or computed fields, since they can depend on
-//     other rows and tables that we can't see
+//     other rows and tables that we can't see, including `a` itself
 //   - tables with triggers other than `BEFORE ... ROW` ones, since they could
 //     modify rows other than the affected ones
 //   - tables with ids that can't be bound as an INTEGER[]
