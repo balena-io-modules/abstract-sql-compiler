@@ -1,4 +1,23 @@
 - commits:
+    - subject: Stop always disabling postgres inlining for computed field functions
+      hash: af42eeacc380a3a9f337a5004c68a7ddcf05ffb0
+      body: |
+        The `FROM` in computed field functions always blocks inlining of said
+        functions for postgres. As they are unnecessary we can remove them and
+        enable postgres optimizations without changing the behavior otherwise.
+        We still keep the `FROM` in cases where a plain `Field` reference is
+        used as it will break without it, but they should be avoided.
+
+        https://balena.fibery.io/Work/Project/3083
+      footer:
+        Change-type: patch
+        change-type: patch
+      author: Pagan Gazzard
+      nested: []
+  version: 11.3.49
+  title: ""
+  date: 2026-11-09T17:31:29.810Z
+- commits:
     - subject: Fix default values and checks being dropped for type function data types
       hash: 10f71860356273cb1afc540c05069a12f0afa0b6
       body: >
