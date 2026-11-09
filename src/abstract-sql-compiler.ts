@@ -932,27 +932,31 @@ ${compileRule(definitionAbstractSql as AbstractSqlQuery, engine, true).replace(
 						sqlType = sqlType.castType;
 					}
 					const fnSignature = `"${computed.fnName}"("${table.name}" "${table.name}")`;
+					const fnBody: SelectQueryNode = [
+						'SelectQuery',
+						['Select', [computed.definition]],
+					];
+					// We avoid a `FROM` where possible as it blocks postgres from inlining the function, however unqualified
+					// `Field` references can only resolve against a table in scope so we need to alias the parameter as one
+					if (abstractSqlContainsNode(computed.definition, isFieldNode)) {
+						fnBody.push([
+							'From',
+							[
+								'Alias',
+								[
+									'SelectQuery',
+									['Select', [['ReferencedField', table.name, '*']]],
+								],
+								table.name,
+							],
+						]);
+					}
 					createComputedFunctions.push(`\
 DO $$
 BEGIN
 	CREATE FUNCTION ${fnSignature}
 	RETURNS ${sqlType} AS $fn$
-${compileRule(
-	[
-		'SelectQuery',
-		['Select', [computed.definition]],
-		[
-			'From',
-			[
-				'Alias',
-				['SelectQuery', ['Select', [['ReferencedField', table.name, '*']]]],
-				table.name,
-			],
-		],
-	] satisfies SelectQueryNode,
-	engine,
-	true,
-)}
+${compileRule(fnBody, engine, true)}
 	$fn$ LANGUAGE SQL ${computed.volatility} PARALLEL ${computed.parallel};
 EXCEPTION WHEN duplicate_function THEN
 	NULL;
