@@ -73,6 +73,16 @@ const noUnderagePilots: AbstractSqlQuery = [
 ];
 
 describe('rule narrowing', () => {
+	it('should not add the narrowing to the rules of the model', () => {
+		const model = generateModel(noUnderagePilots);
+		const { rules } = AbstractSQLCompiler.postgres.compileSchema(model);
+		expect(rules[0].bindings).to.deep.equal([['Bind', 'pilot']]);
+		// The rules of a model cannot have binds when it is compiled, so this fails if they were added
+		expect(
+			AbstractSQLCompiler.postgres.compileSchema(model).rules,
+		).to.deep.equal(rules);
+	});
+
 	describe('query forms', () => {
 		it('should narrow rules that only select from tables with a where', () => {
 			const rule = compileRule(noUnderagePilots);

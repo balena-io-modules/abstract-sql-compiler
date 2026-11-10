@@ -1176,7 +1176,9 @@ CREATE TABLE ${ifNotExistsStr}"${table.name}" (
 			if (ruleBodyNode?.[0] !== 'Body') {
 				throw new Error('Invalid rule');
 			}
-			const ruleBody = ruleBodyNode[1];
+			// We copy the rule so that adding the affected ids narrowing to it does not modify the
+			// model, eg a model whose rules contain those binds cannot be compiled again
+			const ruleBody = structuredClone(ruleBodyNode[1]);
 			if (typeof ruleBody === 'string') {
 				throw new Error('Invalid rule');
 			}
