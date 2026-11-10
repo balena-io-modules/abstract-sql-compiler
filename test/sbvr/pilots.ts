@@ -1144,4 +1144,47 @@ SELECT NOT EXISTS (
 	OR "pilot.0"."id" = ANY(CAST($1 AS INTEGER[])))
 ) AS "result";`,
 	);
+
+	// Rules that depend on every row of the root table cannot be narrowed to the affected ids
+	test.rule(
+		'It is necessary that at least 2 pilots are experienced',
+		`\
+SELECT (
+	SELECT COUNT(*)
+	FROM "pilot" AS "pilot.0"
+	WHERE "pilot.0"."is experienced" = TRUE
+) >= 2 AS "result";`,
+	);
+
+	test.rule(
+		'It is necessary that exactly one pilot is experienced',
+		`\
+SELECT (
+	SELECT COUNT(*)
+	FROM "pilot" AS "pilot.0"
+	WHERE "pilot.0"."is experienced" = TRUE
+) = 1 AS "result";`,
+	);
+
+	test.rule(
+		'It is necessary that at most 3 pilots are experienced',
+		`\
+SELECT NOT (
+	(
+		SELECT COUNT(*)
+		FROM "pilot" AS "pilot.0"
+		WHERE "pilot.0"."is experienced" = TRUE
+	) >= 4
+) AS "result";`,
+	);
+
+	test.rule(
+		'It is necessary that a pilot is experienced',
+		`\
+SELECT EXISTS (
+	SELECT 1
+	FROM "pilot" AS "pilot.0"
+	WHERE "pilot.0"."is experienced" = TRUE
+) AS "result";`,
+	);
 });

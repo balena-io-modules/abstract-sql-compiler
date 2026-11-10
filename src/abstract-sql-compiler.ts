@@ -1187,9 +1187,13 @@ CREATE TABLE ${ifNotExistsStr}"${table.name}" (
 			if (typeof ruleSE !== 'string') {
 				throw new Error('Invalid structured English');
 			}
-			insertAffectedIdsBinds(ruleBody, abstractSqlModel.lfInfo.rules[ruleSE]);
+			// We add the affected ids narrowing to a copy of the rule so that it is only part of the
+			// SQL of the rule and does not modify the model, eg a model whose rules contain those
+			// binds cannot be compiled again, nor the fields that the rule is found to reference
+			const narrowedRuleBody = structuredClone(ruleBody);
+			insertAffectedIdsBinds(narrowedRuleBody, abstractSqlModel.tables);
 			const { query: ruleSQL, bindings: ruleBindings } = compileRule(
-				ruleBody,
+				narrowedRuleBody,
 				engine,
 			) as SqlResult;
 			let referencedFields: ReferencedFields | undefined;

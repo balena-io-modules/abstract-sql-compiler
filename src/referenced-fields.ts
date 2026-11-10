@@ -1,4 +1,5 @@
 import type {
+	AbstractSqlModel,
 	AbstractSqlQuery,
 	AbstractSqlType,
 	AddDateDurationNode,
@@ -29,7 +30,6 @@ import type {
 	LeftJoinNode,
 	LessThanNode,
 	LessThanOrEqualNode,
-	LfRuleInfo,
 	NotEqualsNode,
 	NotExistsNode,
 	NotInNode,
@@ -49,6 +49,7 @@ import type {
 	WhereNode,
 } from './abstract-sql-compiler.js';
 import {
+	abstractSqlContainsNode,
 	isAliasNode,
 	isFromNode,
 	isSelectNode,
@@ -536,68 +537,180 @@ const countTableSelects = (
 	}
 };
 
+const isCountAllSelect = (selectQueryNode: SelectQueryNode): boolean => {
+	const selectFields = selectQueryNode.find(isSelectNode)?.[1];
+	return (
+		selectFields?.length === 1 &&
+		selectFields[0][0] === 'Count' &&
+		selectFields[0][1] === '*'
+	);
+};
+
+// Whether the rows of the query are exactly the combinations of rows of its `FROM` tables that
+// match its `WHERE`, ie nothing else (a join, `GROUP BY`, `HAVING`, `LIMIT`, ...) decides them
+const isPlainSelectQuery = (selectQueryNode: SelectQueryNode): boolean =>
+	selectQueryNode
+		.slice(1)
+		.every(
+			(node) => isSelectNode(node) || isFromNode(node) || isWhereNode(node),
+		);
+
+// The affected ids are bound as the text of an array, which is only done for integers
+const affectedIdsTypes: Record<string, 'Integer' | 'Big Integer'> = {
+	Serial: 'Integer',
+	Integer: 'Integer',
+	'Big Serial': 'Big Integer',
+	'Big Integer': 'Big Integer',
+};
+
+// Returns the field that the affected ids of the table are for, when the table can be
+// narrowed by them
+const getAffectedIdsField = (
+	tables: AbstractSqlModel['tables'],
+	tableName: string,
+) => {
+	const idFields = Object.values(tables)
+		.filter((table) => table.name === tableName)
+		.map((table) =>
+			table.fields.find(({ fieldName }) => fieldName === table.idField),
+		);
+	const [idField] = idFields;
+	if (
+		idField == null ||
+		// The affected ids are those of the resource that was modified, so if the
+		// table is shared by resources that have different ids we cannot use them
+		idFields.some((f) => f?.fieldName !== idField.fieldName) ||
+		!Object.hasOwn(affectedIdsTypes, idField.dataType)
+	) {
+		return;
+	}
+	return {
+		fieldName: idField.fieldName,
+		type: affectedIdsTypes[idField.dataType],
+	};
+};
+
+// Whether the rule selects from a view, or from something that we do not know to be a table.
+// A view changes whenever the tables that it selects from do, so the rule also depends on the
+// rows of those tables even though it does not select from them
+const selectsFromView = (
+	abstractSql: AbstractSqlQuery,
+	tables: AbstractSqlModel['tables'],
+): boolean =>
+	abstractSqlContainsNode(abstractSql, (node) => {
+		if (!isTableNode(node)) {
+			return false;
+		}
+		const matchingTables = Object.values(tables).filter(
+			({ name }) => name === node[1],
+		);
+		return (
+			matchingTables.length === 0 ||
+			matchingTables.some(({ viewDefinition }) => viewDefinition != null)
+		);
+	});
+
+// Adds conditions to a rule that narrow it down to the rows that were affected by a modification,
+// so that validating the rule does not have to go through all of the rows that were not modified.
+//
+// Each narrowed table gets a `(<bind> = '{}' OR <alias>.<id> = ANY(<bind>))` condition, with a
+// bind that is named after the table. When that is the table that was modified the bind is
+// expected to be the ids of its rows that were inserted or updated, and otherwise to be '{}',
+// which disables the condition.
+//
+// A rule is only narrowed when it is a search for violations, ie it holds as long as a query for
+// the combinations of rows that violate it finds nothing. It is narrowed by each table that is
+// selected exactly once in the whole rule, with that being in the `FROM` of that query. When rows
+// of such a table are inserted or updated every violation that did not exist before has to
+// include one of those rows: any other combination of rows is made up of rows that were not
+// modified, and nothing that they are checked against was modified either as the table is not
+// selected anywhere else in the rule, so if it is a violation after the modification then it
+// already was one before it. Deleting rows of such a table cannot add a violation.
+//
 // TODO:
-// - This function only narrows the root table of the rule. This is always
-//   safe when the root table isn't selected from more than once and it is not
-//   negated in the LF. Right now we conservatively check for the former but
-//   not the second. The negative forms (e.g. it is forbidden that ...) are
-//   not fully supported anyway.
-// - Removing multiple candidates selecting from the same database table to
-//   avoid visibility issues is too conservative. The correct criteria is to
-//   just remove any that are present in at least 2 disjoint subqueries.
-//   Because in this case the problem is that in those cases there is not a
-//   single place in the query that has visibility inside both disjoint
-//   subqueries and that is a requirement for adding the corrent binds for
-//   narrowing.
-// - We assume the ID column is named "id".
-// - This is a very restricted implementation of narrowing which could be
-//   expanded to cover more situations.
+// - Tables that are selected more than once are not narrowed.
+// - Tables that are selected in a subquery are not narrowed. That is not the same case as above,
+//   eg for a table in a `NOT EXISTS` it is the rows that were deleted, or the way that rows were
+//   before they were updated, that can add a violation, which their ids are not enough to find.
 //
 // This function modifies `abstractSql` in place.
 export const insertAffectedIdsBinds = (
 	abstractSql: AbstractSqlQuery,
-	lfRuleInfo: LfRuleInfo,
+	tables: AbstractSqlModel['tables'],
 ) => {
-	const rootTableSelectCount = countTableSelects(
-		abstractSql,
-		lfRuleInfo.root.table,
-	);
-	if (rootTableSelectCount !== 1) {
-		return;
-	}
-
-	const narrowing: OrNode = [
-		'Or',
-		['Equals', ['Bind', lfRuleInfo.root.table], ['EmbeddedText', '{}']],
-		[
-			'Equals',
-			['ReferencedField', lfRuleInfo.root.alias, 'id'],
-			['Any', ['Bind', lfRuleInfo.root.table], 'Integer'],
-		],
-	];
-
 	// Check if the query is of the form:
 	if (
 		// SELECT (SELECT COUNT(*) ...) = 0
+		// It has to be `= 0` so that each counted row is a violation on its own. For any other
+		// number, eg the `= 1` of "It is necessary that exactly one pilot is experienced", whether
+		// the rule holds also depends on the rows that were not affected
 		(abstractSql[0] === 'Equals' &&
 			abstractSql[1][0] === 'SelectQuery' &&
-			abstractSql[2][0] === 'Number') ||
+			isCountAllSelect(abstractSql[1] as SelectQueryNode) &&
+			abstractSql[2][0] === 'Number' &&
+			abstractSql[2][1] === 0) ||
 		// SELECT NOT EXISTS (SELECT ...)
 		(abstractSql[0] === 'NotExists' && abstractSql[1][0] === 'SelectQuery')
 	) {
 		const selectQueryNode = abstractSql[1] as SelectQueryNode;
+		if (!isPlainSelectQuery(selectQueryNode)) {
+			// Narrowing filters the rows before they are joined, grouped or limited, which changes the
+			// outcome of those rather than only which rows get checked, eg a `HAVING COUNT(*) >= 2` that
+			// looks for duplicates would only see the affected rows and never find the row they duplicate
+			return;
+		}
+		if (selectsFromView(abstractSql, tables)) {
+			// The rows of a view change when the tables that it selects from are modified, in which
+			// case the affected ids do not tell us which rows of the rule have to be checked
+			return;
+		}
+		const narrowings: OrNode[] = [];
+		for (const fromNode of selectQueryNode.filter(isFromNode)) {
+			let from = fromNode[1];
+			let alias: unknown;
+			if (isAliasNode(from)) {
+				[, from, alias] = from;
+			}
+			if (!isTableNode(from)) {
+				continue;
+			}
+			const tableName = from[1];
+			alias ??= tableName;
+			if (
+				typeof alias !== 'string' ||
+				countTableSelects(abstractSql, tableName) !== 1
+			) {
+				continue;
+			}
+			const idField = getAffectedIdsField(tables, tableName);
+			if (idField == null) {
+				continue;
+			}
+			narrowings.push([
+				'Or',
+				['Equals', ['Bind', tableName], ['EmbeddedText', '{}']],
+				[
+					'Equals',
+					['ReferencedField', alias, idField.fieldName],
+					['Any', ['Bind', tableName], idField.type],
+				],
+			]);
+		}
+		if (narrowings.length === 0) {
+			return;
+		}
 		const whereNode = selectQueryNode.slice(1).find(isWhereNode);
 		if (whereNode === undefined) {
-			selectQueryNode.push(['Where', narrowing]);
+			selectQueryNode.push([
+				'Where',
+				narrowings.length === 1 ? narrowings[0] : ['And', ...narrowings],
+			]);
 		} else {
-			whereNode[1] = ['And', whereNode[1], narrowing];
+			whereNode[1] = ['And', whereNode[1], ...narrowings];
 		}
-		return;
 	}
-	throw new Error(`\
-Only queries in the form of:
-	SELECT (SELECT COUNT(*) ...) = 0
-	SELECT NOT EXISTS (SELECT ...)
-are supported for affected IDs insertion.
-	`);
+	// Any other form is left as is: it's not a search for rows that each violate the rule, eg
+	// `(SELECT COUNT(*) ...) >= 2`, `(SELECT COUNT(*) ...) = 1` or `EXISTS (SELECT ...)` depend
+	// on every row of the table rather than only on the affected ones, so there is nothing we
+	// can narrow
 };
