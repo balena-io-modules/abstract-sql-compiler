@@ -48,10 +48,13 @@ const generateModel = (
 		rules: { [ruleSE]: { root: { table: 'pilot', alias: 'pilot.0' } } },
 	},
 });
-const compileRule = (ruleBody: AbstractSqlQuery) => {
-	const [rule] = AbstractSQLCompiler.postgres.compileSchema(
-		generateModel(ruleBody),
-	).rules;
+const compileRule = (
+	ruleBody: AbstractSqlQuery,
+	modifyModel?: (model: AbstractSQLCompiler.AbstractSqlModel) => void,
+) => {
+	const model = generateModel(ruleBody);
+	modifyModel?.(model);
+	const [rule] = AbstractSQLCompiler.postgres.compileSchema(model).rules;
 	return rule;
 };
 
@@ -169,6 +172,66 @@ SELECT (
 	SELECT SUM("pilot.0"."age")
 	FROM "pilot" AS "pilot.0"
 ) = 0 AS "result";`);
+		});
+	});
+
+	describe('id fields', () => {
+		const setPilotIdField =
+			(fieldName: string, dataType: string) =>
+			({ tables: { pilot } }: AbstractSQLCompiler.AbstractSqlModel) => {
+				pilot.idField = fieldName;
+				pilot.fields[0] = {
+					fieldName,
+					dataType,
+					required: true,
+					index: 'PRIMARY KEY',
+				};
+			};
+
+		it('should narrow by the id field of the table', () => {
+			const rule = compileRule(
+				noUnderagePilots,
+				setPilotIdField('badge number', 'Integer'),
+			);
+			expect(rule.bindings).to.deep.equal([['Bind', 'pilot']]);
+			expect(rule.sql).to.equal(`\
+SELECT NOT EXISTS (
+	SELECT 1
+	FROM "pilot" AS "pilot.0"
+	WHERE "pilot.0"."age" < 18
+	AND ($1 = '{}'
+	OR "pilot.0"."badge number" = ANY(CAST($1 AS INTEGER[])))
+) AS "result";`);
+		});
+
+		it('should narrow by big integer ids without truncating them', () => {
+			const rule = compileRule(
+				noUnderagePilots,
+				setPilotIdField('id', 'Big Serial'),
+			);
+			expect(rule.bindings).to.deep.equal([['Bind', 'pilot']]);
+			expect(rule.sql).to.equal(`\
+SELECT NOT EXISTS (
+	SELECT 1
+	FROM "pilot" AS "pilot.0"
+	WHERE "pilot.0"."age" < 18
+	AND ($1 = '{}'
+	OR "pilot.0"."id" = ANY(CAST($1 AS BIGINT[])))
+) AS "result";`);
+		});
+
+		it('should not narrow tables with an id field that is not an integer', () => {
+			const rule = compileRule(
+				noUnderagePilots,
+				setPilotIdField('callsign', 'Short Text'),
+			);
+			expect(rule.bindings).to.deep.equal([]);
+			expect(rule.sql).to.equal(`\
+SELECT NOT EXISTS (
+	SELECT 1
+	FROM "pilot" AS "pilot.0"
+	WHERE "pilot.0"."age" < 18
+) AS "result";`);
 		});
 	});
 });

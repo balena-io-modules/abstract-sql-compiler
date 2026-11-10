@@ -1,4 +1,5 @@
 import type {
+	AbstractSqlModel,
 	AbstractSqlQuery,
 	AbstractSqlType,
 	AddDateDurationNode,
@@ -554,6 +555,41 @@ const isPlainSelectQuery = (selectQueryNode: SelectQueryNode): boolean =>
 			(node) => isSelectNode(node) || isFromNode(node) || isWhereNode(node),
 		);
 
+// The affected ids are bound as the text of an array, which is only done for integers
+const affectedIdsTypes: Record<string, 'Integer' | 'Big Integer'> = {
+	Serial: 'Integer',
+	Integer: 'Integer',
+	'Big Serial': 'Big Integer',
+	'Big Integer': 'Big Integer',
+};
+
+// Returns the field that the affected ids of the table are for, when the table can be
+// narrowed by them
+const getAffectedIdsField = (
+	tables: AbstractSqlModel['tables'],
+	tableName: string,
+) => {
+	const idFields = Object.values(tables)
+		.filter((table) => table.name === tableName)
+		.map((table) =>
+			table.fields.find(({ fieldName }) => fieldName === table.idField),
+		);
+	const [idField] = idFields;
+	if (
+		idField == null ||
+		// The affected ids are those of the resource that was modified, so if the
+		// table is shared by resources that have different ids we cannot use them
+		idFields.some((f) => f?.fieldName !== idField.fieldName) ||
+		!Object.hasOwn(affectedIdsTypes, idField.dataType)
+	) {
+		return;
+	}
+	return {
+		fieldName: idField.fieldName,
+		type: affectedIdsTypes[idField.dataType],
+	};
+};
+
 // TODO:
 // - This function only narrows the root table of the rule. This is always
 //   safe when the root table isn't selected from more than once and it is not
@@ -567,7 +603,6 @@ const isPlainSelectQuery = (selectQueryNode: SelectQueryNode): boolean =>
 //   single place in the query that has visibility inside both disjoint
 //   subqueries and that is a requirement for adding the corrent binds for
 //   narrowing.
-// - We assume the ID column is named "id".
 // - This is a very restricted implementation of narrowing which could be
 //   expanded to cover more situations.
 //
@@ -575,6 +610,7 @@ const isPlainSelectQuery = (selectQueryNode: SelectQueryNode): boolean =>
 export const insertAffectedIdsBinds = (
 	abstractSql: AbstractSqlQuery,
 	lfRuleInfo: LfRuleInfo,
+	tables: AbstractSqlModel['tables'],
 ) => {
 	const rootTableSelectCount = countTableSelects(
 		abstractSql,
@@ -583,14 +619,18 @@ export const insertAffectedIdsBinds = (
 	if (rootTableSelectCount !== 1) {
 		return;
 	}
+	const idField = getAffectedIdsField(tables, lfRuleInfo.root.table);
+	if (idField == null) {
+		return;
+	}
 
 	const narrowing: OrNode = [
 		'Or',
 		['Equals', ['Bind', lfRuleInfo.root.table], ['EmbeddedText', '{}']],
 		[
 			'Equals',
-			['ReferencedField', lfRuleInfo.root.alias, 'id'],
-			['Any', ['Bind', lfRuleInfo.root.table], 'Integer'],
+			['ReferencedField', lfRuleInfo.root.alias, idField.fieldName],
+			['Any', ['Bind', lfRuleInfo.root.table], idField.type],
 		],
 	];
 

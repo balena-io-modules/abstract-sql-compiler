@@ -1187,7 +1187,11 @@ CREATE TABLE ${ifNotExistsStr}"${table.name}" (
 			if (typeof ruleSE !== 'string') {
 				throw new Error('Invalid structured English');
 			}
-			insertAffectedIdsBinds(ruleBody, abstractSqlModel.lfInfo.rules[ruleSE]);
+			insertAffectedIdsBinds(
+				ruleBody,
+				abstractSqlModel.lfInfo.rules[ruleSE],
+				abstractSqlModel.tables,
+			);
 			const { query: ruleSQL, bindings: ruleBindings } = compileRule(
 				ruleBody,
 				engine,
