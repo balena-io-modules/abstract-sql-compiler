@@ -1,4 +1,23 @@
 - commits:
+    - subject: Fix optimizing `EXISTS` of an aggregate query with a false `WHERE`
+      hash: 61885503539bb9d2621ab4814cfe9ba6963a4fc2
+      body: |
+        `Exists`/`NotExists` of a select with `WHERE false` was optimized to
+        `false`/`true` on the basis that the select returns no rows, but an
+        aggregate query without a `GROUP BY` always returns exactly one row, eg
+        `EXISTS (SELECT COUNT(*) FROM t WHERE false)` is true. Such queries are
+        no longer treated as empty: a query counts as aggregate if it has a
+        `HAVING`, or an aggregate in its `SELECT` or `ORDER BY` (function calls
+        are included as they may be aggregates).
+      footer:
+        Change-type: patch
+        change-type: patch
+      author: Pagan Gazzard
+      nested: []
+  version: 11.3.50
+  title: ""
+  date: 2026-11-10T05:20:47.585Z
+- commits:
     - subject: Stop always disabling postgres inlining for computed field functions
       hash: af42eeacc380a3a9f337a5004c68a7ddcf05ffb0
       body: |
