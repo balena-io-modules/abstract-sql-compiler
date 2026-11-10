@@ -1176,9 +1176,7 @@ CREATE TABLE ${ifNotExistsStr}"${table.name}" (
 			if (ruleBodyNode?.[0] !== 'Body') {
 				throw new Error('Invalid rule');
 			}
-			// We copy the rule so that adding the affected ids narrowing to it does not modify the
-			// model, eg a model whose rules contain those binds cannot be compiled again
-			const ruleBody = structuredClone(ruleBodyNode[1]);
+			const ruleBody = ruleBodyNode[1];
 			if (typeof ruleBody === 'string') {
 				throw new Error('Invalid rule');
 			}
@@ -1189,13 +1187,17 @@ CREATE TABLE ${ifNotExistsStr}"${table.name}" (
 			if (typeof ruleSE !== 'string') {
 				throw new Error('Invalid structured English');
 			}
+			// We add the affected ids narrowing to a copy of the rule so that it is only part of the
+			// SQL of the rule and does not modify the model, eg a model whose rules contain those
+			// binds cannot be compiled again, nor the fields that the rule is found to reference
+			const narrowedRuleBody = structuredClone(ruleBody);
 			insertAffectedIdsBinds(
-				ruleBody,
+				narrowedRuleBody,
 				abstractSqlModel.lfInfo.rules[ruleSE],
 				abstractSqlModel.tables,
 			);
 			const { query: ruleSQL, bindings: ruleBindings } = compileRule(
-				ruleBody,
+				narrowedRuleBody,
 				engine,
 			) as SqlResult;
 			let referencedFields: ReferencedFields | undefined;

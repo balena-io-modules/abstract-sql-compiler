@@ -83,6 +83,16 @@ describe('rule narrowing', () => {
 		).to.deep.equal(rules);
 	});
 
+	it('should not add the narrowing to the referenced fields of the rule', () => {
+		const rule = compileRule(noUnderagePilots);
+		expect(rule.bindings).to.deep.equal([['Bind', 'pilot']]);
+		// The rule does not depend on the id of the pilots, only its narrowing does
+		expect(rule.referencedFields).to.deep.equal({ pilot: ['age'] });
+		expect(rule.ruleReferencedFields).to.deep.equal({
+			pilot: { create: ['age'], update: ['age'], delete: [] },
+		});
+	});
+
 	describe('query forms', () => {
 		it('should narrow rules that only select from tables with a where', () => {
 			const rule = compileRule(noUnderagePilots);
