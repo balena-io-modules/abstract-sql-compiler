@@ -196,14 +196,79 @@ SELECT (
 	});
 
 	describe('tables', () => {
-		it('should not narrow the root table when it is only selected in a subquery', () => {
+		const fromPlane: AbstractSqlQuery = [
+			'From',
+			['Alias', ['Table', 'plane'], 'plane.1'],
+		];
+
+		it('should narrow every table that is only selected in the top level from', () => {
+			// No plane exists whilst there is an underage pilot
+			const rule = compileRule([
+				'NotExists',
+				[
+					'SelectQuery',
+					['Select', []],
+					fromPilot,
+					fromPlane,
+					['Where', isUnderage],
+				],
+			]);
+			expect(rule.bindings).to.deep.equal([
+				['Bind', 'pilot'],
+				['Bind', 'plane'],
+			]);
+			expect(rule.sql).to.equal(`\
+SELECT NOT EXISTS (
+	SELECT 1
+	FROM "pilot" AS "pilot.0",
+		"plane" AS "plane.1"
+	WHERE "pilot.0"."age" < 18
+	AND ($1 = '{}'
+	OR "pilot.0"."id" = ANY(CAST($1 AS INTEGER[])))
+	AND ($2 = '{}'
+	OR "plane.1"."id" = ANY(CAST($2 AS INTEGER[])))
+) AS "result";`);
+		});
+
+		it('should narrow tables that are selected without an alias', () => {
+			const rule = compileRule([
+				'NotExists',
+				[
+					'SelectQuery',
+					['Select', []],
+					['From', ['Table', 'pilot']],
+					[
+						'Where',
+						['LessThan', ['ReferencedField', 'pilot', 'age'], ['Number', 18]],
+					],
+				],
+			]);
+			expect(rule.bindings).to.deep.equal([['Bind', 'pilot']]);
+			expect(rule.sql).to.equal(`\
+SELECT NOT EXISTS (
+	SELECT 1
+	FROM "pilot"
+	WHERE "pilot"."age" < 18
+	AND ($1 = '{}'
+	OR "pilot"."id" = ANY(CAST($1 AS INTEGER[])))
+) AS "result";`);
+		});
+
+		it('should not need to be told the root table of the rule', () => {
+			const rule = compileRule(noUnderagePilots, (model) => {
+				model.lfInfo.rules = {};
+			});
+			expect(rule.bindings).to.deep.equal([['Bind', 'pilot']]);
+		});
+
+		it('should not narrow tables that are selected in a subquery', () => {
 			// No plane exists whilst there are 2 or more underage pilots
 			const rule = compileRule([
 				'NotExists',
 				[
 					'SelectQuery',
 					['Select', []],
-					['From', ['Alias', ['Table', 'plane'], 'plane.1']],
+					fromPlane,
 					[
 						'Where',
 						[
@@ -219,7 +284,7 @@ SELECT (
 					],
 				],
 			]);
-			expect(rule.bindings).to.deep.equal([]);
+			expect(rule.bindings).to.deep.equal([['Bind', 'plane']]);
 			expect(rule.sql).to.equal(`\
 SELECT NOT EXISTS (
 	SELECT 1
@@ -229,6 +294,48 @@ SELECT NOT EXISTS (
 		FROM "pilot" AS "pilot.0"
 		WHERE "pilot.0"."age" < 18
 	) >= 2
+	AND ($1 = '{}'
+	OR "plane.1"."id" = ANY(CAST($1 AS INTEGER[])))
+) AS "result";`);
+		});
+
+		it('should not narrow tables that are selected more than once', () => {
+			// No underage pilot has the same licence as another pilot
+			const rule = compileRule([
+				'NotExists',
+				[
+					'SelectQuery',
+					['Select', []],
+					fromPilot,
+					['From', ['Alias', ['Table', 'pilot'], 'pilot.1']],
+					[
+						'Where',
+						[
+							'And',
+							isUnderage,
+							[
+								'Equals',
+								['ReferencedField', 'pilot.0', 'licence'],
+								['ReferencedField', 'pilot.1', 'licence'],
+							],
+							[
+								'NotEquals',
+								['ReferencedField', 'pilot.0', 'id'],
+								['ReferencedField', 'pilot.1', 'id'],
+							],
+						],
+					],
+				],
+			]);
+			expect(rule.bindings).to.deep.equal([]);
+			expect(rule.sql).to.equal(`\
+SELECT NOT EXISTS (
+	SELECT 1
+	FROM "pilot" AS "pilot.0",
+		"pilot" AS "pilot.1"
+	WHERE "pilot.0"."age" < 18
+	AND "pilot.0"."licence" = "pilot.1"."licence"
+	AND "pilot.0"."id" != "pilot.1"."id"
 ) AS "result";`);
 		});
 	});

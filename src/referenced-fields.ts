@@ -30,7 +30,6 @@ import type {
 	LeftJoinNode,
 	LessThanNode,
 	LessThanOrEqualNode,
-	LfRuleInfo,
 	NotEqualsNode,
 	NotExistsNode,
 	NotInNode,
@@ -611,50 +610,34 @@ const selectsFromView = (
 		);
 	});
 
+// Adds conditions to a rule that narrow it down to the rows that were affected by a modification,
+// so that validating the rule does not have to go through all of the rows that were not modified.
+//
+// Each narrowed table gets a `(<bind> = '{}' OR <alias>.<id> = ANY(<bind>))` condition, with a
+// bind that is named after the table. When that is the table that was modified the bind is
+// expected to be the ids of its rows that were inserted or updated, and otherwise to be '{}',
+// which disables the condition.
+//
+// A rule is only narrowed when it is a search for violations, ie it holds as long as a query for
+// the combinations of rows that violate it finds nothing. It is narrowed by each table that is
+// selected exactly once in the whole rule, with that being in the `FROM` of that query. When rows
+// of such a table are inserted or updated every violation that did not exist before has to
+// include one of those rows: any other combination of rows is made up of rows that were not
+// modified, and nothing that they are checked against was modified either as the table is not
+// selected anywhere else in the rule, so if it is a violation after the modification then it
+// already was one before it. Deleting rows of such a table cannot add a violation.
+//
 // TODO:
-// - This function only narrows the root table of the rule. This is always
-//   safe when the root table isn't selected from more than once and it is not
-//   negated in the LF. Right now we conservatively check for the former but
-//   not the second. The negative forms (e.g. it is forbidden that ...) are
-//   not fully supported anyway.
-// - Removing multiple candidates selecting from the same database table to
-//   avoid visibility issues is too conservative. The correct criteria is to
-//   just remove any that are present in at least 2 disjoint subqueries.
-//   Because in this case the problem is that in those cases there is not a
-//   single place in the query that has visibility inside both disjoint
-//   subqueries and that is a requirement for adding the corrent binds for
-//   narrowing.
-// - This is a very restricted implementation of narrowing which could be
-//   expanded to cover more situations.
+// - Tables that are selected more than once are not narrowed.
+// - Tables that are selected in a subquery are not narrowed. That is not the same case as above,
+//   eg for a table in a `NOT EXISTS` it is the rows that were deleted, or the way that rows were
+//   before they were updated, that can add a violation, which their ids are not enough to find.
 //
 // This function modifies `abstractSql` in place.
 export const insertAffectedIdsBinds = (
 	abstractSql: AbstractSqlQuery,
-	lfRuleInfo: LfRuleInfo,
 	tables: AbstractSqlModel['tables'],
 ) => {
-	const rootTableSelectCount = countTableSelects(
-		abstractSql,
-		lfRuleInfo.root.table,
-	);
-	if (rootTableSelectCount !== 1) {
-		return;
-	}
-	const idField = getAffectedIdsField(tables, lfRuleInfo.root.table);
-	if (idField == null) {
-		return;
-	}
-
-	const narrowing: OrNode = [
-		'Or',
-		['Equals', ['Bind', lfRuleInfo.root.table], ['EmbeddedText', '{}']],
-		[
-			'Equals',
-			['ReferencedField', lfRuleInfo.root.alias, idField.fieldName],
-			['Any', ['Bind', lfRuleInfo.root.table], idField.type],
-		],
-	];
-
 	// Check if the query is of the form:
 	if (
 		// SELECT (SELECT COUNT(*) ...) = 0
@@ -681,27 +664,49 @@ export const insertAffectedIdsBinds = (
 			// case the affected ids do not tell us which rows of the rule have to be checked
 			return;
 		}
-		if (
-			!selectQueryNode.some(
-				(node) =>
-					isFromNode(node) &&
-					isAliasNode(node[1]) &&
-					isTableNode(node[1][1]) &&
-					node[1][1][1] === lfRuleInfo.root.table &&
-					node[1][2] === lfRuleInfo.root.alias,
-			)
-		) {
-			// The root table is only narrowed when it is this query that selects it. It can instead
-			// be selected by a subquery, eg for a rule on an attribute such as "each tag key that is
-			// of a plane, is of at most one plane that is airworthy", in which case its alias cannot
-			// be referenced from here and narrowing it would not be the same thing either
+		const narrowings: OrNode[] = [];
+		for (const fromNode of selectQueryNode.filter(isFromNode)) {
+			let from = fromNode[1];
+			let alias: unknown;
+			if (isAliasNode(from)) {
+				[, from, alias] = from;
+			}
+			if (!isTableNode(from)) {
+				continue;
+			}
+			const tableName = from[1];
+			alias ??= tableName;
+			if (
+				typeof alias !== 'string' ||
+				countTableSelects(abstractSql, tableName) !== 1
+			) {
+				continue;
+			}
+			const idField = getAffectedIdsField(tables, tableName);
+			if (idField == null) {
+				continue;
+			}
+			narrowings.push([
+				'Or',
+				['Equals', ['Bind', tableName], ['EmbeddedText', '{}']],
+				[
+					'Equals',
+					['ReferencedField', alias, idField.fieldName],
+					['Any', ['Bind', tableName], idField.type],
+				],
+			]);
+		}
+		if (narrowings.length === 0) {
 			return;
 		}
 		const whereNode = selectQueryNode.slice(1).find(isWhereNode);
 		if (whereNode === undefined) {
-			selectQueryNode.push(['Where', narrowing]);
+			selectQueryNode.push([
+				'Where',
+				narrowings.length === 1 ? narrowings[0] : ['And', ...narrowings],
+			]);
 		} else {
-			whereNode[1] = ['And', whereNode[1], narrowing];
+			whereNode[1] = ['And', whereNode[1], ...narrowings];
 		}
 	}
 	// Any other form is left as is: it's not a search for rows that each violate the rule, eg

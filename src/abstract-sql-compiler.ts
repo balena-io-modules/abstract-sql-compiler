@@ -1191,11 +1191,7 @@ CREATE TABLE ${ifNotExistsStr}"${table.name}" (
 			// SQL of the rule and does not modify the model, eg a model whose rules contain those
 			// binds cannot be compiled again, nor the fields that the rule is found to reference
 			const narrowedRuleBody = structuredClone(ruleBody);
-			insertAffectedIdsBinds(
-				narrowedRuleBody,
-				abstractSqlModel.lfInfo.rules[ruleSE],
-				abstractSqlModel.tables,
-			);
+			insertAffectedIdsBinds(narrowedRuleBody, abstractSqlModel.tables);
 			const { query: ruleSQL, bindings: ruleBindings } = compileRule(
 				narrowedRuleBody,
 				engine,
