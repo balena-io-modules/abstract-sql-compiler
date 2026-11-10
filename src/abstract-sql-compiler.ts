@@ -21,6 +21,7 @@ import type {
 	ReferencedFields,
 	RuleReferencedFields,
 	ModifiedFields,
+	NarrowingModelInfo,
 } from './referenced-fields.js';
 import {
 	getReferencedFields,
@@ -1170,6 +1171,58 @@ CREATE TABLE ${ifNotExistsStr}"${table.name}" (
 	dropSchemaStatements.push(...dropComputedFunctions);
 	dropSchemaStatements = dropSchemaStatements.reverse();
 
+	// Multiple resources can share a database table, so we group them by table name
+	const tablesByName = new Map<string, AbstractSqlTable[]>();
+	for (const table of Object.values(abstractSqlModel.tables)) {
+		if (typeof table === 'string') {
+			continue;
+		}
+		const tables = tablesByName.get(table.name) ?? [];
+		tables.push(table);
+		tablesByName.set(table.name, tables);
+	}
+	const narrowingModelInfo: NarrowingModelInfo = {
+		getNarrowableIdField: (tableName) => {
+			const idFields = new Set(
+				tablesByName.get(tableName)?.map((table): string | undefined => {
+					// Triggers other than `BEFORE ... ROW` ones (which are meant to adjust the row being
+					// modified, eg to set its "modified at") could modify rows other than the affected ones
+					if (
+						table.triggers?.some(
+							({ when, level }) => when !== 'BEFORE' || level !== 'ROW',
+						)
+					) {
+						return;
+					}
+					const idField = table.fields.find(
+						({ fieldName }) => fieldName === table.idField,
+					);
+					// The affected ids are bound as an INTEGER[]
+					if (
+						idField?.dataType === 'Serial' ||
+						idField?.dataType === 'Integer'
+					) {
+						return table.idField;
+					}
+				}),
+			);
+			// Only when all the resources of the table agree on the id field
+			return idFields.size === 1 ? [...idFields][0] : undefined;
+		},
+		// We treat unknown tables as views since we don't know what they depend on
+		isView: (tableName) =>
+			tablesByName
+				.get(tableName)
+				?.some(({ viewDefinition }) => viewDefinition != null) ?? true,
+		isComputedField: (tableName, fieldName) =>
+			tablesByName
+				.get(tableName)
+				?.some(({ fields }) =>
+					fields.some(
+						(field) => field.fieldName === fieldName && field.computed != null,
+					),
+				) ?? false,
+	};
 	const ruleStatements: SqlRule[] = abstractSqlModel.rules.map(
 		(rule): SqlRule => {
 			const [, ruleBodyNode, ruleSENode] = rule;
@@ -1187,7 +1240,11 @@ CREATE TABLE ${ifNotExistsStr}"${table.name}" (
 			if (typeof ruleSE !== 'string') {
 				throw new Error('Invalid structured English');
 			}
-			insertAffectedIdsBinds(ruleBody, abstractSqlModel.lfInfo.rules[ruleSE]);
+			insertAffectedIdsBinds(
+				ruleBody,
+				abstractSqlModel.lfInfo.rules[ruleSE],
+				narrowingModelInfo,
+			);
 			const { query: ruleSQL, bindings: ruleBindings } = compileRule(
 				ruleBody,
 				engine,

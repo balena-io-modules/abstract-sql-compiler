@@ -34,6 +34,7 @@ import type {
 	NotExistsNode,
 	NotInNode,
 	NotNode,
+	NumberNode,
 	OrNode,
 	RightJoinNode,
 	SelectNode,
@@ -50,7 +51,9 @@ import type {
 } from './abstract-sql-compiler.js';
 import {
 	isAliasNode,
+	isFieldNode,
 	isFromNode,
+	isReferencedFieldNode,
 	isSelectNode,
 	isSelectQueryNode,
 	isTableNode,
@@ -536,12 +539,160 @@ const countTableSelects = (
 	}
 };
 
+const getAffectedIdsNarrowing = (
+	table: string,
+	alias: string,
+	idField: string,
+): OrNode => [
+	'Or',
+	['Equals', ['Bind', table], ['EmbeddedText', '{}']],
+	[
+		'Equals',
+		['ReferencedField', alias, idField],
+		['Any', ['Bind', table], 'Integer'],
+	],
+];
+
+export interface NarrowingModelInfo {
+	/**
+	 * Returns the id field of the given table if its affected ids can be used to narrow rules, or `undefined`
+	 * otherwise, eg when the ids can't be bound as an INTEGER[], or when the table has triggers that could modify
+	 * rows other than the affected ones (ie triggers other than `BEFORE ... ROW` ones).
+	 */
+	getNarrowableIdField: (tableName: string) => string | undefined;
+	/** Returns whether the given table is a view, whose rows depend on the tables that it selects from */
+	isView: (tableName: string) => boolean;
+	/** Returns whether the given field is computed, whose value can depend on other rows and tables */
+	isComputedField: (tableName: string, fieldName: string) => boolean;
+}
+
+// Whether the rule references a view or a computed field, which can depend on
+// tables that the rule does not directly select from
+const dependsOnUnselectedTables = (
+	abstractSql: AbstractSqlQuery,
+	{ isView, isComputedField }: NarrowingModelInfo,
+): boolean => {
+	const tables = new Set<string>();
+	const tableByAlias = new Map<string, string>();
+	const fields: Array<[alias: string | undefined, fieldName: string]> = [];
+	const collect = (node: unknown) => {
+		if (!Array.isArray(node)) {
+			return;
+		}
+		const n = node as AbstractSqlQuery;
+		if (isTableNode(n)) {
+			tables.add(n[1]);
+		} else if (
+			isAliasNode(n) &&
+			isTableNode(n[1]) &&
+			typeof n[2] === 'string'
+		) {
+			tableByAlias.set(n[2], n[1][1]);
+		} else if (isReferencedFieldNode(n)) {
+			fields.push([n[1], n[2]]);
+		} else if (isFieldNode(n)) {
+			fields.push([undefined, n[1]]);
+		}
+		for (const child of n) {
+			collect(child);
+		}
+	};
+	collect(abstractSql);
+
+	for (const table of tables) {
+		if (isView(table)) {
+			return true;
+		}
+	}
+	for (const [alias, fieldName] of fields) {
+		const fieldTables =
+			alias == null ? [...tables] : [tableByAlias.get(alias) ?? alias];
+		if (fieldTables.some((table) => isComputedField(table, fieldName))) {
+			return true;
+		}
+	}
+	return false;
+};
+
+// Whether each row of the rule query, ie each combination of one row of each
+// table in its top level FROM, is a violation of the rule on its own, which is
+// what allows narrowing by tables other than the root
+const isNarrowableByOtherTables = (
+	abstractSql: AbstractSqlQuery,
+	modelInfo: NarrowingModelInfo,
+): boolean => {
+	const selectQueryNode = abstractSql[1] as SelectQueryNode;
+	if (abstractSql[0] === 'Equals') {
+		// Only `(SELECT COUNT(*) ...) = 0`, and not eg `(SELECT COUNT(*) ...) = 1`
+		// where whether there is a violation depends on all of the rows
+		const numberNode = abstractSql[2] as NumberNode;
+		const selectFields = selectQueryNode.find(isSelectNode)?.[1];
+		if (
+			numberNode[1] !== 0 ||
+			selectFields?.length !== 1 ||
+			selectFields[0][0] !== 'Count' ||
+			selectFields[0][1] !== '*'
+		) {
+			return false;
+		}
+	}
+	// No joins (where a table can be null), grouping, ordering, limits, etc
+	if (
+		!selectQueryNode
+			.slice(1)
+			.every(
+				(node) => isSelectNode(node) || isFromNode(node) || isWhereNode(node),
+			)
+	) {
+		return false;
+	}
+	// Views and computed fields can depend on rows that aren't part of the row of
+	// the rule query, which is not something that we can tell
+	return !dependsOnUnselectedTables(abstractSql, modelInfo);
+};
+
+// Narrowing:
+// - The root table of the rule is narrowed. This is always safe when the root
+//   table isn't selected from more than once and it is not negated in the LF.
+//   Right now we conservatively check for the former but not the second. The
+//   negative forms (e.g. it is forbidden that ...) are not fully supported
+//   anyway.
+// - When `modelInfo` is provided, any other table that is selected from exactly
+//   once in the whole rule, with that selection being in the top level FROM of
+//   the rule query, is narrowed as well. Eg a modification of a `pilot` for a
+//   rule like "each plane that is flown by a pilot, ..." (whose root is
+//   `plane`) only needs to validate the modified pilots rather than all of them.
+//   The rule query searches for a counterexample, ie a conjunction of the rows
+//   it selects and the conditions on them, so such a table `a` is a positive
+//   (not negated) occurrence in it. Following update propagation (see eg
+//   https://doi.org/10.1007/978-3-540-30204-9_2), the new counterexamples that
+//   an insert/update of `a` can introduce are:
+//     [+](a && b...) => [+]a && ![old]a && [new](b...)
+//   Only one table is written at a time and `a` is only selected from once, so
+//   `b...` doesn't depend on `a` and [new](b...) = [old](b...). And since the
+//   rule held before the write, dropping ![old]a can't introduce a violation
+//   that didn't already exist, which leaves [+]a: the inserted/updated rows,
+//   ie `a` narrowed to the affected ids. This holds for the root table too.
+//   Tables in subqueries are never narrowed, eg one in a NOT EXISTS is a
+//   negated occurrence, for which:
+//     [+]!(a && b...) => [-]a && ![new]a && [old](b...)
+//   ie the new counterexamples come from the deleted or pre-update rows of `a`,
+//   which would need a check before the write rather than the affected ids.
+//   This relies on the rule query being a plain search for a counterexample
+//   and on `a` being the only thing that changes, so we don't do it for:
+//   - `(SELECT COUNT(*) ...) = N` with N other than 0, or other aggregates,
+//     where whether there is a violation depends on all of the rows
+//   - top level joins (where a table can be null), grouping, ordering, limits
+//   - rules that reference views or computed fields, since they can depend on
+//     other rows and tables that we can't see, including `a` itself
+//   - tables with triggers other than `BEFORE ... ROW` ones, since they could
+//     modify rows other than the affected ones
+//   - tables with ids that can't be bound as an INTEGER[]
+//
 // TODO:
-// - This function only narrows the root table of the rule. This is always
-//   safe when the root table isn't selected from more than once and it is not
-//   negated in the LF. Right now we conservatively check for the former but
-//   not the second. The negative forms (e.g. it is forbidden that ...) are
-//   not fully supported anyway.
+// - The root table is narrowed for `(SELECT COUNT(*) ...) = N` with any N,
+//   but that is only correct for N = 0 (eg it is necessary that exactly one
+//   pilot is experienced).
 // - Removing multiple candidates selecting from the same database table to
 //   avoid visibility issues is too conservative. The correct criteria is to
 //   just remove any that are present in at least 2 disjoint subqueries.
@@ -549,7 +700,7 @@ const countTableSelects = (
 //   single place in the query that has visibility inside both disjoint
 //   subqueries and that is a requirement for adding the corrent binds for
 //   narrowing.
-// - We assume the ID column is named "id".
+// - We assume the ID column of the root table is named "id".
 // - This is a very restricted implementation of narrowing which could be
 //   expanded to cover more situations.
 //
@@ -557,47 +708,80 @@ const countTableSelects = (
 export const insertAffectedIdsBinds = (
 	abstractSql: AbstractSqlQuery,
 	lfRuleInfo: LfRuleInfo,
+	modelInfo?: NarrowingModelInfo,
 ) => {
 	const rootTableSelectCount = countTableSelects(
 		abstractSql,
 		lfRuleInfo.root.table,
 	);
-	if (rootTableSelectCount !== 1) {
-		return;
-	}
-
-	const narrowing: OrNode = [
-		'Or',
-		['Equals', ['Bind', lfRuleInfo.root.table], ['EmbeddedText', '{}']],
-		[
-			'Equals',
-			['ReferencedField', lfRuleInfo.root.alias, 'id'],
-			['Any', ['Bind', lfRuleInfo.root.table], 'Integer'],
-		],
-	];
 
 	// Check if the query is of the form:
-	if (
+	const isSupportedForm =
 		// SELECT (SELECT COUNT(*) ...) = 0
 		(abstractSql[0] === 'Equals' &&
 			abstractSql[1][0] === 'SelectQuery' &&
 			abstractSql[2][0] === 'Number') ||
 		// SELECT NOT EXISTS (SELECT ...)
-		(abstractSql[0] === 'NotExists' && abstractSql[1][0] === 'SelectQuery')
-	) {
-		const selectQueryNode = abstractSql[1] as SelectQueryNode;
-		const whereNode = selectQueryNode.slice(1).find(isWhereNode);
-		if (whereNode === undefined) {
-			selectQueryNode.push(['Where', narrowing]);
-		} else {
-			whereNode[1] = ['And', whereNode[1], narrowing];
+		(abstractSql[0] === 'NotExists' && abstractSql[1][0] === 'SelectQuery');
+	if (!isSupportedForm) {
+		if (rootTableSelectCount !== 1) {
+			// We wouldn't have narrowed the root table so there is no need to throw
+			return;
 		}
-		return;
-	}
-	throw new Error(`\
+		throw new Error(`\
 Only queries in the form of:
 	SELECT (SELECT COUNT(*) ...) = 0
 	SELECT NOT EXISTS (SELECT ...)
 are supported for affected IDs insertion.
 	`);
+	}
+	const selectQueryNode = abstractSql[1] as SelectQueryNode;
+
+	const narrowings: OrNode[] = [];
+	if (rootTableSelectCount === 1) {
+		narrowings.push(
+			getAffectedIdsNarrowing(
+				lfRuleInfo.root.table,
+				lfRuleInfo.root.alias,
+				'id',
+			),
+		);
+	}
+	if (modelInfo != null && isNarrowableByOtherTables(abstractSql, modelInfo)) {
+		for (const fromNode of selectQueryNode.filter(isFromNode)) {
+			const aliasNode = fromNode[1];
+			if (!isAliasNode(aliasNode)) {
+				continue;
+			}
+			const [, tableNode, alias] = aliasNode;
+			if (!isTableNode(tableNode) || typeof alias !== 'string') {
+				continue;
+			}
+			const table = tableNode[1];
+			if (table === lfRuleInfo.root.table) {
+				// The root table has already been handled above
+				continue;
+			}
+			const idField = modelInfo.getNarrowableIdField(table);
+			if (idField == null) {
+				continue;
+			}
+			if (countTableSelects(abstractSql, table) !== 1) {
+				continue;
+			}
+			narrowings.push(getAffectedIdsNarrowing(table, alias, idField));
+		}
+	}
+	if (narrowings.length === 0) {
+		return;
+	}
+
+	const narrowing: OrNode | AndNode =
+		narrowings.length === 1 ? narrowings[0] : ['And', ...narrowings];
+	const whereNode = selectQueryNode.slice(1).find(isWhereNode);
+	if (whereNode === undefined) {
+		selectQueryNode.push(['Where', narrowing]);
+	} else {
+		whereNode[1] = ['And', whereNode[1], narrowing];
+	}
 };
