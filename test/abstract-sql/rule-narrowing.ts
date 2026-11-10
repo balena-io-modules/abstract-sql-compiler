@@ -195,6 +195,85 @@ SELECT (
 		});
 	});
 
+	describe('views', () => {
+		// Each underage pilot has the licence of a senior pilot
+		const underagePilotsShareLicenceOfSeniorPilot: AbstractSqlQuery = [
+			'NotExists',
+			[
+				'SelectQuery',
+				['Select', []],
+				fromPilot,
+				[
+					'Where',
+					[
+						'And',
+						isUnderage,
+						[
+							'NotExists',
+							[
+								'SelectQuery',
+								['Select', []],
+								[
+									'From',
+									['Alias', ['Table', 'senior pilot'], 'senior pilot.1'],
+								],
+								[
+									'Where',
+									[
+										'Equals',
+										['ReferencedField', 'senior pilot.1', 'licence'],
+										['ReferencedField', 'pilot.0', 'licence'],
+									],
+								],
+							],
+						],
+					],
+				],
+			],
+		];
+		const expectedSql = `\
+SELECT NOT EXISTS (
+	SELECT 1
+	FROM "pilot" AS "pilot.0"
+	WHERE "pilot.0"."age" < 18
+	AND NOT EXISTS (
+		SELECT 1
+		FROM "senior pilot" AS "senior pilot.1"
+		WHERE "senior pilot.1"."licence" = "pilot.0"."licence"
+	)
+) AS "result";`;
+
+		it('should not narrow rules that select from a view', () => {
+			// Modifying a pilot can also change the senior pilots, which are a view of the pilots
+			const rule = compileRule(
+				underagePilotsShareLicenceOfSeniorPilot,
+				({ tables }) => {
+					tables['senior pilot'] = {
+						...tables.pilot,
+						name: 'senior pilot',
+						resourceName: 'senior pilot',
+						viewDefinition: {
+							abstractSql: [
+								'SelectQuery',
+								['Select', [['Field', '*']]],
+								['From', ['Table', 'pilot']],
+								['Where', ['GreaterThan', ['Field', 'age'], ['Number', 60]]],
+							],
+						},
+					};
+				},
+			);
+			expect(rule.bindings).to.deep.equal([]);
+			expect(rule.sql).to.equal(expectedSql);
+		});
+
+		it('should not narrow rules that select from something that is not in the model', () => {
+			const rule = compileRule(underagePilotsShareLicenceOfSeniorPilot);
+			expect(rule.bindings).to.deep.equal([]);
+			expect(rule.sql).to.equal(expectedSql);
+		});
+	});
+
 	describe('id fields', () => {
 		const setPilotIdField =
 			(fieldName: string, dataType: string) =>

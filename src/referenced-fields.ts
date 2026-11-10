@@ -50,6 +50,7 @@ import type {
 	WhereNode,
 } from './abstract-sql-compiler.js';
 import {
+	abstractSqlContainsNode,
 	isAliasNode,
 	isFromNode,
 	isSelectNode,
@@ -590,6 +591,26 @@ const getAffectedIdsField = (
 	};
 };
 
+// Whether the rule selects from a view, or from something that we do not know to be a table.
+// A view changes whenever the tables that it selects from do, so the rule also depends on the
+// rows of those tables even though it does not select from them
+const selectsFromView = (
+	abstractSql: AbstractSqlQuery,
+	tables: AbstractSqlModel['tables'],
+): boolean =>
+	abstractSqlContainsNode(abstractSql, (node) => {
+		if (!isTableNode(node)) {
+			return false;
+		}
+		const matchingTables = Object.values(tables).filter(
+			({ name }) => name === node[1],
+		);
+		return (
+			matchingTables.length === 0 ||
+			matchingTables.some(({ viewDefinition }) => viewDefinition != null)
+		);
+	});
+
 // TODO:
 // - This function only narrows the root table of the rule. This is always
 //   safe when the root table isn't selected from more than once and it is not
@@ -653,6 +674,11 @@ export const insertAffectedIdsBinds = (
 			// Narrowing filters the rows before they are joined, grouped or limited, which changes the
 			// outcome of those rather than only which rows get checked, eg a `HAVING COUNT(*) >= 2` that
 			// looks for duplicates would only see the affected rows and never find the row they duplicate
+			return;
+		}
+		if (selectsFromView(abstractSql, tables)) {
+			// The rows of a view change when the tables that it selects from are modified, in which
+			// case the affected ids do not tell us which rows of the rule have to be checked
 			return;
 		}
 		const whereNode = selectQueryNode.slice(1).find(isWhereNode);
