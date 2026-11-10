@@ -579,9 +579,13 @@ export const insertAffectedIdsBinds = (
 	// Check if the query is of the form:
 	if (
 		// SELECT (SELECT COUNT(*) ...) = 0
+		// It has to be `= 0` so that each counted row is a violation on its own. For any other
+		// number, eg the `= 1` of "It is necessary that exactly one pilot is experienced", whether
+		// the rule holds also depends on the rows that were not affected
 		(abstractSql[0] === 'Equals' &&
 			abstractSql[1][0] === 'SelectQuery' &&
-			abstractSql[2][0] === 'Number') ||
+			abstractSql[2][0] === 'Number' &&
+			abstractSql[2][1] === 0) ||
 		// SELECT NOT EXISTS (SELECT ...)
 		(abstractSql[0] === 'NotExists' && abstractSql[1][0] === 'SelectQuery')
 	) {
@@ -594,6 +598,7 @@ export const insertAffectedIdsBinds = (
 		}
 	}
 	// Any other form is left as is: it's not a search for rows that each violate the rule, eg
-	// `(SELECT COUNT(*) ...) >= 2` or `EXISTS (SELECT ...)` depend on every row of the table
-	// rather than only on the affected ones, so there is nothing we can narrow
+	// `(SELECT COUNT(*) ...) >= 2`, `(SELECT COUNT(*) ...) = 1` or `EXISTS (SELECT ...)` depend
+	// on every row of the table rather than only on the affected ones, so there is nothing we
+	// can narrow
 };

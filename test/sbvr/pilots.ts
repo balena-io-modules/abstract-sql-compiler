@@ -1157,6 +1157,16 @@ SELECT (
 	);
 
 	test.rule(
+		'It is necessary that exactly one pilot is experienced',
+		`\
+SELECT (
+	SELECT COUNT(*)
+	FROM "pilot" AS "pilot.0"
+	WHERE "pilot.0"."is experienced" = TRUE
+) = 1 AS "result";`,
+	);
+
+	test.rule(
 		'It is necessary that at most 3 pilots are experienced',
 		`\
 SELECT NOT (
