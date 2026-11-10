@@ -536,6 +536,24 @@ const countTableSelects = (
 	}
 };
 
+const isCountAllSelect = (selectQueryNode: SelectQueryNode): boolean => {
+	const selectFields = selectQueryNode.find(isSelectNode)?.[1];
+	return (
+		selectFields?.length === 1 &&
+		selectFields[0][0] === 'Count' &&
+		selectFields[0][1] === '*'
+	);
+};
+
+// Whether the rows of the query are exactly the combinations of rows of its `FROM` tables that
+// match its `WHERE`, ie nothing else (a join, `GROUP BY`, `HAVING`, `LIMIT`, ...) decides them
+const isPlainSelectQuery = (selectQueryNode: SelectQueryNode): boolean =>
+	selectQueryNode
+		.slice(1)
+		.every(
+			(node) => isSelectNode(node) || isFromNode(node) || isWhereNode(node),
+		);
+
 // TODO:
 // - This function only narrows the root table of the rule. This is always
 //   safe when the root table isn't selected from more than once and it is not
@@ -584,12 +602,19 @@ export const insertAffectedIdsBinds = (
 		// the rule holds also depends on the rows that were not affected
 		(abstractSql[0] === 'Equals' &&
 			abstractSql[1][0] === 'SelectQuery' &&
+			isCountAllSelect(abstractSql[1] as SelectQueryNode) &&
 			abstractSql[2][0] === 'Number' &&
 			abstractSql[2][1] === 0) ||
 		// SELECT NOT EXISTS (SELECT ...)
 		(abstractSql[0] === 'NotExists' && abstractSql[1][0] === 'SelectQuery')
 	) {
 		const selectQueryNode = abstractSql[1] as SelectQueryNode;
+		if (!isPlainSelectQuery(selectQueryNode)) {
+			// Narrowing filters the rows before they are joined, grouped or limited, which changes the
+			// outcome of those rather than only which rows get checked, eg a `HAVING COUNT(*) >= 2` that
+			// looks for duplicates would only see the affected rows and never find the row they duplicate
+			return;
+		}
 		const whereNode = selectQueryNode.slice(1).find(isWhereNode);
 		if (whereNode === undefined) {
 			selectQueryNode.push(['Where', narrowing]);
