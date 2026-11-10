@@ -592,12 +592,8 @@ export const insertAffectedIdsBinds = (
 		} else {
 			whereNode[1] = ['And', whereNode[1], narrowing];
 		}
-		return;
 	}
-	throw new Error(`\
-Only queries in the form of:
-	SELECT (SELECT COUNT(*) ...) = 0
-	SELECT NOT EXISTS (SELECT ...)
-are supported for affected IDs insertion.
-	`);
+	// Any other form is left as is: it's not a search for rows that each violate the rule, eg
+	// `(SELECT COUNT(*) ...) >= 2` or `EXISTS (SELECT ...)` depend on every row of the table
+	// rather than only on the affected ones, so there is nothing we can narrow
 };
