@@ -195,6 +195,44 @@ SELECT (
 		});
 	});
 
+	describe('tables', () => {
+		it('should not narrow the root table when it is only selected in a subquery', () => {
+			// No plane exists whilst there are 2 or more underage pilots
+			const rule = compileRule([
+				'NotExists',
+				[
+					'SelectQuery',
+					['Select', []],
+					['From', ['Alias', ['Table', 'plane'], 'plane.1']],
+					[
+						'Where',
+						[
+							'GreaterThanOrEqual',
+							[
+								'SelectQuery',
+								['Select', [['Count', '*']]],
+								fromPilot,
+								['Where', isUnderage],
+							],
+							['Number', 2],
+						],
+					],
+				],
+			]);
+			expect(rule.bindings).to.deep.equal([]);
+			expect(rule.sql).to.equal(`\
+SELECT NOT EXISTS (
+	SELECT 1
+	FROM "plane" AS "plane.1"
+	WHERE (
+		SELECT COUNT(*)
+		FROM "pilot" AS "pilot.0"
+		WHERE "pilot.0"."age" < 18
+	) >= 2
+) AS "result";`);
+		});
+	});
+
 	describe('views', () => {
 		// Each underage pilot has the licence of a senior pilot
 		const underagePilotsShareLicenceOfSeniorPilot: AbstractSqlQuery = [

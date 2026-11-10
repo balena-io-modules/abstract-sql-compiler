@@ -681,6 +681,22 @@ export const insertAffectedIdsBinds = (
 			// case the affected ids do not tell us which rows of the rule have to be checked
 			return;
 		}
+		if (
+			!selectQueryNode.some(
+				(node) =>
+					isFromNode(node) &&
+					isAliasNode(node[1]) &&
+					isTableNode(node[1][1]) &&
+					node[1][1][1] === lfRuleInfo.root.table &&
+					node[1][2] === lfRuleInfo.root.alias,
+			)
+		) {
+			// The root table is only narrowed when it is this query that selects it. It can instead
+			// be selected by a subquery, eg for a rule on an attribute such as "each tag key that is
+			// of a plane, is of at most one plane that is airworthy", in which case its alias cannot
+			// be referenced from here and narrowing it would not be the same thing either
+			return;
+		}
 		const whereNode = selectQueryNode.slice(1).find(isWhereNode);
 		if (whereNode === undefined) {
 			selectQueryNode.push(['Where', narrowing]);
