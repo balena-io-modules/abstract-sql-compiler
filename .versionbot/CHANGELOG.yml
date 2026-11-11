@@ -1,4 +1,52 @@
 - commits:
+    - subject: Only narrow rules to the affected IDs when that is safe
+      hash: f91b7703dfc8cd2ee8bb74af7d7a98a848d7312e
+      body: >
+        Narrowing a rule to the affected IDs of its root table is only safe for
+
+        "It is necessary that each ..." style rules, which compile to
+
+        `NOT EXISTS (SELECT ...)` or `(SELECT COUNT(*) ...) = 0`. However
+
+        `insertAffectedIdsBinds` accepted `(SELECT ...) = <any number>`, so eg
+
+        `It is necessary that exactly 2 pilots can fly a plane` was narrowed to
+
+        `(SELECT COUNT(*) ... AND <affected ids>) = 2`, which evaluates to false
+
+        (a spurious violation) whenever the affected rows are only a subset, and
+
+        it threw for every other shape, which made `compileSchema` fail for the
+
+        whole model. That includes plain existential rules such as `It is
+
+        necessary that a pilot can fly a plane`, which compile to
+
+        `EXISTS (SELECT ...)`, and eg `It is necessary that at least 2 pilots
+
+        can fly a plane`.
+
+
+        Now only `NOT EXISTS` and a `COUNT(*) = 0` select are narrowed and other
+
+        rules are left as-is so they check the whole table.
+
+
+        `getRuleReferencedFields` had the same `= 0` special case without
+        checking
+
+        for `COUNT(*)`, so eg `(SELECT SUM(x) ...) = 0` dropped `x` from the
+
+        tracked fields and assumed deletes could not violate the rule.
+      footer:
+        Change-type: patch
+        change-type: patch
+      author: Pagan Gazzard
+      nested: []
+  version: 11.3.51
+  title: ""
+  date: 2026-11-11T00:28:15.294Z
+- commits:
     - subject: Fix optimizing `EXISTS` of an aggregate query with a false `WHERE`
       hash: 61885503539bb9d2621ab4814cfe9ba6963a4fc2
       body: |
