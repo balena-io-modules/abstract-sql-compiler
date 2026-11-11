@@ -342,4 +342,28 @@ describe('getRuleReferencedFields', () => {
 			},
 		});
 	});
+
+	it('should only treat `= 0` as equivalent to NOT EXISTS for COUNT(*)', () => {
+		expect(
+			AbstractSqlCompiler.postgres.getRuleReferencedFields([
+				'Equals',
+				[
+					'SelectQuery',
+					['Select', [['Sum', ['ReferencedField', 'test.0', 'amount']]]],
+					['From', ['Alias', ['Table', 'test'], 'test.0']],
+					[
+						'Where',
+						['GreaterThan', ['ReferencedField', 'test.0', 'id'], ['Number', 5]],
+					],
+				],
+				['Number', 0],
+			]),
+		).to.deep.equal({
+			test: {
+				create: ['amount', 'id'],
+				update: ['amount', 'id'],
+				delete: ['amount', 'id'],
+			},
+		});
+	});
 });

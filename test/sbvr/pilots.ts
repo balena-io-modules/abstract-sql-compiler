@@ -168,6 +168,53 @@ SELECT (
 ) = 0 AS "result";`,
 	);
 
+	// Only `It is necessary that each ...` rules can safely be narrowed to the affected IDs
+	test.rule(
+		'It is necessary that a pilot can fly a plane',
+		`\
+SELECT EXISTS (
+	SELECT 1
+	FROM "pilot" AS "pilot.0",
+		"pilot-can fly-plane" AS "pilot.0-can fly-plane.1"
+	WHERE "pilot.0-can fly-plane.1"."pilot" = "pilot.0"."id"
+) AS "result";`,
+	);
+
+	test.rule(
+		'It is necessary that exactly 2 pilots can fly a plane',
+		`\
+SELECT (
+	SELECT COUNT(*)
+	FROM "pilot" AS "pilot.0",
+		"pilot-can fly-plane" AS "pilot.0-can fly-plane.1"
+	WHERE "pilot.0-can fly-plane.1"."pilot" = "pilot.0"."id"
+) = 2 AS "result";`,
+	);
+
+	test.rule(
+		'It is necessary that at least 2 pilots can fly a plane',
+		`\
+SELECT (
+	SELECT COUNT(*)
+	FROM "pilot" AS "pilot.0",
+		"pilot-can fly-plane" AS "pilot.0-can fly-plane.1"
+	WHERE "pilot.0-can fly-plane.1"."pilot" = "pilot.0"."id"
+) >= 2 AS "result";`,
+	);
+
+	test.rule(
+		'It is necessary that at most 3 pilots can fly a plane',
+		`\
+SELECT NOT (
+	(
+		SELECT COUNT(*)
+		FROM "pilot" AS "pilot.0",
+			"pilot-can fly-plane" AS "pilot.0-can fly-plane.1"
+		WHERE "pilot.0-can fly-plane.1"."pilot" = "pilot.0"."id"
+	) >= 4
+) AS "result";`,
+	);
+
 	test.rule(
 		'It is necessary that each pilot that is experienced, can fly at least 2 planes',
 		`\

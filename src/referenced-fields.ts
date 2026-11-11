@@ -263,16 +263,31 @@ const $getRuleReferencedFields = (
 			});
 	}
 };
+// Whether the rule is of the form `(SELECT COUNT(*) ...) = 0`, which is equivalent to `NOT EXISTS (SELECT ...)`
+const isCountEqualsZeroRule = (
+	ruleBody: AbstractSqlQuery,
+): ruleBody is ['Equals', SelectQueryNode, ['Number', 0]] => {
+	if (
+		ruleBody[0] !== 'Equals' ||
+		!isSelectQueryNode(ruleBody[1]) ||
+		ruleBody[2][0] !== 'Number' ||
+		ruleBody[2][1] !== 0
+	) {
+		return false;
+	}
+	const select = ruleBody[1].find(isSelectNode);
+	return (
+		select?.[1].length === 1 &&
+		select[1][0][0] === 'Count' &&
+		select[1][0][1] === '*'
+	);
+};
+
 export const getRuleReferencedFields: EngineInstance['getRuleReferencedFields'] =
 	(ruleBody) => {
 		ruleBody = AbstractSQLOptimizer(ruleBody);
 		const referencedFields: RuleReferencedFields = {};
-		if (
-			ruleBody[0] === 'Equals' &&
-			ruleBody[2][0] === 'Number' &&
-			ruleBody[2][1] === 0 &&
-			isSelectQueryNode(ruleBody[1])
-		) {
+		if (isCountEqualsZeroRule(ruleBody)) {
 			const select = ruleBody[1].find(isSelectNode)!;
 			select[1] = [];
 			$getRuleReferencedFields(referencedFields, ruleBody[1], IsSafe.Delete);
@@ -576,12 +591,10 @@ export const insertAffectedIdsBinds = (
 		],
 	];
 
-	// Check if the query is of the form:
+	// Narrowing is only safe for queries of the form:
 	if (
 		// SELECT (SELECT COUNT(*) ...) = 0
-		(abstractSql[0] === 'Equals' &&
-			abstractSql[1][0] === 'SelectQuery' &&
-			abstractSql[2][0] === 'Number') ||
+		isCountEqualsZeroRule(abstractSql) ||
 		// SELECT NOT EXISTS (SELECT ...)
 		(abstractSql[0] === 'NotExists' && abstractSql[1][0] === 'SelectQuery')
 	) {
@@ -592,12 +605,8 @@ export const insertAffectedIdsBinds = (
 		} else {
 			whereNode[1] = ['And', whereNode[1], narrowing];
 		}
-		return;
 	}
-	throw new Error(`\
-Only queries in the form of:
-	SELECT (SELECT COUNT(*) ...) = 0
-	SELECT NOT EXISTS (SELECT ...)
-are supported for affected IDs insertion.
-	`);
+	// Any other rule, eg `(SELECT COUNT(*) ...) = 2` from `It is necessary that exactly 2 ...` or
+	// `(SELECT COUNT(*) ...) >= 2` from `It is necessary that at least 2 ...`, depends on the rows
+	// that were not affected as well so we leave it to always check the whole table
 };
