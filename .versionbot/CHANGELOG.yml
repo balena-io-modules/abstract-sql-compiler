@@ -1,4 +1,42 @@
 - commits:
+    - subject: Fix informative references creating foreign keys when part of a cycle
+      hash: 454a93a828ffec510d2775672a96228ec58df802
+      body: >
+        Informative references are not meant to create a foreign key, but they
+        were
+
+        still tracked as table dependencies. So when one was part of a reference
+
+        cycle it was treated as a circular dependency: on postgres it then
+        created
+
+        the foreign key anyway via the `ALTER TABLE ... ADD CONSTRAINT` used for
+
+        circular references, and on other engines it failed with `Circular
+
+        dependencies are only supported on postgres currently`. Whether this
+
+        happened also depended on the order the tables were defined in.
+
+
+        Informative references now neither create a foreign key nor a
+        dependency,
+
+        though they still make sure a primitive table they reference is created.
+
+        Databases created before this fix keep the foreign key, which
+        `dropSchema`
+
+        no longer drops.
+      footer:
+        Change-type: patch
+        change-type: patch
+      author: Pagan Gazzard
+      nested: []
+  version: 11.3.52
+  title: ""
+  date: 2026-11-12T01:23:46.601Z
+- commits:
     - subject: Only narrow rules to the affected IDs when that is safe
       hash: f91b7703dfc8cd2ee8bb74af7d7a98a848d7312e
       body: >
